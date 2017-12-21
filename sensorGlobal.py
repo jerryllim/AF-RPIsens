@@ -1,14 +1,9 @@
 import json
-
-pinArray = (23, 24, 17, 27, 22, 5, 6, 13, 19, 26)
-sensorNameArray = ('Sensor 1', 'Sensor 2', 'Sensor 3', 'Sensor 4', 'Sensor 5', 'Sensor 6', 'Sensor 7', 'Sensor 8',
-                   'Sensor 9', 'Sensor 10')
-sensorsArray = {'Sensor 1': 23, 'Sensor 2': 24, 'Sensor 3': 17, 'Sensor 4': 27, 'Sensor 5': 22, 'Sensor 6': 5,
-               'Sensor 7': 6, 'Sensor 8': 13, 'Sensor 9': 19, 'Sensor 10': 26}
+from collections import OrderedDict
 
 
 class DataHandler:
-    sensorArray = {}
+    sensorArray = OrderedDict()
 
     def __init__(self, file_name='testFile.txt'):  # TODO change default file name
         self.fileName = file_name
@@ -20,5 +15,29 @@ class DataHandler:
 
     def load_data(self):
         with open(self.fileName, 'r') as infile:
-            self.sensorArray = json.load(infile)
+            self.sensorArray = json.load(infile, object_pairs_hook=OrderedDict)
 
+    def get_names(self):
+        return list(self.sensorArray.keys())
+
+    def get_pins(self):
+        pin_list = []
+        for key in self.sensorArray.keys():
+            pin_list.append(self.sensorArray[key])
+        return pin_list
+    
+
+if __name__ == '__main__':
+    dataHandler = DataHandler()
+
+    print(dataHandler.get_names())
+    print(dataHandler.get_pins())
+
+    tempDict = {"Sensor 1": 23, "Sensor 2": 24, "Sensor 3": 17, "Sensor 4": 27, "Sensor 5": 22, "Sensor 6": 5,
+                "Sensor 7": 6, "Sensor 8": 12, "Sensor 9": 19, "Sensor 10": 26}
+    # dataHandler.sensorArray.clear()
+    dataHandler.sensorArray.update(tempDict)
+    dataHandler.save_data()
+
+    print(dataHandler.get_names())
+    print(dataHandler.get_pins())
