@@ -4,8 +4,6 @@ import sensorGlobal
 
 
 class MainWindow:
-    GREYCOLOUR = '#c1c1c1'
-
     def __init__(self, data_handler):
         self.dataHandler = data_handler
         self.advancedWindow = None
@@ -85,6 +83,11 @@ class MainWindow:
             for item in tree_view.selection():
                 tree_view.delete(item)
 
+        def launch_edit():
+            item = tree_view.focus()
+            if item != '':
+                launch_item_window(item)
+
         def move_item(direction):
             item = tree_view.focus()
             if item != '':
@@ -92,44 +95,58 @@ class MainWindow:
                 tree_view.move(item, '', index)
 
         # Launch window to add new item to Treeview (Add new sensor)
-        def launch_add_window():
-            def quit_add_window():
-                new_item_window.destroy()
+        def launch_item_window(iid=''):
+            def quit_item_window():
+                item_window.destroy()
                 advanced_window_frame.grab_set()
 
             def add_item():
                 tree_view.insert('', tkinter.END, values=(name_entry.get(), pin_entry.get()))
-                quit_add_window()
+                quit_item_window()
 
-            new_item_window = tkinter.Toplevel(self.advancedWindow)
-            new_item_window.title('New Item')
-            new_item_window.geometry('-8-200')
-            new_item_window.columnconfigure(0, weight=1)
-            new_item_window.rowconfigure(0, weight=1)
-            newitem_window_frame = ttk.Frame(new_item_window)
-            newitem_window_frame.grid(sticky='nsew')
-            newitem_window_frame.rowconfigure(0, weight=1)
-            newitem_window_frame.rowconfigure(1, weight=1)
-            newitem_window_frame.columnconfigure(0, weight=1)
+            def edit_item():
+                tree_view.item(iid, values=(name_entry.get(), pin_entry.get()))
+                quit_item_window()
 
-            entry_frame = ttk.Frame(newitem_window_frame)
+            item_window = tkinter.Toplevel(self.advancedWindow)
+            item_window.title('New Item')
+            item_window.geometry('-8-200')
+            item_window.columnconfigure(0, weight=1)
+            item_window.rowconfigure(0, weight=1)
+            item_window_frame = ttk.Frame(item_window)
+            item_window_frame.grid(sticky='nsew')
+            item_window_frame.rowconfigure(0, weight=1)
+            item_window_frame.rowconfigure(1, weight=1)
+            item_window_frame.columnconfigure(0, weight=1)
+
+            entry_frame = ttk.Frame(item_window_frame)
             entry_frame.grid(row=0, sticky='nsew', padx=5, pady=5)
             entry_frame.rowconfigure(0, weight=1)
             entry_frame.columnconfigure(0, weight=5)
             entry_frame.columnconfigure(1, weight=1)
             name_entry = ttk.Entry(entry_frame, width=30)
             name_entry.grid(row=0, column=0, sticky='nsew', pady=5)
+            name_entry.delete(0, tkinter.END)
             pin_entry = ttk.Entry(entry_frame, width=2, justify=tkinter.RIGHT)
             pin_entry.grid(row=0, column=1, sticky='nsew', pady=5)
+            pin_entry.delete(0, tkinter.END)
 
-            button_frame = ttk.Frame(newitem_window_frame)
+            button_frame = ttk.Frame(item_window_frame)
             button_frame.grid(row=1)
-            _add_button = ttk.Button(button_frame, text='Add', command=add_item)
-            _add_button.pack(side=tkinter.LEFT)
-            _cancel_button = ttk.Button(button_frame, text='Cancel', command=quit_add_window)
-            _cancel_button.pack(side=tkinter.LEFT)
+            _cancel_button = ttk.Button(button_frame, text='Cancel', command=quit_item_window)
+            _cancel_button.pack(side=tkinter.RIGHT)
 
-            new_item_window.grab_set()
+            if iid != '':
+                _edit_button = ttk.Button(button_frame, text='Edit', command=edit_item)
+                _edit_button.pack(side=tkinter.LEFT)
+                name, pin = tree_view.item(iid)['values']
+                name_entry.insert(0, name)
+                pin_entry.insert(0, pin)
+            else:
+                _add_button = ttk.Button(button_frame, text='Add', command=add_item)
+                _add_button.pack(side=tkinter.LEFT)
+
+            item_window.grab_set()
 
         def save_configuration():
             _temp_dict = {}
@@ -156,7 +173,7 @@ class MainWindow:
         # Bottom Buttons
         bottom_button_frame = ttk.Frame(advanced_window_frame)
         bottom_button_frame.grid(row=2, column=1, padx=5, pady=5)
-        save_button = ttk.Button(bottom_button_frame, text='Save', command=save_configuration)  # TODO add command
+        save_button = ttk.Button(bottom_button_frame, text='Save', command=save_configuration)
         save_button.pack(side=tkinter.LEFT)
         cancel_button = ttk.Button(bottom_button_frame, text='Cancel', command=self.advancedWindow.destroy)
         cancel_button.pack(side=tkinter.LEFT)
@@ -184,11 +201,13 @@ class MainWindow:
         treeview_vscroll.grid(row=0, column=1, sticky='nsw')
         tree_view.configure(yscrollcommand=treeview_vscroll.set)
 
-        # Add & Delete buttons TODO add an edit button?
+        # Add & Delete buttons
         top_button_frame = ttk.Frame(advanced_window_frame)
         top_button_frame.grid(row=0, column=1, padx=5, pady=5)
-        add_button = ttk.Button(top_button_frame, text='Add', command=launch_add_window)
+        add_button = ttk.Button(top_button_frame, text='Add', command=launch_item_window)
         add_button.pack()
+        edit_button = ttk.Button(top_button_frame, text='Edit', command=launch_edit)
+        edit_button.pack()
         delete_button = ttk.Button(top_button_frame, text='Delete', command=delete_item)
         delete_button.pack()
 
