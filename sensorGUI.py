@@ -20,6 +20,7 @@ class MainWindow:
         self.count = {}
         for pin_key in self.dataHandler.get_pins():
             _temp = tkinter.IntVar()
+            _temp.set(1)  # TODO to remove
             self.count[pin_key] = _temp
 
         self.main_window_frame.destroy()
@@ -50,7 +51,6 @@ class MainWindow:
             row_frame.rowconfigure(0, weight=1, minsize=50)
 
             _pins = self.dataHandler.get_pins()
-            print(_pins)
             for index in range(5):
                 temp_frame = ttk.Frame(row_frame, relief=tkinter.RIDGE, borderwidth=2)
                 temp_frame.grid(row=0, column=index, sticky='nsew')
@@ -60,12 +60,6 @@ class MainWindow:
                     name_label = ttk.Label(temp_frame, text=_name)
                     name_label.pack()
                     value_label = ttk.Label(temp_frame, textvariable=self.count.get(_pins[loc]))
-                    if self.count.get(_pins[loc]) is None:
-                        print('Hey could not find, {}'.format(_pins[loc]))
-                        print(type(list(self.count.keys())[0])) # TODO
-                    else:
-                        print('Hey could find, {}'.format(_pins[loc]))
-                        print(type(list(self.count.keys())[0]))
                     value_label.pack()
 
         readings_frame = ttk.Frame(self.main_window_frame)
@@ -130,6 +124,7 @@ class MainWindow:
                             return 'Duplicated Name found'
                         if c_pin == int(pin_entry.get()):
                             return 'Duplicated Pin found'
+
                 return True
 
             def add_item():
@@ -140,17 +135,45 @@ class MainWindow:
                 else:
                     messagebox.showerror('Error', msg)
 
+            def change_and_quit():
+                tree_view.item(iid, values=(name_entry.get(), pin_entry.get()))
+                quit_item_window()
+
             def edit_item():
                 msg = validate_entries()
                 if msg is True:
-                    tree_view.item(iid, values=(name_entry.get(), pin_entry.get()))
-                    quit_item_window()
+                    if iid != '':
+                        o_name, o_pin = tree_view.item(iid)['values']
+                        if o_pin != int(pin_entry.get()):
+                            prompt = tkinter.Toplevel(item_window)
+                            prompt.title('Warning')
+                            prompt.geometry('-200-200')
+                            prompt.columnconfigure(0, weight=1)
+                            prompt.rowconfigure(0, weight=1)
+                            prompt_frame = ttk.Frame(prompt)
+                            prompt_frame.grid(sticky='nsew')
+                            prompt_frame.rowconfigure(0, weight=1)
+                            prompt_frame.rowconfigure(1, weight=1)
+                            prompt_frame.columnconfigure(0, weight=1)
+                            prompt_frame.columnconfigure(1, weight=1)
+                            warning = ttk.Label(prompt_frame, text='Changing pin will reset the count')
+                            warning.grid(columnspan=2, sticky='nsew', padx=5, pady=5)
+                            confirm_button = ttk.Button(prompt_frame, text='Confirm', command=change_and_quit)
+                            confirm_button.grid(row=1, column=0, sticky='e')
+                            stop_button = ttk.Button(prompt_frame, text='Cancel', command=prompt.destroy)
+                            stop_button.grid(row=1, column=1, sticky='w')
+                        else:
+                            change_and_quit()
+
+                    else:
+                        change_and_quit()
+
                 else:
                     messagebox.showerror('Error', msg)
 
             item_window = tkinter.Toplevel(self.advancedWindow)
             item_window.title('Item')
-            item_window.geometry('-8-200')
+            item_window.geometry('-200-200')
             item_window.columnconfigure(0, weight=1)
             item_window.rowconfigure(0, weight=1)
             item_window_frame = ttk.Frame(item_window)
@@ -174,7 +197,7 @@ class MainWindow:
             pin_entry.delete(0, tkinter.END)
 
             button_frame = ttk.Frame(item_window_frame)
-            button_frame.grid(row=1)
+            button_frame.grid(row=1, padx=5, pady=5)
 
             if iid != '':
                 _edit_button = ttk.Button(button_frame, text='Edit', command=edit_item)
@@ -192,10 +215,17 @@ class MainWindow:
             item_window.grab_set()
 
         def save_configuration():
+            _temp__dict = {}
+            _temp__dict.update(self.count)
             _temp_dict = {}
             for iid in tree_view.get_children():
                 _name, _pin = tree_view.item(iid)['values']
+                _temp__dict.pop(str(_pin), None)
+                if str(_pin) not in self.count:
+                    self.count[str(_pin)] = tkinter.IntVar()
                 _temp_dict[str(_pin)] = _name
+            for key in _temp__dict.keys():
+                self.count.pop(key)
             self.dataHandler.sensorDict.clear()
             self.dataHandler.sensorDict.update(_temp_dict)
             self.dataHandler.save_data()
