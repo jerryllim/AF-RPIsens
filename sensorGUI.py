@@ -18,9 +18,9 @@ class MainWindow:
 
         # Store the information here as need tkinter package TODO alternative or add tkinter to other package?
         self.count = {}
-        for name in self.dataHandler.get_names():
+        for pin_key in self.dataHandler.get_pins():
             _temp = tkinter.IntVar()
-            self.count[name] = _temp
+            self.count[pin_key] = _temp
 
         self.main_window_frame.destroy()
         self.main_window_frame = ttk.Frame(self.mainWindow)
@@ -49,15 +49,23 @@ class MainWindow:
             row_frame.columnconfigure(4, weight=1, uniform='equalColumn')
             row_frame.rowconfigure(0, weight=1, minsize=50)
 
-            _names = self.dataHandler.get_names()
+            _pins = self.dataHandler.get_pins()
+            print(_pins)
             for index in range(5):
                 temp_frame = ttk.Frame(row_frame, relief=tkinter.RIDGE, borderwidth=2)
                 temp_frame.grid(row=0, column=index, sticky='nsew')
                 loc = index + row*5
-                if loc < len(_names):
-                    name_label = ttk.Label(temp_frame, text=_names[loc])
+                if loc < len(_pins):
+                    _name = self.dataHandler.sensorDict[_pins[loc]]
+                    name_label = ttk.Label(temp_frame, text=_name)
                     name_label.pack()
-                    value_label = ttk.Label(temp_frame, textvariable=self.count[_names[loc]])
+                    value_label = ttk.Label(temp_frame, textvariable=self.count.get(_pins[loc]))
+                    if self.count.get(_pins[loc]) is None:
+                        print('Hey could not find, {}'.format(_pins[loc]))
+                        print(type(list(self.count.keys())[0])) # TODO
+                    else:
+                        print('Hey could find, {}'.format(_pins[loc]))
+                        print(type(list(self.count.keys())[0]))
                     value_label.pack()
 
         readings_frame = ttk.Frame(self.main_window_frame)
@@ -117,10 +125,10 @@ class MainWindow:
 
                 for item in tree_view.get_children():
                     if item != iid:
-                        _name, _pin = tree_view.item(item)['values']
-                        if _name == name_entry.get():
+                        c_name, c_pin = tree_view.item(item)['values']
+                        if c_name == name_entry.get():
                             return 'Duplicated Name found'
-                        if _pin == int(pin_entry.get()):
+                        if c_pin == int(pin_entry.get()):
                             return 'Duplicated Pin found'
                 return True
 
@@ -171,9 +179,9 @@ class MainWindow:
             if iid != '':
                 _edit_button = ttk.Button(button_frame, text='Edit', command=edit_item)
                 _edit_button.pack(side=tkinter.LEFT)
-                name, pin = tree_view.item(iid)['values']
-                name_entry.insert(0, name)
-                pin_entry.insert(0, pin)
+                _name, _pin = tree_view.item(iid)['values']
+                name_entry.insert(0, _name)
+                pin_entry.insert(0, _pin)
             else:
                 _add_button = ttk.Button(button_frame, text='Add', command=add_item)
                 _add_button.pack(side=tkinter.LEFT)
@@ -186,10 +194,10 @@ class MainWindow:
         def save_configuration():
             _temp_dict = {}
             for iid in tree_view.get_children():
-                name, pin = tree_view.item(iid)['values']
-                _temp_dict[name] = pin
-            self.dataHandler.sensorArray.clear()
-            self.dataHandler.sensorArray.update(_temp_dict)
+                _name, _pin = tree_view.item(iid)['values']
+                _temp_dict[str(_pin)] = _name
+            self.dataHandler.sensorDict.clear()
+            self.dataHandler.sensorDict.update(_temp_dict)
             self.dataHandler.save_data()
             quit_advanced_window()
 
@@ -228,8 +236,8 @@ class MainWindow:
         tree_view.column('pin', width=100, anchor=tkinter.E)
 
         # Populate Treeview
-        for key, value in self.dataHandler.sensorArray.items():
-            tree_view.insert('', tkinter.END, values=(key, value))
+        for pin, name in self.dataHandler.sensorDict.items():
+            tree_view.insert('', tkinter.END, values=(name, pin))
 
         # Scroll for Treeview
         treeview_vscroll = ttk.Scrollbar(treeview_frame, orient='vertical', command=tree_view.yview)
