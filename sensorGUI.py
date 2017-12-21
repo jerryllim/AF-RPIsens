@@ -119,9 +119,9 @@ class MainWindow:
                     if item != iid:
                         _name, _pin = tree_view.item(item)['values']
                         if _name == name_entry.get():
-                            return 'Duplicated Name'
+                            return 'Duplicated Name found'
                         if _pin == int(pin_entry.get()):
-                            return 'Duplicated Pin'
+                            return 'Duplicated Pin found'
                 return True
 
             def add_item():
