@@ -6,7 +6,7 @@ class DataHandler:
     sensorDict = OrderedDict()
     countDict = {}
 
-    def __init__(self, file_name='testFile.txt'):  # TODO change default file name
+    def __init__(self, file_name='testFile.json'):  # TODO change default file name
         self.fileName = file_name
         self.load_data()
         self.init_count()
@@ -27,7 +27,7 @@ class DataHandler:
 
     def init_count(self):
         for _pin, _name in self.sensorDict.items():
-            self.countDict[_pin] = 0
+            self.countDict[int(_pin)] = 0
 
 
 if __name__ == '__main__':
@@ -47,3 +47,5 @@ if __name__ == '__main__':
         print(dataHandler.get_names())
         print(dataHandler.get_pins())
 
+    for pin in dataHandler.countDict.keys():
+        print('{} is of type {}'.format(pin, type(pin)))
