@@ -74,11 +74,15 @@ class MainWindow:
             for item in tree_view.selection():
                 tree_view.delete(item)
 
-        # Launch window to add new item to Treeview
+        # Launch window to add new item to Treeview (Add new sensor)
         def launch_add_window():
-            def add_item():
-                tree_view.insert('', tkinter.END, values=(name_entry.get(),pin_entry.get()))
+            def quit_add_window():
                 new_item_window.destroy()
+                advanced_window_frame.grab_set()
+
+            def add_item():
+                tree_view.insert('', tkinter.END, values=(name_entry.get(), pin_entry.get()))
+                quit_add_window()
 
             new_item_window = tkinter.Toplevel(self.advancedWindow)
             new_item_window.title('New Item')
@@ -105,13 +109,13 @@ class MainWindow:
             button_frame.grid(row=1)
             _add_button = ttk.Button(button_frame, text='Add', command=add_item)
             _add_button.pack(side=tkinter.LEFT)
-            _cancel_button = ttk.Button(button_frame, text='Cancel', command=new_item_window.destroy)
+            _cancel_button = ttk.Button(button_frame, text='Cancel', command=quit_add_window)
             _cancel_button.pack(side=tkinter.LEFT)
 
             new_item_window.grab_set()
 
         def save_configuration():
-
+            
             print('-' * 50)
 
         self.advancedWindow = tkinter.Toplevel(self.mainWindow)
@@ -168,6 +172,7 @@ class MainWindow:
         delete_button.pack()
 
         self.advancedWindow.grab_set()
+
 
 
 if __name__ == '__main__':
