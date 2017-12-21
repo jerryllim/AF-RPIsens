@@ -149,7 +149,7 @@ class MainWindow:
         tree_view.column('pin', width=100, anchor=tkinter.E)
 
         # Populate Treeview
-        for key, value in sensorGlobal.sensorArray.items():
+        for key, value in sensorGlobal.sensorsArray.items():
             tree_view.insert('', tkinter.END, values=(key,value))
         tree_view.focus(tree_view.get_children()[0])
         tree_view.selection_set(tree_view.get_children()[0])
