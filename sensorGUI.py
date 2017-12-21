@@ -139,6 +139,10 @@ class MainWindow:
                 tree_view.item(iid, values=(name_entry.get(), pin_entry.get()))
                 quit_item_window()
 
+            def multifunction(*functions):
+                for f in functions:
+                    f()
+
             def edit_item():
                 msg = validate_entries()
                 if msg is True:
@@ -160,8 +164,11 @@ class MainWindow:
                             warning.grid(columnspan=2, sticky='nsew', padx=5, pady=5)
                             confirm_button = ttk.Button(prompt_frame, text='Confirm', command=change_and_quit)
                             confirm_button.grid(row=1, column=0, sticky='e')
-                            stop_button = ttk.Button(prompt_frame, text='Cancel', command=prompt.destroy)
+                            stop_button = ttk.Button(prompt_frame, text='Cancel',
+                                                     command=lambda: multifunction(prompt.destroy, item_window.grab_set))
                             stop_button.grid(row=1, column=1, sticky='w')
+                            prompt.grab_set()
+
                         else:
                             change_and_quit()
 
