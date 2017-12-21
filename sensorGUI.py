@@ -1,5 +1,6 @@
 import tkinter
 from tkinter import ttk
+from tkinter import messagebox
 import sensorGlobal
 
 
@@ -108,16 +109,39 @@ class MainWindow:
                 item_window.destroy()
                 advanced_window_frame.grab_set()
 
+            def validate_entries():
+                if len(name_entry.get()) == 0:
+                    return 'Please enter the name'
+                if len(pin_entry.get()) == 0:
+                    return 'Please enter the connected pin'
+
+                for item in tree_view.get_children():
+                    if item != iid:
+                        _name, _pin = tree_view.item(item)['values']
+                        if _name == name_entry.get():
+                            return 'Duplicated Name'
+                        if _pin == int(pin_entry.get()):
+                            return 'Duplicated Pin'
+                return True
+
             def add_item():
-                tree_view.insert('', tkinter.END, values=(name_entry.get(), pin_entry.get()))
-                quit_item_window()
+                msg = validate_entries()
+                if msg is True:
+                    tree_view.insert('', tkinter.END, values=(name_entry.get(), pin_entry.get()))
+                    quit_item_window()
+                else:
+                    messagebox.showerror('Error', msg)
 
             def edit_item():
-                tree_view.item(iid, values=(name_entry.get(), pin_entry.get()))
-                quit_item_window()
+                msg = validate_entries()
+                if msg is True:
+                    tree_view.item(iid, values=(name_entry.get(), pin_entry.get()))
+                    quit_item_window()
+                else:
+                    messagebox.showerror('Error', msg)
 
             item_window = tkinter.Toplevel(self.advancedWindow)
-            item_window.title('New Item')
+            item_window.title('Item')
             item_window.geometry('-8-200')
             item_window.columnconfigure(0, weight=1)
             item_window.rowconfigure(0, weight=1)
