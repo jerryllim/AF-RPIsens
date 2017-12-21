@@ -6,8 +6,27 @@ import sensorGlobal
 class MainWindow:
     GREYCOLOUR = '#c1c1c1'
 
-    def __init__(self):
-        def readings_row_setup(parent, row, name_array=()):
+    def __init__(self, data_handler):
+        self.dataHandler = data_handler
+        self.advancedWindow = None
+        self.mainWindow = tkinter.Tk()
+        self.mainWindow.title('Sensor Reading')
+        self.mainWindow.geometry('-8-200')
+        self.mainWindow.minsize(width=500, height=200)
+        self.mainWindow.columnconfigure(0, weight=1)
+        self.mainWindow.rowconfigure(0, weight=1)
+        self.main_window_frame = ttk.Frame(self.mainWindow)
+
+        # Store the information here as need tkinter package TODO alternative or add tkinter to other package?
+        self.count = []
+        for i in range(15):
+            _temp = tkinter.IntVar()
+            self.count.append(_temp)
+
+        self.draw_main_window()
+
+    def draw_main_window(self):
+        def readings_row_setup(parent, row):
             row_frame = ttk.Frame(parent)
             row_frame.grid(row=row, column=0, sticky='nsew')
             row_frame.columnconfigure(0, weight=1, uniform='equalColumn')
@@ -17,59 +36,51 @@ class MainWindow:
             row_frame.columnconfigure(4, weight=1, uniform='equalColumn')
             row_frame.rowconfigure(0, weight=1, minsize=50)
 
+            _keys = self.dataHandler.get_keys()
             for index in range(5):
                 temp_frame = ttk.Frame(row_frame, relief=tkinter.RIDGE, borderwidth=2)
                 temp_frame.grid(row=0, column=index, sticky='nsew')
-                if index < len(name_array):
-                    name_label = ttk.Label(temp_frame, text=name_array[index])
+                loc = index + row*5
+                if loc < len(_keys):
+                    name_label = ttk.Label(temp_frame, text=_keys[loc])
                     name_label.pack()
-                    value_label = ttk.Label(temp_frame, textvariable=count[(row*5+index)])
+                    value_label = ttk.Label(temp_frame, textvariable=self.count[loc])
                     value_label.pack()
 
-        self.advancedWindow = None
-        self.mainWindow = tkinter.Tk()
-        self.mainWindow.title('Sensor Reading')
-        self.mainWindow.geometry('-8-200')
-        self.mainWindow.minsize(width=500, height=200)
-        self.mainWindow.columnconfigure(0, weight=1)
-        self.mainWindow.rowconfigure(0, weight=1)
-        main_window_frame = ttk.Frame(self.mainWindow)
-        main_window_frame.grid(sticky='nsew')
-        main_window_frame.grid_columnconfigure(0, weight=1, minsize=500)
-        main_window_frame.grid_rowconfigure(0, weight=10, minsize=150)
-        main_window_frame.grid_rowconfigure(1, weight=1)
+        self.main_window_frame.destroy()
+        self.main_window_frame = ttk.Frame(self.mainWindow)
+        self.main_window_frame.grid(sticky='nsew')
+        self.main_window_frame.grid_columnconfigure(0, weight=1, minsize=500)
+        self.main_window_frame.grid_rowconfigure(0, weight=10, minsize=150)
+        self.main_window_frame.grid_rowconfigure(1, weight=1)
 
-        style = ttk.Style()
-        style.map('TEntry', background=[('disabled', self.GREYCOLOUR)])
-
-        button_frame = ttk.Frame(main_window_frame)
+        button_frame = ttk.Frame(self.main_window_frame)
         button_frame.grid(row=1, column=0, padx=5, pady=5)
         advanced_button = ttk.Button(button_frame, text='Advanced', command=self.launch_advanced_window)
         advanced_button.pack(side=tkinter.LEFT)
         quit_button = ttk.Button(button_frame, text='Quit', command=self.mainWindow.quit)
         quit_button.pack(side=tkinter.LEFT)
 
-        readings_frame = ttk.Frame(main_window_frame)
+        readings_frame = ttk.Frame(self.main_window_frame)
         readings_frame.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
         readings_frame.rowconfigure(0, weight=1)
         readings_frame.rowconfigure(1, weight=1)
         readings_frame.rowconfigure(2, weight=1)
         readings_frame.columnconfigure(0, weight=1)
 
-        # Store the information here as need tkinter package TODO alternative or add tkinter to other package?
-        count = []
-        for i in range(15):
-            _temp = tkinter.IntVar()
-            count.append(_temp)
+        readings_row_setup(readings_frame, 0)
+        readings_row_setup(readings_frame, 1)
+        readings_row_setup(readings_frame, 2)
 
-        readings_row_setup(readings_frame, 0, sensorGlobal.sensorNameArray[0:5])
-        readings_row_setup(readings_frame, 1, sensorGlobal.sensorNameArray[5:10])
-        readings_row_setup(readings_frame, 2, sensorGlobal.sensorNameArray[10:15])
-
+    def start_gui(self):
         self.mainWindow.mainloop()
 
     # Advanced Window Setup and Launch
     def launch_advanced_window(self):
+        def quit_advanced_window():
+            self.advancedWindow.destroy()
+            self.draw_main_window()
+
         def delete_item():
             for item in tree_view.selection():
                 tree_view.delete(item)
@@ -115,8 +126,14 @@ class MainWindow:
             new_item_window.grab_set()
 
         def save_configuration():
-            
-            print('-' * 50)
+            _temp_dict = {}
+            for iid in tree_view.get_children():
+                name, pin = tree_view.item(iid)['values']
+                _temp_dict[name] = pin
+            self.dataHandler.sensorArray.clear()
+            self.dataHandler.sensorArray.update(_temp_dict)
+            self.dataHandler.save_data()
+            quit_advanced_window()
 
         self.advancedWindow = tkinter.Toplevel(self.mainWindow)
         self.advancedWindow.title('Advanced Options')
@@ -153,10 +170,8 @@ class MainWindow:
         tree_view.column('pin', width=100, anchor=tkinter.E)
 
         # Populate Treeview
-        for key, value in sensorGlobal.sensorsArray.items():
-            tree_view.insert('', tkinter.END, values=(key,value))
-        tree_view.focus(tree_view.get_children()[0])
-        tree_view.selection_set(tree_view.get_children()[0])
+        for key, value in self.dataHandler.sensorArray.items():
+            tree_view.insert('', tkinter.END, values=(key, value))
 
         # Scroll for Treeview
         treeview_vscroll = ttk.Scrollbar(treeview_frame, orient='vertical', command=tree_view.yview)
@@ -174,6 +189,6 @@ class MainWindow:
         self.advancedWindow.grab_set()
 
 
-
 if __name__ == '__main__':
-    MainWindow()
+    dataHandler = sensorGlobal.DataHandler()
+    MainWindow(dataHandler).start_gui()
