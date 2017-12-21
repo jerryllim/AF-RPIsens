@@ -96,6 +96,14 @@ class MainWindow:
 
         # Launch window to add new item to Treeview (Add new sensor)
         def launch_item_window(iid=''):
+            def pin_validate(P, S):
+                if len(P) > 2:
+                    return False
+                elif S.isdigit():
+                    return True
+                else:
+                    return False
+
             def quit_item_window():
                 item_window.destroy()
                 advanced_window_frame.grab_set()
@@ -127,7 +135,9 @@ class MainWindow:
             name_entry = ttk.Entry(entry_frame, width=30)
             name_entry.grid(row=0, column=0, sticky='nsew', pady=5)
             name_entry.delete(0, tkinter.END)
-            pin_entry = ttk.Entry(entry_frame, width=2, justify=tkinter.RIGHT)
+            pin_validation = self.mainWindow.register(pin_validate)
+            pin_entry = ttk.Entry(entry_frame, width=2, justify=tkinter.RIGHT, validate='key',
+                                  validatecommand=(pin_validation, '%P', '%S'))
             pin_entry.grid(row=0, column=1, sticky='nsew', pady=5)
             pin_entry.delete(0, tkinter.END)
 
