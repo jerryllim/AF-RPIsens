@@ -23,9 +23,23 @@ class MainWindow:
             _temp = tkinter.IntVar()
             self.count.append(_temp)
 
-        self.draw_main_window()
+        self.main_window_frame.destroy()
+        self.main_window_frame = ttk.Frame(self.mainWindow)
+        self.main_window_frame.grid(sticky='nsew')
+        self.main_window_frame.grid_columnconfigure(0, weight=1, minsize=500)
+        self.main_window_frame.grid_rowconfigure(0, weight=10, minsize=150)
+        self.main_window_frame.grid_rowconfigure(1, weight=1)
 
-    def draw_main_window(self):
+        button_frame = ttk.Frame(self.main_window_frame)
+        button_frame.grid(row=1, column=0, padx=5, pady=5)
+        advanced_button = ttk.Button(button_frame, text='Advanced', command=self.launch_advanced_window)
+        advanced_button.pack(side=tkinter.LEFT)
+        quit_button = ttk.Button(button_frame, text='Quit', command=self.mainWindow.quit)
+        quit_button.pack(side=tkinter.LEFT)
+
+        self.draw_reading_rows()
+
+    def draw_reading_rows(self):
         def readings_row_setup(parent, row):
             row_frame = ttk.Frame(parent)
             row_frame.grid(row=row, column=0, sticky='nsew')
@@ -47,20 +61,6 @@ class MainWindow:
                     value_label = ttk.Label(temp_frame, textvariable=self.count[loc])
                     value_label.pack()
 
-        self.main_window_frame.destroy()
-        self.main_window_frame = ttk.Frame(self.mainWindow)
-        self.main_window_frame.grid(sticky='nsew')
-        self.main_window_frame.grid_columnconfigure(0, weight=1, minsize=500)
-        self.main_window_frame.grid_rowconfigure(0, weight=10, minsize=150)
-        self.main_window_frame.grid_rowconfigure(1, weight=1)
-
-        button_frame = ttk.Frame(self.main_window_frame)
-        button_frame.grid(row=1, column=0, padx=5, pady=5)
-        advanced_button = ttk.Button(button_frame, text='Advanced', command=self.launch_advanced_window)
-        advanced_button.pack(side=tkinter.LEFT)
-        quit_button = ttk.Button(button_frame, text='Quit', command=self.mainWindow.quit)
-        quit_button.pack(side=tkinter.LEFT)
-
         readings_frame = ttk.Frame(self.main_window_frame)
         readings_frame.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
         readings_frame.rowconfigure(0, weight=1)
@@ -79,11 +79,17 @@ class MainWindow:
     def launch_advanced_window(self):
         def quit_advanced_window():
             self.advancedWindow.destroy()
-            self.draw_main_window()
+            self.draw_reading_rows()
 
         def delete_item():
             for item in tree_view.selection():
                 tree_view.delete(item)
+
+        def move_item(direction):
+            item = tree_view.focus()
+            if item != '':
+                index = tree_view.index(item) + direction
+                tree_view.move(item, '', index)
 
         # Launch window to add new item to Treeview (Add new sensor)
         def launch_add_window():
@@ -149,7 +155,7 @@ class MainWindow:
 
         # Bottom Buttons
         bottom_button_frame = ttk.Frame(advanced_window_frame)
-        bottom_button_frame.grid(row=1, column=1, padx=5, pady=5)
+        bottom_button_frame.grid(row=2, column=1, padx=5, pady=5)
         save_button = ttk.Button(bottom_button_frame, text='Save', command=save_configuration)  # TODO add command
         save_button.pack(side=tkinter.LEFT)
         cancel_button = ttk.Button(bottom_button_frame, text='Cancel', command=self.advancedWindow.destroy)
@@ -157,7 +163,7 @@ class MainWindow:
 
         # Treeview
         treeview_frame = ttk.Frame(advanced_window_frame)
-        treeview_frame.grid(row=0, column=0, rowspan=2, sticky='nsew', padx=5, pady=5)
+        treeview_frame.grid(row=0, column=0, rowspan=3, sticky='nsew', padx=5, pady=5)
         treeview_frame.rowconfigure(0, weight=1)
         treeview_frame.columnconfigure(0, weight=10)
         treeview_frame.columnconfigure(1, weight=0)
@@ -185,6 +191,14 @@ class MainWindow:
         add_button.pack()
         delete_button = ttk.Button(top_button_frame, text='Delete', command=delete_item)
         delete_button.pack()
+
+        # Move up & down buttons
+        middle_button_frame = ttk.Frame(advanced_window_frame)
+        middle_button_frame.grid(row=1, column=1, padx=5, pady=5)
+        up_button = ttk.Button(middle_button_frame, text=u'\u25B2', command=lambda: move_item(-1))
+        up_button.pack(side=tkinter.LEFT)
+        down_button = ttk.Button(middle_button_frame, text=u'\u25BC', command=lambda: move_item(1))
+        down_button.pack(side=tkinter.LEFT)
 
         self.advancedWindow.grab_set()
 
