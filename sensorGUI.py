@@ -16,10 +16,10 @@ class MainWindow:
         self.main_window_frame = ttk.Frame(self.mainWindow)
 
         # Store the information here as need tkinter package TODO alternative or add tkinter to other package?
-        self.count = []
-        for i in range(15):
+        self.count = {}
+        for name in self.dataHandler.get_names():
             _temp = tkinter.IntVar()
-            self.count.append(_temp)
+            self.count[name] = _temp
 
         self.main_window_frame.destroy()
         self.main_window_frame = ttk.Frame(self.mainWindow)
@@ -48,15 +48,15 @@ class MainWindow:
             row_frame.columnconfigure(4, weight=1, uniform='equalColumn')
             row_frame.rowconfigure(0, weight=1, minsize=50)
 
-            _keys = self.dataHandler.get_keys()
+            _names = self.dataHandler.get_names()
             for index in range(5):
                 temp_frame = ttk.Frame(row_frame, relief=tkinter.RIDGE, borderwidth=2)
                 temp_frame.grid(row=0, column=index, sticky='nsew')
                 loc = index + row*5
-                if loc < len(_keys):
-                    name_label = ttk.Label(temp_frame, text=_keys[loc])
+                if loc < len(_names):
+                    name_label = ttk.Label(temp_frame, text=_names[loc])
                     name_label.pack()
-                    value_label = ttk.Label(temp_frame, textvariable=self.count[loc])
+                    value_label = ttk.Label(temp_frame, textvariable=self.count[_names[loc]])
                     value_label.pack()
 
         readings_frame = ttk.Frame(self.main_window_frame)
@@ -143,8 +143,6 @@ class MainWindow:
 
             button_frame = ttk.Frame(item_window_frame)
             button_frame.grid(row=1)
-            _cancel_button = ttk.Button(button_frame, text='Cancel', command=quit_item_window)
-            _cancel_button.pack(side=tkinter.RIGHT)
 
             if iid != '':
                 _edit_button = ttk.Button(button_frame, text='Edit', command=edit_item)
@@ -155,6 +153,9 @@ class MainWindow:
             else:
                 _add_button = ttk.Button(button_frame, text='Add', command=add_item)
                 _add_button.pack(side=tkinter.LEFT)
+
+            _cancel_button = ttk.Button(button_frame, text='Cancel', command=quit_item_window)
+            _cancel_button.pack(side=tkinter.RIGHT)
 
             item_window.grab_set()
 
