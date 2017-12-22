@@ -1,12 +1,12 @@
 import tkinter
 from tkinter import ttk
 from tkinter import messagebox
-import sensor.sensorGlobal as sensorGlobal
 
 
 class MainWindow:
-    def __init__(self, data_handler):
-        self.dataHandler = data_handler
+    def __init__(self, rpi):
+        self.rpi = rpi
+        self.dataHandler = rpi.dataHandler
         self.advancedWindow = None
         self.mainWindow = tkinter.Tk()
         self.mainWindow.title('Sensor Reading')
@@ -214,7 +214,7 @@ class MainWindow:
                 if str(_pin) not in self.count:
                     self.count[str(_pin)] = tkinter.IntVar()
                     import afRPIsens.sensor.sensorReading as sensorReading
-                    sensorReading.RaspberryPiController.pin_setup(_pin)
+                    sensorReading.RaspberryPiController.pin_setup(self.rpi, _pin)
                 _temp_dict[str(_pin)] = _name
             for key in _temp__dict.keys():
                 self.count.pop(key)
@@ -288,5 +288,6 @@ class MainWindow:
 
 
 if __name__ == '__main__':
-    dataHandler = sensorGlobal.DataHandler()
-    MainWindow(dataHandler).start_gui()
+    import sensor.sensorReading as sensorReading
+    rpi = sensorReading.RaspberryPiController()
+    MainWindow(rpi).start_gui()

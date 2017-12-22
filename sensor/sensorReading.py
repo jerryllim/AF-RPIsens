@@ -7,7 +7,7 @@ class RaspberryPiController:
     def __init__(self):
         GPIO.setmode(GPIO.BCM)
         self.dataHandler = sensorGlobal.DataHandler()
-        self.mainWindow = sensorGUI.MainWindow(self.dataHandler)
+        self.mainWindow = sensorGUI.MainWindow(self)
 
         for pin in self.dataHandler.get_pins():
             RaspberryPiController.pin_setup(pin)
@@ -19,9 +19,9 @@ class RaspberryPiController:
         self.mainWindow.count[str(pin)].set(self.dataHandler.countDict[pin])
 
     @staticmethod
-    def pin_setup(self, pin):
+    def pin_setup(caller, pin):
         GPIO.setup(int(pin), GPIO.IN)
-        GPIO.add_event_detect(int(pin), GPIO.RISINg, callback=self.pin_triggered, bouncetime=30)
+        GPIO.add_event_detect(int(pin), GPIO.RISING, callback=caller.pin_triggered, bouncetime=30)
 
 
 if __name__ == '__main__':
