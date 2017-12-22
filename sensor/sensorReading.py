@@ -10,7 +10,7 @@ class RaspberryPiController:
         self.mainWindow = sensorGUI.MainWindow(self)
 
         for pin in self.dataHandler.get_pins():
-            RaspberryPiController.pin_setup(pin)
+            RaspberryPiController.pin_setup(self, pin)
 
         self.mainWindow.start_gui()
 
@@ -20,8 +20,8 @@ class RaspberryPiController:
 
     @staticmethod
     def pin_setup(caller, pin):
-        GPIO.setup(int(pin), GPIO.IN)
-        GPIO.add_event_detect(int(pin), GPIO.RISING, callback=caller.pin_triggered, bouncetime=30)
+        GPIO.setup(int(pin), GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+        GPIO.add_event_detect(int(pin), GPIO.RISING, callback=caller.pin_triggered, bouncetime=50)
 
 
 if __name__ == '__main__':

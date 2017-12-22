@@ -213,7 +213,7 @@ class MainWindow:
                 _temp__dict.pop(str(_pin), None)
                 if str(_pin) not in self.count:
                     self.count[str(_pin)] = tkinter.IntVar()
-                    import afRPIsens.sensor.sensorReading as sensorReading
+                    import sensor.sensorReading as sensorReading
                     sensorReading.RaspberryPiController.pin_setup(self.rpi, _pin)
                 _temp_dict[str(_pin)] = _name
             for key in _temp__dict.keys():
