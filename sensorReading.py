@@ -11,7 +11,7 @@ class RaspberryPiController:
 
         for pin in self.dataHandler.get_pins():
             GPIO.setup(int(pin), GPIO.IN)
-            GPIO.add_event_detect(int(pin), GPIO.RISING, callback=self.pin_triggered)
+            GPIO.add_event_detect(int(pin), GPIO.RISING, callback=self.pin_triggered, bouncetime=30)
 
         self.mainWindow.start_gui()
 
