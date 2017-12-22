@@ -2,25 +2,23 @@ import sensorGUI
 import sensorGlobal
 import RPi.GPIO as GPIO
 
-GPIO.setmode(GPIO.BCM)
 
-for pin in sensorGlobal.pinArraypins:
-    GPIO.setup(pin, GPIO.IN)
+class RaspberryPiController:
+    def __init__(self):
+        GPIO.setmode(GPIO.BCM)
+        self.dataHandler = sensorGlobal.DataHandler()
+        self.mainWindow = sensorGUI.MainWindow(self.dataHandler)
 
+        for pin in self.dataHandler.get_pins():
+            GPIO.setup(pin, GPIO.IN)
+            GPIO.add_event_detect(pin, GPIO.RISING, callback=self.pin_triggered)
 
-def pin_triggered(port):
-    pin_no = sensorGlobal.pinArray.index(port)
-    sensorGUI.count[pin_no].set(sensorGUI.sums[pin_no].get() + 1)
+        self.mainWindow.start_gui()
+
+    def pin_triggered(self, port):
+        self.dataHandler.countDict[port] = (self.dataHandler.countDict[port] + 1)
+        self.mainWindow.count[port].set(self.dataHandler.countDict[port])
 
 
 if __name__ == '__main__':
-    try:
-        for pin in sensorGlobal.pinArray:
-            GPIO.add_event_detect(pin, GPIO.RISING, callback=pin_triggered)
-
-        dataHandler = sensorGlobal.DataHandler()
-        sensorGUI.start_gui()
-
-    except KeyboardInterrupt:
-        print("Quit")
-        GPIO.cleanup()
+    print()
