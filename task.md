@@ -1,0 +1,4 @@
+- [ ] add new unique identifier
+- [ ] check debounce time or add individual debounce time
+- [ ] create server program
+- [ ] add send method to client
