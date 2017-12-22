@@ -149,26 +149,8 @@ class MainWindow:
                     if iid != '':
                         o_name, o_pin = tree_view.item(iid)['values']
                         if o_pin != int(pin_entry.get()):
-                            prompt = tkinter.Toplevel(item_window)
-                            prompt.title('Warning')
-                            prompt.geometry('-200-200')
-                            prompt.columnconfigure(0, weight=1)
-                            prompt.rowconfigure(0, weight=1)
-                            prompt_frame = ttk.Frame(prompt)
-                            prompt_frame.grid(sticky='nsew')
-                            prompt_frame.rowconfigure(0, weight=1)
-                            prompt_frame.rowconfigure(1, weight=1)
-                            prompt_frame.columnconfigure(0, weight=1)
-                            prompt_frame.columnconfigure(1, weight=1)
-                            warning = ttk.Label(prompt_frame, text='Changing pin will reset the count')
-                            warning.grid(columnspan=2, sticky='nsew', padx=5, pady=5)
-                            confirm_button = ttk.Button(prompt_frame, text='Confirm', command=change_and_quit)
-                            confirm_button.grid(row=1, column=0, sticky='e')
-                            stop_button = ttk.Button(prompt_frame, text='Cancel',
-                                                     command=lambda: multifunction(prompt.destroy, item_window.grab_set))
-                            stop_button.grid(row=1, column=1, sticky='w')
-                            prompt.grab_set()
-
+                            if messagebox.askokcancel('Warning', 'Changing pin will reset the count'):
+                                change_and_quit()
                         else:
                             change_and_quit()
 
@@ -197,6 +179,7 @@ class MainWindow:
             name_entry = ttk.Entry(entry_frame, width=30)
             name_entry.grid(row=0, column=0, sticky='nsew', pady=5)
             name_entry.delete(0, tkinter.END)
+            name_entry.focus()
             pin_validation = self.mainWindow.register(pin_validate)
             pin_entry = ttk.Entry(entry_frame, width=2, justify=tkinter.RIGHT, validate='key',
                                   validatecommand=(pin_validation, '%P', '%S'))
