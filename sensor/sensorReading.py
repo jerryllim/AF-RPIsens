@@ -1,5 +1,5 @@
-import afRPIsens.gui.sensorGUI as sensorGUI
-import afRPIsens.sensor.sensorGlobal as sensorGlobal
+import sensor.sensorGUI as sensorGUI
+import sensor.sensorGlobal as sensorGlobal
 import RPi.GPIO as GPIO
 
 
