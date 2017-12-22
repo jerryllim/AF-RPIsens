@@ -1,7 +1,7 @@
 import tkinter
 from tkinter import ttk
 from tkinter import messagebox
-import test.sensorGlobal as sensorGlobal
+import afRPIsens.sensor.sensorGlobal as sensorGlobal
 
 
 class MainWindow:
@@ -213,7 +213,7 @@ class MainWindow:
                 _temp__dict.pop(str(_pin), None)
                 if str(_pin) not in self.count:
                     self.count[str(_pin)] = tkinter.IntVar()
-                    import test.sensorReading as sensorReading
+                    import afRPIsens.sensor.sensorReading as sensorReading
                     sensorReading.RaspberryPiController.pin_setup(_pin)
                 _temp_dict[str(_pin)] = _name
             for key in _temp__dict.keys():
