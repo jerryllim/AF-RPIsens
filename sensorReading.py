@@ -10,15 +10,15 @@ class RaspberryPiController:
         self.mainWindow = sensorGUI.MainWindow(self.dataHandler)
 
         for pin in self.dataHandler.get_pins():
-            GPIO.setup(pin, GPIO.IN)
-            GPIO.add_event_detect(pin, GPIO.RISING, callback=self.pin_triggered)
+            GPIO.setup(int(pin), GPIO.IN)
+            GPIO.add_event_detect(int(pin), GPIO.RISING, callback=self.pin_triggered)
 
         self.mainWindow.start_gui()
 
     def pin_triggered(self, port):
         self.dataHandler.countDict[port] = (self.dataHandler.countDict[port] + 1)
-        self.mainWindow.count[port].set(self.dataHandler.countDict[port])
+        self.mainWindow.count[str(port)].set(self.dataHandler.countDict[port])
 
 
 if __name__ == '__main__':
-    print()
+    RaspberryPiController()
