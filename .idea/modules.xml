@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/AF-RPIsens.iml" filepath="$PROJECT_DIR$/AF-RPIsens.iml" />
+      <module fileurl="file://$PROJECT_DIR$/sensor/sensor.iml" filepath="$PROJECT_DIR$/sensor/sensor.iml" />
     </modules>
   </component>
 </project>
