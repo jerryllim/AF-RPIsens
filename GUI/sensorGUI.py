@@ -1,7 +1,7 @@
 import tkinter
 from tkinter import ttk
 from tkinter import messagebox
-import sensorGlobal
+import Sensor.sensorGlobal as sensorGlobal
 
 
 class MainWindow:
