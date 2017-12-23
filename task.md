@@ -3,5 +3,5 @@
 - [ ] create server program
 - [ ] add send method to client
 - [ ] check open socket -> always open?
-- [ ] RPi sync time method
+- [ ] RPi NTPd: https://raspberrypi.stackexchange.com/questions/24079/how-to-use-ntp-on-raspberry-pi-by-local-ntp-server
 - [ ] add time stamp to signal received, interval width (optional?)
