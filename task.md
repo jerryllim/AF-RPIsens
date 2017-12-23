@@ -1,4 +1,7 @@
-- [ ] add new unique identifier
-- [ ] check debounce time or add individual debounce time
+- [ ] add new unique identifier 
+- [ ] add individual debounce time
 - [ ] create server program
 - [ ] add send method to client
+- [ ] check open socket -> always open?
+- [ ] RPi sync time method
+- [ ] add time stamp to signal received, interval width (optional?)
