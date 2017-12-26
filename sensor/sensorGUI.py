@@ -5,11 +5,11 @@ from collections import OrderedDict
 
 
 class MainWindow:
-    def __init__(self, main_window, r_pi):
+    def __init__(self, root, r_pi):
         self.rPi = r_pi
         self.dataHandler = r_pi.dataHandler
         self.advancedWindow = None
-        self.mainWindow = main_window
+        self.mainWindow = root
         self.mainWindow.title('Sensor Reading')
         self.mainWindow.geometry('-8-200')
         self.mainWindow.minsize(width=500, height=200)
