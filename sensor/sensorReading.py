@@ -23,6 +23,10 @@ class RaspberryPiController:
         GPIO.setup(int(pin), GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
         GPIO.add_event_detect(int(pin), GPIO.RISING, callback=caller.pin_triggered, bouncetime=50)
 
+    @staticmethod
+    def pin_cleanup():
+        GPIO.cleanup()
+
 
 if __name__ == '__main__':
     RaspberryPiController()
