@@ -4,11 +4,11 @@ from tkinter import messagebox
 
 
 class MainWindow:
-    def __init__(self, rpi):
-        self.rpi = rpi
-        self.dataHandler = rpi.dataHandler
+    def __init__(self, main_window, r_pi):
+        # self.rPi = r_pi
+        self.dataHandler = r_pi.dataHandler
         self.advancedWindow = None
-        self.mainWindow = tkinter.Tk()
+        self.mainWindow = main_window
         self.mainWindow.title('Sensor Reading')
         self.mainWindow.geometry('-8-200')
         self.mainWindow.minsize(width=500, height=200)
@@ -16,11 +16,9 @@ class MainWindow:
         self.mainWindow.rowconfigure(0, weight=1)
         self.main_window_frame = ttk.Frame(self.mainWindow)
 
-        # Store the information here as need tkinter package TODO alternative or add tkinter to other package?
         self.count = {}
         for pin_key in self.dataHandler.get_pins():
             _temp = tkinter.IntVar()
-            _temp.set(1)  # TODO to remove
             self.count[pin_key] = _temp
 
         self.main_window_frame.destroy()
@@ -113,9 +111,9 @@ class MainWindow:
 
             def validate_entries():
                 if len(name_entry.get()) == 0:
-                    return 'Please enter the name'
+                    return 'Please enter a name'
                 if len(pin_entry.get()) == 0:
-                    return 'Please enter the connected pin'
+                    return 'Please enter a connected pin'
 
                 for item in tree_view.get_children():
                     if item != iid:
@@ -138,10 +136,6 @@ class MainWindow:
             def change_and_quit():
                 tree_view.item(iid, values=(name_entry.get(), pin_entry.get()))
                 quit_item_window()
-
-            def multifunction(*functions):
-                for f in functions:
-                    f()
 
             def edit_item():
                 msg = validate_entries()
@@ -213,8 +207,8 @@ class MainWindow:
                 _temp__dict.pop(str(_pin), None)
                 if str(_pin) not in self.count:
                     self.count[str(_pin)] = tkinter.IntVar()
-                    import sensor.sensorReading as sensorReading
-                    sensorReading.RaspberryPiController.pin_setup(self.rpi, _pin)
+                    # import sensor.sensorReading as sensorReading
+                    # sensorReading.RaspberryPiController.pin_setup(self.rPi, _pin)
                 _temp_dict[str(_pin)] = _name
             for key in _temp__dict.keys():
                 self.count.pop(key)
@@ -288,6 +282,8 @@ class MainWindow:
 
 
 if __name__ == '__main__':
-    import sensor.sensorReading as sensorReading
-    rpi = sensorReading.RaspberryPiController()
-    MainWindow(rpi).start_gui()
+    import sensor.sensorGlobal as sensorGlobal
+    rPi = sensorGlobal.TempClass(sensorGlobal.DataHandler())
+    mainWindow = tkinter.Tk()
+    MainWindow(mainWindow, rPi).start_gui()
+    tkinter.i

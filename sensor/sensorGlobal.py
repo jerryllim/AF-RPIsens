@@ -6,7 +6,7 @@ class DataHandler:
     sensorDict = OrderedDict()
     countDict = {}
 
-    def __init__(self, file_name='testFile.txt'):  # TODO change default file name
+    def __init__(self, file_name='sensorInfo.json'):  # TODO change default file name
         self.fileName = file_name
         self.load_data()
         self.init_count()
@@ -31,6 +31,11 @@ class DataHandler:
     def init_count(self):
         for _pin, _name in self.sensorDict.items():
             self.countDict[int(_pin)] = 0
+
+
+class TempClass:
+    def __init__(self, data_handler):
+        self.dataHandler = data_handler
 
 
 if __name__ == '__main__':
