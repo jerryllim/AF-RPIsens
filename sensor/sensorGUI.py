@@ -286,4 +286,3 @@ if __name__ == '__main__':
     rPi = sensorGlobal.TempClass(sensorGlobal.DataHandler())
     mainWindow = tkinter.Tk()
     MainWindow(mainWindow, rPi).start_gui()
-    tkinter.i
