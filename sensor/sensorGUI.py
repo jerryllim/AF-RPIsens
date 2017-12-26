@@ -226,14 +226,12 @@ class MainWindow:
 
         def save_configuration():
             _temp_dict = OrderedDict()
-            # import sensor.sensorReading as sensorReading  # TODO need to check if this works
-            # sensorReading.RaspberryPiController.pin_cleanup()
             for iid in tree_view.get_children():
                 s_id, s_name, s_pin, s_bounce = tree_view.item(iid)['values']
                 _temp_dict[s_id] = (s_name, s_pin, s_bounce)
-                # sensorReading.RaspberryPiController.pin_setup(self.rPi, s_pin)
                 if s_id not in self.count:
                     self.count[s_id] = tkinter.IntVar()
+            # self.rPi.reset_pins()  # TODO check if this works
             to_delete = set(_temp_dict.keys()).difference(set(self.count.keys()))
             for key in to_delete:
                 self.count.pop(key)
