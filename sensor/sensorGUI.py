@@ -6,7 +6,7 @@ from collections import OrderedDict
 
 class MainWindow:
     def __init__(self, main_window, r_pi):
-        # self.rPi = r_pi
+        self.rPi = r_pi
         self.dataHandler = r_pi.dataHandler
         self.advancedWindow = None
         self.mainWindow = main_window
@@ -221,19 +221,17 @@ class MainWindow:
             item_window.grab_set()
 
         def save_configuration():
-            _temp__dict = {}
-            _temp__dict.update(self.count)
             _temp_dict = OrderedDict()
+            # import sensor.sensorReading as sensorReading  # TODO need to check if this works
+            # sensorReading.RaspberryPiController.pin_cleanup()
             for iid in tree_view.get_children():
                 s_id, s_name, s_pin, s_bounce = tree_view.item(iid)['values']
-                _temp__dict.pop(s_id, None)
-                # TODO amend so that unique id is used check if pin has changed. If so amend the pin setup
-                if str(_pin) not in self.count:
-                    self.count[str(_pin)] = tkinter.IntVar()
-                    # import sensor.sensorReading as sensorReading
-                    # sensorReading.RaspberryPiController.pin_setup(self.rPi, _pin)
-                _temp_dict[str(_pin)] = _name
-            for key in _temp__dict.keys():
+                _temp_dict[s_id] = (s_name, s_pin, s_bounce)
+                # sensorReading.RaspberryPiController.pin_setup(self.rPi, s_pin)
+                if s_id not in self.count:
+                    self.count[s_id] = tkinter.IntVar()
+            to_delete = set(_temp_dict.keys()).difference(set(self.count.keys()))
+            for key in to_delete:
                 self.count.pop(key)
             self.dataHandler.sensorDict.clear()
             self.dataHandler.sensorDict.update(_temp_dict)
