@@ -1,5 +1,5 @@
 - [x] add new unique identifier 
-- [ ] add individual debounce time
+- [x] add individual debounce time
 - [ ] create server program
 - [ ] add send method to client
 - [x] check open socket -> always open?
