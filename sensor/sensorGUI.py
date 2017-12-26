@@ -1,6 +1,7 @@
 import tkinter
 from tkinter import ttk
 from tkinter import messagebox
+from collections import OrderedDict
 
 
 class MainWindow:
@@ -17,9 +18,9 @@ class MainWindow:
         self.main_window_frame = ttk.Frame(self.mainWindow)
 
         self.count = {}
-        for pin_key in self.dataHandler.get_pins():
+        for id_key in self.dataHandler.get_id():
             _temp = tkinter.IntVar()
-            self.count[pin_key] = _temp
+            self.count[id_key] = _temp
 
         self.main_window_frame.destroy()
         self.main_window_frame = ttk.Frame(self.mainWindow)
@@ -48,16 +49,16 @@ class MainWindow:
             row_frame.columnconfigure(4, weight=1, uniform='equalColumn')
             row_frame.rowconfigure(0, weight=1, minsize=50)
 
-            _pins = self.dataHandler.get_pins()
+            _id_array = self.dataHandler.get_id()
             for index in range(5):
                 temp_frame = ttk.Frame(row_frame, relief=tkinter.RIDGE, borderwidth=2)
                 temp_frame.grid(row=0, column=index, sticky='nsew')
                 loc = index + row*5
-                if loc < len(_pins):
-                    _name = self.dataHandler.sensorDict[_pins[loc]]
+                if loc < len(_id_array):
+                    _name, _pin, _bounce = self.dataHandler.sensorDict[_id_array[loc]]
                     name_label = ttk.Label(temp_frame, text=_name)
                     name_label.pack()
-                    value_label = ttk.Label(temp_frame, textvariable=self.count.get(_pins[loc]))
+                    value_label = ttk.Label(temp_frame, textvariable=self.count.get(_id_array[loc]))
                     value_label.pack()
 
         readings_frame = ttk.Frame(self.main_window_frame)
@@ -95,12 +96,14 @@ class MainWindow:
                 index = tree_view.index(item) + direction
                 tree_view.move(item, '', index)
 
-        # Launch window to add new item to Treeview (Add new sensor)
+        # Launch window to add/edit new item to Treeview (Add new sensor/change sensor properties)
         def launch_item_window(iid=''):
-            def pin_validate(P, S):
-                if len(P) > 2:
+            def key_validate(P, S, W):
+                if W == 'pin' and len(P) > 2:
                     return False
-                elif S.isdigit():
+                elif W == 'bounce' and len(P) > 4:
+                    return False
+                if S.isdigit():
                     return True
                 else:
                     return False
@@ -168,17 +171,34 @@ class MainWindow:
             entry_frame = ttk.Frame(item_window_frame)
             entry_frame.grid(row=0, sticky='nsew', padx=5, pady=5)
             entry_frame.rowconfigure(0, weight=1)
+            entry_frame.rowconfigure(1, weight=1)
             entry_frame.columnconfigure(0, weight=5)
-            entry_frame.columnconfigure(1, weight=1)
+            entry_frame.columnconfigure(1, weight=6)
+            entry_frame.columnconfigure(2, weight=1)
+            entry_frame.columnconfigure(3, weight=2)
+            id_label = ttk.Label(entry_frame, text='Unique ID')
+            id_label.grid(row=0, column=0, sticky='sw')
+            id_entry = ttk.Entry(entry_frame, width=10)
+            id_entry.grid(row=1, column=0, sticky='nsew', pady=5)
+            id_entry.delete(0, tkinter.END)
+            id_entry.focus()
+            name_label = ttk.Label(entry_frame, text='Name')
+            name_label.grid(row=0, column=1, sticky='sw')
             name_entry = ttk.Entry(entry_frame, width=30)
-            name_entry.grid(row=0, column=0, sticky='nsew', pady=5)
+            name_entry.grid(row=1, column=1, sticky='nsew', pady=5)
             name_entry.delete(0, tkinter.END)
-            name_entry.focus()
-            pin_validation = self.mainWindow.register(pin_validate)
+            validation = self.mainWindow.register(key_validate)
+            pin_label = ttk.Label(entry_frame, text='Pin')
+            pin_label.grid(row=0, column=2, sticky='sw')
             pin_entry = ttk.Entry(entry_frame, width=2, justify=tkinter.RIGHT, validate='key',
-                                  validatecommand=(pin_validation, '%P', '%S'))
-            pin_entry.grid(row=0, column=1, sticky='nsew', pady=5)
+                                  validatecommand=(validation, '%P', '%S', 'pin'))
+            pin_entry.grid(row=1, column=2, sticky='nsew', pady=5)
             pin_entry.delete(0, tkinter.END)
+            bounce_label = ttk.Label(entry_frame, text='Debounce')
+            bounce_label.grid(row=0, column=3, sticky='sw')
+            bounce_entry = ttk.Entry(entry_frame, width=4, justify=tkinter.RIGHT, validate='key',
+                                     validatecommand=(validation, '%P', '%S', 'bounce'))
+            bounce_entry.grid(row=1, column=3, sticky='nsew', pady=5)
 
             button_frame = ttk.Frame(item_window_frame)
             button_frame.grid(row=1, padx=5, pady=5)
@@ -186,9 +206,11 @@ class MainWindow:
             if iid != '':
                 _edit_button = ttk.Button(button_frame, text='Edit', command=edit_item)
                 _edit_button.pack(side=tkinter.LEFT)
-                _name, _pin = tree_view.item(iid)['values']
-                name_entry.insert(0, _name)
-                pin_entry.insert(0, _pin)
+                i_id, i_name, i_pin, i_bounce = tree_view.item(iid)['values']
+                id_entry.insert(0, i_id)
+                name_entry.insert(0, i_name)
+                pin_entry.insert(0, i_pin)
+                bounce_entry.insert(0, i_bounce)
             else:
                 _add_button = ttk.Button(button_frame, text='Add', command=add_item)
                 _add_button.pack(side=tkinter.LEFT)
@@ -201,10 +223,11 @@ class MainWindow:
         def save_configuration():
             _temp__dict = {}
             _temp__dict.update(self.count)
-            _temp_dict = {}
+            _temp_dict = OrderedDict()
             for iid in tree_view.get_children():
-                _name, _pin = tree_view.item(iid)['values']
-                _temp__dict.pop(str(_pin), None)
+                s_id, s_name, s_pin, s_bounce = tree_view.item(iid)['values']
+                _temp__dict.pop(s_id, None)
+                # TODO amend so that unique id is used check if pin has changed. If so amend the pin setup
                 if str(_pin) not in self.count:
                     self.count[str(_pin)] = tkinter.IntVar()
                     # import sensor.sensorReading as sensorReading
@@ -246,14 +269,19 @@ class MainWindow:
         tree_view = ttk.Treeview(treeview_frame)
         tree_view.grid(row=0, column=0, sticky='nsew')
         tree_view['show'] = 'headings'
-        tree_view['column'] = ('name', 'pin')
+        tree_view['column'] = ('id', 'name', 'pin', 'bounce')
+        tree_view.heading('id', text='Unique ID')
         tree_view.heading('name', text='Name')
         tree_view.heading('pin', text='Pin')
-        tree_view.column('pin', width=100, anchor=tkinter.E)
+        tree_view.heading('bounce', text='Debounce duration')
+        tree_view.column('id', width=100)
+        tree_view.column('name', width=200)
+        tree_view.column('pin', width=60, anchor=tkinter.E)
+        tree_view.column('bounce', width=60, anchor=tkinter.E)
 
         # Populate Treeview
-        for pin, name in self.dataHandler.sensorDict.items():
-            tree_view.insert('', tkinter.END, values=(name, pin))
+        for _id, (_name, _pin, _bounce) in self.dataHandler.sensorDict.items():
+            tree_view.insert('', tkinter.END, values=(_id, _name, _pin, _bounce))
 
         # Scroll for Treeview
         treeview_vscroll = ttk.Scrollbar(treeview_frame, orient='vertical', command=tree_view.yview)
