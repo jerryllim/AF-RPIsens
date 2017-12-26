@@ -120,7 +120,9 @@ class MainWindow:
 
                 for item in tree_view.get_children():
                     if item != iid:
-                        c_name, c_pin = tree_view.item(item)['values']
+                        c_id, c_name, c_pin, c_bounce = tree_view.item(item)['values']
+                        if c_id == id_entry.get():
+                            return 'Duplicated ID found'
                         if c_name == name_entry.get():
                             return 'Duplicated Name found'
                         if c_pin == int(pin_entry.get()):
@@ -131,22 +133,24 @@ class MainWindow:
             def add_item():
                 msg = validate_entries()
                 if msg is True:
-                    tree_view.insert('', tkinter.END, values=(name_entry.get(), pin_entry.get()))
+                    tree_view.insert('', tkinter.END, values=(id_entry.get(), name_entry.get(), pin_entry.get(),
+                                                              bounce_entry.get()))
                     quit_item_window()
                 else:
                     messagebox.showerror('Error', msg)
 
             def change_and_quit():
-                tree_view.item(iid, values=(name_entry.get(), pin_entry.get()))
+                tree_view.item(iid, values=(id_entry.get(), name_entry.get(), pin_entry.get(),
+                                            bounce_entry.get()))
                 quit_item_window()
 
             def edit_item():
                 msg = validate_entries()
                 if msg is True:
                     if iid != '':
-                        o_name, o_pin = tree_view.item(iid)['values']
-                        if o_pin != int(pin_entry.get()):
-                            if messagebox.askokcancel('Warning', 'Changing pin will reset the count'):
+                        o_id, o_name, o_pin, o_bounce = tree_view.item(iid)['values']
+                        if o_id != id_entry.get():
+                            if messagebox.askokcancel('Warning', 'Changing IDs will reset the count'):
                                 change_and_quit()
                         else:
                             change_and_quit()
