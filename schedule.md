@@ -1,0 +1,2 @@
+- [ ] 29/12 - Complete server and RPi programs
+- [ ] 2/1 - Perform testing on selected machines
