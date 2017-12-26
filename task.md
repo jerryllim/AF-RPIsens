@@ -1,4 +1,4 @@
-- [ ] add new unique identifier 
+- [x] add new unique identifier 
 - [ ] add individual debounce time
 - [ ] create server program
 - [ ] add send method to client
