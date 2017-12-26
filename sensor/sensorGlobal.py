@@ -42,6 +42,12 @@ class DataHandler:
             temp.append(_bounce)
         return temp
 
+    def get_pin_and_bounce(self):
+        temp = []
+        for _id, (_name, _pin, _bounce) in self.sensorDict.items():
+            temp.append((_pin, _bounce))
+        return temp
+
     def get_id(self):
         return list(self.sensorDict.keys())
 

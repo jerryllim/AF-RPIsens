@@ -19,6 +19,11 @@ class RaspberryPiController:
         self.dataHandler.countDict[pin] = (self.dataHandler.countDict[pin] + 1)
         self.mainWindow.count[str(pin)].set(self.dataHandler.countDict[pin])
 
+    def reset_pins(self):
+        RaspberryPiController.pin_cleanup()
+        for pin, bounce in self.dataHandler.get_pin_and_bounce():
+            RaspberryPiController.pin_setup(self, pin, bounce)
+
     @staticmethod
     def pin_setup(caller, pin, bounce=50):
         GPIO.setup(int(pin), GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
