@@ -16,6 +16,7 @@ class DataHandler:
     def save_data(self):
         with open(self.fileName, 'w') as outfile:
             json.dump(self.sensorDict, outfile)
+        self.pinToID = self.list_pin_and_id()
 
     def load_data(self):
         try:
