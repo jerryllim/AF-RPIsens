@@ -17,7 +17,7 @@ class RaspberryPiController:
 
     def pin_triggered(self, pin):
         _id = self.dataHandler.get_id_from_pin(pin)
-        self.dataHandler.countDict[_id] = (self.dataHandler.countDict[_id] + 1)
+        self.dataHandler.countDict.update([_id])
         self.mainWindow.count[_id].set(self.dataHandler.countDict[_id])
 
     def remove_detections(self):

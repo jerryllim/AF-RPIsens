@@ -1,17 +1,18 @@
 import json
 from collections import OrderedDict
+from collections import Counter
 
 
 class DataHandler:
     sensorDict = OrderedDict()
-    countDict = {}
+    countDict = Counter()
     pinToID = {}
 
     def __init__(self, file_name='sensorInfo.json'):
         self.fileName = file_name
         self.load_data()
         self.pinToID = self.list_pin_and_id()
-        self.init_count()
+        # self.init_count()
 
     def save_data(self):
         with open(self.fileName, 'w') as outfile:
