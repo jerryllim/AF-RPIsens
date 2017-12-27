@@ -18,7 +18,7 @@ class DataHandler:
         self.pinToID = self.list_pin_and_id()
         # self.init_count()  # TODO remove if Counter works
 
-    def save_data(self):  # TODO test save method from namedtuple to dictionary
+    def save_data(self):
         with open(self.fileName, 'w') as outfile:
             temp_dict = OrderedDict()
             for unique_id, named_tuple in self.sensorDict.items():
@@ -26,14 +26,13 @@ class DataHandler:
             json.dump(temp_dict, outfile)
         self.pinToID = self.list_pin_and_id()
 
-    def load_data(self):  # TODO test load method using dictionary to namedtuple
+    def load_data(self):
         try:
             with open(self.fileName, 'r') as infile:
                 temp_dict = json.load(infile, object_pairs_hook=OrderedDict)
             for unique_id in temp_dict.keys():
-                temp_info = sensorInfo(**temp_dict[unique_id])
+                temp_info = sensorInfo(**(temp_dict[unique_id]))
                 self.sensorDict[unique_id] = temp_info
-
         except FileNotFoundError:
             pass
 
@@ -87,10 +86,10 @@ if __name__ == '__main__':
     dataHandler = DataHandler()
 
     if True:
-        tempDict1 = {'S001': ("Sensor 1", 23, 50), 'S002': ("Sensor 2", 24, 50), 'S003': ("Sensor 3", 17, 50),
-                     'S004': ("Sensor 4", 27, 50), 'S005': ("Sensor 5", 22, 50), 'S006': ("Sensor 6", 5, 50),
-                     'S007': ("Sensor 7", 6, 50), 'S008': ("Sensor 8", 13, 50), 'S009': ("Sensor 9", 19, 50),
-                     'S010': ("Sensor 10", 26, 50)}
+        tempDict1 = {'S001': sensorInfo("Sensor 1", 23, 50), 'S002': sensorInfo("Sensor 2", 24, 50), 'S003': sensorInfo("Sensor 3", 17, 50),
+                     'S004': sensorInfo("Sensor 4", 27, 50), 'S005': sensorInfo("Sensor 5", 22, 50), 'S006': sensorInfo("Sensor 6", 5, 50),
+                     'S007': sensorInfo("Sensor 7", 6, 50), 'S008': sensorInfo("Sensor 8", 13, 50), 'S009': sensorInfo("Sensor 9", 19, 50),
+                     'S010': sensorInfo("Sensor 10", 26, 50)}
         tempDict2 = OrderedDict()
         for key, value in tempDict1.items():
             tempDict2[key] = value

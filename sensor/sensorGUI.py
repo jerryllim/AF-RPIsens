@@ -2,6 +2,7 @@ import tkinter
 from tkinter import ttk
 from tkinter import messagebox
 from collections import OrderedDict
+from sensor import sensorGlobal
 
 
 class MainWindow:
@@ -228,7 +229,7 @@ class MainWindow:
             _temp_dict = OrderedDict()
             for iid in tree_view.get_children():
                 s_id, s_name, s_pin, s_bounce = tree_view.item(iid)['values']
-                _temp_dict[s_id] = (s_name, s_pin, s_bounce)
+                _temp_dict[s_id] = sensorGlobal.sensorInfo(s_name, s_pin, s_bounce)
                 if s_id not in self.count:
                     self.count[s_id] = tkinter.IntVar()
                     self.dataHandler.countDict[s_id] = 0
@@ -313,7 +314,6 @@ class MainWindow:
 
 
 if __name__ == '__main__':
-    import sensor.sensorGlobal as sensorGlobal
     rPi = sensorGlobal.TempClass(sensorGlobal.DataHandler())
     mainWindow = tkinter.Tk()
     MainWindow(mainWindow, rPi).start_gui()
