@@ -1,6 +1,10 @@
 import json
 from collections import OrderedDict
 from collections import Counter
+from collections import namedtuple
+
+
+sensorInfo = namedtuple('sensorInfo', ['name', 'pin', 'bounce'])
 
 
 class DataHandler:
@@ -12,36 +16,43 @@ class DataHandler:
         self.fileName = file_name
         self.load_data()
         self.pinToID = self.list_pin_and_id()
-        # self.init_count()
+        # self.init_count()  # TODO remove if Counter works
 
-    def save_data(self):
+    def save_data(self):  # TODO test save method from namedtuple to dictionary
         with open(self.fileName, 'w') as outfile:
-            json.dump(self.sensorDict, outfile)
+            temp_dict = OrderedDict()
+            for unique_id, named_tuple in self.sensorDict.items():
+                temp_dict[unique_id] = named_tuple._asdict()
+            json.dump(temp_dict, outfile)
         self.pinToID = self.list_pin_and_id()
 
-    def load_data(self):
+    def load_data(self):  # TODO test load method using dictionary to namedtuple
         try:
             with open(self.fileName, 'r') as infile:
-                self.sensorDict = json.load(infile, object_pairs_hook=OrderedDict)
+                temp_dict = json.load(infile, object_pairs_hook=OrderedDict)
+            for unique_id in temp_dict.keys():
+                temp_info = sensorInfo(**temp_dict[unique_id])
+                self.sensorDict[unique_id] = temp_info
+
         except FileNotFoundError:
             pass
 
     def get_pins(self):
         temp = []
-        for _id, (_name, _pin, _bounce) in self.sensorDict.items():
-            temp.append(_pin)
+        for _id in self.sensorDict.keys():
+            temp.append(self.sensorDict[_id].pin)
         return temp
 
     def get_names(self):
         temp = []
-        for _id, (_name, _pin, _bounce) in self.sensorDict.items():
-            temp.append(_name)
+        for _id in self.sensorDict.keys():
+            temp.append(self.sensorDict[_id].name)
         return temp
 
     def get_bounce(self):
         temp = []
-        for _id, (_name, _pin, _bounce) in self.sensorDict.items():
-            temp.append(_bounce)
+        for _id in self.sensorDict.keys():
+            temp.append(self.sensorDict[_id].bounce)
         return temp
 
     def get_pin_and_bounce(self):
@@ -62,7 +73,7 @@ class DataHandler:
     def get_id_from_pin(self, _pin):
         return self.pinToID[_pin]
 
-    def init_count(self):
+    def init_count(self):  # TODO remove when Counter works
         for _id, _value in self.sensorDict.items():
             self.countDict[_id] = 0
 
