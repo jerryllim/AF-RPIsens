@@ -1,7 +1,7 @@
 import sensor.sensorGUI as sensorGUI
 import sensor.sensorGlobal as sensorGlobal
 import RPi.GPIO as GPIO
-import tkinter  # TODO remove when not needed
+import warnings
 
 
 class RaspberryPiController:
@@ -21,7 +21,6 @@ class RaspberryPiController:
         self.mainWindow.count[_id].set(self.dataHandler.countDict[_id])
 
     def reset_pins(self):
-        RaspberryPiController.pin_cleanup()
         for pin, bounce in self.dataHandler.get_pin_and_bounce():
             RaspberryPiController.pin_setup(self, pin, bounce)
 
@@ -32,9 +31,10 @@ class RaspberryPiController:
 
     @staticmethod
     def pin_cleanup():
-        GPIO.cleanup()
-
-
-if __name__ == '__main__':
-    Root = tkinter.Tk()  # TODO try script
-    RaspberryPiController(Root)
+        warnings.filterwarnings('error', RuntimeWarning)
+        try:
+            GPIO.cleanup()
+        except RuntimeWarning:
+            print('Nothing to clean up')
+        finally:
+            warnings.resetwarnings()
