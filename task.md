@@ -1,7 +1,8 @@
-- [ ] add new unique identifier 
-- [ ] add individual debounce time
+- [x] add new unique identifier 
+- [x] add individual debounce time
+- [ ] check debounce problem
 - [ ] create server program
 - [ ] add send method to client
-- [ ] check open socket -> always open?
+- [x] check open socket -> always open
 - [ ] RPi NTPd: https://raspberrypi.stackexchange.com/questions/24079/how-to-use-ntp-on-raspberry-pi-by-local-ntp-server
 - [ ] add time stamp to signal received, interval width (optional?)
