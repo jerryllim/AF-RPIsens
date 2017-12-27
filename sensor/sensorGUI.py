@@ -33,7 +33,7 @@ class MainWindow:
         button_frame.grid(row=1, column=0, padx=5, pady=5)
         advanced_button = ttk.Button(button_frame, text='Advanced', command=self.launch_advanced_window)
         advanced_button.pack(side=tkinter.LEFT)
-        quit_button = ttk.Button(button_frame, text='Quit', command=self.mainWindow.quit)
+        quit_button = ttk.Button(button_frame, text='Quit', command=self.mainWindow.destroy)
         quit_button.pack(side=tkinter.LEFT)
 
         self.draw_reading_rows()
