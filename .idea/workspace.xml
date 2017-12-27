@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="8c4eab11-9431-48ea-8992-fef6a6e722be" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/sensor/sensorGlobal.py" afterPath="$PROJECT_DIR$/sensor/sensorGlobal.py" />
+      <change beforePath="$PROJECT_DIR$/sensor/sensorGUI.py" afterPath="$PROJECT_DIR$/sensor/sensorGUI.py" />
+      <change beforePath="$PROJECT_DIR$/sensor/sensorReading.py" afterPath="$PROJECT_DIR$/sensor/sensorReading.py" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -17,8 +18,8 @@
       <file leaf-file-name="sensorGUI.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/sensor/sensorGUI.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="312">
-              <caret line="233" column="14" lean-forward="true" selection-start-line="233" selection-start-column="14" selection-end-line="233" selection-end-column="14" />
+            <state relative-caret-position="132">
+              <caret line="221" column="94" lean-forward="true" selection-start-line="221" selection-start-column="94" selection-end-line="221" selection-end-column="94" />
               <folding>
                 <element signature="e#0#14#0" expanded="true" />
               </folding>
@@ -26,11 +27,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="sensorReading.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="sensorReading.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/sensor/sensorReading.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="208">
-              <caret line="18" column="50" lean-forward="false" selection-start-line="18" selection-start-column="47" selection-end-line="18" selection-end-column="50" />
+            <state relative-caret-position="132">
+              <caret line="17" column="33" lean-forward="true" selection-start-line="17" selection-start-column="33" selection-end-line="17" selection-end-column="33" />
               <folding>
                 <element signature="e#0#36#0" expanded="true" />
               </folding>
@@ -38,11 +39,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="sensorGlobal.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="sensorGlobal.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/sensor/sensorGlobal.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="187">
-              <caret line="18" column="45" lean-forward="false" selection-start-line="18" selection-start-column="45" selection-end-line="18" selection-end-column="45" />
+            <state relative-caret-position="172">
+              <caret line="17" column="47" lean-forward="true" selection-start-line="17" selection-start-column="47" selection-end-line="17" selection-end-column="47" />
               <folding>
                 <element signature="e#0#11#0" expanded="true" />
               </folding>
@@ -105,8 +106,8 @@
         <option value="$PROJECT_DIR$/gui/sensorGUI.py" />
         <option value="$PROJECT_DIR$/runScript.py" />
         <option value="$PROJECT_DIR$/sensor/sensorGUI.py" />
-        <option value="$PROJECT_DIR$/sensor/sensorReading.py" />
         <option value="$PROJECT_DIR$/sensor/sensorGlobal.py" />
+        <option value="$PROJECT_DIR$/sensor/sensorReading.py" />
       </list>
     </option>
   </component>
@@ -668,26 +669,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sensor/sensorGUI.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="312">
-          <caret line="233" column="14" lean-forward="true" selection-start-line="233" selection-start-column="14" selection-end-line="233" selection-end-column="14" />
-          <folding>
-            <element signature="e#0#14#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sensor/sensorReading.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="208">
-          <caret line="18" column="50" lean-forward="false" selection-start-line="18" selection-start-column="47" selection-end-line="18" selection-end-column="50" />
-          <folding>
-            <element signature="e#0#36#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/runScript.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="105">
@@ -700,10 +681,30 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/sensor/sensorGlobal.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="187">
-          <caret line="18" column="45" lean-forward="false" selection-start-line="18" selection-start-column="45" selection-end-line="18" selection-end-column="45" />
+        <state relative-caret-position="172">
+          <caret line="17" column="47" lean-forward="true" selection-start-line="17" selection-start-column="47" selection-end-line="17" selection-end-column="47" />
           <folding>
             <element signature="e#0#11#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sensor/sensorGUI.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="132">
+          <caret line="221" column="94" lean-forward="true" selection-start-line="221" selection-start-column="94" selection-end-line="221" selection-end-column="94" />
+          <folding>
+            <element signature="e#0#14#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sensor/sensorReading.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="132">
+          <caret line="17" column="33" lean-forward="true" selection-start-line="17" selection-start-column="33" selection-end-line="17" selection-end-column="33" />
+          <folding>
+            <element signature="e#0#36#0" expanded="true" />
           </folding>
         </state>
       </provider>

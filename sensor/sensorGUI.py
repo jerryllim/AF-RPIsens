@@ -231,13 +231,13 @@ class MainWindow:
                 _temp_dict[s_id] = (s_name, s_pin, s_bounce)
                 if s_id not in self.count:
                     self.count[s_id] = tkinter.IntVar()
-            # self.rPi.reset_pins()  # TODO check if this works
             to_delete = set(_temp_dict.keys()).difference(set(self.count.keys()))
             for key in to_delete:
                 self.count.pop(key)
             self.dataHandler.sensorDict.clear()
             self.dataHandler.sensorDict.update(_temp_dict)
             self.dataHandler.save_data()
+            # self.rPi.reset_pins()  # TODO check if this works
             quit_advanced_window()
 
         self.advancedWindow = tkinter.Toplevel(self.mainWindow)

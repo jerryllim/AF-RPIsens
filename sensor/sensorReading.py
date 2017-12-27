@@ -21,6 +21,12 @@ class RaspberryPiController:
         self.mainWindow.count[_id].set(self.dataHandler.countDict[_id])
 
     def reset_pins(self):
+        warnings.filterwarnings('ignore', '.*clean up.*', RuntimeWarning)
+        try:
+            self.pin_cleanup()
+        finally:
+            warnings.resetwarnings()
+        GPIO.setmode(GPIO.BCM)
         for pin, bounce in self.dataHandler.get_pin_and_bounce():
             RaspberryPiController.pin_setup(self, pin, bounce)
 
@@ -31,10 +37,4 @@ class RaspberryPiController:
 
     @staticmethod
     def pin_cleanup():
-        warnings.filterwarnings('error', RuntimeWarning)
-        try:
-            GPIO.cleanup()
-        except RuntimeWarning:
-            print('Nothing to clean up')
-        finally:
-            warnings.resetwarnings()
+        GPIO.cleanup()
