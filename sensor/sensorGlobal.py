@@ -57,8 +57,8 @@ class DataHandler:
             temp[_pin] = _id
         return temp
 
-    def get_id_from_pin(self, pin):
-        return self.pinToID[pin]
+    def get_id_from_pin(self, _pin):
+        return self.pinToID[_pin]
 
     def init_count(self):
         for _id, _value in self.sensorDict.items():
@@ -90,5 +90,5 @@ if __name__ == '__main__':
         print(dataHandler.get_pins())
 
     if False:
-        for pin in dataHandler.countDict.keys():
-            print('{} is of type {}'.format(pin, type(pin)))
+        for a_pin in dataHandler.countDict.keys():
+            print('{} is of type {}'.format(a_pin, type(a_pin)))

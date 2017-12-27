@@ -10,14 +10,15 @@ class RaspberryPiController:
         self.dataHandler = sensorGlobal.DataHandler()
         self.mainWindow = sensorGUI.MainWindow(root, self)
 
-        for pin in self.dataHandler.get_pins():
-            RaspberryPiController.pin_setup(self, pin)
+        for pin, bounce in self.dataHandler.get_pin_and_bounce():
+            RaspberryPiController.pin_setup(self, pin, bounce)
 
         self.mainWindow.start_gui()
 
     def pin_triggered(self, pin):
-        self.dataHandler.countDict[pin] = (self.dataHandler.countDict[pin] + 1)
-        self.mainWindow.count[str(pin)].set(self.dataHandler.countDict[pin])
+        _id = self.dataHandler.get_id_from_pin(pin)
+        self.dataHandler.countDict[_id] = (self.dataHandler.countDict[_id] + 1)
+        self.mainWindow.count[_id].set(self.dataHandler.countDict[_id])
 
     def reset_pins(self):
         RaspberryPiController.pin_cleanup()
