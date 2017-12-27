@@ -234,10 +234,11 @@ class MainWindow:
             to_delete = set(_temp_dict.keys()).difference(set(self.count.keys()))
             for key in to_delete:
                 self.count.pop(key)
+            # self.rPi.remove_detections()
             self.dataHandler.sensorDict.clear()
             self.dataHandler.sensorDict.update(_temp_dict)
             self.dataHandler.save_data()
-            # self.rPi.reset_pins()  # TODO check if this works
+            # self.rPi.reset_pins()  # TODO uncomment in RPi
             quit_advanced_window()
 
         self.advancedWindow = tkinter.Toplevel(self.mainWindow)

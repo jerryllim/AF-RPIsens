@@ -20,6 +20,10 @@ class RaspberryPiController:
         self.dataHandler.countDict[_id] = (self.dataHandler.countDict[_id] + 1)
         self.mainWindow.count[_id].set(self.dataHandler.countDict[_id])
 
+    def remove_detections(self):
+        for pin, bounce in self.dataHandler.get_pin_and_bounce():
+            GPIO.remove_event_detect(int(pin))
+
     def reset_pins(self):
         warnings.filterwarnings('ignore', '.*clean up.*', RuntimeWarning)
         try:
