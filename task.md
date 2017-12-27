@@ -1,10 +1,11 @@
+# Tasks
 - [x] add new unique identifier 
 - [x] add individual debounce time
 - [ ] check debounce problem
 - [ ] create server program
 - [ ] add send method to client
-- [x] check open socket -> always open
+- [x] check open socket -> **always open**
 - [ ] RPi NTPd: https://raspberrypi.stackexchange.com/questions/24079/how-to-use-ntp-on-raspberry-pi-by-local-ntp-server
 - [ ] add time stamp to signal received, interval width (optional?)
 - [ ] add namedtuple for easier reading? *share named tuple between server and client?*
-- [ ] change count dict to collection.Counter
+- [x] change count dict to collection.Counter -> **To be tested**
