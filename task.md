@@ -7,5 +7,5 @@
 - [x] check open socket -> **always open**
 - [ ] RPi NTPd: https://raspberrypi.stackexchange.com/questions/24079/how-to-use-ntp-on-raspberry-pi-by-local-ntp-server
 - [ ] add time stamp to signal received, interval width (optional?)
-- [x] add namedtuple for easier reading? *share named tuple between server and client?* **To be tested**
+- [x] add namedtuple for easier reading? *share named tuple between server and client?* -> **To be tested**
 - [x] change count dict to collection.Counter -> **To be tested**
