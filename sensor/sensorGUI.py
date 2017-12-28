@@ -5,6 +5,11 @@ from collections import OrderedDict
 from sensor import sensorGlobal
 
 
+def multi_func(*fs):
+    for f in fs:
+        f()
+
+
 class MainWindow:
     def __init__(self, root, r_pi):
         self.rPi = r_pi
@@ -34,7 +39,9 @@ class MainWindow:
         button_frame.grid(row=1, column=0, padx=5, pady=5)
         advanced_button = ttk.Button(button_frame, text='Advanced', command=self.launch_advanced_window)
         advanced_button.pack(side=tkinter.LEFT)
-        quit_button = ttk.Button(button_frame, text='Quit', command=self.mainWindow.destroy)
+        # TODO is this the best way to quit and destroy?
+        quit_button = ttk.Button(button_frame, text='Quit',
+                                 command=lambda: multi_func(self.mainWindow.quit, self.mainWindow.destroy))
         quit_button.pack(side=tkinter.LEFT)
 
         self.draw_reading_rows()
