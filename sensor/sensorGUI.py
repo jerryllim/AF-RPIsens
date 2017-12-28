@@ -248,7 +248,7 @@ class MainWindow:
             self.dataHandler.sensorDict.clear()
             self.dataHandler.sensorDict.update(_temp_dict)
             self.dataHandler.save_data()
-            # self.rPi.reset_pins()  # TODO uncomment in RPi
+            # self.rPi.reset_pins()  # RPi uncomment here TODO remove when using pigpio?
             quit_advanced_window()
 
         self.advancedWindow = tkinter.Toplevel(self.mainWindow)

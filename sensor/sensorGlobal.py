@@ -16,7 +16,6 @@ class DataHandler:
         self.fileName = file_name
         self.load_data()
         self.pinToID = self.list_pin_and_id()
-        # self.init_count()  # TODO remove if Counter works
 
     def save_data(self):
         with open(self.fileName, 'w') as outfile:
@@ -72,12 +71,8 @@ class DataHandler:
     def get_id_from_pin(self, _pin):
         return self.pinToID[_pin]
 
-    def init_count(self):  # TODO remove when Counter works
-        for _id, _value in self.sensorDict.items():
-            self.countDict[_id] = 0
 
-
-class TempClass:
+class TempClass:  # Used for internal testing TODO remove once not needed
     def __init__(self, data_handler):
         self.dataHandler = data_handler
 
