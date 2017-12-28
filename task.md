@@ -9,3 +9,6 @@
 - [ ] add time stamp to signal received, interval width (optional?)
 - [x] added namedtuple for easier reading *share named tuple between server and client?* 
 - [x] change count dict to collection.Counter -> **To be tested**
+- [x] add log.txt for log purposes
+- [ ] add timer options
+- [x] add terminal listbox to contain reply data
