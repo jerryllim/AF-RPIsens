@@ -12,3 +12,4 @@
 - [x] add log.txt for log purposes
 - [ ] add timer options
 - [x] add terminal listbox to contain reply data
+- [ ] change RPi.GPIO to pigpio
