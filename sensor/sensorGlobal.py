@@ -1,47 +1,93 @@
 import json
 from collections import OrderedDict
+from collections import Counter
+from collections import namedtuple
+
+
+sensorInfo = namedtuple('sensorInfo', ['name', 'pin', 'bounce'])
 
 
 class DataHandler:
     sensorDict = OrderedDict()
-    countDict = {}
+    countDict = Counter()
+    pinToID = {}
 
-    def __init__(self, file_name='testFile.txt'):  # TODO change default file name
+    def __init__(self, file_name='sensorInfo.json'):
         self.fileName = file_name
         self.load_data()
-        self.init_count()
+        self.pinToID = self.list_pin_and_id()
 
     def save_data(self):
         with open(self.fileName, 'w') as outfile:
-            json.dump(self.sensorDict, outfile)
+            temp_dict = OrderedDict()
+            for unique_id, named_tuple in self.sensorDict.items():
+                temp_dict[unique_id] = named_tuple._asdict()
+            json.dump(temp_dict, outfile)
+        self.pinToID = self.list_pin_and_id()
 
     def load_data(self):
         try:
             with open(self.fileName, 'r') as infile:
-                self.sensorDict = json.load(infile, object_pairs_hook=OrderedDict)
+                temp_dict = json.load(infile, object_pairs_hook=OrderedDict)
+            for unique_id in temp_dict.keys():
+                temp_info = sensorInfo(**(temp_dict[unique_id]))
+                self.sensorDict[unique_id] = temp_info
         except FileNotFoundError:
             pass
 
     def get_pins(self):
-        return list(self.sensorDict.keys())
+        temp = []
+        for _id in self.sensorDict.keys():
+            temp.append(self.sensorDict[_id].pin)
+        return temp
 
     def get_names(self):
-        return list(self.sensorDict.values())
+        temp = []
+        for _id in self.sensorDict.keys():
+            temp.append(self.sensorDict[_id].name)
+        return temp
 
-    def init_count(self):
-        for _pin, _name in self.sensorDict.items():
-            self.countDict[int(_pin)] = 0
+    def get_bounce(self):
+        temp = []
+        for _id in self.sensorDict.keys():
+            temp.append(self.sensorDict[_id].bounce)
+        return temp
+
+    def get_pin_and_bounce(self):
+        temp = []
+        for _id, (_name, _pin, _bounce) in self.sensorDict.items():
+            temp.append((_pin, _bounce))
+        return temp
+
+    def get_id(self):
+        return list(self.sensorDict.keys())
+
+    def list_pin_and_id(self):
+        temp = {}
+        for _id, (_name, _pin, _bounce) in self.sensorDict.items():
+            temp[_pin] = _id
+        return temp
+
+    def get_id_from_pin(self, _pin):
+        return self.pinToID[_pin]
+
+
+class TempClass:  # Used for internal testing TODO remove once not needed
+    def __init__(self, data_handler):
+        self.dataHandler = data_handler
 
 
 if __name__ == '__main__':
     dataHandler = DataHandler()
 
     if True:
-        tempDict1 = {"Sensor 1": 23, "Sensor 2": 24, "Sensor 3": 17, "Sensor 4": 27, "Sensor 5": 22, "Sensor 6": 5,
-                     "Sensor 7": 6, "Sensor 8": 12, "Sensor 9": 19, "Sensor 10": 26}
+        tempDict1 = {'S001': sensorInfo("Sensor 1", 23, 50), 'S002': sensorInfo("Sensor 2", 24, 50), 'S003': sensorInfo("Sensor 3", 17, 50),
+                     'S004': sensorInfo("Sensor 4", 27, 50), 'S005': sensorInfo("Sensor 5", 22, 50), 'S006': sensorInfo("Sensor 6", 5, 50),
+                     'S007': sensorInfo("Sensor 7", 6, 50), 'S008': sensorInfo("Sensor 8", 13, 50), 'S009': sensorInfo("Sensor 9", 19, 50),
+                     'S010': sensorInfo("Sensor 10", 26, 50)}
         tempDict2 = OrderedDict()
-        for name, pin in tempDict1.items():
-            tempDict2[pin] = name
+        for key, value in tempDict1.items():
+            tempDict2[key] = value
 
         dataHandler.sensorDict.clear()
         dataHandler.sensorDict.update(tempDict2)
@@ -51,5 +97,5 @@ if __name__ == '__main__':
         print(dataHandler.get_pins())
 
     if False:
-        for pin in dataHandler.countDict.keys():
-            print('{} is of type {}'.format(pin, type(pin)))
+        for a_pin in dataHandler.countDict.keys():
+            print('{} is of type {}'.format(a_pin, type(a_pin)))
