@@ -29,8 +29,8 @@ class RaspberryPiController:
         for pin, bounce in self.dataHandler.get_pin_and_bounce_list():
             RaspberryPiController.pin_setup(self, pin, bounce)
 
-    def pin_setup(self, pin, bounce=30000):
+    def pin_setup(self, pin, bounce=300):
         self.pi.set_mode(pin, pigpio.INPUT)
         self.pi.set_pull_up_down(pin, pigpio.PUD_DOWN)
-        self.pi.set_glitch_filter(pin, bounce)
+        self.pi.set_glitch_filter(pin, (bounce * 1000))
         self.callbacks.append(self.pi.callback(pin, pigpio.RISING_EDGE, self.pin_triggered))

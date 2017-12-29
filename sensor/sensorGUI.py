@@ -109,7 +109,7 @@ class MainWindow:
             def key_validate(P, S, W):
                 if W == 'pin' and len(P) > 2:
                     return False
-                elif W == 'bounce' and len(P) > 4:
+                elif W == 'bounce' and len(P) > 3:
                     return False
                 if S.isdigit():
                     return True
@@ -121,22 +121,32 @@ class MainWindow:
                 advanced_window_frame.grab_set()
 
             def validate_entries():
+                messages = []
+                if len(id_entry.get()) == 0:
+                    messages.append('Please enter an ID.')
                 if len(name_entry.get()) == 0:
-                    return 'Please enter a name'
+                    messages.append('Please enter a Name.')
                 if len(pin_entry.get()) == 0:
-                    return 'Please enter a connected pin'
+                    messages.append('Please enter a Pin number.')
+                if len(bounce_entry.get()) == 0:
+                    messages.append('Please enter debounce time between 0 and 300 (ms).')
+                elif not (0 <= int(bounce_entry.get()) <= 300):
+                    messages.append('Please enter debounce time between 0 and 300 (ms).')
 
                 for item in tree_view.get_children():
                     if item != iid:
                         c_id, c_name, c_pin, c_bounce = tree_view.item(item)['values']
                         if c_id == id_entry.get():
-                            return 'Duplicated ID found'
+                            messages.append('Duplicated ID found.')
                         if c_name == name_entry.get():
-                            return 'Duplicated Name found'
-                        if c_pin == int(pin_entry.get()):
-                            return 'Duplicated Pin found'
+                            messages.append('Duplicated Name found.')
+                        if str(c_pin) == pin_entry.get():
+                            messages.append('Duplicated Pin found.')
 
-                return True
+                if messages:
+                    return '\n'.join(messages)
+                else:
+                    return True
 
             def add_item():
                 msg = validate_entries()
@@ -282,11 +292,11 @@ class MainWindow:
         tree_view.heading('id', text='Unique ID')
         tree_view.heading('name', text='Name')
         tree_view.heading('pin', text='Pin')
-        tree_view.heading('bounce', text='Debounce duration')
+        tree_view.heading('bounce', text='Debounce')
         tree_view.column('id', width=100)
         tree_view.column('name', width=200)
         tree_view.column('pin', width=60, anchor=tkinter.E)
-        tree_view.column('bounce', width=60, anchor=tkinter.E)
+        tree_view.column('bounce', width=70, anchor=tkinter.E)
 
         # Populate Treeview
         for _id, (_name, _pin, _bounce) in self.dataHandler.get_sensorDict_items():
