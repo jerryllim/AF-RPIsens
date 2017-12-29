@@ -129,7 +129,7 @@ class MainGUI:
 
             def quit_item_window():
                 item_window.destroy()
-                advanced_window_frame.grab_set()
+                pin_config_frame.grab_set()
 
             def validate_entries():
                 messages = []
@@ -280,15 +280,15 @@ class MainGUI:
             self.pinConfigWindow.columnconfigure(0, weight=1)
             self.pinConfigWindow.rowconfigure(0, weight=1)
             self.pinConfigWindow.protocol('WM_DELETE_WINDOW', quit_window)
-            advanced_window_frame = ttk.Frame(self.pinConfigWindow)
-            advanced_window_frame.grid(sticky='nsew')
-            advanced_window_frame.columnconfigure(0, weight=10)
-            advanced_window_frame.columnconfigure(1, weight=1)
-            advanced_window_frame.rowconfigure(0, weight=5)
-            advanced_window_frame.rowconfigure(1, weight=1)
+            pin_config_frame = ttk.Frame(self.pinConfigWindow)
+            pin_config_frame.grid(sticky='nsew')
+            pin_config_frame.columnconfigure(0, weight=10)
+            pin_config_frame.columnconfigure(1, weight=1)
+            pin_config_frame.rowconfigure(0, weight=5)
+            pin_config_frame.rowconfigure(1, weight=1)
 
             # Bottom Buttons
-            bottom_button_frame = ttk.Frame(advanced_window_frame)
+            bottom_button_frame = ttk.Frame(pin_config_frame)
             bottom_button_frame.grid(row=2, column=1, padx=5, pady=5)
             save_button = ttk.Button(bottom_button_frame, text='Save', command=save_configuration)
             save_button.pack(side=tkinter.LEFT)
@@ -296,7 +296,7 @@ class MainGUI:
             cancel_button.pack(side=tkinter.LEFT)
 
             # Treeview
-            treeview_frame = ttk.Frame(advanced_window_frame)
+            treeview_frame = ttk.Frame(pin_config_frame)
             treeview_frame.grid(row=0, column=0, rowspan=3, sticky='nsew', padx=5, pady=5)
             treeview_frame.rowconfigure(0, weight=1)
             treeview_frame.columnconfigure(0, weight=10)
@@ -324,7 +324,7 @@ class MainGUI:
             tree_view.configure(yscrollcommand=treeview_vscroll.set)
 
             # Add & Delete buttons
-            top_button_frame = ttk.Frame(advanced_window_frame)
+            top_button_frame = ttk.Frame(pin_config_frame)
             top_button_frame.grid(row=0, column=1, padx=5, pady=5)
             add_button = ttk.Button(top_button_frame, text='Add', command=launch_item_window)
             add_button.pack()
@@ -334,7 +334,7 @@ class MainGUI:
             delete_button.pack()
 
             # Move up & down buttons
-            middle_button_frame = ttk.Frame(advanced_window_frame)
+            middle_button_frame = ttk.Frame(pin_config_frame)
             middle_button_frame.grid(row=1, column=1, padx=5, pady=5)
             up_button = ttk.Button(middle_button_frame, text=u'\u25B2', command=lambda: move_item(-1))
             up_button.pack(side=tkinter.RIGHT)
@@ -347,7 +347,7 @@ class MainGUI:
         def quit_window():
             self.networkSettWindow.destroy()
             self.networkSettWindow = None
-            
+
         if self.networkSettWindow is not None:
             self.networkSettWindow.lift()
         else:
@@ -357,8 +357,8 @@ class MainGUI:
             self.networkSettWindow.columnconfigure(0, weight=1)
             self.networkSettWindow.rowconfigure(0, weight=1)
             self.networkSettWindow.protocol('WM_DELETE_WINDOW', quit_window)
-
-
+            network_sett_frame = ttk.Frame(self.networkSettWindow)
+            network_sett_frame.grid(sticky='nsew')
 
 
 if __name__ == '__main__':

@@ -19,8 +19,8 @@
           <file leaf-file-name="sensorGUI.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/sensor/sensorGUI.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="1334">
-                  <caret line="345" column="55" lean-forward="false" selection-start-line="345" selection-start-column="55" selection-end-line="345" selection-end-column="55" />
+                <state relative-caret-position="194">
+                  <caret line="288" column="0" lean-forward="true" selection-start-line="288" selection-start-column="0" selection-end-line="288" selection-end-column="0" />
                   <folding>
                     <element signature="e#0#14#0" expanded="true" />
                   </folding>
@@ -59,8 +59,8 @@
           <file leaf-file-name="sensorGUI.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/sensor/sensorGUI.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="20">
-                  <caret line="349" column="12" lean-forward="false" selection-start-line="349" selection-start-column="12" selection-end-line="349" selection-end-column="12" />
+                <state relative-caret-position="101">
+                  <caret line="360" column="50" lean-forward="false" selection-start-line="360" selection-start-column="50" selection-end-line="360" selection-end-column="50" />
                   <folding>
                     <element signature="e#0#14#0" expanded="true" />
                   </folding>
@@ -108,6 +108,8 @@
       <find>quit</find>
       <find>quit_window</find>
       <find>cancel</find>
+      <find>advanced</find>
+      <find>pin_config</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -851,14 +853,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/task.md">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="135">
-          <caret line="9" column="72" lean-forward="false" selection-start-line="9" selection-start-column="72" selection-end-line="9" selection-end-column="72" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/sensor/sensorReading.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="150">
@@ -879,10 +873,18 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/task.md">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="135">
+          <caret line="9" column="72" lean-forward="false" selection-start-line="9" selection-start-column="72" selection-end-line="9" selection-end-column="72" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/sensor/sensorGUI.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="20">
-          <caret line="349" column="12" lean-forward="false" selection-start-line="349" selection-start-column="12" selection-end-line="349" selection-end-column="12" />
+        <state relative-caret-position="101">
+          <caret line="360" column="50" lean-forward="false" selection-start-line="360" selection-start-column="50" selection-end-line="360" selection-end-column="50" />
           <folding>
             <element signature="e#0#14#0" expanded="true" />
           </folding>
