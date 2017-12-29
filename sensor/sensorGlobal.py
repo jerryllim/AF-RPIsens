@@ -35,31 +35,31 @@ class DataHandler:
         except FileNotFoundError:
             pass
 
-    def get_pins(self):
+    def get_pins_list(self):
         temp = []
         for _id in self.sensorDict.keys():
             temp.append(self.sensorDict[_id].pin)
         return temp
 
-    def get_names(self):
+    def get_names_list(self):
         temp = []
         for _id in self.sensorDict.keys():
             temp.append(self.sensorDict[_id].name)
         return temp
 
-    def get_bounce(self):
+    def get_bounce_list(self):
         temp = []
         for _id in self.sensorDict.keys():
             temp.append(self.sensorDict[_id].bounce)
         return temp
 
-    def get_pin_and_bounce(self):
+    def get_pin_and_bounce_list(self):
         temp = []
         for _id, (_name, _pin, _bounce) in self.sensorDict.items():
             temp.append((_pin, _bounce))
         return temp
 
-    def get_id(self):
+    def get_id_list(self):
         return list(self.sensorDict.keys())
 
     def list_pin_and_id(self):
@@ -70,6 +70,25 @@ class DataHandler:
 
     def get_id_from_pin(self, _pin):
         return self.pinToID[_pin]
+
+    def reset_sensorDict(self, dictionary):
+        self.sensorDict.clear()
+        self.sensorDict.update(dictionary)
+
+    def get_sensorDict_items(self):
+        return self.sensorDict.items()
+
+    def get_sensorDict_item(self, _id):
+        return self.sensorDict[_id]
+
+    def set_countDict_item(self, _id, count):
+        self.countDict[_id] = count
+
+    def get_countDict_item(self, _id):
+        return self.countDict[_id]
+
+    def del_countDict_item(self, _id):
+        del self.countDict[_id]
 
 
 class TempClass:  # Used for internal testing TODO remove once not needed
@@ -93,8 +112,8 @@ if __name__ == '__main__':
         dataHandler.sensorDict.update(tempDict2)
         dataHandler.save_data()
 
-        print(dataHandler.get_names())
-        print(dataHandler.get_pins())
+        print(dataHandler.get_names_list())
+        print(dataHandler.get_pins_list())
 
     if False:
         for a_pin in dataHandler.countDict.keys():

@@ -11,9 +11,9 @@ def multi_func(*fs):
 
 
 class MainWindow:
-    def __init__(self, root, r_pi):
-        self.rPi = r_pi
-        self.dataHandler = r_pi.dataHandler
+    def __init__(self, root, r_pi_controller):
+        self.rPiController = r_pi_controller
+        self.dataHandler = r_pi_controller.dataHandler
         self.advancedWindow = None
         self.mainWindow = root
         self.mainWindow.title('Sensor Reading')
@@ -24,7 +24,7 @@ class MainWindow:
         self.main_window_frame = ttk.Frame(self.mainWindow)
 
         self.count = {}
-        for id_key in self.dataHandler.get_id():
+        for id_key in self.dataHandler.get_id_list():
             _temp = tkinter.IntVar()
             self.count[id_key] = _temp
 
@@ -57,13 +57,13 @@ class MainWindow:
             row_frame.columnconfigure(4, weight=1, uniform='equalColumn')
             row_frame.rowconfigure(0, weight=1, minsize=50)
 
-            _id_array = self.dataHandler.get_id()
+            _id_array = self.dataHandler.get_id_list()
             for index in range(5):
                 temp_frame = ttk.Frame(row_frame, relief=tkinter.RIDGE, borderwidth=2)
                 temp_frame.grid(row=0, column=index, sticky='nsew')
                 loc = index + row*5
                 if loc < len(_id_array):
-                    _name, _pin, _bounce = self.dataHandler.sensorDict[_id_array[loc]]
+                    _name, _pin, _bounce = self.dataHandler.get_sensorDict_item(_id_array[loc])
                     name_label = ttk.Label(temp_frame, text=_name)
                     name_label.pack()
                     value_label = ttk.Label(temp_frame, textvariable=self.count.get(_id_array[loc]))
@@ -109,7 +109,7 @@ class MainWindow:
             def key_validate(P, S, W):
                 if W == 'pin' and len(P) > 2:
                     return False
-                elif W == 'bounce' and len(P) > 4:
+                elif W == 'bounce' and len(P) > 3:
                     return False
                 if S.isdigit():
                     return True
@@ -121,22 +121,32 @@ class MainWindow:
                 advanced_window_frame.grab_set()
 
             def validate_entries():
+                messages = []
+                if len(id_entry.get()) == 0:
+                    messages.append('Please enter an ID.')
                 if len(name_entry.get()) == 0:
-                    return 'Please enter a name'
+                    messages.append('Please enter a Name.')
                 if len(pin_entry.get()) == 0:
-                    return 'Please enter a connected pin'
+                    messages.append('Please enter a Pin number.')
+                if len(bounce_entry.get()) == 0:
+                    messages.append('Please enter debounce time between 0 and 300 (ms).')
+                elif not (0 <= int(bounce_entry.get()) <= 300):
+                    messages.append('Please enter debounce time between 0 and 300 (ms).')
 
                 for item in tree_view.get_children():
                     if item != iid:
                         c_id, c_name, c_pin, c_bounce = tree_view.item(item)['values']
                         if c_id == id_entry.get():
-                            return 'Duplicated ID found'
+                            messages.append('Duplicated ID found.')
                         if c_name == name_entry.get():
-                            return 'Duplicated Name found'
-                        if c_pin == int(pin_entry.get()):
-                            return 'Duplicated Pin found'
+                            messages.append('Duplicated Name found.')
+                        if str(c_pin) == pin_entry.get():
+                            messages.append('Duplicated Pin found.')
 
-                return True
+                if messages:
+                    return '\n'.join(messages)
+                else:
+                    return True
 
             def add_item():
                 msg = validate_entries()
@@ -239,16 +249,14 @@ class MainWindow:
                 _temp_dict[s_id] = sensorGlobal.sensorInfo(s_name, s_pin, s_bounce)
                 if s_id not in self.count:
                     self.count[s_id] = tkinter.IntVar()
-                    self.dataHandler.countDict[s_id] = 0
-            to_delete = set(_temp_dict.keys()).difference(set(self.count.keys()))
+                    self.dataHandler.set_countDict_item(s_id, 0)
+            to_delete = set(self.count.keys()).difference(set(_temp_dict.keys()))
             for key in to_delete:
                 self.count.pop(key)
-                self.dataHandler.countDict.pop(key)
-            # self.rPi.remove_detections()
-            self.dataHandler.sensorDict.clear()
-            self.dataHandler.sensorDict.update(_temp_dict)
+                self.dataHandler.del_countDict_item(key)
+            self.dataHandler.reset_sensorDict(_temp_dict)
             self.dataHandler.save_data()
-            # self.rPi.reset_pins()  # RPi uncomment here TODO remove when using pigpio?
+            # self.rPiController.reset_pins()  # RPi uncomment here TODO remove when using pigpio?
             quit_advanced_window()
 
         self.advancedWindow = tkinter.Toplevel(self.mainWindow)
@@ -284,14 +292,14 @@ class MainWindow:
         tree_view.heading('id', text='Unique ID')
         tree_view.heading('name', text='Name')
         tree_view.heading('pin', text='Pin')
-        tree_view.heading('bounce', text='Debounce duration')
+        tree_view.heading('bounce', text='Debounce')
         tree_view.column('id', width=100)
         tree_view.column('name', width=200)
         tree_view.column('pin', width=60, anchor=tkinter.E)
-        tree_view.column('bounce', width=60, anchor=tkinter.E)
+        tree_view.column('bounce', width=70, anchor=tkinter.E)
 
         # Populate Treeview
-        for _id, (_name, _pin, _bounce) in self.dataHandler.sensorDict.items():
+        for _id, (_name, _pin, _bounce) in self.dataHandler.get_sensorDict_items():
             tree_view.insert('', tkinter.END, values=(_id, _name, _pin, _bounce))
 
         # Scroll for Treeview
