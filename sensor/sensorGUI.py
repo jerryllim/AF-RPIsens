@@ -13,8 +13,8 @@ def multi_func(*fs):
 class MainGUI:
     def __init__(self, root, r_pi_controller):
         self.rPiController = r_pi_controller
-        self.dataHandler = r_pi_controller.dataHandler
-        self.advancedWindow = None
+        self.pinDataHandler = r_pi_controller.pinDataHandler
+        self.pinConfigWindow = None
         self.mainWindow = root
         self.mainWindow.title('Sensor Reading')
         self.mainWindow.geometry('-8-200')
@@ -25,13 +25,15 @@ class MainGUI:
 
         self.menuBar = tkinter.Menu(self.mainWindow)
         options = tkinter.Menu(self.menuBar, tearoff=0)
-        options.add_command(label='Settings', command=self.launch_advanced_window)
+        options.add_command(label='Network Settings', command=self.launch_network_settings)
+        options.add_command(label='Pin Configurations', command=self.launch_pin_configuration)
+        options.add_separator()
         options.add_command(label='Exit', command=lambda: multi_func(self.mainWindow.quit, self.mainWindow.destroy))
         self.menuBar.add_cascade(label='Options', menu=options)
         self.mainWindow.config(menu=self.menuBar)
 
         self.count = {}
-        for id_key in self.dataHandler.get_id_list():
+        for id_key in self.pinDataHandler.get_id_list():
             _temp = tkinter.IntVar()
             self.count[id_key] = _temp
 
@@ -65,13 +67,13 @@ class MainGUI:
             row_frame.columnconfigure(4, weight=1, uniform='equalColumn')
             row_frame.rowconfigure(0, weight=1, minsize=50)
 
-            _id_array = self.dataHandler.get_id_list()
+            _id_array = self.pinDataHandler.get_id_list()
             for index in range(5):
                 temp_frame = ttk.Frame(row_frame, relief=tkinter.RIDGE, borderwidth=2)
                 temp_frame.grid(row=0, column=index, sticky='nsew')
                 loc = index + row*5
                 if loc < len(_id_array):
-                    _name, _pin, _bounce = self.dataHandler.get_sensorDict_item(_id_array[loc])
+                    _name, _pin, _bounce = self.pinDataHandler.get_sensorDict_item(_id_array[loc])
                     name_label = ttk.Label(temp_frame, text=_name)
                     name_label.pack()
                     value_label = ttk.Label(temp_frame, textvariable=self.count.get(_id_array[loc]))
@@ -91,11 +93,11 @@ class MainGUI:
     def start_gui(self):
         self.mainWindow.mainloop()
 
-    # Advanced Window Setup and Launch
-    def launch_advanced_window(self):
-        def quit_advanced_window():
-            self.advancedWindow.destroy()
-            self.draw_reading_rows()
+    # Pin Configuration Setup and Launch
+    def launch_pin_configuration(self):
+        def quit_window():
+            self.pinConfigWindow.destroy()
+            self.pinConfigWindow = None
 
         def delete_item():
             for item in tree_view.selection():
@@ -187,7 +189,7 @@ class MainGUI:
                 else:
                     messagebox.showerror('Error', msg)
 
-            item_window = tkinter.Toplevel(self.advancedWindow)
+            item_window = tkinter.Toplevel(self.pinConfigWindow)
             item_window.title('Item')
             item_window.geometry('-200-200')
             item_window.columnconfigure(0, weight=1)
@@ -257,86 +259,97 @@ class MainGUI:
                 _temp_dict[s_id] = sensorGlobal.sensorInfo(s_name, s_pin, s_bounce)
                 if s_id not in self.count:
                     self.count[s_id] = tkinter.IntVar()
-                    self.dataHandler.set_countDict_item(s_id, 0)
+                    self.pinDataHandler.set_countDict_item(s_id, 0)
             to_delete = set(self.count.keys()).difference(set(_temp_dict.keys()))
             for key in to_delete:
                 self.count.pop(key)
-                self.dataHandler.del_countDict_item(key)
-            self.dataHandler.reset_sensorDict(_temp_dict)
-            self.dataHandler.save_data()
+                self.pinDataHandler.del_countDict_item(key)
+            self.pinDataHandler.reset_sensorDict(_temp_dict)
+            self.pinDataHandler.save_data()
             # self.rPiController.reset_pins()  # RPi uncomment here TODO remove when using pigpio?
-            quit_advanced_window()
+            self.draw_reading_rows()
+            quit_window()
 
-        self.advancedWindow = tkinter.Toplevel(self.mainWindow)
-        self.advancedWindow.title('Advanced Options')
-        self.advancedWindow.geometry('-200-200')
-        self.advancedWindow.columnconfigure(0, weight=1)
-        self.advancedWindow.rowconfigure(0, weight=1)
-        advanced_window_frame = ttk.Frame(self.advancedWindow)
-        advanced_window_frame.grid(sticky='nsew')
-        advanced_window_frame.columnconfigure(0, weight=10)
-        advanced_window_frame.columnconfigure(1, weight=1)
-        advanced_window_frame.rowconfigure(0, weight=5)
-        advanced_window_frame.rowconfigure(1, weight=1)
+        if self.pinConfigWindow is not None:
+            self.pinConfigWindow.lift()
+        else:
+            self.pinConfigWindow = tkinter.Toplevel(self.mainWindow)
+            self.pinConfigWindow.title('Pin Configurations')
+            self.pinConfigWindow.geometry('-200-200')
+            self.pinConfigWindow.columnconfigure(0, weight=1)
+            self.pinConfigWindow.rowconfigure(0, weight=1)
+            self.pinConfigWindow.protocol('WM_DELETE_WINDOW', quit_window)
+            advanced_window_frame = ttk.Frame(self.pinConfigWindow)
+            advanced_window_frame.grid(sticky='nsew')
+            advanced_window_frame.columnconfigure(0, weight=10)
+            advanced_window_frame.columnconfigure(1, weight=1)
+            advanced_window_frame.rowconfigure(0, weight=5)
+            advanced_window_frame.rowconfigure(1, weight=1)
 
-        # Bottom Buttons
-        bottom_button_frame = ttk.Frame(advanced_window_frame)
-        bottom_button_frame.grid(row=2, column=1, padx=5, pady=5)
-        save_button = ttk.Button(bottom_button_frame, text='Save', command=save_configuration)
-        save_button.pack(side=tkinter.LEFT)
-        cancel_button = ttk.Button(bottom_button_frame, text='Cancel', command=self.advancedWindow.destroy)
-        cancel_button.pack(side=tkinter.LEFT)
+            # Bottom Buttons
+            bottom_button_frame = ttk.Frame(advanced_window_frame)
+            bottom_button_frame.grid(row=2, column=1, padx=5, pady=5)
+            save_button = ttk.Button(bottom_button_frame, text='Save', command=save_configuration)
+            save_button.pack(side=tkinter.LEFT)
+            cancel_button = ttk.Button(bottom_button_frame, text='Cancel', command=quit_window)
+            cancel_button.pack(side=tkinter.LEFT)
 
-        # Treeview
-        treeview_frame = ttk.Frame(advanced_window_frame)
-        treeview_frame.grid(row=0, column=0, rowspan=3, sticky='nsew', padx=5, pady=5)
-        treeview_frame.rowconfigure(0, weight=1)
-        treeview_frame.columnconfigure(0, weight=10)
-        treeview_frame.columnconfigure(1, weight=0)
-        tree_view = ttk.Treeview(treeview_frame)
-        tree_view.grid(row=0, column=0, sticky='nsew')
-        tree_view['show'] = 'headings'
-        tree_view['column'] = ('id', 'name', 'pin', 'bounce')
-        tree_view.heading('id', text='Unique ID')
-        tree_view.heading('name', text='Name')
-        tree_view.heading('pin', text='Pin')
-        tree_view.heading('bounce', text='Debounce')
-        tree_view.column('id', width=100)
-        tree_view.column('name', width=200)
-        tree_view.column('pin', width=60, anchor=tkinter.E)
-        tree_view.column('bounce', width=70, anchor=tkinter.E)
+            # Treeview
+            treeview_frame = ttk.Frame(advanced_window_frame)
+            treeview_frame.grid(row=0, column=0, rowspan=3, sticky='nsew', padx=5, pady=5)
+            treeview_frame.rowconfigure(0, weight=1)
+            treeview_frame.columnconfigure(0, weight=10)
+            treeview_frame.columnconfigure(1, weight=0)
+            tree_view = ttk.Treeview(treeview_frame)
+            tree_view.grid(row=0, column=0, sticky='nsew')
+            tree_view['show'] = 'headings'
+            tree_view['column'] = ('id', 'name', 'pin', 'bounce')
+            tree_view.heading('id', text='Unique ID')
+            tree_view.heading('name', text='Name')
+            tree_view.heading('pin', text='Pin')
+            tree_view.heading('bounce', text='Debounce')
+            tree_view.column('id', width=100)
+            tree_view.column('name', width=200)
+            tree_view.column('pin', width=60, anchor=tkinter.E)
+            tree_view.column('bounce', width=70, anchor=tkinter.E)
 
-        # Populate Treeview
-        for _id, (_name, _pin, _bounce) in self.dataHandler.get_sensorDict_items():
-            tree_view.insert('', tkinter.END, values=(_id, _name, _pin, _bounce))
+            # Populate Treeview
+            for _id, (_name, _pin, _bounce) in self.pinDataHandler.get_sensorDict_items():
+                tree_view.insert('', tkinter.END, values=(_id, _name, _pin, _bounce))
 
-        # Scroll for Treeview
-        treeview_vscroll = ttk.Scrollbar(treeview_frame, orient='vertical', command=tree_view.yview)
-        treeview_vscroll.grid(row=0, column=1, sticky='nsw')
-        tree_view.configure(yscrollcommand=treeview_vscroll.set)
+            # Scroll for Treeview
+            treeview_vscroll = ttk.Scrollbar(treeview_frame, orient='vertical', command=tree_view.yview)
+            treeview_vscroll.grid(row=0, column=1, sticky='nsw')
+            tree_view.configure(yscrollcommand=treeview_vscroll.set)
 
-        # Add & Delete buttons
-        top_button_frame = ttk.Frame(advanced_window_frame)
-        top_button_frame.grid(row=0, column=1, padx=5, pady=5)
-        add_button = ttk.Button(top_button_frame, text='Add', command=launch_item_window)
-        add_button.pack()
-        edit_button = ttk.Button(top_button_frame, text='Edit', command=launch_edit)
-        edit_button.pack()
-        delete_button = ttk.Button(top_button_frame, text='Delete', command=delete_item)
-        delete_button.pack()
+            # Add & Delete buttons
+            top_button_frame = ttk.Frame(advanced_window_frame)
+            top_button_frame.grid(row=0, column=1, padx=5, pady=5)
+            add_button = ttk.Button(top_button_frame, text='Add', command=launch_item_window)
+            add_button.pack()
+            edit_button = ttk.Button(top_button_frame, text='Edit', command=launch_edit)
+            edit_button.pack()
+            delete_button = ttk.Button(top_button_frame, text='Delete', command=delete_item)
+            delete_button.pack()
 
-        # Move up & down buttons
-        middle_button_frame = ttk.Frame(advanced_window_frame)
-        middle_button_frame.grid(row=1, column=1, padx=5, pady=5)
-        up_button = ttk.Button(middle_button_frame, text=u'\u25B2', command=lambda: move_item(-1))
-        up_button.pack(side=tkinter.RIGHT)
-        down_button = ttk.Button(middle_button_frame, text=u'\u25BC', command=lambda: move_item(1))
-        down_button.pack(side=tkinter.LEFT)
+            # Move up & down buttons
+            middle_button_frame = ttk.Frame(advanced_window_frame)
+            middle_button_frame.grid(row=1, column=1, padx=5, pady=5)
+            up_button = ttk.Button(middle_button_frame, text=u'\u25B2', command=lambda: move_item(-1))
+            up_button.pack(side=tkinter.RIGHT)
+            down_button = ttk.Button(middle_button_frame, text=u'\u25BC', command=lambda: move_item(1))
+            down_button.pack(side=tkinter.LEFT)
 
-        self.advancedWindow.grab_set()
+            self.pinConfigWindow.grab_set()
+
+    def launch_network_settings(self):  # TODO add stuff
+        network_sett_window = tkinter.Toplevel(self.mainWindow)
+        network_sett_window.title('Network Settings')
+        network_sett_window.geometry('-200-200')
+
 
 
 if __name__ == '__main__':
-    rPi = sensorGlobal.TempClass(sensorGlobal.DataHandler())
+    rPi = sensorGlobal.TempClass(sensorGlobal.PinDataHandler())
     mainWindow = tkinter.Tk()
     MainGUI(mainWindow, rPi).start_gui()

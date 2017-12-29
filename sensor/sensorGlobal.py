@@ -10,13 +10,16 @@ from apscheduler.schedulers.background import BackgroundScheduler
 sensorInfo = namedtuple('sensorInfo', ['name', 'pin', 'bounce'])
 
 
-class DataTimeManager:
+class NetworkDataManager:
+    transferID = 'transferID'
+    saveID = 'saveID'
+
     def __init__(self, data_handler):
         self.storeDict = {}
         self.dataHandler = data_handler
         self.scheduler = BackgroundScheduler()
-        self.scheduler.add_job(self.transfer_info, 'cron', minute='*/1')
-        self.scheduler.add_job(self.save_data, 'cron', minute='*/5', second='30')
+        self.scheduler.add_job(self.transfer_info, 'cron', minute='*/1', id=self.transferID)
+        self.scheduler.add_job(self.save_data, 'cron', minute='*/5', second='30', id=self.saveID)
         self.scheduler.start()
 
     def transfer_info(self):
@@ -28,8 +31,14 @@ class DataTimeManager:
             json.dump(self.storeDict, outfile)
         self.storeDict.clear()
 
+    def set_transfer_time(self, hour, minute):
+        self.scheduler.reschedule_job(self.transferID, trigger='cron', hour=hour, minute=minute, seconds='30')
 
-class DataHandler:
+    def set_save_time(self, hour, minute):
+        self.scheduler.reschedule_job(self.saveID, trigger='cron', hour=hour, minute=minute)
+
+
+class PinDataHandler:
     sensorDict = OrderedDict()
     countDict = Counter()
     pinToID = {}
@@ -124,12 +133,12 @@ class DataHandler:
 
 
 class TempClass:  # Used for internal testing TODO remove once not needed
-    def __init__(self, data_handler):
-        self.dataHandler = data_handler
+    def __init__(self, pin_data_handler):
+        self.pinDataHandler = pin_data_handler
 
 
 if __name__ == '__main__':
-    dataHandler = DataHandler()
+    dataHandler = PinDataHandler()
 
     if True:
         tempDict1 = {'S001': sensorInfo("Sensor 1", 23, 50), 'S002': sensorInfo("Sensor 2", 24, 50), 'S003': sensorInfo("Sensor 3", 17, 50),
