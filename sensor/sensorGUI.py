@@ -15,6 +15,7 @@ class MainGUI:
         self.rPiController = r_pi_controller
         self.pinDataHandler = r_pi_controller.pinDataHandler
         self.pinConfigWindow = None
+        self.networkSettWindow = None
         self.mainWindow = root
         self.mainWindow.title('Sensor Reading')
         self.mainWindow.geometry('-8-200')
@@ -343,9 +344,20 @@ class MainGUI:
             self.pinConfigWindow.grab_set()
 
     def launch_network_settings(self):  # TODO add stuff
-        network_sett_window = tkinter.Toplevel(self.mainWindow)
-        network_sett_window.title('Network Settings')
-        network_sett_window.geometry('-200-200')
+        def quit_window():
+            self.networkSettWindow.destroy()
+            self.networkSettWindow = None
+            
+        if self.networkSettWindow is not None:
+            self.networkSettWindow.lift()
+        else:
+            self.networkSettWindow = tkinter.Toplevel(self.mainWindow)
+            self.networkSettWindow.title('Network Settings')
+            self.networkSettWindow.geometry('-200-200')
+            self.networkSettWindow.columnconfigure(0, weight=1)
+            self.networkSettWindow.rowconfigure(0, weight=1)
+            self.networkSettWindow.protocol('WM_DELETE_WINDOW', quit_window)
+
 
 
 
