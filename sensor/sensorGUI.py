@@ -24,7 +24,7 @@ class MainWindow:
         self.main_window_frame = ttk.Frame(self.mainWindow)
 
         self.count = {}
-        for id_key in self.dataHandler.get_id():
+        for id_key in self.dataHandler.get_id_list():
             _temp = tkinter.IntVar()
             self.count[id_key] = _temp
 
@@ -57,13 +57,13 @@ class MainWindow:
             row_frame.columnconfigure(4, weight=1, uniform='equalColumn')
             row_frame.rowconfigure(0, weight=1, minsize=50)
 
-            _id_array = self.dataHandler.get_id()
+            _id_array = self.dataHandler.get_id_list()
             for index in range(5):
                 temp_frame = ttk.Frame(row_frame, relief=tkinter.RIDGE, borderwidth=2)
                 temp_frame.grid(row=0, column=index, sticky='nsew')
                 loc = index + row*5
                 if loc < len(_id_array):
-                    _name, _pin, _bounce = self.dataHandler.sensorDict[_id_array[loc]]
+                    _name, _pin, _bounce = self.dataHandler.get_sensorDict_item(_id_array[loc])
                     name_label = ttk.Label(temp_frame, text=_name)
                     name_label.pack()
                     value_label = ttk.Label(temp_frame, textvariable=self.count.get(_id_array[loc]))
@@ -239,13 +239,12 @@ class MainWindow:
                 _temp_dict[s_id] = sensorGlobal.sensorInfo(s_name, s_pin, s_bounce)
                 if s_id not in self.count:
                     self.count[s_id] = tkinter.IntVar()
-                    self.dataHandler.countDict[s_id] = 0
+                    self.dataHandler.set_countDict_item(s_id, 0)
             to_delete = set(self.count.keys()).difference(set(_temp_dict.keys()))
             for key in to_delete:
                 self.count.pop(key)
-                del self.dataHandler.countDict[key]
-            self.dataHandler.sensorDict.clear()
-            self.dataHandler.sensorDict.update(_temp_dict)
+                self.dataHandler.del_countDict_item(key)
+            self.dataHandler.reset_sensorDict(_temp_dict)
             self.dataHandler.save_data()
             # self.rPiController.reset_pins()  # RPi uncomment here TODO remove when using pigpio?
             quit_advanced_window()
@@ -290,7 +289,7 @@ class MainWindow:
         tree_view.column('bounce', width=60, anchor=tkinter.E)
 
         # Populate Treeview
-        for _id, (_name, _pin, _bounce) in self.dataHandler.sensorDict.items():
+        for _id, (_name, _pin, _bounce) in self.dataHandler.get_sensorDict_items():
             tree_view.insert('', tkinter.END, values=(_id, _name, _pin, _bounce))
 
         # Scroll for Treeview

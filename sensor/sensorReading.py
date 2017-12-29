@@ -10,7 +10,7 @@ class RaspberryPiController:
         self.pi = pigpio.pi()
         self.callbacks = []
 
-        for pin, bounce in self.dataHandler.get_pin_and_bounce():
+        for pin, bounce in self.dataHandler.get_pin_and_bounce_list():
             RaspberryPiController.pin_setup(self, pin, bounce)
 
         self.mainWindow.start_gui()
@@ -26,7 +26,7 @@ class RaspberryPiController:
 
     def reset_pins(self):
         self.remove_detections()
-        for pin, bounce in self.dataHandler.get_pin_and_bounce():
+        for pin, bounce in self.dataHandler.get_pin_and_bounce_list():
             RaspberryPiController.pin_setup(self, pin, bounce)
 
     def pin_setup(self, pin, bounce=30000):
