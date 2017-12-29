@@ -240,10 +240,10 @@ class MainWindow:
                 if s_id not in self.count:
                     self.count[s_id] = tkinter.IntVar()
                     self.dataHandler.countDict[s_id] = 0
-            to_delete = set(_temp_dict.keys()).difference(set(self.count.keys()))
+            to_delete = set(self.count.keys()).difference(set(_temp_dict.keys()))
             for key in to_delete:
                 self.count.pop(key)
-                self.dataHandler.countDict.pop(key)
+                del self.dataHandler.countDict[key]
             self.dataHandler.sensorDict.clear()
             self.dataHandler.sensorDict.update(_temp_dict)
             self.dataHandler.save_data()

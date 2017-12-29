@@ -15,7 +15,7 @@ class RaspberryPiController:
 
         self.mainWindow.start_gui()
 
-    def pin_triggered(self, pin):
+    def pin_triggered(self, pin, level, tick):
         _id = self.dataHandler.get_id_from_pin(pin)
         self.dataHandler.countDict.update([_id])
         self.mainWindow.count[_id].set(self.dataHandler.countDict[_id])
@@ -30,7 +30,7 @@ class RaspberryPiController:
             RaspberryPiController.pin_setup(self, pin, bounce)
 
     def pin_setup(self, pin, bounce=30000):
-        self.pi().set_mode(pin, pigpio.INPUT)
+        self.pi.set_mode(pin, pigpio.INPUT)
         self.pi.set_pull_up_down(pin, pigpio.PUD_DOWN)
         self.pi.set_glitch_filter(pin, bounce)
-        self.callbacks.append(self.pi.callback(23, pigpio.RISING_EDGE, self.pin_triggered))
+        self.callbacks.append(self.pi.callback(pin, pigpio.RISING_EDGE, self.pin_triggered))
