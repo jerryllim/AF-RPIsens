@@ -10,7 +10,7 @@
 - [x] added namedtuple for easier reading *share named tuple between server and client?* 
 - [x] change count dict to collection.Counter
 - [ ] add log
-- [ ] change RPi.GPIO to pigpio
+- [x] change RPi.GPIO to pigpio
 
 ## Server
 - [x] add log.txt for log purposes
