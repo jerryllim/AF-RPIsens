@@ -6,6 +6,7 @@ import pigpio
 class RaspberryPiController:
     def __init__(self, root):
         self.dataHandler = sensorGlobal.DataHandler()
+        self.dataTimeManager = sensorGlobal.DataTimeManager(self.dataHandler)
         self.mainWindow = sensorGUI.MainWindow(root, self)
         self.pi = pigpio.pi()
         self.callbacks = []

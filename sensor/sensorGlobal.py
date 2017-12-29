@@ -2,9 +2,29 @@ import json
 from collections import OrderedDict
 from collections import Counter
 from collections import namedtuple
+import threading
+import datetime
+from apscheduler.schedulers.background import BackgroundScheduler
 
 
 sensorInfo = namedtuple('sensorInfo', ['name', 'pin', 'bounce'])
+
+
+class DataTimeManager:
+    def __init__(self, data_handler):
+        self.storeDict = {}
+        self.dataHandler = data_handler
+        self.scheduler = BackgroundScheduler()
+        self.scheduler.add_job(self.transfer_info, 'cron', minute='*/1')
+
+    def transfer_info(self):
+        time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        self.storeDict[time] = self.dataHandler.clear_countDict()
+
+    def save_data(self):
+        with open('jsonTest.json', 'a') as outfile:
+            json.dump(self.storeDict, outfile)
+        self.storeDict.clear()
 
 
 class DataHandler:
@@ -16,6 +36,7 @@ class DataHandler:
         self.fileName = file_name
         self.load_data()
         self.pinToID = self.list_pin_and_id()
+        self.countDictLock = threading.Lock()
 
     def save_data(self):
         with open(self.fileName, 'w') as outfile:
@@ -82,13 +103,22 @@ class DataHandler:
         return self.sensorDict[_id]
 
     def set_countDict_item(self, _id, count):
-        self.countDict[_id] = count
+        with self.countDictLock:
+            self.countDict[_id] = count
 
     def get_countDict_item(self, _id):
-        return self.countDict[_id]
+        with self.countDictLock:
+            return self.countDict[_id]
 
     def del_countDict_item(self, _id):
-        del self.countDict[_id]
+        with self.countDictLock:
+            del self.countDict[_id]
+
+    def clear_countDict(self):
+        with self.countDictLock:
+            temp_count = self.countDict
+            self.countDict.clear()
+            return temp_count
 
 
 class TempClass:  # Used for internal testing TODO remove once not needed
