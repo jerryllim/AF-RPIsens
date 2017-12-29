@@ -10,7 +10,7 @@ def multi_func(*fs):
         f()
 
 
-class MainWindow:
+class MainGUI:
     def __init__(self, root, r_pi_controller):
         self.rPiController = r_pi_controller
         self.dataHandler = r_pi_controller.dataHandler
@@ -39,7 +39,6 @@ class MainWindow:
         button_frame.grid(row=1, column=0, padx=5, pady=5)
         advanced_button = ttk.Button(button_frame, text='Advanced', command=self.launch_advanced_window)
         advanced_button.pack(side=tkinter.LEFT)
-        # TODO is this the best way to quit and destroy?
         quit_button = ttk.Button(button_frame, text='Quit',
                                  command=lambda: multi_func(self.mainWindow.quit, self.mainWindow.destroy))
         quit_button.pack(side=tkinter.LEFT)
@@ -321,7 +320,7 @@ class MainWindow:
         middle_button_frame = ttk.Frame(advanced_window_frame)
         middle_button_frame.grid(row=1, column=1, padx=5, pady=5)
         up_button = ttk.Button(middle_button_frame, text=u'\u25B2', command=lambda: move_item(-1))
-        up_button.pack(side=tkinter.LEFT)
+        up_button.pack(side=tkinter.RIGHT)
         down_button = ttk.Button(middle_button_frame, text=u'\u25BC', command=lambda: move_item(1))
         down_button.pack(side=tkinter.LEFT)
 
@@ -331,4 +330,4 @@ class MainWindow:
 if __name__ == '__main__':
     rPi = sensorGlobal.TempClass(sensorGlobal.DataHandler())
     mainWindow = tkinter.Tk()
-    MainWindow(mainWindow, rPi).start_gui()
+    MainGUI(mainWindow, rPi).start_gui()
