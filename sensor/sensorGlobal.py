@@ -16,6 +16,8 @@ class DataTimeManager:
         self.dataHandler = data_handler
         self.scheduler = BackgroundScheduler()
         self.scheduler.add_job(self.transfer_info, 'cron', minute='*/1')
+        self.scheduler.add_job(self.save_data, 'cron', minute='*/5', second='30')
+        self.scheduler.start()
 
     def transfer_info(self):
         time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -116,7 +118,7 @@ class DataHandler:
 
     def clear_countDict(self):
         with self.countDictLock:
-            temp_count = self.countDict
+            temp_count = self.countDict.copy()
             self.countDict.clear()
             return temp_count
 
