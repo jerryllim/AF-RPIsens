@@ -40,7 +40,9 @@ class MainGUI:
         self.main_window_frame.grid(sticky='nsew')
         self.main_window_frame.grid_columnconfigure(0, weight=1, minsize=500)
         self.main_window_frame.grid_rowconfigure(0, weight=10, minsize=150)
-        self.main_window_frame.grid_rowconfigure(1, weight=1)
+
+        # Bottom buttons TODO to delete
+        # self.main_window_frame.grid_rowconfigure(1, weight=1)
 
         # button_frame = ttk.Frame(self.main_window_frame)
         # button_frame.grid(row=1, column=0, padx=5, pady=5)

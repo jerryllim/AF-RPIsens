@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="8c4eab11-9431-48ea-8992-fef6a6e722be" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change beforePath="$PROJECT_DIR$/sensor/sensorGUI.py" afterPath="$PROJECT_DIR$/sensor/sensorGUI.py" />
+      <change beforePath="$PROJECT_DIR$/task.md" afterPath="$PROJECT_DIR$/task.md" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -15,11 +15,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="sensorGUI.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="sensorGUI.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/sensor/sensorGUI.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="389">
-              <caret line="50" column="45" lean-forward="true" selection-start-line="50" selection-start-column="45" selection-end-line="50" selection-end-column="45" />
+            <state relative-caret-position="371">
+              <caret line="43" column="39" lean-forward="false" selection-start-line="43" selection-start-column="39" selection-end-line="43" selection-end-column="39" />
               <folding>
                 <element signature="e#0#14#0" expanded="true" />
               </folding>
@@ -39,11 +39,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="sensorGlobal.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="sensorGlobal.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/sensor/sensorGlobal.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="165">
-              <caret line="11" column="0" lean-forward="true" selection-start-line="11" selection-start-column="0" selection-end-line="11" selection-end-column="0" />
+            <state relative-caret-position="181">
+              <caret line="17" column="69" lean-forward="true" selection-start-line="17" selection-start-column="69" selection-end-line="17" selection-end-column="69" />
               <folding>
                 <element signature="e#0#11#0" expanded="true" />
               </folding>
@@ -114,8 +114,9 @@
         <option value="$PROJECT_DIR$/test_threading.py" />
         <option value="$PROJECT_DIR$/test_apscheduler.py" />
         <option value="$PROJECT_DIR$/sensor/sensorReading.py" />
-        <option value="$PROJECT_DIR$/sensor/sensorGlobal.py" />
         <option value="$PROJECT_DIR$/sensor/sensorGUI.py" />
+        <option value="$PROJECT_DIR$/sensor/sensorGlobal.py" />
+        <option value="$PROJECT_DIR$/task.md" />
       </list>
     </option>
   </component>
@@ -757,13 +758,6 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/gui/__init__.py" />
     <entry file="file://$PROJECT_DIR$/gui/sensorGUI.py" />
-    <entry file="file://$PROJECT_DIR$/task.md">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="4" lean-forward="true" selection-start-line="0" selection-start-column="4" selection-end-line="0" selection-end-column="4" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file:///Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/json/encoder.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="196">
@@ -836,16 +830,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sensor/sensorGlobal.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="165">
-          <caret line="11" column="0" lean-forward="true" selection-start-line="11" selection-start-column="0" selection-end-line="11" selection-end-column="0" />
-          <folding>
-            <element signature="e#0#11#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/sensor/sensorReading.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="525">
@@ -858,10 +842,28 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/sensor/sensorGUI.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="389">
-          <caret line="50" column="45" lean-forward="true" selection-start-line="50" selection-start-column="45" selection-end-line="50" selection-end-column="45" />
+        <state relative-caret-position="371">
+          <caret line="43" column="39" lean-forward="false" selection-start-line="43" selection-start-column="39" selection-end-line="43" selection-end-column="39" />
           <folding>
             <element signature="e#0#14#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/task.md">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="135">
+          <caret line="9" column="72" lean-forward="false" selection-start-line="9" selection-start-column="72" selection-end-line="9" selection-end-column="72" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sensor/sensorGlobal.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="181">
+          <caret line="17" column="69" lean-forward="true" selection-start-line="17" selection-start-column="69" selection-end-line="17" selection-end-column="69" />
+          <folding>
+            <element signature="e#0#11#0" expanded="true" />
           </folding>
         </state>
       </provider>
