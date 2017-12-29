@@ -23,6 +23,13 @@ class MainGUI:
         self.mainWindow.rowconfigure(0, weight=1)
         self.main_window_frame = ttk.Frame(self.mainWindow)
 
+        self.menuBar = tkinter.Menu(self.mainWindow)
+        options = tkinter.Menu(self.menuBar, tearoff=0)
+        options.add_command(label='Settings', command=self.launch_advanced_window)
+        options.add_command(label='Exit', command=lambda: multi_func(self.mainWindow.quit, self.mainWindow.destroy))
+        self.menuBar.add_cascade(label='Options', menu=options)
+        self.mainWindow.config(menu=self.menuBar)
+
         self.count = {}
         for id_key in self.dataHandler.get_id_list():
             _temp = tkinter.IntVar()
@@ -35,13 +42,13 @@ class MainGUI:
         self.main_window_frame.grid_rowconfigure(0, weight=10, minsize=150)
         self.main_window_frame.grid_rowconfigure(1, weight=1)
 
-        button_frame = ttk.Frame(self.main_window_frame)
-        button_frame.grid(row=1, column=0, padx=5, pady=5)
-        advanced_button = ttk.Button(button_frame, text='Advanced', command=self.launch_advanced_window)
-        advanced_button.pack(side=tkinter.LEFT)
-        quit_button = ttk.Button(button_frame, text='Quit',
-                                 command=lambda: multi_func(self.mainWindow.quit, self.mainWindow.destroy))
-        quit_button.pack(side=tkinter.LEFT)
+        # button_frame = ttk.Frame(self.main_window_frame)
+        # button_frame.grid(row=1, column=0, padx=5, pady=5)
+        # advanced_button = ttk.Button(button_frame, text='Advanced', command=self.launch_advanced_window)
+        # advanced_button.pack(side=tkinter.LEFT)
+        # quit_button = ttk.Button(button_frame, text='Quit',
+        #                          command=lambda: multi_func(self.mainWindow.quit, self.mainWindow.destroy))
+        # quit_button.pack(side=tkinter.LEFT)
 
         self.draw_reading_rows()
 
