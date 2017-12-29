@@ -11,9 +11,9 @@ def multi_func(*fs):
 
 
 class MainWindow:
-    def __init__(self, root, r_pi):
-        self.rPi = r_pi
-        self.dataHandler = r_pi.dataHandler
+    def __init__(self, root, r_pi_controller):
+        self.rPiController = r_pi_controller
+        self.dataHandler = r_pi_controller.dataHandler
         self.advancedWindow = None
         self.mainWindow = root
         self.mainWindow.title('Sensor Reading')
@@ -244,11 +244,10 @@ class MainWindow:
             for key in to_delete:
                 self.count.pop(key)
                 self.dataHandler.countDict.pop(key)
-            # self.rPi.remove_detections()
             self.dataHandler.sensorDict.clear()
             self.dataHandler.sensorDict.update(_temp_dict)
             self.dataHandler.save_data()
-            # self.rPi.reset_pins()  # RPi uncomment here TODO remove when using pigpio?
+            # self.rPiController.reset_pins()  # RPi uncomment here TODO remove when using pigpio?
             quit_advanced_window()
 
         self.advancedWindow = tkinter.Toplevel(self.mainWindow)
