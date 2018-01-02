@@ -1,7 +1,7 @@
 import zmq
 import time
 import json
-from datetime import datetime
+import datetime
 import tkinter as tk
 from tkinter import ttk
 import apscheduler.schedulers.background
@@ -17,7 +17,7 @@ class MainApplication(tk.Frame):
 
     def req_client(self):
 
-        ports = ["9998", "9999"]
+        ports = ["9888", "9889"]
 
         context = zmq.Context()
         print("Connecting to port...")
@@ -35,18 +35,21 @@ class MainApplication(tk.Frame):
             response = "Sensor: %s :: Data: %s :: Client: %s" % (ds['sensor'], ds['data'], ds['client'])
             print("Received reply ", request, "[", response, "]")
 
+            currentDT = datetime.datetime.now()
+
             # open the file for writing and creates it, if it doesn't exist
             f = open("sensorDataLog.txt", "a+")
 
             # write the data into the file
-            f.write("Requested on %s. \n %s \n" % (datetime.now(), response))
+            f.write("Requested on %s. \n %s \n" % (currentDT, response))
 
             # close the file when done
             f.close()
 
             # label['text'] = response # <-- update label
-            terminal = self.terminal_listbox
-            terminal.insert(tk.END, str(response))
+            terminal = self.terminal_tree
+            # terminal.insert(tk.END, str(response)) 
+            terminal.insert('', tk.END, values=(ds['sensor'], ds['data'], ds['client'], str(currentDT.strftime("%H:%M:%S"))))
             root.update()  # <-- run mainloop once
 
             # time.sleep(1)
@@ -82,7 +85,7 @@ class MainApplication(tk.Frame):
 
         # timer label
         self.timer_label = tk.Label(root, text="Timer Settings")
-        self.timer_label.grid(row=0, column=3, columnspan=2, pady=3)
+        self.timer_label.grid(row=0, column=3, columnspan=2, pady=3, sticky=tk.NSEW)
 
         # create tk variable
         self.timervar = tk.StringVar(root)
@@ -93,7 +96,7 @@ class MainApplication(tk.Frame):
 
         # timer dropdown menu
         self.timer_option = tk.OptionMenu(root, self.timervar, *self.timerDict, command=self.req_timer)
-        self.timer_option.grid(row=1, column=3, columnspan=2, padx=3, pady=3)
+        self.timer_option.grid(row=1, column=3, columnspan=2, padx=3, pady=3, sticky=tk.NSEW)
 
         # scroll bar for the terminal outputs
         self.terminal_scrollbar = tk.Scrollbar(root)
@@ -105,20 +108,20 @@ class MainApplication(tk.Frame):
         self.terminal_listbox.see(tk.END)
         self.terminal_scrollbar.config(command=self.terminal_listbox.yview)'''
 
+        # terminal output
         self.terminal_tree = ttk.Treeview(root)
         self.terminal_tree.grid(row=2, column=0, columnspan=5, sticky=tk.NSEW)
         self.terminal_tree.configure(yscrollcommand=self.terminal_scrollbar.set)
-        self.terminal_tree["columns"] = ("1", "2", "3")
+        self.terminal_tree["columns"] = ("1", "2", "3", "4")
         self.terminal_tree['show'] = 'headings'
         self.terminal_tree.column("1", width=100, anchor='c')
         self.terminal_tree.column("2", width=100, anchor='c')
         self.terminal_tree.column("3", width=100, anchor='c')
+        self.terminal_tree.column("4", width=100, anchor='c')
         self.terminal_tree.heading("1", text="Sensor")
         self.terminal_tree.heading("2", text="Data")
         self.terminal_tree.heading("3", text="Client")
-
-       # for i in range 
-
+        self.terminal_tree.heading("4", text="Timestamp")
 
         # LabelRep = Label(root)
         # LabelRep.pack(pady=10, padx=10)
