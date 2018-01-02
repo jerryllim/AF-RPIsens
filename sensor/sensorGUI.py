@@ -149,12 +149,12 @@ class MainGUI:
             option_frame.columnconfigure(1, weight=1)
             transfer_label = ttk.Label(option_frame, text='Timestamp frequency: ', width=20)
             transfer_label.grid(row=0, column=0, sticky='w')
-            transfer_option_list = ('1 minutes', '5 minutes', '15 minutes', '30 minutes', '60 minutes')
+            transfer_option_list = ('1 minute', '5 minutes', '15 minutes', '30 minutes', '60 minutes')
             transfer_option = tkinter.StringVar()
             save_class.transfer_option = transfer_option
-            transfer_option.set(self.networkDataManager.transfer_minutes)
+            transfer_option.set(self.networkDataManager.transfer_minutes + ' minute(s)')
             transfer_option_menu = ttk.OptionMenu(option_frame, transfer_option,
-                                                  self.networkDataManager.transfer_minutes, *transfer_option_list)
+                                                  transfer_option.get(), *transfer_option_list)
             transfer_option_menu.config(width=10)
             transfer_option_menu.grid(row=0, column=1, sticky='ew')
             save_label = ttk.Label(option_frame, text='Save frequency: ', width=20)
@@ -162,8 +162,8 @@ class MainGUI:
             save_option_list = ('2 minutes', '5 minutes', '15 minutes', '30 minutes', '60 minutes')
             save_option = tkinter.StringVar()
             save_class.save_option = save_option
-            save_option.set(self.networkDataManager.save_minutes)
-            save_option_menu = ttk.OptionMenu(option_frame, save_option, self.networkDataManager.save_minutes, *save_option_list)
+            save_option.set(self.networkDataManager.save_minutes + ' minutes')
+            save_option_menu = ttk.OptionMenu(option_frame, save_option, save_option.get(), *save_option_list)
             save_option_menu.config(width=10)
             save_option_menu.grid(row=1, column=1, sticky='ew')
 

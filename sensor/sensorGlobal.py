@@ -26,7 +26,7 @@ class NetworkDataManager:
         self.storeDict[time] = self.dataHandler.clear_countDict()
 
     def save_data(self):
-        with open('jsonTest.json', 'a') as outfile:
+        with open('jsonData.json', 'a') as outfile:
             json.dump(self.storeDict, outfile)
         self.storeDict.clear()
 
@@ -66,11 +66,15 @@ class NetworkDataManager:
     @staticmethod
     def get_cron_hour_minute(temp):
         minutes = int(temp)
-        if minutes//60 < 1:
+        if minutes//60 == 0:
             hour = '*'
         else:
             hour = '*/' + str(minutes//60)
-        minute = '*/' + str(minutes % 60)
+
+        if minutes % 60 == 0:
+            minute = '*'
+        else:
+            minute = '*/' + str(minutes % 60)
         return hour, minute
 
 
