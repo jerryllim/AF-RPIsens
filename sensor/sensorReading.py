@@ -5,7 +5,7 @@ import pigpio
 
 class RaspberryPiController:
     def __init__(self, root):
-        self.pinDataHandler = sensorGlobal.PinDataHandler()
+        self.pinDataHandler = sensorGlobal.PinDataManager()
         self.networkDataManager = sensorGlobal.NetworkDataManager(self.pinDataHandler)
         self.mainWindow = sensorGUI.MainGUI(root, self)
         self.pi = pigpio.pi()
