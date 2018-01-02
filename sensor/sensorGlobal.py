@@ -32,10 +32,10 @@ class NetworkDataManager:
         self.storeDict.clear()
 
     def set_transfer_time(self, hour, minute):
-        self.scheduler.reschedule_job(self.transferID, trigger='cron', hour=hour, minute=minute, seconds='30')
+        self.scheduler.reschedule_job(self.transferID, trigger='cron', hour=hour, minute=minute)
 
     def set_save_time(self, hour, minute):
-        self.scheduler.reschedule_job(self.saveID, trigger='cron', hour=hour, minute=minute)
+        self.scheduler.reschedule_job(self.saveID, trigger='cron', hour=hour, minute=minute, second=30)
 
 
 class PinDataHandler:
@@ -135,6 +135,7 @@ class PinDataHandler:
 class TempClass:  # Used for internal testing TODO remove once not needed
     def __init__(self, pin_data_handler):
         self.pinDataHandler = pin_data_handler
+        self.networkDataManager = NetworkDataManager(self.pinDataHandler)
 
 
 if __name__ == '__main__':

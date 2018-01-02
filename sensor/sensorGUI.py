@@ -293,7 +293,7 @@ class MainGUI:
             save_button = ttk.Button(bottom_button_frame, text='Save', command=save_configuration)
             save_button.pack(side=tkinter.LEFT)
             cancel_button = ttk.Button(bottom_button_frame, text='Cancel', command=quit_window)
-            cancel_button.pack(side=tkinter.LEFT)
+            cancel_button.pack(side=tkinter.RIGHT)
 
             # Treeview
             treeview_frame = ttk.Frame(pin_config_frame)
@@ -343,10 +343,17 @@ class MainGUI:
 
             self.pinConfigWindow.grab_set()
 
-    def launch_network_settings(self):  # TODO add stuff
+    def launch_network_settings(self):  # TODO test on RPi
         def quit_window():
             self.networkSettWindow.destroy()
             self.networkSettWindow = None
+
+        def save_configurations():
+            transfer_time = int(transfer_option.get().rsplit(sep=' ', maxsplit=1)[0])
+            save_time = int(save_option.get().rsplit(sep=' ', maxsplit=1)[0])
+            self.rPiController.networkDataManager.set_transfer_time(transfer_time//60, transfer_time % 60)
+            self.rPiController.networkDataManager.set_save_time(save_time//60, save_time % 60)
+            quit_window()
 
         if self.networkSettWindow is not None:
             self.networkSettWindow.lift()
@@ -359,6 +366,42 @@ class MainGUI:
             self.networkSettWindow.protocol('WM_DELETE_WINDOW', quit_window)
             network_sett_frame = ttk.Frame(self.networkSettWindow)
             network_sett_frame.grid(sticky='nsew')
+            network_sett_frame.columnconfigure(0, weight=1)
+            network_sett_frame.rowconfigure(0, weight=1)
+            network_sett_frame.rowconfigure(1, weight=1)
+
+            # Buttons
+            button_frame = ttk.Frame(network_sett_frame)
+            button_frame.grid(row=1, column=0, padx=5, pady=5)
+            save_button = ttk.Button(button_frame, text='Save', command=save_configurations)
+            save_button.pack(side=tkinter.LEFT)
+            cancel_button = ttk.Button(button_frame, text='Cancel', command=quit_window)
+            cancel_button.pack(side=tkinter.RIGHT)
+
+            # Options
+            option_frame = ttk.Frame(network_sett_frame)
+            option_frame.grid(row=0, column=0, padx=5, pady=5)
+            option_frame.rowconfigure(0, weight=1)
+            option_frame.rowconfigure(1, weight=1)
+            option_frame.columnconfigure(0, weight=1)
+            option_frame.columnconfigure(1, weight=1)
+            transfer_label = ttk.Label(option_frame, text='Timestamp frequency: ', width=20)
+            transfer_label.grid(row=0, column=0, sticky='w')
+            transfer_option_list = ('5 minutes', '15 minutes', '30 minutes', '60 minutes')
+            transfer_option = tkinter.StringVar()
+            transfer_option.set(transfer_option_list[0])
+            transfer_option_menu = ttk.OptionMenu(option_frame, transfer_option, transfer_option_list[0],
+                                                  *transfer_option_list)
+            transfer_option_menu.config(width=10)
+            transfer_option_menu.grid(row=0, column=1, sticky='ew')
+            save_label = ttk.Label(option_frame, text='Save frequency: ', width=20)
+            save_label.grid(row=1, column=0, sticky='w')
+            save_option_list = ('5 minutes', '15 minutes', '30 minutes', '60 minutes')
+            save_option = tkinter.StringVar()
+            save_option.set(save_option_list[0])
+            save_option_menu = ttk.OptionMenu(option_frame, save_option, save_option_list[0], *save_option_list)
+            save_option_menu.config(width=10)
+            save_option_menu.grid(row=1, column=1, sticky='ew')
 
 
 if __name__ == '__main__':
