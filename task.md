@@ -14,5 +14,7 @@
 
 ## Server
 - [x] add log.txt for log purposes
-- [ ] add timer options
+- [x] add timer options
 - [x] add terminal listbox to contain reply data
+- [ ] add timestamps in view
+- [ ] change listbox to treeview
