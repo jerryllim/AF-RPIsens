@@ -17,6 +17,6 @@
 - [x] add log.txt for log purposes
 - [x] add timer options
 - [x] add terminal listbox to contain reply data
-- [ ] add timestamps in view
+- [x] add timestamps in view
 - [x] change listbox to treeview
 - [ ] change client side message format to match machine
