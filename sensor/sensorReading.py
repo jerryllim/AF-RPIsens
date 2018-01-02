@@ -5,21 +5,22 @@ import pigpio
 
 class RaspberryPiController:
     def __init__(self, root):
-        self.pinDataHandler = sensorGlobal.PinDataManager()
-        self.networkDataManager = sensorGlobal.NetworkDataManager(self.pinDataHandler)
+        self.pinDataManager = sensorGlobal.PinDataManager()
+        self.networkDataManager = sensorGlobal.NetworkDataManager(self.pinDataManager)
+        self.dataManager = sensorGlobal.DataManager(self.pinDataManager, self.networkDataManager)
         self.mainWindow = sensorGUI.MainGUI(root, self)
         self.pi = pigpio.pi()
         self.callbacks = []
 
-        for pin, bounce in self.pinDataHandler.get_pin_and_bounce_list():
+        for pin, bounce in self.pinDataManager.get_pin_and_bounce_list():
             RaspberryPiController.pin_setup(self, pin, bounce)
 
         self.mainWindow.start_gui()
 
     def pin_triggered(self, pin, level, tick):
-        _id = self.pinDataHandler.get_id_from_pin(pin)
-        self.pinDataHandler.countDict.update([_id])
-        self.mainWindow.count[_id].set(self.pinDataHandler.countDict[_id])
+        _id = self.pinDataManager.get_id_from_pin(pin)
+        self.pinDataManager.countDict.update([_id])
+        self.mainWindow.count[_id].set(self.pinDataManager.countDict[_id])
 
     def remove_detections(self):
         for callback in self.callbacks:
@@ -27,7 +28,7 @@ class RaspberryPiController:
 
     def reset_pins(self):
         self.remove_detections()
-        for pin, bounce in self.pinDataHandler.get_pin_and_bounce_list():
+        for pin, bounce in self.pinDataManager.get_pin_and_bounce_list():
             RaspberryPiController.pin_setup(self, pin, bounce)
 
     def pin_setup(self, pin, bounce=300):

@@ -12,7 +12,9 @@ def multi_func(*fs):
 class MainGUI:
     def __init__(self, root, r_pi_controller):
         self.rPiController = r_pi_controller
-        self.pinDataHandler = r_pi_controller.pinDataHandler
+        self.pinDataManager = r_pi_controller.pinDataManager
+        self.networkDataManager = r_pi_controller.networkDataManager
+        self.dataManager = r_pi_controller.dataManager
         self.pinConfigWindow = None
         self.networkSettWindow = None
         self.settingsWindow = None
@@ -35,7 +37,7 @@ class MainGUI:
         self.mainWindow.config(menu=self.menuBar)
 
         self.count = {}
-        for id_key in self.pinDataHandler.get_id_list():
+        for id_key in self.pinDataManager.get_id_list():
             _temp = tkinter.IntVar()
             self.count[id_key] = _temp
 
@@ -69,13 +71,13 @@ class MainGUI:
             row_frame.columnconfigure(4, weight=1, uniform='equalColumn')
             row_frame.rowconfigure(0, weight=1, minsize=50)
 
-            _id_array = self.pinDataHandler.get_id_list()
+            _id_array = self.pinDataManager.get_id_list()
             for index in range(5):
                 temp_frame = ttk.Frame(row_frame, relief=tkinter.RIDGE, borderwidth=2)
                 temp_frame.grid(row=0, column=index, sticky='nsew')
                 loc = index + row*5
                 if loc < len(_id_array):
-                    _name, _pin, _bounce = self.pinDataHandler.get_sensorDict_item(_id_array[loc])
+                    _name, _pin, _bounce = self.pinDataManager.get_sensorDict_item(_id_array[loc])
                     name_label = ttk.Label(temp_frame, text=_name)
                     name_label.pack()
                     value_label = ttk.Label(temp_frame, textvariable=self.count.get(_id_array[loc]))
@@ -96,25 +98,36 @@ class MainGUI:
         self.mainWindow.mainloop()
 
     def launch_settings(self):
+        class SaveClass:
+            pass
+
         def quit_window():
             self.settingsWindow.destroy()
             self.settingsWindow = None
 
         def save_settings():
+            # Save Network Configurations
+            transfer_time = save_class.transfer_option.get().rsplit(sep=' ', maxsplit=1)[0]
+            save_time = save_class.save_option.get().rsplit(sep=' ', maxsplit=1)[0]
+            self.rPiController.networkDataManager.set_transfer_time(transfer_time)
+            self.rPiController.networkDataManager.set_save_time(save_time)
+
+            # Save Pin Configurations
             _temp_dict = OrderedDict()
-            tree_view = self.settingsWindow.tree_view
+            tree_view = save_class.tree_view
             for iid in tree_view.get_children():
                 s_id, s_name, s_pin, s_bounce = tree_view.item(iid)['values']
                 _temp_dict[s_id] = sensorGlobal.sensorInfo(s_name, s_pin, s_bounce)
                 if s_id not in self.count:
                     self.count[s_id] = tkinter.IntVar()
-                    self.pinDataHandler.set_countDict_item(s_id, 0)
+                    self.pinDataManager.set_countDict_item(s_id, 0)
             to_delete = set(self.count.keys()).difference(set(_temp_dict.keys()))
             for key in to_delete:
                 self.count.pop(key)
-                self.pinDataHandler.del_countDict_item(key)
-            self.pinDataHandler.reset_sensorDict(_temp_dict)
-            self.pinDataHandler.save_settings()
+                self.pinDataManager.del_countDict_item(key)
+            self.pinDataManager.reset_sensorDict(_temp_dict)
+
+            self.dataManager.save_data()
             # self.rPiController.reset_pins()  # RPi uncomment here TODO remove when using pigpio?
             self.draw_reading_rows()
             quit_window()
@@ -136,19 +149,21 @@ class MainGUI:
             option_frame.columnconfigure(1, weight=1)
             transfer_label = ttk.Label(option_frame, text='Timestamp frequency: ', width=20)
             transfer_label.grid(row=0, column=0, sticky='w')
-            transfer_option_list = ('5 minutes', '15 minutes', '30 minutes', '60 minutes')
+            transfer_option_list = ('1 minutes', '5 minutes', '15 minutes', '30 minutes', '60 minutes')
             transfer_option = tkinter.StringVar()
-            transfer_option.set(transfer_option_list[0])
-            transfer_option_menu = ttk.OptionMenu(option_frame, transfer_option, transfer_option_list[0],
-                                                  *transfer_option_list)
+            save_class.transfer_option = transfer_option
+            transfer_option.set(self.networkDataManager.transfer_minutes)
+            transfer_option_menu = ttk.OptionMenu(option_frame, transfer_option,
+                                                  self.networkDataManager.transfer_minutes, *transfer_option_list)
             transfer_option_menu.config(width=10)
             transfer_option_menu.grid(row=0, column=1, sticky='ew')
             save_label = ttk.Label(option_frame, text='Save frequency: ', width=20)
             save_label.grid(row=1, column=0, sticky='w')
-            save_option_list = ('5 minutes', '15 minutes', '30 minutes', '60 minutes')
+            save_option_list = ('2 minutes', '5 minutes', '15 minutes', '30 minutes', '60 minutes')
             save_option = tkinter.StringVar()
-            save_option.set(save_option_list[0])
-            save_option_menu = ttk.OptionMenu(option_frame, save_option, save_option_list[0], *save_option_list)
+            save_class.save_option = save_option
+            save_option.set(self.networkDataManager.save_minutes)
+            save_option_menu = ttk.OptionMenu(option_frame, save_option, self.networkDataManager.save_minutes, *save_option_list)
             save_option_menu.config(width=10)
             save_option_menu.grid(row=1, column=1, sticky='ew')
 
@@ -321,8 +336,8 @@ class MainGUI:
             treeview_frame.rowconfigure(0, weight=1)
             treeview_frame.columnconfigure(0, weight=10)
             treeview_frame.columnconfigure(1, weight=0)
-            self.settingsWindow.tree_view = ttk.Treeview(treeview_frame)  # TODO check if there's a better solution
-            tree_view = self.settingsWindow.tree_view
+            save_class.tree_view = ttk.Treeview(treeview_frame)  # TODO check if there's a better solution
+            tree_view = save_class.tree_view
             tree_view.grid(row=0, column=0, sticky='nsew')
             tree_view['show'] = 'headings'
             tree_view['column'] = ('id', 'name', 'pin', 'bounce')
@@ -336,7 +351,7 @@ class MainGUI:
             tree_view.column('bounce', width=70, anchor=tkinter.E)
 
             # Populate Treeview
-            for _id, (_name, _pin, _bounce) in self.pinDataHandler.get_sensorDict_items():
+            for _id, (_name, _pin, _bounce) in self.pinDataManager.get_sensorDict_items():
                 tree_view.insert('', tkinter.END, values=(_id, _name, _pin, _bounce))
 
             # Scroll for Treeview
@@ -388,10 +403,9 @@ class MainGUI:
             # Notebook
             settings_notebook = ttk.Notebook(settings_frame)
             settings_notebook.grid(row=0, column=0, sticky='nsew')
-            some = 0
+            save_class = SaveClass()
             pins_setup()
             network_setup()
-
             self.settingsWindow.grab_set()
 
     # Pin Configuration Setup and Launch
@@ -560,13 +574,13 @@ class MainGUI:
                 _temp_dict[s_id] = sensorGlobal.sensorInfo(s_name, s_pin, s_bounce)
                 if s_id not in self.count:
                     self.count[s_id] = tkinter.IntVar()
-                    self.pinDataHandler.set_countDict_item(s_id, 0)
+                    self.pinDataManager.set_countDict_item(s_id, 0)
             to_delete = set(self.count.keys()).difference(set(_temp_dict.keys()))
             for key in to_delete:
                 self.count.pop(key)
-                self.pinDataHandler.del_countDict_item(key)
-            self.pinDataHandler.reset_sensorDict(_temp_dict)
-            self.pinDataHandler.save_data()
+                self.pinDataManager.del_countDict_item(key)
+            self.pinDataManager.reset_sensorDict(_temp_dict)
+            self.pinDataManager.save_data()
             # self.rPiController.reset_pins()  # RPi uncomment here TODO remove when using pigpio?
             self.draw_reading_rows()
             quit_window()
@@ -615,7 +629,7 @@ class MainGUI:
             tree_view.column('bounce', width=70, anchor=tkinter.E)
 
             # Populate Treeview
-            for _id, (_name, _pin, _bounce) in self.pinDataHandler.get_sensorDict_items():
+            for _id, (_name, _pin, _bounce) in self.pinDataManager.get_sensorDict_items():
                 tree_view.insert('', tkinter.END, values=(_id, _name, _pin, _bounce))
 
             # Scroll for Treeview
@@ -649,10 +663,10 @@ class MainGUI:
             self.networkSettWindow = None
 
         def save_configurations():
-            transfer_time = int(transfer_option.get().rsplit(sep=' ', maxsplit=1)[0])
-            save_time = int(save_option.get().rsplit(sep=' ', maxsplit=1)[0])
-            self.rPiController.networkDataManager.set_transfer_time(transfer_time//60, transfer_time % 60)
-            self.rPiController.networkDataManager.set_save_time(save_time//60, save_time % 60)
+            transfer_time = transfer_option.get().rsplit(sep=' ', maxsplit=1)[0]
+            save_time = save_option.get().rsplit(sep=' ', maxsplit=1)[0]
+            self.rPiController.networkDataManager.set_transfer_time(transfer_time)
+            self.rPiController.networkDataManager.set_save_time(save_time)
             quit_window()
 
         if self.networkSettWindow is not None:
@@ -705,6 +719,6 @@ class MainGUI:
 
 
 if __name__ == '__main__':
-    rPi = sensorGlobal.TempClass(sensorGlobal.PinDataManager())
+    rPi = sensorGlobal.TempClass()
     mainWindow = tkinter.Tk()
     MainGUI(mainWindow, rPi).start_gui()

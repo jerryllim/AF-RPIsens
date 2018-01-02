@@ -15,14 +15,11 @@ class NetworkDataManager:
     SAVE_ID = 'saveID'
 
     def __init__(self, data_handler):
-
         self.storeDict = {}
         self.dataHandler = data_handler
         self.scheduler = BackgroundScheduler()
         self.transfer_minutes = '1'
         self.save_minutes = '5'
-        self.scheduler.add_job(self.transfer_info, 'cron', minute='*/' + self.transfer_minutes, id=NetworkDataManager.TRANSFER_ID)
-        self.scheduler.add_job(self.save_data, 'cron', minute='*/' + self.save_minutes, second='30', id=NetworkDataManager.SAVE_ID)
 
     def transfer_info(self):
         time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -36,18 +33,45 @@ class NetworkDataManager:
     def to_save_settings(self):
         return {NetworkDataManager.SAVE_ID: self.save_minutes, NetworkDataManager.TRANSFER_ID: self.transfer_minutes}
 
-    def set_transfer_time(self, hour, minute):
+    def to_load_settings(self, temp_dict):
+        self.transfer_minutes = temp_dict[NetworkDataManager.TRANSFER_ID]
+        self.save_minutes = temp_dict[NetworkDataManager.SAVE_ID]
+
+    def add_jobs(self):
+        if not self.scheduler.get_jobs():  # To prevent duplicating jobs
+            self.scheduler.add_job(self.transfer_info, 'cron', minute='*/' + self.transfer_minutes,
+                                   id=NetworkDataManager.TRANSFER_ID)
+            self.scheduler.add_job(self.save_data, 'cron', minute='*/' + self.save_minutes, second='30',
+                                   id=NetworkDataManager.SAVE_ID)
+
+    def set_transfer_time(self, temp=None):
+        if temp is None:
+            temp = self.transfer_minutes
+        else:
+            self.transfer_minutes = temp
+        hour, minute = NetworkDataManager.get_cron_hour_minute(temp)
         self.scheduler.reschedule_job(NetworkDataManager.TRANSFER_ID, trigger='cron', hour=hour, minute=minute)
 
-    def set_save_time(self, hour, minute):
-        self.scheduler.reschedule_job(NetworkDataManager.SAVE_ID, trigger='cron', hour='*/' + hour,
-                                      minute='*/' + minute, second=30)
+    def set_save_time(self, temp):
+        if temp is None:
+            temp = self.save_minutes
+        else:
+            self.save_minutes = temp
+        hour, minute = NetworkDataManager.get_cron_hour_minute(temp)
+        self.scheduler.reschedule_job(NetworkDataManager.SAVE_ID, trigger='cron', hour=hour, minute=minute, second=30)
 
     def start_schedule(self):
         self.scheduler.start()
 
-    def save_settings(self):
-        pass
+    @staticmethod
+    def get_cron_hour_minute(temp):
+        minutes = int(temp)
+        if minutes//60 < 1:
+            hour = '*'
+        else:
+            hour = '*/' + str(minutes//60)
+        minute = '*/' + str(minutes % 60)
+        return hour, minute
 
 
 class PinDataManager:
@@ -57,17 +81,27 @@ class PinDataManager:
 
     def __init__(self, file_name='sensorInfo.json'):
         self.fileName = file_name
-        self.load_data()
-        self.pinToID = self.list_pin_and_id()
+        # self.load_data()
+        self.pinToID = None
         self.countDictLock = threading.Lock()
 
-    def save_settings(self):
-        with open(self.fileName, 'w') as outfile:
-            temp_dict = OrderedDict()
-            for unique_id, named_tuple in self.sensorDict.items():
-                temp_dict[unique_id] = named_tuple._asdict()
-            json.dump(temp_dict, outfile)
-        self.pinToID = self.list_pin_and_id()
+    # def save_settings(self):
+    #     with open(self.fileName, 'w') as outfile:
+    #         temp_dict = OrderedDict()
+    #         for unique_id, named_tuple in self.sensorDict.items():
+    #             temp_dict[unique_id] = named_tuple._asdict()
+    #         json.dump(temp_dict, outfile)
+    #     self.pinToID = self.list_pin_and_id()
+    #
+    # def load_data(self):
+    #     try:
+    #         with open(self.fileName, 'r') as infile:
+    #             temp_dict = json.load(infile, object_pairs_hook=OrderedDict)
+    #         for unique_id in temp_dict.keys():
+    #             temp_info = sensorInfo(**(temp_dict[unique_id]))
+    #             self.sensorDict[unique_id] = temp_info
+    #     except FileNotFoundError:
+    #         pass
 
     def to_save_settings(self):
         temp_dict = OrderedDict()
@@ -75,15 +109,11 @@ class PinDataManager:
             temp_dict[unique_id] = named_tuple._asdict()
         return temp_dict
 
-    def load_data(self):
-        try:
-            with open(self.fileName, 'r') as infile:
-                temp_dict = json.load(infile, object_pairs_hook=OrderedDict)
-            for unique_id in temp_dict.keys():
-                temp_info = sensorInfo(**(temp_dict[unique_id]))
-                self.sensorDict[unique_id] = temp_info
-        except FileNotFoundError:
-            pass
+    def to_load_settings(self, temp_dict):
+        for unique_id in temp_dict.keys():
+            temp_info = sensorInfo(**(temp_dict[unique_id]))
+            self.sensorDict[unique_id] = temp_info
+        self.pinToID = self.list_pin_and_id()
 
     def get_pins_list(self):
         temp = []
@@ -158,28 +188,42 @@ class DataManager:
         self.pinDataManager = pin_data_manager
         self.networkDataManager = network_data_manager
         self.fileName = filename
+        self.load_data()
 
     def save_data(self):
         temp_dict = self.pinDataManager.to_save_settings()
         temp_dict2 = self.networkDataManager.to_save_settings()
-        store_dict = {DataManager.PIN_CONFIG_KEY: temp_dict, DataManager.NETWORK_CONFIG_KEY: temp_dict2}
+        settings_dict = {DataManager.PIN_CONFIG_KEY: temp_dict, DataManager.NETWORK_CONFIG_KEY: temp_dict2}
         with open(self.fileName, 'w') as outfile:
-            json.dump(store_dict, outfile)
+            json.dump(settings_dict, outfile)
 
     def load_data(self):
-        
+        try:
+            with open(self.fileName, 'r') as infile:
+                settings_dict = json.load(infile)
+                self.pinDataManager.to_load_settings(settings_dict[DataManager.PIN_CONFIG_KEY])
+                self.networkDataManager.to_load_settings(settings_dict[DataManager.NETWORK_CONFIG_KEY])
+        except FileNotFoundError:
+            pass
+        finally:
+            self.networkDataManager.add_jobs()
+            self.networkDataManager.start_schedule()
 
 
 class TempClass:  # Used for internal testing TODO remove once not needed
-    def __init__(self, pin_data_handler):
-        self.pinDataHandler = pin_data_handler
-        self.networkDataManager = NetworkDataManager(self.pinDataHandler)
+    def __init__(self):
+        self.pinDataManager = PinDataManager()
+        self.networkDataManager = NetworkDataManager(self.pinDataManager)
+        self.dataManager = DataManager(self.pinDataManager, self.networkDataManager)
 
 
 if __name__ == '__main__':
-    dataHandler = PinDataManager()
+    pinManager = PinDataManager()
+    networkManager = NetworkDataManager(pinManager)
+    dataManager = DataManager(pinManager, networkManager)
+    dataManager.save_data()
 
-    if True:
+    if False:
         tempDict1 = {'S001': sensorInfo("Sensor 1", 23, 50), 'S002': sensorInfo("Sensor 2", 24, 50), 'S003': sensorInfo("Sensor 3", 17, 50),
                      'S004': sensorInfo("Sensor 4", 27, 50), 'S005': sensorInfo("Sensor 5", 22, 50), 'S006': sensorInfo("Sensor 6", 5, 50),
                      'S007': sensorInfo("Sensor 7", 6, 50), 'S008': sensorInfo("Sensor 8", 13, 50), 'S009': sensorInfo("Sensor 9", 19, 50),
@@ -188,13 +232,12 @@ if __name__ == '__main__':
         for key, value in tempDict1.items():
             tempDict2[key] = value
 
-        dataHandler.sensorDict.clear()
-        dataHandler.sensorDict.update(tempDict2)
-        dataHandler.save_settings()
+        pinManager.sensorDict.clear()
+        pinManager.sensorDict.update(tempDict2)
+        pinManager.save_settings()
 
-        print(dataHandler.get_names_list())
-        print(dataHandler.get_pins_list())
+        print(pinManager.get_names_list())
+        print(pinManager.get_pins_list())
 
-    if False:
-        for a_pin in dataHandler.countDict.keys():
-            print('{} is of type {}'.format(a_pin, type(a_pin)))
+    if True:
+        dataManager.save_data()
