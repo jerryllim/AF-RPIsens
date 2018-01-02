@@ -11,6 +11,7 @@
 - [x] change count dict to collection.Counter
 - [ ] add log
 - [x] change RPi.GPIO to pigpio
+- [ ] auto resize font
 
 ## Server
 - [x] add log.txt for log purposes
