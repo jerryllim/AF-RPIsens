@@ -17,4 +17,5 @@
 - [x] add timer options
 - [x] add terminal listbox to contain reply data
 - [ ] add timestamps in view
-- [ ] change listbox to treeview
+- [x] change listbox to treeview
+- [ ] change client side message format to match machine
