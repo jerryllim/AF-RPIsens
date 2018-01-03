@@ -46,9 +46,9 @@ class NetworkDataManager:
                 NetworkDataManager.REMOVED_ID: self.removed_minutes}
 
     def to_load_settings(self, temp_dict):
-        self.transfer_minutes = temp_dict[NetworkDataManager.TRANSFER_ID]
-        self.save_minutes = temp_dict[NetworkDataManager.SAVE_ID]
-        self.removed_minutes = temp_dict[NetworkDataManager.REMOVED_ID]
+        self.transfer_minutes = temp_dict.get(NetworkDataManager.TRANSFER_ID, self.transfer_minutes)
+        self.save_minutes = temp_dict.get(NetworkDataManager.SAVE_ID, self.save_minutes)
+        self.removed_minutes = temp_dict.get(NetworkDataManager.REMOVED_ID, self.removed_minutes)
 
     def add_jobs(self):
         if not self.scheduler.get_jobs():  # To prevent duplicating jobs
