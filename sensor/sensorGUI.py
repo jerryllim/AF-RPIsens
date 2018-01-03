@@ -12,6 +12,7 @@ def multi_func(*fs):
 
 class MainGUI:
     def __init__(self, root, r_pi_controller):
+        self.readingFrame = None
         self.rPiController = r_pi_controller
         self.pinDataManager = r_pi_controller.pinDataManager
         self.networkDataManager = r_pi_controller.networkDataManager
@@ -28,16 +29,16 @@ class MainGUI:
         self.main_window_frame = ttk.Frame(self.mainWindow)
 
         self.state = False
-        self.mainWindow.bind('<F12>', lambda event: self.toggle_fullscreen(event))
+        self.mainWindow.bind('<F11>', lambda event: self.toggle_fullscreen(event))
         self.mainWindow.bind('<Escape>', lambda event: self.toggle_fullscreen(event))
         self.labelStyle = ttk.Style()
-        self.labelStyle.configure('name.TLabel', font=('TkDefaultFont', 12, 'bold'))
-        self.labelStyle.configure('count.TLabel', font=('TkDefaultFont', 20))
-        print(self.labelStyle.lookup('name.TLabel', 'font'))
+        self.labelStyle.configure('name.TLabel', font=('TkFixedFont', 12, 'bold'))
+        self.labelStyle.configure('count.TLabel', font=('TkFixedFont', 20))
 
         self.menuBar = tkinter.Menu(self.mainWindow)
         settings = tkinter.Menu(self.menuBar, tearoff=0)
         settings.add_command(label='Settings', command=self.launch_settings)
+        settings.add_command(label='Toggle fullscreen', command=self.toggle_fullscreen, accelerator='F11')
         exits = tkinter.Menu(self.menuBar, tearoff=0)
         exits.add_command(label='Exit', command=lambda: multi_func(self.mainWindow.quit, self.mainWindow.destroy))
         self.menuBar.add_cascade(label='Settings', menu=settings)
@@ -70,17 +71,21 @@ class MainGUI:
 
             _id_array = self.pinDataManager.get_id_list()
             for index in range(5):
-                temp_frame = ttk.Frame(row_frame, relief=tkinter.RIDGE, borderwidth=2)
+                temp_frame = tkinter.Frame(row_frame, relief=tkinter.RIDGE, borderwidth=2, bg='green')
                 temp_frame.grid(row=0, column=index, sticky='nsew')
                 loc = index + row*5
                 if loc < len(_id_array):
                     _name, _pin, _bounce = self.pinDataManager.get_sensorDict_item(_id_array[loc])
-                    name_label = ttk.Label(temp_frame, text=_name, style='name.TLabel')
-                    name_label.pack()
+                    self.mainWindow.update_idletasks()
+                    name_label = ttk.Label(temp_frame, text=_name, style='name.TLabel', anchor=tkinter.CENTER,
+                                           justify=tkinter.CENTER, wraplength=temp_frame.winfo_width())
+                    name_label.pack(fill=tkinter.X, expand=True)
                     value_label = ttk.Label(temp_frame, textvariable=self.count.get(_id_array[loc]),
                                             style='count.TLabel')
                     value_label.pack(fill=tkinter.Y, expand=True)
 
+        if self.readingFrame is not None:
+            self.readingFrame.destroy()
         readings_frame = ttk.Frame(self.main_window_frame)
         readings_frame.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
         readings_frame.rowconfigure(0, weight=1)
@@ -91,6 +96,7 @@ class MainGUI:
         readings_row_setup(readings_frame, 0)
         readings_row_setup(readings_frame, 1)
         readings_row_setup(readings_frame, 2)
+        self.readingFrame = readings_frame
 
     def start_gui(self):
         self.mainWindow.mainloop()
@@ -412,21 +418,20 @@ class MainGUI:
             self.settingsWindow.grab_set()
 
     def toggle_fullscreen(self, event=None):
-        if event.keysym == 'Escape':
+        if event is not None and event.keysym == 'Escape':
             self.state = False
         else:
             self.state = not self.state
+        print(self.state)
         self.mainWindow.attributes('-fullscreen', self.state)
         if self.state:
-            self.labelStyle.configure('name.TLabel', font=('TkDefaultFont', 24, 'bold'))
-            self.labelStyle.configure('count.TLabel', font=('TkDefaultFont', 50))
+            self.labelStyle.configure('count.TLabel', font=('TkFixedFont', 45))
         else:
-            self.labelStyle.configure('name.TLabel', font=('TkDefaultFont', 12, 'bold'))
-            self.labelStyle.configure('count.TLabel', font=('TkDefaultFont', 15))
+            self.labelStyle.configure('count.TLabel', font=('TkFixedFont', 15))
+        self.draw_reading_rows()
 
 
 if __name__ == '__main__':
     rPi = sensorGlobal.TempClass()
     mainWindow = tkinter.Tk()
-    mainWindow.state('zoomed')
     MainGUI(mainWindow, rPi).start_gui()

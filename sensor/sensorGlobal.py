@@ -186,7 +186,7 @@ class DataManager:
     def load_data(self):
         try:
             with open(self.fileName, 'r') as infile:
-                settings_dict = json.load(infile)
+                settings_dict = json.load(infile, object_pairs_hook=OrderedDict)
                 self.pinDataManager.to_load_settings(settings_dict[DataManager.PIN_CONFIG_KEY])
                 self.networkDataManager.to_load_settings(settings_dict[DataManager.NETWORK_CONFIG_KEY])
         except FileNotFoundError:
