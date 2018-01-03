@@ -85,27 +85,8 @@ class PinDataManager:
 
     def __init__(self, file_name='sensorInfo.json'):
         self.fileName = file_name
-        # self.load_data()
         self.pinToID = None
         self.countDictLock = threading.Lock()
-
-    # def save_settings(self):
-    #     with open(self.fileName, 'w') as outfile:
-    #         temp_dict = OrderedDict()
-    #         for unique_id, named_tuple in self.sensorDict.items():
-    #             temp_dict[unique_id] = named_tuple._asdict()
-    #         json.dump(temp_dict, outfile)
-    #     self.pinToID = self.list_pin_and_id()
-    #
-    # def load_data(self):
-    #     try:
-    #         with open(self.fileName, 'r') as infile:
-    #             temp_dict = json.load(infile, object_pairs_hook=OrderedDict)
-    #         for unique_id in temp_dict.keys():
-    #             temp_info = sensorInfo(**(temp_dict[unique_id]))
-    #             self.sensorDict[unique_id] = temp_info
-    #     except FileNotFoundError:
-    #         pass
 
     def to_save_settings(self):
         temp_dict = OrderedDict()
@@ -158,6 +139,7 @@ class PinDataManager:
     def reset_sensorDict(self, dictionary):
         self.sensorDict.clear()
         self.sensorDict.update(dictionary)
+        self.pinToID = self.list_pin_and_id()
 
     def get_sensorDict_items(self):
         return self.sensorDict.items()
