@@ -117,7 +117,7 @@ class MainGUI:
             self.pinDataManager.reset_sensorDict(_temp_dict)
 
             self.dataManager.save_data()
-            # self.rPiController.reset_pins()  # RPi uncomment here TODO remove when using pigpio?
+            self.rPiController.reset_pins()  # RPi uncomment here TODO remove when using pigpio?
             self.draw_reading_rows()
             quit_window()
 

@@ -220,6 +220,9 @@ class TempClass:  # Used for internal testing TODO remove once not needed
         self.networkDataManager = NetworkDataManager(self.pinDataManager)
         self.dataManager = DataManager(self.pinDataManager, self.networkDataManager)
 
+    def reset_pins(self):
+        pass
+
 
 if __name__ == '__main__':
     pinManager = PinDataManager()
