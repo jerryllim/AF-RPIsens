@@ -20,7 +20,7 @@ class RaspberryPiController:
     def pin_triggered(self, pin, level, tick):
         _id = self.pinDataManager.get_id_from_pin(pin)
         self.pinDataManager.countDict.update([_id])
-        self.mainWindow.count[_id].set(self.pinDataManager.countDict[_id])
+        self.mainWindow.count[_id].set(self.pinDataManager.countDict[_id] + self.networkDataManager.removedCount[_id])
 
     def remove_detections(self):
         for callback in self.callbacks:
@@ -31,7 +31,7 @@ class RaspberryPiController:
         for pin, bounce in self.pinDataManager.get_pin_and_bounce_list():
             RaspberryPiController.pin_setup(self, pin, bounce)
 
-    def pin_setup(self, pin, bounce=300):
+    def pin_setup(self, pin, bounce=30):
         self.pi.set_mode(pin, pigpio.INPUT)
         self.pi.set_pull_up_down(pin, pigpio.PUD_DOWN)
         self.pi.set_glitch_filter(pin, (bounce * 1000))

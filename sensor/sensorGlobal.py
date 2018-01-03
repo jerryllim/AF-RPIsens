@@ -13,6 +13,7 @@ sensorInfo = namedtuple('sensorInfo', ['name', 'pin', 'bounce'])
 class NetworkDataManager:
     TRANSFER_ID = 'transferID'
     SAVE_ID = 'saveID'
+    REMOVED_ID = 'removedID'
 
     def __init__(self, data_handler):
         self.storeDict = {}
@@ -20,15 +21,24 @@ class NetworkDataManager:
         self.scheduler = BackgroundScheduler()
         self.transfer_minutes = '1'
         self.save_minutes = '5'
+        self.removedCount = Counter()
+        self.removedLock = threading.Lock()
 
     def transfer_info(self):
         time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        self.storeDict[time] = self.dataHandler.clear_countDict()
+        temp_counter = self.dataHandler.clear_countDict()
+        with self.removedLock:
+            self.removedCount.update(temp_counter)
+        self.storeDict[time] = temp_counter
 
     def save_data(self):
         with open('jsonData.json', 'a') as outfile:
             json.dump(self.storeDict, outfile)
         self.storeDict.clear()
+
+    def clear_removed_count(self):
+        with self.removedLock:
+            self.removedCount.clear()
 
     def to_save_settings(self):
         return {NetworkDataManager.SAVE_ID: self.save_minutes, NetworkDataManager.TRANSFER_ID: self.transfer_minutes}
@@ -43,6 +53,8 @@ class NetworkDataManager:
                                    id=NetworkDataManager.TRANSFER_ID)
             self.scheduler.add_job(self.save_data, 'cron', minute='*/' + self.save_minutes, second='30',
                                    id=NetworkDataManager.SAVE_ID)
+            self.scheduler.add_job(self.clear_removed_count, 'cron', hour='*/1', minute='59',
+                                   id=NetworkDataManager.REMOVED_ID)
 
     def set_transfer_time(self, temp=None):
         if temp is None:
@@ -59,6 +71,14 @@ class NetworkDataManager:
             self.save_minutes = temp
         hour, minute = NetworkDataManager.get_cron_hour_minute(temp)
         self.scheduler.reschedule_job(NetworkDataManager.SAVE_ID, trigger='cron', hour=hour, minute=minute, second=30)
+
+    def set_removed_time(self, temp):
+        if temp is None:
+            temp = self.save_minutes
+        else:
+            self.save_minutes = temp
+        hour, minute = NetworkDataManager.get_cron_hour_minute(temp)
+        self.scheduler.reschedule_job(NetworkDataManager.REMOVED_ID, trigger='cron', hour=hour, minute=minute, second=1)
 
     def start_schedule(self):
         self.scheduler.start()
