@@ -14,7 +14,8 @@
 - [x] change RPi.GPIO to pigpio
 - [ ] Remodel GUI to more OO
 - [ ] auto resize font
-- [ ] launch pigpiod at startup
+- [x] launch pigpiod at startup -> **added to runScript**
+- [ ] change to executable file?
 
 ## Server
 - [x] add log.txt for log purposes
