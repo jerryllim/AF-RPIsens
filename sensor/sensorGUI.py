@@ -31,6 +31,7 @@ class MainGUI:
         self.state = False
         self.mainWindow.bind('<F11>', lambda event: self.toggle_fullscreen(event))
         self.mainWindow.bind('<Escape>', lambda event: self.toggle_fullscreen(event))
+        self.mainWindow.bind('<Control-w>', lambda event: self.quit_and_destroy(event))
         self.labelStyle = ttk.Style()
         self.labelStyle.configure('name.TLabel', font=('TkFixedFont', 12, 'bold'))
         self.labelStyle.configure('count.TLabel', font=('TkFixedFont', 20))
@@ -40,7 +41,7 @@ class MainGUI:
         settings.add_command(label='Settings', command=self.launch_settings)
         settings.add_command(label='Toggle fullscreen', command=self.toggle_fullscreen, accelerator='F11')
         exits = tkinter.Menu(self.menuBar, tearoff=0)
-        exits.add_command(label='Exit', command=lambda: multi_func(self.mainWindow.quit, self.mainWindow.destroy))
+        exits.add_command(label='Exit', command=self.quit_and_destroy, accelerator='Control+w')
         self.menuBar.add_cascade(label='Settings', menu=settings)
         self.menuBar.add_cascade(label='Exit', menu=exits)
         self.mainWindow.config(menu=self.menuBar)
@@ -71,7 +72,7 @@ class MainGUI:
 
             _id_array = self.pinDataManager.get_id_list()
             for index in range(5):
-                temp_frame = tkinter.Frame(row_frame, relief=tkinter.RIDGE, borderwidth=2, bg='green')
+                temp_frame = ttk.Frame(row_frame, relief=tkinter.RIDGE, borderwidth=2)
                 temp_frame.grid(row=0, column=index, sticky='nsew')
                 loc = index + row*5
                 if loc < len(_id_array):
@@ -422,13 +423,16 @@ class MainGUI:
             self.state = False
         else:
             self.state = not self.state
-        print(self.state)
         self.mainWindow.attributes('-fullscreen', self.state)
         if self.state:
             self.labelStyle.configure('count.TLabel', font=('TkFixedFont', 45))
         else:
             self.labelStyle.configure('count.TLabel', font=('TkFixedFont', 15))
         self.draw_reading_rows()
+
+    def quit_and_destroy(self, event=None):
+        self.mainWindow.quit()
+        self.mainWindow.destroy()
 
 
 if __name__ == '__main__':
