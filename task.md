@@ -12,6 +12,7 @@
 - [ ] add log
 - [x] change RPi.GPIO to pigpio
 - [ ] auto resize font
+- [ ] launch pigpiod at startup
 
 ## Server
 - [x] add log.txt for log purposes
