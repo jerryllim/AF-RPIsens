@@ -141,7 +141,9 @@ class MainGUI:
             transfer_option_list = ('1 minute', '5 minutes', '15 minutes', '30 minutes', '60 minutes')
             transfer_option = tkinter.StringVar()
             save_class.transfer_option = transfer_option
-            transfer_option.set(self.networkDataManager.transfer_minutes + ' minute(s)')
+            current = [string for string in transfer_option_list if self.networkDataManager.transfer_minutes in
+                       string][0]
+            transfer_option.set(current)
             transfer_option_menu = ttk.OptionMenu(option_frame, transfer_option,
                                                   transfer_option.get(), *transfer_option_list)
             transfer_option_menu.config(width=10)
@@ -151,7 +153,9 @@ class MainGUI:
             save_option_list = ('2 minutes', '5 minutes', '15 minutes', '30 minutes', '60 minutes')
             save_option = tkinter.StringVar()
             save_class.save_option = save_option
-            save_option.set(self.networkDataManager.save_minutes + ' minutes')
+            current = [string for string in save_option_list if self.networkDataManager.save_minutes in
+                       string][0]
+            save_option.set(current)
             save_option_menu = ttk.OptionMenu(option_frame, save_option, save_option.get(), *save_option_list)
             save_option_menu.config(width=10)
             save_option_menu.grid(row=1, column=1, sticky='ew')
@@ -361,10 +365,10 @@ class MainGUI:
             # Move up & down buttons
             middle_button_frame = ttk.Frame(pin_config_frame)
             middle_button_frame.grid(row=1, column=1, padx=5, pady=5)
-            up_button = ttk.Button(middle_button_frame, text=u'\u25B2', command=lambda: move_item(-1))
-            up_button.pack(side=tkinter.RIGHT)
             down_button = ttk.Button(middle_button_frame, text=u'\u25BC', command=lambda: move_item(1))
             down_button.pack(side=tkinter.LEFT)
+            up_button = ttk.Button(middle_button_frame, text=u'\u25B2', command=lambda: move_item(-1))
+            up_button.pack(side=tkinter.RIGHT)
 
         if self.settingsWindow is not None:
             self.settingsWindow.lift()
