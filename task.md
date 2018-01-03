@@ -24,3 +24,4 @@
 - [x] add timestamps in view
 - [x] change listbox to treeview
 - [ ] change client side message format to match machine
+- [ ] parsing json -> csv -> excel log
