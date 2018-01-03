@@ -21,6 +21,7 @@ class NetworkDataManager:
         self.scheduler = BackgroundScheduler()
         self.transfer_minutes = '1'
         self.save_minutes = '5'
+        self.removed_minutes = '60'
         self.removedCount = Counter()
         self.removedLock = threading.Lock()
 
@@ -41,11 +42,13 @@ class NetworkDataManager:
             self.removedCount.clear()
 
     def to_save_settings(self):
-        return {NetworkDataManager.SAVE_ID: self.save_minutes, NetworkDataManager.TRANSFER_ID: self.transfer_minutes}
+        return {NetworkDataManager.SAVE_ID: self.save_minutes, NetworkDataManager.TRANSFER_ID: self.transfer_minutes,
+                NetworkDataManager.REMOVED_ID: self.removed_minutes}
 
     def to_load_settings(self, temp_dict):
         self.transfer_minutes = temp_dict[NetworkDataManager.TRANSFER_ID]
         self.save_minutes = temp_dict[NetworkDataManager.SAVE_ID]
+        self.removed_minutes = temp_dict[NetworkDataManager.REMOVED_ID]
 
     def add_jobs(self):
         if not self.scheduler.get_jobs():  # To prevent duplicating jobs
@@ -53,7 +56,7 @@ class NetworkDataManager:
                                    id=NetworkDataManager.TRANSFER_ID)
             self.scheduler.add_job(self.save_data, 'cron', minute='*/' + self.save_minutes, second='30',
                                    id=NetworkDataManager.SAVE_ID)
-            self.scheduler.add_job(self.clear_removed_count, 'cron', hour='*/1', minute='59',
+            self.scheduler.add_job(self.clear_removed_count, 'cron', hour='*/1',
                                    id=NetworkDataManager.REMOVED_ID)
 
     def set_transfer_time(self, temp=None):
@@ -74,9 +77,9 @@ class NetworkDataManager:
 
     def set_removed_time(self, temp):
         if temp is None:
-            temp = self.save_minutes
+            temp = self.removed_minutes
         else:
-            self.save_minutes = temp
+            self.removed_minutes = temp
         hour, minute = NetworkDataManager.get_cron_hour_minute(temp)
         self.scheduler.reschedule_job(NetworkDataManager.REMOVED_ID, trigger='cron', hour=hour, minute=minute, second=1)
 
