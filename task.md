@@ -13,7 +13,8 @@
 - [ ] add log
 - [x] change RPi.GPIO to pigpio
 - [ ] Remodel GUI to more OO
-- [ ] auto resize font
+- [x] auto resize font -> **Fullscreen + one font change**
+- [ ] set to clear IntVar once an hour (new list?)
 - [x] launch pigpiod at startup -> **added to runScript**
 - [ ] change to executable file?
 
