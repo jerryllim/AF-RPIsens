@@ -27,6 +27,14 @@ class MainGUI:
         self.mainWindow.rowconfigure(0, weight=1)
         self.main_window_frame = ttk.Frame(self.mainWindow)
 
+        self.state = False
+        self.mainWindow.bind('<F12>', lambda event: self.toggle_fullscreen(event))
+        self.mainWindow.bind('<Escape>', lambda event: self.toggle_fullscreen(event))
+        self.labelStyle = ttk.Style()
+        self.labelStyle.configure('name.TLabel', font=('TkDefaultFont', 12, 'bold'))
+        self.labelStyle.configure('count.TLabel', font=('TkDefaultFont', 20))
+        print(self.labelStyle.lookup('name.TLabel', 'font'))
+
         self.menuBar = tkinter.Menu(self.mainWindow)
         settings = tkinter.Menu(self.menuBar, tearoff=0)
         settings.add_command(label='Settings', command=self.launch_settings)
@@ -67,10 +75,11 @@ class MainGUI:
                 loc = index + row*5
                 if loc < len(_id_array):
                     _name, _pin, _bounce = self.pinDataManager.get_sensorDict_item(_id_array[loc])
-                    name_label = ttk.Label(temp_frame, text=_name)
+                    name_label = ttk.Label(temp_frame, text=_name, style='name.TLabel')
                     name_label.pack()
-                    value_label = ttk.Label(temp_frame, textvariable=self.count.get(_id_array[loc]))
-                    value_label.pack()
+                    value_label = ttk.Label(temp_frame, textvariable=self.count.get(_id_array[loc]),
+                                            style='count.TLabel')
+                    value_label.pack(fill=tkinter.Y, expand=True)
 
         readings_frame = ttk.Frame(self.main_window_frame)
         readings_frame.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
@@ -117,7 +126,7 @@ class MainGUI:
             self.pinDataManager.reset_sensorDict(_temp_dict)
 
             self.dataManager.save_data()
-            self.rPiController.reset_pins()  # RPi uncomment here TODO remove when using pigpio?
+            self.rPiController.reset_pins()
             self.draw_reading_rows()
             quit_window()
 
@@ -402,8 +411,22 @@ class MainGUI:
 
             self.settingsWindow.grab_set()
 
+    def toggle_fullscreen(self, event=None):
+        if event.keysym == 'Escape':
+            self.state = False
+        else:
+            self.state = not self.state
+        self.mainWindow.attributes('-fullscreen', self.state)
+        if self.state:
+            self.labelStyle.configure('name.TLabel', font=('TkDefaultFont', 24, 'bold'))
+            self.labelStyle.configure('count.TLabel', font=('TkDefaultFont', 50))
+        else:
+            self.labelStyle.configure('name.TLabel', font=('TkDefaultFont', 12, 'bold'))
+            self.labelStyle.configure('count.TLabel', font=('TkDefaultFont', 15))
+
 
 if __name__ == '__main__':
     rPi = sensorGlobal.TempClass()
     mainWindow = tkinter.Tk()
+    mainWindow.state('zoomed')
     MainGUI(mainWindow, rPi).start_gui()
