@@ -37,10 +37,10 @@ class NetworkDataManager:
                     self.removedCount[_key].update(temp[_key])
 
     def rep_data(self):
-        port = "9999" # <-- change port to match server
+        port = "9999"  # <-- change port to match server
         context = zmq.Context()
         socket = context.socket(zmq.REP)
-        socket.connect("tcp://152.228.1.48:%s" % port) # <-- change static server ip address if needed
+        socket.connect("tcp://152.228.1.48:%s" % port)  # <-- change static server ip address if needed
 
         while True:
             #  Wait for next request from client
