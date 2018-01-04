@@ -31,7 +31,10 @@ class NetworkDataManager:
     def transfer_to_removed(self, temp):
         with self.removedLock:
             for _key in temp.keys():
-                self.removedCount[_key].update(temp[_key])
+                if self.removedCount.get(_key, None) is None:
+                    self.removedCount[_key] = temp[_key]
+                else:
+                    self.removedCount[_key].update(temp[_key])
 
     def rep_data(self):
         port = "9999"
