@@ -1,4 +1,7 @@
 import json
+import zmq
+import time
+import sys
 from collections import OrderedDict
 from collections import Counter
 from collections import namedtuple
@@ -16,6 +19,7 @@ class NetworkDataManager:
     REMOVED_ID = 'removedID'
 
     def __init__(self, data_handler):
+        threading.Thread.__init__(self)
         self.storeDict = {}
         self.dataHandler = data_handler
         self.scheduler = BackgroundScheduler()
@@ -36,6 +40,24 @@ class NetworkDataManager:
         with open('jsonData.json', 'a') as outfile:
             json.dump(self.storeDict, outfile)
         self.storeDict.clear()
+
+    def rep_data(self):
+        self.port = "9999"
+        self.context = zmq.Context()
+        self.socket = self.context.socket(zmq.REP)
+        self.socket.bind("tcp://*:%s" % self.port)
+
+        while True:
+            #  Wait for next request from client
+            message = str(self.socket.recv(), "utf-8")
+            print("Received request: ", message)
+            time.sleep(1)
+            msg_json = json.dumps(self.storeDict)
+            self.socket.send_string(msg_json)
+
+    def rep_start(self):
+        thread = threading.Thread( target = self.rep_data)
+        thread.start()
 
     def clear_removed_count(self):
         with self.removedLock:

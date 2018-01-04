@@ -7,6 +7,7 @@ class RaspberryPiController:
     def __init__(self, root):
         self.pinDataManager = sensorGlobal.PinDataManager()
         self.networkDataManager = sensorGlobal.NetworkDataManager(self.pinDataManager)
+        self.networkDataManager.rep_start()
         self.dataManager = sensorGlobal.DataManager(self.pinDataManager, self.networkDataManager)
         self.mainWindow = sensorGUI.MainGUI(root, self)
         self.pi = pigpio.pi()
