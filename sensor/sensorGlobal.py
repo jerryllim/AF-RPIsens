@@ -1,7 +1,6 @@
 import json
 import zmq
 import time
-import sys
 from collections import OrderedDict
 from collections import Counter
 from collections import namedtuple
@@ -76,8 +75,8 @@ class NetworkDataManager:
         if not self.scheduler.get_jobs():  # To prevent duplicating jobs
             self.scheduler.add_job(self.transfer_info, 'cron', minute='*/' + self.transfer_minutes,
                                    id=NetworkDataManager.TRANSFER_ID)
-            self.scheduler.add_job(self.save_data, 'cron', minute='*/' + self.save_minutes, second='30',
-                                   id=NetworkDataManager.SAVE_ID)
+            # self.scheduler.add_job(self.save_data, 'cron', minute='*/' + self.save_minutes, second='30',
+            #                        id=NetworkDataManager.SAVE_ID)
             self.scheduler.add_job(self.clear_removed_count, 'cron', hour='*/1',
                                    id=NetworkDataManager.REMOVED_ID)
 
