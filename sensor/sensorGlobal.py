@@ -37,17 +37,17 @@ class NetworkDataManager:
                     self.removedCount[_key].update(temp[_key])
 
     def rep_data(self):
-        port = "9999"
+        port = "9999" # <-- change port to match server
         context = zmq.Context()
         socket = context.socket(zmq.REP)
-        socket.bind("tcp://*:%s" % port)
+        socket.connect("tcp://152.228.1.48:%s" % port) # <-- change static server ip address if needed
 
         while True:
             #  Wait for next request from client
             message = str(socket.recv(), "utf-8")
             print("Received request: ", message)
             time.sleep(1)
-            msg_json = json.dumps(self.pinDataManager)
+            msg_json = json.dumps(self.get_content())
             socket.send_string(msg_json)
 
     def rep_start(self):
