@@ -14,26 +14,24 @@ sensorInfo = namedtuple('sensorInfo', ['name', 'pin', 'bounce'])
 
 class NetworkDataManager:
     TRANSFER_ID = 'transferID'
-    SAVE_ID = 'saveID'
     REMOVED_ID = 'removedID'
 
-    def __init__(self, data_handler):
+    def __init__(self, pin_data_manager):
         threading.Thread.__init__(self)
-        self.storeDict = {}
-        self.dataHandler = data_handler
+        self.pinDataManager = pin_data_manager
         self.scheduler = BackgroundScheduler()
-        self.transfer_minutes = '1'
-        self.save_minutes = '5'
         self.removed_minutes = '60'
-        self.removedCount = Counter()
+        self.removedCount = {}
         self.removedLock = threading.Lock()
 
-    def transfer_info(self):
-        time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        temp_counter = self.dataHandler.clear_countDict()
+    def get_content(self):
+        temp = self.pinDataManager.clear_countDict()
+        self.transfer_to_removed(temp)
+        return temp
+
+    def transfer_to_removed(self, temp):
         with self.removedLock:
-            self.removedCount.update(temp_counter)
-        self.storeDict[time] = temp_counter
+            self.removedCount.update(temp)
 
     def save_data(self):
         with open('jsonData.json', 'a') as outfile:
@@ -51,7 +49,7 @@ class NetworkDataManager:
             message = str(self.socket.recv(), "utf-8")
             print("Received request: ", message)
             time.sleep(1)
-            msg_json = json.dumps(self.storeDict)
+            msg_json = json.dumps(self.pinDataManager)
             self.socket.send_string(msg_json)
 
     def rep_start(self):
@@ -63,38 +61,16 @@ class NetworkDataManager:
             self.removedCount.clear()
 
     def to_save_settings(self):
-        return {NetworkDataManager.SAVE_ID: self.save_minutes, NetworkDataManager.TRANSFER_ID: self.transfer_minutes,
-                NetworkDataManager.REMOVED_ID: self.removed_minutes}
+        return {NetworkDataManager.REMOVED_ID: self.removed_minutes}
 
     def to_load_settings(self, temp_dict):
-        self.transfer_minutes = temp_dict.get(NetworkDataManager.TRANSFER_ID, self.transfer_minutes)
-        self.save_minutes = temp_dict.get(NetworkDataManager.SAVE_ID, self.save_minutes)
         self.removed_minutes = temp_dict.get(NetworkDataManager.REMOVED_ID, self.removed_minutes)
 
     def add_jobs(self):
         if not self.scheduler.get_jobs():  # To prevent duplicating jobs
-            self.scheduler.add_job(self.transfer_info, 'cron', minute='*/' + self.transfer_minutes,
-                                   id=NetworkDataManager.TRANSFER_ID)
-            # self.scheduler.add_job(self.save_data, 'cron', minute='*/' + self.save_minutes, second='30',
-            #                        id=NetworkDataManager.SAVE_ID)
-            self.scheduler.add_job(self.clear_removed_count, 'cron', hour='*/1',
+            hour, minute = NetworkDataManager.get_cron_hour_minute(self.removed_minutes)
+            self.scheduler.add_job(self.clear_removed_count, 'cron', hour=hour, minute=minute, second=1,
                                    id=NetworkDataManager.REMOVED_ID)
-
-    def set_transfer_time(self, temp=None):
-        if temp is None:
-            temp = self.transfer_minutes
-        else:
-            self.transfer_minutes = temp
-        hour, minute = NetworkDataManager.get_cron_hour_minute(temp)
-        self.scheduler.reschedule_job(NetworkDataManager.TRANSFER_ID, trigger='cron', hour=hour, minute=minute)
-
-    def set_save_time(self, temp):
-        if temp is None:
-            temp = self.save_minutes
-        else:
-            self.save_minutes = temp
-        hour, minute = NetworkDataManager.get_cron_hour_minute(temp)
-        self.scheduler.reschedule_job(NetworkDataManager.SAVE_ID, trigger='cron', hour=hour, minute=minute, second=30)
 
     def set_removed_time(self, temp):
         if temp is None:
@@ -124,7 +100,7 @@ class NetworkDataManager:
 
 class PinDataManager:
     sensorDict = OrderedDict()
-    countDict = Counter()
+    countDict = {}
     pinToID = {}
 
     def __init__(self, file_name='sensorInfo.json'):
@@ -193,7 +169,13 @@ class PinDataManager:
 
     def set_countDict_item(self, _id, count):
         with self.countDictLock:
+            if self.countDict.get(_id, None) is None:
+                self.countDict[_id] = Counter()
             self.countDict[_id] = count
+
+    def increase_countDict(self, _id, datetime_stamp):
+        with self.countDictLock:
+            self.countDict[_id].update([datetime_stamp])
 
     def get_countDict_item(self, _id):
         with self.countDictLock:

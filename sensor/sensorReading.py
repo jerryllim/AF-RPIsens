@@ -1,6 +1,7 @@
 import sensor.sensorGUI as sensorGUI
 import sensor.sensorGlobal as sensorGlobal
 import pigpio
+import datetime
 
 
 class RaspberryPiController:
@@ -20,8 +21,10 @@ class RaspberryPiController:
 
     def pin_triggered(self, pin, level, tick):
         _id = self.pinDataManager.get_id_from_pin(pin)
-        self.pinDataManager.countDict.update([_id])
-        self.mainWindow.count[_id].set(self.pinDataManager.countDict[_id] + self.networkDataManager.removedCount[_id])
+        datetime_stamp = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+        self.pinDataManager.increase_countDict(_id, datetime_stamp)
+        self.mainWindow.count[_id].set(sum(self.pinDataManager.countDict[_id]) +
+                                       sum(self.networkDataManager.removedCount[_id]))
 
     def remove_detections(self):
         for callback in self.callbacks:
