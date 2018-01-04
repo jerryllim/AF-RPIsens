@@ -1,4 +1,6 @@
 import json
+import zmq
+import time
 from collections import OrderedDict
 from collections import Counter
 from collections import namedtuple
@@ -13,36 +15,70 @@ sensorInfo = namedtuple('sensorInfo', ['name', 'pin', 'bounce'])
 class NetworkDataManager:
     TRANSFER_ID = 'transferID'
     SAVE_ID = 'saveID'
+    REMOVED_ID = 'removedID'
 
     def __init__(self, data_handler):
+        threading.Thread.__init__(self)
         self.storeDict = {}
         self.dataHandler = data_handler
         self.scheduler = BackgroundScheduler()
         self.transfer_minutes = '1'
         self.save_minutes = '5'
+        self.removed_minutes = '60'
+        self.removedCount = Counter()
+        self.removedLock = threading.Lock()
 
     def transfer_info(self):
         time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        self.storeDict[time] = self.dataHandler.clear_countDict()
+        temp_counter = self.dataHandler.clear_countDict()
+        with self.removedLock:
+            self.removedCount.update(temp_counter)
+        self.storeDict[time] = temp_counter
 
     def save_data(self):
         with open('jsonData.json', 'a') as outfile:
             json.dump(self.storeDict, outfile)
         self.storeDict.clear()
 
+    def rep_data(self):
+        self.port = "9999"
+        self.context = zmq.Context()
+        self.socket = self.context.socket(zmq.REP)
+        self.socket.bind("tcp://*:%s" % self.port)
+
+        while True:
+            #  Wait for next request from client
+            message = str(self.socket.recv(), "utf-8")
+            print("Received request: ", message)
+            time.sleep(1)
+            msg_json = json.dumps(self.storeDict)
+            self.socket.send_string(msg_json)
+
+    def rep_start(self):
+        thread = threading.Thread( target = self.rep_data)
+        thread.start()
+
+    def clear_removed_count(self):
+        with self.removedLock:
+            self.removedCount.clear()
+
     def to_save_settings(self):
-        return {NetworkDataManager.SAVE_ID: self.save_minutes, NetworkDataManager.TRANSFER_ID: self.transfer_minutes}
+        return {NetworkDataManager.SAVE_ID: self.save_minutes, NetworkDataManager.TRANSFER_ID: self.transfer_minutes,
+                NetworkDataManager.REMOVED_ID: self.removed_minutes}
 
     def to_load_settings(self, temp_dict):
-        self.transfer_minutes = temp_dict[NetworkDataManager.TRANSFER_ID]
-        self.save_minutes = temp_dict[NetworkDataManager.SAVE_ID]
+        self.transfer_minutes = temp_dict.get(NetworkDataManager.TRANSFER_ID, self.transfer_minutes)
+        self.save_minutes = temp_dict.get(NetworkDataManager.SAVE_ID, self.save_minutes)
+        self.removed_minutes = temp_dict.get(NetworkDataManager.REMOVED_ID, self.removed_minutes)
 
     def add_jobs(self):
         if not self.scheduler.get_jobs():  # To prevent duplicating jobs
             self.scheduler.add_job(self.transfer_info, 'cron', minute='*/' + self.transfer_minutes,
                                    id=NetworkDataManager.TRANSFER_ID)
-            self.scheduler.add_job(self.save_data, 'cron', minute='*/' + self.save_minutes, second='30',
-                                   id=NetworkDataManager.SAVE_ID)
+            # self.scheduler.add_job(self.save_data, 'cron', minute='*/' + self.save_minutes, second='30',
+            #                        id=NetworkDataManager.SAVE_ID)
+            self.scheduler.add_job(self.clear_removed_count, 'cron', hour='*/1',
+                                   id=NetworkDataManager.REMOVED_ID)
 
     def set_transfer_time(self, temp=None):
         if temp is None:
@@ -59,6 +95,14 @@ class NetworkDataManager:
             self.save_minutes = temp
         hour, minute = NetworkDataManager.get_cron_hour_minute(temp)
         self.scheduler.reschedule_job(NetworkDataManager.SAVE_ID, trigger='cron', hour=hour, minute=minute, second=30)
+
+    def set_removed_time(self, temp):
+        if temp is None:
+            temp = self.removed_minutes
+        else:
+            self.removed_minutes = temp
+        hour, minute = NetworkDataManager.get_cron_hour_minute(temp)
+        self.scheduler.reschedule_job(NetworkDataManager.REMOVED_ID, trigger='cron', hour=hour, minute=minute, second=1)
 
     def start_schedule(self):
         self.scheduler.start()
@@ -85,27 +129,8 @@ class PinDataManager:
 
     def __init__(self, file_name='sensorInfo.json'):
         self.fileName = file_name
-        # self.load_data()
         self.pinToID = None
         self.countDictLock = threading.Lock()
-
-    # def save_settings(self):
-    #     with open(self.fileName, 'w') as outfile:
-    #         temp_dict = OrderedDict()
-    #         for unique_id, named_tuple in self.sensorDict.items():
-    #             temp_dict[unique_id] = named_tuple._asdict()
-    #         json.dump(temp_dict, outfile)
-    #     self.pinToID = self.list_pin_and_id()
-    #
-    # def load_data(self):
-    #     try:
-    #         with open(self.fileName, 'r') as infile:
-    #             temp_dict = json.load(infile, object_pairs_hook=OrderedDict)
-    #         for unique_id in temp_dict.keys():
-    #             temp_info = sensorInfo(**(temp_dict[unique_id]))
-    #             self.sensorDict[unique_id] = temp_info
-    #     except FileNotFoundError:
-    #         pass
 
     def to_save_settings(self):
         temp_dict = OrderedDict()
@@ -158,6 +183,7 @@ class PinDataManager:
     def reset_sensorDict(self, dictionary):
         self.sensorDict.clear()
         self.sensorDict.update(dictionary)
+        self.pinToID = self.list_pin_and_id()
 
     def get_sensorDict_items(self):
         return self.sensorDict.items()
@@ -204,7 +230,7 @@ class DataManager:
     def load_data(self):
         try:
             with open(self.fileName, 'r') as infile:
-                settings_dict = json.load(infile)
+                settings_dict = json.load(infile, object_pairs_hook=OrderedDict)
                 self.pinDataManager.to_load_settings(settings_dict[DataManager.PIN_CONFIG_KEY])
                 self.networkDataManager.to_load_settings(settings_dict[DataManager.NETWORK_CONFIG_KEY])
         except FileNotFoundError:
@@ -219,6 +245,9 @@ class TempClass:  # Used for internal testing TODO remove once not needed
         self.pinDataManager = PinDataManager()
         self.networkDataManager = NetworkDataManager(self.pinDataManager)
         self.dataManager = DataManager(self.pinDataManager, self.networkDataManager)
+
+    def reset_pins(self):
+        pass
 
 
 if __name__ == '__main__':

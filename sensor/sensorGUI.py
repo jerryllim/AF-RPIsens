@@ -12,6 +12,7 @@ def multi_func(*fs):
 
 class MainGUI:
     def __init__(self, root, r_pi_controller):
+        self.readingFrame = None
         self.rPiController = r_pi_controller
         self.pinDataManager = r_pi_controller.pinDataManager
         self.networkDataManager = r_pi_controller.networkDataManager
@@ -27,11 +28,20 @@ class MainGUI:
         self.mainWindow.rowconfigure(0, weight=1)
         self.main_window_frame = ttk.Frame(self.mainWindow)
 
+        self.state = False
+        self.mainWindow.bind('<F11>', lambda event: self.toggle_fullscreen(event))
+        self.mainWindow.bind('<Escape>', lambda event: self.toggle_fullscreen(event))
+        self.mainWindow.bind('<Control-w>', lambda event: self.quit_and_destroy(event))
+        self.labelStyle = ttk.Style()
+        self.labelStyle.configure('name.TLabel', font=('TkFixedFont', 12, 'bold'))
+        self.labelStyle.configure('count.TLabel', font=('TkFixedFont', 20))
+
         self.menuBar = tkinter.Menu(self.mainWindow)
         settings = tkinter.Menu(self.menuBar, tearoff=0)
         settings.add_command(label='Settings', command=self.launch_settings)
+        settings.add_command(label='Toggle fullscreen', command=self.toggle_fullscreen, accelerator='F11')
         exits = tkinter.Menu(self.menuBar, tearoff=0)
-        exits.add_command(label='Exit', command=lambda: multi_func(self.mainWindow.quit, self.mainWindow.destroy))
+        exits.add_command(label='Exit', command=self.quit_and_destroy, accelerator='Control+w')
         self.menuBar.add_cascade(label='Settings', menu=settings)
         self.menuBar.add_cascade(label='Exit', menu=exits)
         self.mainWindow.config(menu=self.menuBar)
@@ -67,11 +77,16 @@ class MainGUI:
                 loc = index + row*5
                 if loc < len(_id_array):
                     _name, _pin, _bounce = self.pinDataManager.get_sensorDict_item(_id_array[loc])
-                    name_label = ttk.Label(temp_frame, text=_name)
-                    name_label.pack()
-                    value_label = ttk.Label(temp_frame, textvariable=self.count.get(_id_array[loc]))
-                    value_label.pack()
+                    self.mainWindow.update_idletasks()
+                    name_label = ttk.Label(temp_frame, text=_name, style='name.TLabel', anchor=tkinter.CENTER,
+                                           justify=tkinter.CENTER, wraplength=temp_frame.winfo_width())
+                    name_label.pack(fill=tkinter.X, expand=True)
+                    value_label = ttk.Label(temp_frame, textvariable=self.count.get(_id_array[loc]),
+                                            style='count.TLabel')
+                    value_label.pack(fill=tkinter.Y, expand=True)
 
+        if self.readingFrame is not None:
+            self.readingFrame.destroy()
         readings_frame = ttk.Frame(self.main_window_frame)
         readings_frame.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
         readings_frame.rowconfigure(0, weight=1)
@@ -82,6 +97,7 @@ class MainGUI:
         readings_row_setup(readings_frame, 0)
         readings_row_setup(readings_frame, 1)
         readings_row_setup(readings_frame, 2)
+        self.readingFrame = readings_frame
 
     def start_gui(self):
         self.mainWindow.mainloop()
@@ -98,8 +114,10 @@ class MainGUI:
             # Save Network Configurations
             transfer_time = save_class.transfer_option.get().rsplit(sep=' ', maxsplit=1)[0]
             save_time = save_class.save_option.get().rsplit(sep=' ', maxsplit=1)[0]
+            removed_time = save_class.removed_option.get().rsplit(sep=' ', maxsplit=1)[0]
             self.rPiController.networkDataManager.set_transfer_time(transfer_time)
             self.rPiController.networkDataManager.set_save_time(save_time)
+            self.rPiController.networkDataManager.set_removed_time(removed_time)
 
             # Save Pin Configurations
             _temp_dict = OrderedDict()
@@ -117,7 +135,7 @@ class MainGUI:
             self.pinDataManager.reset_sensorDict(_temp_dict)
 
             self.dataManager.save_data()
-            # self.rPiController.reset_pins()  # RPi uncomment here TODO remove when using pigpio?
+            self.rPiController.reset_pins()
             self.draw_reading_rows()
             quit_window()
 
@@ -134,8 +152,10 @@ class MainGUI:
             option_frame.grid(row=0, column=0, padx=5, pady=5)
             option_frame.rowconfigure(0, weight=1)
             option_frame.rowconfigure(1, weight=1)
+            option_frame.rowconfigure(2, weight=1)
             option_frame.columnconfigure(0, weight=1)
             option_frame.columnconfigure(1, weight=1)
+            # Transfer Time
             transfer_label = ttk.Label(option_frame, text='Timestamp frequency: ', width=20)
             transfer_label.grid(row=0, column=0, sticky='w')
             transfer_option_list = ('1 minute', '5 minutes', '15 minutes', '30 minutes', '60 minutes')
@@ -148,6 +168,7 @@ class MainGUI:
                                                   transfer_option.get(), *transfer_option_list)
             transfer_option_menu.config(width=10)
             transfer_option_menu.grid(row=0, column=1, sticky='ew')
+            # Save Time
             save_label = ttk.Label(option_frame, text='Save frequency: ', width=20)
             save_label.grid(row=1, column=0, sticky='w')
             save_option_list = ('2 minutes', '5 minutes', '15 minutes', '30 minutes', '60 minutes')
@@ -159,6 +180,19 @@ class MainGUI:
             save_option_menu = ttk.OptionMenu(option_frame, save_option, save_option.get(), *save_option_list)
             save_option_menu.config(width=10)
             save_option_menu.grid(row=1, column=1, sticky='ew')
+            # Removed Time
+            removed_label = ttk.Label(option_frame, text='Reset count frequency: ', width=20)
+            removed_label.grid(row=2, column=0, sticky='w')
+            removed_option_list = ('15 minutes','30 minutes', '60 minutes', '120 minutes')
+            removed_option = tkinter.StringVar()
+            save_class.removed_option = removed_option
+            current = [string for string in transfer_option_list if self.networkDataManager.removed_minutes in
+                       string][0]
+            removed_option.set(current)
+            removed_option_menu = ttk.OptionMenu(option_frame, removed_option, removed_option.get(),
+                                                 *removed_option_list)
+            removed_option_menu.config(width=10)
+            removed_option_menu.grid(row=2, column=1, sticky='ew')
 
         def pins_setup():
             def delete_item():
@@ -401,6 +435,22 @@ class MainGUI:
             network_setup()
 
             self.settingsWindow.grab_set()
+
+    def toggle_fullscreen(self, event=None):
+        if event is not None and event.keysym == 'Escape':
+            self.state = False
+        else:
+            self.state = not self.state
+        self.mainWindow.attributes('-fullscreen', self.state)
+        if self.state:
+            self.labelStyle.configure('count.TLabel', font=('TkFixedFont', 45))
+        else:
+            self.labelStyle.configure('count.TLabel', font=('TkFixedFont', 15))
+        self.draw_reading_rows()
+
+    def quit_and_destroy(self, event=None):
+        self.mainWindow.quit()
+        self.mainWindow.destroy()
 
 
 if __name__ == '__main__':
