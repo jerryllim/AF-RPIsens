@@ -116,6 +116,8 @@ class PinDataManager:
         for unique_id in temp_dict.keys():
             temp_info = sensorInfo(**(temp_dict[unique_id]))
             self.sensorDict[unique_id] = temp_info
+            with self.countDictLock:
+                self.countDict[unique_id] = Counter()
         self.pinToID = self.list_pin_and_id()
 
     def get_pins_list(self):
