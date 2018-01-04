@@ -41,10 +41,10 @@ class NetworkDataManager:
         self.storeDict.clear()
 
     def rep_data(self):
-        self.port = "9999"
+        self.port = "9990"
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.REP)
-        self.socket.bind("tcp://*:%s" % self.port)
+        self.socket.bind("tcp://152.228.1..48:%s" % self.port)
 
         while True:
             #  Wait for next request from client
