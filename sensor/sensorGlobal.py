@@ -5,7 +5,6 @@ from collections import OrderedDict
 from collections import Counter
 from collections import namedtuple
 import threading
-import datetime
 from apscheduler.schedulers.background import BackgroundScheduler
 
 
@@ -31,29 +30,25 @@ class NetworkDataManager:
 
     def transfer_to_removed(self, temp):
         with self.removedLock:
-            self.removedCount.update(temp)
-
-    def save_data(self):
-        with open('jsonData.json', 'a') as outfile:
-            json.dump(self.storeDict, outfile)
-        self.storeDict.clear()
+            for _key in temp.keys():
+                self.removedCount[_key].update(temp[_key])
 
     def rep_data(self):
-        self.port = "9999"
-        self.context = zmq.Context()
-        self.socket = self.context.socket(zmq.REP)
-        self.socket.bind("tcp://*:%s" % self.port)
+        port = "9999"
+        context = zmq.Context()
+        socket = context.socket(zmq.REP)
+        socket.bind("tcp://*:%s" % port)
 
         while True:
             #  Wait for next request from client
-            message = str(self.socket.recv(), "utf-8")
+            message = str(socket.recv(), "utf-8")
             print("Received request: ", message)
             time.sleep(1)
             msg_json = json.dumps(self.pinDataManager)
-            self.socket.send_string(msg_json)
+            socket.send_string(msg_json)
 
     def rep_start(self):
-        thread = threading.Thread( target = self.rep_data)
+        thread = threading.Thread(target=self.rep_data)
         thread.start()
 
     def clear_removed_count(self):
@@ -222,16 +217,6 @@ class DataManager:
             self.networkDataManager.start_schedule()
 
 
-class TempClass:  # Used for internal testing TODO remove once not needed
-    def __init__(self):
-        self.pinDataManager = PinDataManager()
-        self.networkDataManager = NetworkDataManager(self.pinDataManager)
-        self.dataManager = DataManager(self.pinDataManager, self.networkDataManager)
-
-    def reset_pins(self):
-        pass
-
-
 if __name__ == '__main__':
     pinManager = PinDataManager()
     networkManager = NetworkDataManager(pinManager)
@@ -249,10 +234,9 @@ if __name__ == '__main__':
 
         pinManager.sensorDict.clear()
         pinManager.sensorDict.update(tempDict2)
-        pinManager.save_settings()
 
         print(pinManager.get_names_list())
         print(pinManager.get_pins_list())
 
-    if True:
+    if False:
         dataManager.save_data()
