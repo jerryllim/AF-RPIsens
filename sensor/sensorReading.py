@@ -2,6 +2,7 @@ import sensor.sensorGUI as sensorGUI
 import sensor.sensorGlobal as sensorGlobal
 import pigpio
 import datetime
+from collections import Counter
 
 
 class RaspberryPiController:
@@ -23,9 +24,9 @@ class RaspberryPiController:
         _id = self.pinDataManager.get_id_from_pin(pin)
         datetime_stamp = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
         self.pinDataManager.increase_countDict(_id, datetime_stamp)
-        self.mainWindow.count[_id].set(sum(self.pinDataManager.countDict[_id]) +
-                                       sum(self.networkDataManager.removedCount[_id]))
-
+        self.mainWindow.count[_id].set(sum(self.pinDataManager.countDict[_id].values()) +
+                                       sum(self.networkDataManager.removedCount.get(_id, Counter()).values()))
+        
     def remove_detections(self):
         for callback in self.callbacks:
             callback.cancel()
@@ -59,5 +60,5 @@ class TempClass:  # Used for internal testing TODO remove once not needed
         _id = self.pinDataManager.get_id_from_pin(pin)
         datetime_stamp = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
         self.pinDataManager.increase_countDict(_id, datetime_stamp)
-        self.mainWindow.count[_id].set(sum(self.pinDataManager.countDict[_id]) +
-                                       sum(self.networkDataManager.removedCount[_id]))
+        self.mainWindow.count[_id].set(sum(self.pinDataManager.countDict[_id].values()) +
+                                       sum(self.networkDataManager.removedCount[_id].values()))
