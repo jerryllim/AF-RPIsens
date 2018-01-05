@@ -6,6 +6,7 @@ from collections import Counter
 from collections import namedtuple
 import threading
 from apscheduler.schedulers.background import BackgroundScheduler
+import datetime  # imported for testing TODO remove
 
 
 sensorInfo = namedtuple('sensorInfo', ['name', 'pin', 'bounce'])
@@ -45,7 +46,8 @@ class NetworkDataManager:
         while True:
             #  Wait for next request from client
             message = str(socket.recv(), "utf-8")
-            print("Received request: ", message)
+            print("Received request: {} at {}".format(message, datetime.datetime.utcnow().strftime('%X')))
+            # ^ for testing TODO remove
             time.sleep(1)
             msg_json = json.dumps(self.get_content())
             socket.send_string(msg_json)
