@@ -13,8 +13,10 @@
 - [ ] add log
 - [x] change RPi.GPIO to pigpio
 - [ ] Remodel GUI to more OO
-- [ ] auto resize font
-- [ ] launch pigpiod at startup
+- [x] auto resize font -> **Fullscreen + one font change**
+- [x] set to clear IntVar once an hour (new list?) -> **Added new Counter**
+- [x] launch pigpiod at startup -> **added to runScript**
+- [ ] change to executable file?
 
 ## Server
 - [x] add log.txt for log purposes
@@ -23,4 +25,5 @@
 - [ ] determine computer specifications
 - [x] add timestamps in view
 - [x] change listbox to treeview
-- [ ] change client side message format to match machine
+- [x] change client side message format to match machine
+- [ ] parsing json -> csv -> excel log
