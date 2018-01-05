@@ -112,11 +112,7 @@ class MainGUI:
 
         def save_settings():
             # Save Network Configurations
-            transfer_time = save_class.transfer_option.get().rsplit(sep=' ', maxsplit=1)[0]
-            save_time = save_class.save_option.get().rsplit(sep=' ', maxsplit=1)[0]
             removed_time = save_class.removed_option.get().rsplit(sep=' ', maxsplit=1)[0]
-            self.rPiController.networkDataManager.set_transfer_time(transfer_time)
-            self.rPiController.networkDataManager.set_save_time(save_time)
             self.rPiController.networkDataManager.set_removed_time(removed_time)
 
             # Save Pin Configurations
@@ -151,42 +147,15 @@ class MainGUI:
             option_frame = ttk.Frame(network_sett_frame)
             option_frame.grid(row=0, column=0, padx=5, pady=5)
             option_frame.rowconfigure(0, weight=1)
-            option_frame.rowconfigure(1, weight=1)
-            option_frame.rowconfigure(2, weight=1)
             option_frame.columnconfigure(0, weight=1)
             option_frame.columnconfigure(1, weight=1)
-            # Transfer Time
-            transfer_label = ttk.Label(option_frame, text='Timestamp frequency: ', width=20)
-            transfer_label.grid(row=0, column=0, sticky='w')
-            transfer_option_list = ('1 minute', '5 minutes', '15 minutes', '30 minutes', '60 minutes')
-            transfer_option = tkinter.StringVar()
-            save_class.transfer_option = transfer_option
-            current = [string for string in transfer_option_list if self.networkDataManager.transfer_minutes in
-                       string][0]
-            transfer_option.set(current)
-            transfer_option_menu = ttk.OptionMenu(option_frame, transfer_option,
-                                                  transfer_option.get(), *transfer_option_list)
-            transfer_option_menu.config(width=10)
-            transfer_option_menu.grid(row=0, column=1, sticky='ew')
-            # Save Time
-            save_label = ttk.Label(option_frame, text='Save frequency: ', width=20)
-            save_label.grid(row=1, column=0, sticky='w')
-            save_option_list = ('2 minutes', '5 minutes', '15 minutes', '30 minutes', '60 minutes')
-            save_option = tkinter.StringVar()
-            save_class.save_option = save_option
-            current = [string for string in save_option_list if self.networkDataManager.save_minutes in
-                       string][0]
-            save_option.set(current)
-            save_option_menu = ttk.OptionMenu(option_frame, save_option, save_option.get(), *save_option_list)
-            save_option_menu.config(width=10)
-            save_option_menu.grid(row=1, column=1, sticky='ew')
             # Removed Time
             removed_label = ttk.Label(option_frame, text='Reset count frequency: ', width=20)
             removed_label.grid(row=2, column=0, sticky='w')
-            removed_option_list = ('15 minutes','30 minutes', '60 minutes', '120 minutes')
+            removed_option_list = ('15 minutes', '30 minutes', '60 minutes', '120 minutes')
             removed_option = tkinter.StringVar()
             save_class.removed_option = removed_option
-            current = [string for string in transfer_option_list if self.networkDataManager.removed_minutes in
+            current = [string for string in removed_option_list if self.networkDataManager.removed_minutes in
                        string][0]
             removed_option.set(current)
             removed_option_menu = ttk.OptionMenu(option_frame, removed_option, removed_option.get(),

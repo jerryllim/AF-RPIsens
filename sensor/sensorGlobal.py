@@ -13,7 +13,6 @@ sensorInfo = namedtuple('sensorInfo', ['name', 'pin', 'bounce'])
 
 
 class NetworkDataManager:
-    TRANSFER_ID = 'transferID'
     REMOVED_ID = 'removedID'
 
     def __init__(self, pin_data_manager):
@@ -177,7 +176,9 @@ class PinDataManager:
 
     def increase_countDict(self, _id, datetime_stamp):
         with self.countDictLock:
-            self.countDict.get(_id,Counter()).update([datetime_stamp])
+            if self.countDict.get(_id) is None:
+                self.countDict[_id] = Counter()
+            self.countDict[_id].update([datetime_stamp])
 
     def get_countDict_item(self, _id):
         with self.countDictLock:
