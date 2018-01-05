@@ -27,3 +27,5 @@
 - [x] change listbox to treeview
 - [x] change client side message format to match machine
 - [ ] parsing json -> csv -> excel log
+- [ ] handling multiple clients
+- [ ] introducing timeout with polling for server request
