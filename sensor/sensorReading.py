@@ -22,7 +22,9 @@ class RaspberryPiController:
 
     def pin_triggered(self, pin, level, tick):
         _id = self.pinDataManager.get_id_from_pin(pin)
-        datetime_stamp = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+        now = datetime.datetime.utcnow()
+        now = now - datetime.timedelta(minutes=now.minute % 5)
+        datetime_stamp = now.strftime('%Y-%m-%d %H:%M')
         self.pinDataManager.increase_countDict(_id, datetime_stamp)
         self.mainWindow.count[_id].set(sum(self.pinDataManager.countDict[_id].values()) +
                                        sum(self.networkDataManager.removedCount.get(_id, Counter()).values()))
