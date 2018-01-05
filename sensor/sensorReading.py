@@ -61,4 +61,4 @@ class TempClass:  # Used for internal testing TODO remove once not needed
         datetime_stamp = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
         self.pinDataManager.increase_countDict(_id, datetime_stamp)
         self.mainWindow.count[_id].set(sum(self.pinDataManager.countDict[_id].values()) +
-                                       sum(self.networkDataManager.removedCount[_id].values()))
+                                       sum(self.networkDataManager.removedCount[_id].get(_id, Counter()).values()))
