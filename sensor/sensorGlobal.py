@@ -14,6 +14,7 @@ sensorInfo = namedtuple('sensorInfo', ['name', 'pin', 'bounce'])
 
 class NetworkDataManager:
     REMOVED_ID = 'removedID'
+    PORT_NUMBER = 'portNumber'
 
     def __init__(self, pin_data_manager):
         threading.Thread.__init__(self)
@@ -22,6 +23,7 @@ class NetworkDataManager:
         self.removed_minutes = '60'
         self.removedCount = {}
         self.removedLock = threading.Lock()
+        self.port_number = '9999'
 
     def get_content(self):
         temp = self.pinDataManager.clear_countDict()
@@ -37,16 +39,15 @@ class NetworkDataManager:
                     self.removedCount[_key].update(temp[_key])
 
     def rep_data(self):
-        port = "9999"  # <-- change port to match server
         context = zmq.Context()
         socket = context.socket(zmq.REP)
-        socket.connect("tcp://152.228.1.48:%s" % port)  # <-- change static server ip address if needed
+        socket.connect("tcp://152.228.1.48:%s" % self.port_number)  # <-- change static server ip address if needed
 
         while True:
             #  Wait for next request from client
-            message = str(socket.recv(), "utf-8")
+            message = str(socket.recv(), "utf-8")  # TODO check purpose, only to wait till server request?
             print("Received request: {} at {}".format(message, datetime.datetime.utcnow().strftime('%X')))
-            # ^ for testing TODO remove
+            # ^ for testing TODO to remove
             time.sleep(1)
             msg_json = json.dumps(self.get_content())
             socket.send_string(msg_json)
@@ -60,10 +61,11 @@ class NetworkDataManager:
             self.removedCount.clear()
 
     def to_save_settings(self):
-        return {NetworkDataManager.REMOVED_ID: self.removed_minutes}
+        return {NetworkDataManager.REMOVED_ID: self.removed_minutes, NetworkDataManager.PORT_NUMBER: self.port_number}
 
     def to_load_settings(self, temp_dict):
         self.removed_minutes = temp_dict.get(NetworkDataManager.REMOVED_ID, self.removed_minutes)
+        self.port_number = temp_dict.get(NetworkDataManager.PORT_NUMBER, self.port_number)
 
     def add_jobs(self):
         if not self.scheduler.get_jobs():  # To prevent duplicating jobs
@@ -78,6 +80,10 @@ class NetworkDataManager:
             self.removed_minutes = temp
         hour, minute = NetworkDataManager.get_cron_hour_minute(temp)
         self.scheduler.reschedule_job(NetworkDataManager.REMOVED_ID, trigger='cron', hour=hour, minute=minute, second=1)
+
+    def set_port_number(self, number):
+        # TODO close port? Exceptions to handle?
+        pass
 
     def start_schedule(self):
         self.scheduler.start()
