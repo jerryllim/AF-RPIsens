@@ -104,38 +104,76 @@ class MainGUI:
 
     def launch_settings(self):
         class SaveClass:
-            pass
+            def __init__(self):
+                self.tree_view = None
+                self.address_entry = None
+                self.port_entry = None
+                self.removed_option = None
 
         def quit_window():
             self.settingsWindow.destroy()
             self.settingsWindow = None
 
+        def network_validate_entry():
+            messages = []
+            address = save_class.address_entry.get()
+            address_list = [int(x) for x in address.split('.')]
+            if len(address_list) == 4:
+                if max(address_list) < 256:
+                    return True
+                else:
+                    return 'Incorrect Network address format'
+            else:
+                return 'Incorrect Network address format'
+
         def save_settings():
-            # Save Network Configurations
-            removed_time = save_class.removed_option.get().rsplit(sep=' ', maxsplit=1)[0]
-            self.rPiController.networkDataManager.set_removed_time(removed_time)
+            msg = network_validate_entry()
+            if msg is not True:
+                messagebox.showerror('Error', msg)
+            else:
+                # Save Network Configurations
+                self.rPiController.networkDataManager.set_address(save_class.address_entry.get())
+                self.rPiController.networkDataManager.set_port_number(save_class.port_entry.get())
+                removed_time = save_class.removed_option.get().rsplit(sep=' ', maxsplit=1)[0]
+                self.rPiController.networkDataManager.set_removed_time(removed_time)
 
-            # Save Pin Configurations
-            _temp_dict = OrderedDict()
-            tree_view = save_class.tree_view
-            for iid in tree_view.get_children():
-                s_id, s_name, s_pin, s_bounce = tree_view.item(iid)['values']
-                _temp_dict[s_id] = sensorGlobal.sensorInfo(s_name, s_pin, s_bounce)
-                if s_id not in self.count:
-                    self.count[s_id] = tkinter.IntVar()
-                    self.pinDataManager.set_countDict_item(s_id, 0)
-            to_delete = set(self.count.keys()).difference(set(_temp_dict.keys()))
-            for key in to_delete:
-                self.count.pop(key)
-                self.pinDataManager.del_countDict_item(key)
-            self.pinDataManager.reset_sensorDict(_temp_dict)
+                # Save Pin Configurations
+                _temp_dict = OrderedDict()
+                tree_view = save_class.tree_view
+                for iid in tree_view.get_children():
+                    s_id, s_name, s_pin, s_bounce = tree_view.item(iid)['values']
+                    _temp_dict[s_id] = sensorGlobal.sensorInfo(s_name, s_pin, s_bounce)
+                    if s_id not in self.count:
+                        self.count[s_id] = tkinter.IntVar()
+                        self.pinDataManager.set_countDict_item(s_id, 0)
+                to_delete = set(self.count.keys()).difference(set(_temp_dict.keys()))
+                for key in to_delete:
+                    self.count.pop(key)
+                    self.pinDataManager.del_countDict_item(key)
+                self.pinDataManager.reset_sensorDict(_temp_dict)
 
-            self.dataManager.save_data()
-            self.rPiController.reset_pins()
-            self.draw_reading_rows()
-            quit_window()
+                self.dataManager.save_data()
+                self.rPiController.reset_pins()
+                self.draw_reading_rows()
+                quit_window()
 
         def network_setup():
+            def network_validate(P, S, W):
+                if W == 'port' and len(P) > 5:
+                    return False
+                elif W == 'address' and len(P) > 15:
+                    return False
+                if S.isdigit():
+                    return True
+                elif W == 'address' and S == '.':
+                    return True
+                elif W == 'address':
+                    for s in S:
+                        if not (s.isdigit() or s == '.'):
+                            return False
+                else:
+                    return False
+
             network_sett_frame = ttk.Frame(settings_notebook)
             network_sett_frame.grid(sticky='nsew')
             settings_notebook.add(network_sett_frame, text='Network')
@@ -149,16 +187,36 @@ class MainGUI:
             option_frame.rowconfigure(0, weight=1)
             option_frame.columnconfigure(0, weight=1)
             option_frame.columnconfigure(1, weight=1)
+            network_validation = self.mainWindow.register(network_validate)
+            # Network Address
+            address_label = ttk.Label(option_frame, text='Network Address: ', width=20)
+            address_label.grid(row=0, column=0, sticky='w')
+            save_class.address_entry = ttk.Entry(option_frame, width=17, validate='key',
+                                                 validatecommand=(network_validation, '%P', '%S', 'address'))
+            save_class.address_entry.grid(row=0, column=1, sticky='w')
+            save_class.address_entry.delete(0, tkinter.END)
+            for num in self.networkDataManager.address.split('.'):
+                save_class.address_entry.insert(tkinter.END, int(num))
+                save_class.address_entry.insert(tkinter.END, '.')
+
+            save_class.address_entry.delete(len(save_class.address_entry.get()) - 1)
+            # Port Number
+            port_label = ttk.Label(option_frame, text='Port Number: ', width=20)
+            port_label.grid(row=1, column=0, sticky='w')
+            save_class.port_entry = ttk.Entry(option_frame, width=6, justify=tkinter.RIGHT, validate='key',
+                                              validatecommand=(network_validation, '%P', '%S', 'port'))
+            save_class.port_entry.grid(row=1, column=1, sticky='w')
+            save_class.port_entry.delete(0, tkinter.END)
+            save_class.port_entry.insert(0, self.networkDataManager.port_number)
             # Removed Time
             removed_label = ttk.Label(option_frame, text='Reset count frequency: ', width=20)
             removed_label.grid(row=2, column=0, sticky='w')
             removed_option_list = ('15 minutes', '30 minutes', '60 minutes', '120 minutes')
-            removed_option = tkinter.StringVar()
-            save_class.removed_option = removed_option
+            save_class.removed_option = tkinter.StringVar()
             current = [string for string in removed_option_list if self.networkDataManager.removed_minutes in
                        string][0]
-            removed_option.set(current)
-            removed_option_menu = ttk.OptionMenu(option_frame, removed_option, removed_option.get(),
+            save_class.removed_option.set(current)
+            removed_option_menu = ttk.OptionMenu(option_frame, save_class.removed_option, save_class.removed_option.get(),
                                                  *removed_option_list)
             removed_option_menu.config(width=10)
             removed_option_menu.grid(row=2, column=1, sticky='ew')

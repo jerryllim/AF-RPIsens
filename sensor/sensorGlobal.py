@@ -15,6 +15,7 @@ sensorInfo = namedtuple('sensorInfo', ['name', 'pin', 'bounce'])
 class NetworkDataManager:
     REMOVED_ID = 'removedID'
     PORT_NUMBER = 'portNumber'
+    IP_ADDRESS = 'IPAddress'
 
     def __init__(self, pin_data_manager):
         threading.Thread.__init__(self)
@@ -23,6 +24,7 @@ class NetworkDataManager:
         self.removed_minutes = '60'
         self.removedCount = {}
         self.removedLock = threading.Lock()
+        self.address = '152.228.1.48'
         self.port_number = '9999'
 
     def get_content(self):
@@ -41,6 +43,7 @@ class NetworkDataManager:
     def rep_data(self):
         context = zmq.Context()
         socket = context.socket(zmq.REP)
+        # socket.connect("tcp://{0}:{1}".format(self.address, self.port_number))  # TODO change to this format?
         socket.connect("tcp://152.228.1.48:%s" % self.port_number)  # <-- change static server ip address if needed
 
         while True:
@@ -61,11 +64,13 @@ class NetworkDataManager:
             self.removedCount.clear()
 
     def to_save_settings(self):
-        return {NetworkDataManager.REMOVED_ID: self.removed_minutes, NetworkDataManager.PORT_NUMBER: self.port_number}
+        return {NetworkDataManager.REMOVED_ID: self.removed_minutes, NetworkDataManager.PORT_NUMBER: self.port_number,
+                NetworkDataManager.IP_ADDRESS: self.address}
 
     def to_load_settings(self, temp_dict):
         self.removed_minutes = temp_dict.get(NetworkDataManager.REMOVED_ID, self.removed_minutes)
         self.port_number = temp_dict.get(NetworkDataManager.PORT_NUMBER, self.port_number)
+        self.address = temp_dict.get(NetworkDataManager.IP_ADDRESS, self.address)
 
     def add_jobs(self):
         if not self.scheduler.get_jobs():  # To prevent duplicating jobs
@@ -82,7 +87,13 @@ class NetworkDataManager:
         self.scheduler.reschedule_job(NetworkDataManager.REMOVED_ID, trigger='cron', hour=hour, minute=minute, second=1)
 
     def set_port_number(self, number):
+
         # TODO close port? Exceptions to handle?
+        pass
+
+    def set_address(self, address):
+        self.address = address
+        # TODO set new IP address
         pass
 
     def start_schedule(self):
