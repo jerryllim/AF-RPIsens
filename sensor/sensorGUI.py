@@ -233,8 +233,8 @@ class MainGUI:
             current = [string for string in removed_option_list if self.networkDataManager.removed_minutes in
                        string][0]
             save_class.removed_option.set(current)
-            removed_option_menu = ttk.OptionMenu(option_frame, save_class.removed_option, save_class.removed_option.get(),
-                                                 *removed_option_list)
+            removed_option_menu = ttk.OptionMenu(option_frame, save_class.removed_option,
+                                                 save_class.removed_option.get(), *removed_option_list)
             removed_option_menu.config(width=10)
             removed_option_menu.grid(row=2, column=1, sticky='ew')
 
@@ -256,12 +256,12 @@ class MainGUI:
 
             # Launch window to add/edit new item to Treeview (Add new sensor/change sensor properties)
             def launch_item_window(iid=''):
-                def key_validate(P, S, W):
-                    if W == 'pin' and len(P) > 2:
+                def key_validate(values, new, widget):
+                    if widget == 'pin' and len(values) > 2:
                         return False
-                    elif W == 'bounce' and len(P) > 3:
+                    elif widget == 'bounce' and len(values) > 3:
                         return False
-                    if S.isdigit():
+                    if new.isdigit():
                         return True
                     else:
                         return False
@@ -407,7 +407,7 @@ class MainGUI:
             treeview_frame.rowconfigure(0, weight=1)
             treeview_frame.columnconfigure(0, weight=10)
             treeview_frame.columnconfigure(1, weight=0)
-            save_class.tree_view = ttk.Treeview(treeview_frame)  # TODO check if there's a better solution
+            save_class.tree_view = ttk.Treeview(treeview_frame)
             tree_view = save_class.tree_view
             tree_view.grid(row=0, column=0, sticky='nsew')
             tree_view['show'] = 'headings'
@@ -426,9 +426,9 @@ class MainGUI:
                 tree_view.insert('', tkinter.END, values=(_id, _name, _pin, _bounce))
 
             # Scroll for Treeview
-            treeview_vscroll = ttk.Scrollbar(treeview_frame, orient='vertical', command=tree_view.yview)
-            treeview_vscroll.grid(row=0, column=1, sticky='nsw')
-            tree_view.configure(yscrollcommand=treeview_vscroll.set)
+            treeview_v_scroll = ttk.Scrollbar(treeview_frame, orient='vertical', command=tree_view.yview)
+            treeview_v_scroll.grid(row=0, column=1, sticky='nsw')
+            tree_view.configure(yscrollcommand=treeview_v_scroll.set)
 
             # Add & Delete buttons
             top_button_frame = ttk.Frame(pin_config_frame)
@@ -493,12 +493,6 @@ class MainGUI:
             self.labelStyle.configure('count.TLabel', font=('TkFixedFont', 15))
         self.draw_reading_rows()
 
-    def quit_and_destroy(self, event=None):
+    def quit_and_destroy(self, _event=None):
         self.mainWindow.quit()
         self.mainWindow.destroy()
-
-
-if __name__ == '__main__':
-    rPi = sensorGlobal.TempClass()
-    mainWindow = tkinter.Tk()
-    MainGUI(mainWindow, rPi).start_gui()
