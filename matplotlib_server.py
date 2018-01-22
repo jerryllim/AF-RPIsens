@@ -41,8 +41,8 @@ class GraphData(tkinter.Toplevel):
     SETTING_LIST_DICT = {'Hourly': ['Morning', 'Night'],
                          'Minutely': [('{}00'.format(str(i).zfill(2))) for i in range(24)]}
 
-    def __init__(self, root):
-        tkinter.Toplevel.__init__(self, root)
+    def __init__(self, parent):
+        tkinter.Toplevel.__init__(self, parent)
         self.title('Graph')
         self.frame = ttk.Frame(self)
         self.frame.pack(fill=tkinter.BOTH, expand=True)
@@ -74,7 +74,7 @@ class GraphData(tkinter.Toplevel):
         self.settings_option = tkinter.StringVar()
         self.settings_option.set(self.settings_option_list[0])
         self.settings_option_menu = ttk.OptionMenu(option_frame, self.settings_option, self.settings_option.get(),
-                                              *self.settings_option_list)
+                                                   *self.settings_option_list)
         self.settings_option_menu.grid(row=1, column=2, sticky='nw')
 
         self.graphFrame = BarChartFrame(self.frame, get_data)

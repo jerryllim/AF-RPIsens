@@ -2,9 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="8c4eab11-9431-48ea-8992-fef6a6e722be" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/sensor/sensorGUI.py" afterPath="$PROJECT_DIR$/sensor/sensorGUI.py" />
-      <change beforePath="$PROJECT_DIR$/sensor/sensorGlobal.py" afterPath="$PROJECT_DIR$/sensor/sensorGlobal.py" />
+      <change beforePath="$PROJECT_DIR$/matplotlib_server.py" afterPath="$PROJECT_DIR$/matplotlib_server.py" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -16,11 +14,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="sensorGUI.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="sensorGUI.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/sensor/sensorGUI.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="792">
-              <caret line="219" column="101" lean-forward="false" selection-start-line="219" selection-start-column="101" selection-end-line="219" selection-end-column="101" />
+            <state relative-caret-position="-5">
+              <caret line="23" column="47" lean-forward="true" selection-start-line="23" selection-start-column="47" selection-end-line="23" selection-end-column="47" />
               <folding>
                 <element signature="e#0#14#0" expanded="true" />
               </folding>
@@ -45,6 +43,18 @@
               <caret line="91" column="30" lean-forward="true" selection-start-line="91" selection-start-column="30" selection-end-line="91" selection-end-column="30" />
               <folding>
                 <element signature="e#0#11#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="matplotlib_server.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/matplotlib_server.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="360">
+              <caret line="24" column="56" lean-forward="false" selection-start-line="24" selection-start-column="56" selection-end-line="24" selection-end-column="56" />
+              <folding>
+                <element signature="e#0#14#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -87,10 +97,10 @@
       <find>increase</find>
       <find>network</find>
       <find>print</find>
-      <find>option</find>
       <find>optionMen</find>
       <find>message</find>
       <find>insert</find>
+      <find>option</find>
     </findStrings>
     <replaceStrings>
       <replace>TMessage</replace>
@@ -131,10 +141,10 @@
         <option value="$PROJECT_DIR$/macRunScript.py" />
         <option value="$PROJECT_DIR$/test_matplotlib.py" />
         <option value="$PROJECT_DIR$/sensor/sensorReading.py" />
-        <option value="$PROJECT_DIR$/matplotlib_server.py" />
         <option value="$PROJECT_DIR$/test_threading.py" />
         <option value="$PROJECT_DIR$/sensor/sensorGlobal.py" />
         <option value="$PROJECT_DIR$/sensor/sensorGUI.py" />
+        <option value="$PROJECT_DIR$/matplotlib_server.py" />
       </list>
     </option>
   </component>
@@ -230,7 +240,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.macRunScript">
+  <component name="RunManager" selected="Python.matplotlib_server">
     <configuration default="true" type="Applet" factoryName="Applet">
       <option name="HTML_USED" value="false" />
       <option name="WIDTH" value="400" />
@@ -525,8 +535,8 @@
     </list>
     <recent_temporary>
       <list size="2">
-        <item index="0" class="java.lang.String" itemvalue="Python.macRunScript" />
-        <item index="1" class="java.lang.String" itemvalue="Python.matplotlib_server" />
+        <item index="0" class="java.lang.String" itemvalue="Python.matplotlib_server" />
+        <item index="1" class="java.lang.String" itemvalue="Python.macRunScript" />
       </list>
     </recent_temporary>
   </component>
@@ -599,7 +609,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/gui/oldGUI.py" />
     <entry file="file://$PROJECT_DIR$/gui/checkBar.py" />
     <entry file="file://$PROJECT_DIR$/.gitignore">
       <provider selected="true" editor-type-id="text-editor">
@@ -838,16 +847,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/matplotlib_server.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="180">
-          <caret line="12" column="36" lean-forward="true" selection-start-line="12" selection-start-column="36" selection-end-line="12" selection-end-column="36" />
-          <folding>
-            <element signature="e#0#14#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/sensor/sensorGlobal v1.1">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-3685">
@@ -882,6 +881,14 @@
         </state>
       </provider>
     </entry>
+    <entry file="file:///Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/tkinter/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="196">
+          <caret line="2685" column="0" lean-forward="false" selection-start-line="2685" selection-start-column="0" selection-end-line="2685" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/sensor/sensorGlobal.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="337">
@@ -892,18 +899,28 @@
         </state>
       </provider>
     </entry>
-    <entry file="file:///Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/tkinter/__init__.py">
+    <entry file="file:///Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/tkinter/ttk.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="196">
-          <caret line="2685" column="0" lean-forward="false" selection-start-line="2685" selection-start-column="0" selection-end-line="2685" selection-end-column="0" />
+        <state relative-caret-position="197">
+          <caret line="1634" column="8" lean-forward="false" selection-start-line="1634" selection-start-column="8" selection-end-line="1634" selection-end-column="8" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/sensor/sensorGUI.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="792">
-          <caret line="219" column="101" lean-forward="false" selection-start-line="219" selection-start-column="101" selection-end-line="219" selection-end-column="101" />
+        <state relative-caret-position="-5">
+          <caret line="23" column="47" lean-forward="true" selection-start-line="23" selection-start-column="47" selection-end-line="23" selection-end-column="47" />
+          <folding>
+            <element signature="e#0#14#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/matplotlib_server.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="360">
+          <caret line="24" column="56" lean-forward="false" selection-start-line="24" selection-start-column="56" selection-end-line="24" selection-end-column="56" />
           <folding>
             <element signature="e#0#14#0" expanded="true" />
           </folding>
