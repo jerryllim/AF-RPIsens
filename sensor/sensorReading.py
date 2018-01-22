@@ -20,7 +20,7 @@ class RaspberryPiController:
 
         self.mainWindow.start_gui()
 
-    def pin_triggered(self, pin, level, tick):
+    def pin_triggered(self, pin, _level, _tick):
         _id = self.pinDataManager.get_id_from_pin(pin)
         now = datetime.datetime.utcnow()
         now = now - datetime.timedelta(minutes=now.minute % 5)
@@ -58,7 +58,7 @@ class TempClass:  # Used for internal testing TODO remove once not needed
     def reset_pins(self):
         pass
 
-    def pin_triggered(self, pin, level, tick):
+    def pin_triggered(self, pin, _level, _tick):
         _id = self.pinDataManager.get_id_from_pin(pin)
         datetime_stamp = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
         self.pinDataManager.increase_countDict(_id, datetime_stamp)
