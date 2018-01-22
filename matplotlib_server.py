@@ -46,6 +46,8 @@ class GraphData(tkinter.Toplevel):
         self.title('Graph')
         self.frame = ttk.Frame(self)
         self.frame.pack(fill=tkinter.BOTH, expand=True)
+        self.frame.columnconfigure(0, weight=10)
+        self.frame.columnconfigure(1, weight=1)
 
         option_frame = ttk.Frame(self.frame)
         option_frame.grid(sticky='nsew', padx=5, pady=5)
@@ -75,10 +77,19 @@ class GraphData(tkinter.Toplevel):
         self.settings_option.set(self.settings_option_list[0])
         self.settings_option_menu = ttk.OptionMenu(option_frame, self.settings_option, self.settings_option.get(),
                                                    *self.settings_option_list)
+        self.settings_option_menu.config(width=10)
         self.settings_option_menu.grid(row=1, column=2, sticky='nw')
 
+        # Graph
         self.graphFrame = BarChartFrame(self.frame, get_data)
-        self.graphFrame.grid(row=1, column=0, sticky='nsew', padx=5, pady=5)
+        self.graphFrame.grid(row=1, column=0, sticky='nsew', padx=5, pady=5, columnspan=2)
+
+        # Set button
+        button_frame = ttk.Frame(self.frame)
+        button_frame.grid(row=0, column=1, sticky='nsew', padx=5, pady=5)
+        button_frame.rowconfigure(0, weight=1)
+        set_button = ttk.Button(button_frame, text='Set')  # TODO set command
+        set_button.grid()
 
     def reset_mode_settings(self):
         self.settings_option_list = self.SETTING_LIST_DICT[self.mode_option.get()]
