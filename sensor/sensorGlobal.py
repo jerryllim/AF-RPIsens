@@ -18,7 +18,6 @@ class NetworkDataManager:
     IP_ADDRESS = 'IPAddress'
 
     def __init__(self, pin_data_manager):
-        threading.Thread.__init__(self)
         self.pinDataManager = pin_data_manager
         self.scheduler = BackgroundScheduler()
         self.removed_minutes = '60'
@@ -47,8 +46,8 @@ class NetworkDataManager:
 
         while True:
             #  Wait for next request from client
-            message = str(socket.recv(), "utf-8")  # TODO check purpose, only to wait till server request?
-            print("Received request: {} at {}".format(message, datetime.datetime.utcnow().strftime('%X')))
+            _message = str(socket.recv(), "utf-8")  # TODO check purpose, only to wait till server request?
+            print("Received request: {} at {}".format(_message, datetime.datetime.utcnow().strftime('%X')))
             # ^ for logging test TODO to remove
             time.sleep(1)
             msg_json = json.dumps(self.get_content())
@@ -244,10 +243,11 @@ if __name__ == '__main__':
     dataManager.save_data()
 
     if False:
-        tempDict1 = {'S001': sensorInfo("Sensor 1", 23, 50), 'S002': sensorInfo("Sensor 2", 24, 50), 'S003': sensorInfo("Sensor 3", 17, 50),
-                     'S004': sensorInfo("Sensor 4", 27, 50), 'S005': sensorInfo("Sensor 5", 22, 50), 'S006': sensorInfo("Sensor 6", 5, 50),
-                     'S007': sensorInfo("Sensor 7", 6, 50), 'S008': sensorInfo("Sensor 8", 13, 50), 'S009': sensorInfo("Sensor 9", 19, 50),
-                     'S010': sensorInfo("Sensor 10", 26, 50)}
+        tempDict1 = {'S001': sensorInfo("Sensor 1", 23, 50), 'S002': sensorInfo("Sensor 2", 24, 50),
+                     'S003': sensorInfo("Sensor 3", 17, 50), 'S004': sensorInfo("Sensor 4", 27, 50),
+                     'S005': sensorInfo("Sensor 5", 22, 50), 'S006': sensorInfo("Sensor 6", 5, 50),
+                     'S007': sensorInfo("Sensor 7", 6, 50), 'S008': sensorInfo("Sensor 8", 13, 50),
+                     'S009': sensorInfo("Sensor 9", 19, 50), 'S010': sensorInfo("Sensor 10", 26, 50)}
         tempDict2 = OrderedDict()
         for key, value in tempDict1.items():
             tempDict2[key] = value
