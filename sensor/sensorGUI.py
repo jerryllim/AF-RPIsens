@@ -109,6 +109,7 @@ class MainGUI:
                 self.address_entry = None
                 self.port_entry = None
                 self.removed_option = None
+                self.entries = {}
 
         def quit_window():
             self.settingsWindow.destroy()
@@ -117,14 +118,29 @@ class MainGUI:
         def network_validate_entry():
             messages = []
             address = save_class.address_entry.get()
-            address_list = [int(x) for x in address.split('.')]
-            if len(address_list) == 4:
-                if max(address_list) < 256:
-                    return True
-                else:
-                    return 'Incorrect Network address format'
+            if len(address) == 0:
+                messages.append('Please enter a network address.')
             else:
-                return 'Incorrect Network address format'
+                try:
+                    address_list = [int(x) for x in address.split('.')]
+                    if len(address_list) == 4:
+                        if not max(address_list) < 256:
+                            messages.append('Incorrect Network address format.')
+                    else:
+                        messages.append('Incorrect Network address format.')
+                except ValueError:
+                    messages.append('Incorrect Network address format.')
+
+            port_number = save_class.port_entry.get()
+            if len(port_number) == 0:
+                messages.append('Please enter a port number.')
+            elif int(port_number) == 0:
+                messages.append('Port number cannot be 0.')
+
+            if messages:
+                return '\n'.join(messages)
+            else:
+                return True
 
         def save_settings():
             msg = network_validate_entry()
@@ -158,19 +174,20 @@ class MainGUI:
                 quit_window()
 
         def network_setup():
-            def network_validate(P, S, W):
-                if W == 'port' and len(P) > 5:
+            def network_validate(values, new, widget):
+                if widget == 'port' and len(values) > 5:
                     return False
-                elif W == 'address' and len(P) > 15:
+                elif widget == 'address' and len(values) > 15:
                     return False
-                if S.isdigit():
+                if new.isdigit():
                     return True
-                elif W == 'address' and S == '.':
+                elif widget == 'address' and new == '.':
                     return True
-                elif W == 'address':
-                    for s in S:
+                elif widget == 'address':
+                    for s in new:
                         if not (s.isdigit() or s == '.'):
                             return False
+                    return True
                 else:
                     return False
 
@@ -195,11 +212,7 @@ class MainGUI:
                                                  validatecommand=(network_validation, '%P', '%S', 'address'))
             save_class.address_entry.grid(row=0, column=1, sticky='w')
             save_class.address_entry.delete(0, tkinter.END)
-            for num in self.networkDataManager.address.split('.'):
-                save_class.address_entry.insert(tkinter.END, int(num))
-                save_class.address_entry.insert(tkinter.END, '.')
-
-            save_class.address_entry.delete(len(save_class.address_entry.get()) - 1)
+            save_class.address_entry.insert(0, self.networkDataManager.address)
             # Port Number
             port_label = ttk.Label(option_frame, text='Port Number: ', width=20)
             port_label.grid(row=1, column=0, sticky='w')

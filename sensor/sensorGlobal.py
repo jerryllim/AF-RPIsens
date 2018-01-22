@@ -43,14 +43,13 @@ class NetworkDataManager:
     def rep_data(self):
         context = zmq.Context()
         socket = context.socket(zmq.REP)
-        # socket.connect("tcp://{0}:{1}".format(self.address, self.port_number))  # TODO change to this format?
-        socket.connect("tcp://152.228.1.48:%s" % self.port_number)  # <-- change static server ip address if needed
+        socket.connect("tcp://{0}:{1}".format(self.address, self.port_number))
 
         while True:
             #  Wait for next request from client
             message = str(socket.recv(), "utf-8")  # TODO check purpose, only to wait till server request?
             print("Received request: {} at {}".format(message, datetime.datetime.utcnow().strftime('%X')))
-            # ^ for testing TODO to remove
+            # ^ for logging test TODO to remove
             time.sleep(1)
             msg_json = json.dumps(self.get_content())
             socket.send_string(msg_json)
@@ -87,14 +86,10 @@ class NetworkDataManager:
         self.scheduler.reschedule_job(NetworkDataManager.REMOVED_ID, trigger='cron', hour=hour, minute=minute, second=1)
 
     def set_port_number(self, number):
-
-        # TODO close port? Exceptions to handle?
-        pass
+        self.port_number = number
 
     def set_address(self, address):
         self.address = address
-        # TODO set new IP address
-        pass
 
     def start_schedule(self):
         self.scheduler.start()
