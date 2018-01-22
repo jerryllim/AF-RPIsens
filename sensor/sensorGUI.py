@@ -148,10 +148,14 @@ class MainGUI:
                 messagebox.showerror('Error', msg)
             else:
                 # Save Network Configurations
-                self.rPiController.networkDataManager.set_address(save_class.address_entry.get())
-                self.rPiController.networkDataManager.set_port_number(save_class.port_entry.get())
+                if (self.networkDataManager.address != save_class.address_entry.get() or
+                        self.networkDataManager.port_number != save_class.port_entry.get()):
+                    messagebox.showinfo(title='Network configuration changed',
+                                        message='Network configuration changes require application restart')
+                self.networkDataManager.set_address(save_class.address_entry.get())
+                self.networkDataManager.set_port_number(save_class.port_entry.get())
                 removed_time = save_class.removed_option.get().rsplit(sep=' ', maxsplit=1)[0]
-                self.rPiController.networkDataManager.set_removed_time(removed_time)
+                self.networkDataManager.set_removed_time(removed_time)
 
                 # Save Pin Configurations
                 _temp_dict = OrderedDict()
@@ -473,6 +477,7 @@ class MainGUI:
             save_class = SaveClass()
             pins_setup()
             network_setup()
+            settings_notebook.enable_traversal()
 
             self.settingsWindow.grab_set()
 
