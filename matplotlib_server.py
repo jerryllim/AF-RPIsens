@@ -6,101 +6,103 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
 
-class BarChartFrame(ttk.Frame):
-    WIDTH = 0.75
+class VerticalScrollFrame(ttk.Frame):
 
-    def __init__(self, parent, get_data):
-        ttk.Frame.__init__(self, parent, relief='ridge', borderwidth=2)
+    def __init__(self, parent, **kwargs):
+        ttk.Frame.__init__(self, parent, **kwargs)
+        self.canvas = tkinter.Canvas(self, bg='blue')
+        self.canvas.pack(fill=tkinter.BOTH, expand=tkinter.TRUE, side=tkinter.LEFT)
+        v_scrollbar = ttk.Scrollbar(self, orient='vertical', command=self.canvas.yview)
+        v_scrollbar.pack(side=tkinter.RIGHT, fill=tkinter.Y, expand=tkinter.FALSE)
+        self.canvas.config(yscrollcommand=v_scrollbar.set, scrollregion=self.canvas.bbox('all'))
 
-        self.figure = Figure()
-        self.subplot = self.figure.add_subplot(111)
+        self.interior_frame = tkinter.Frame(self.canvas, bg='green')
+        self.interior_frame_id = self.canvas.create_window((0, 0), window=self.interior_frame, anchor=tkinter.NW)
 
-        sensor_name, title, x, y = get_data()
-        self.subplot.plot(x, y, 'b-o')
-        self.subplot.grid(linestyle='dashed')
+        self.interior_frame.bind("<Configure>", self._on_frame_configure)
+        self.canvas.bind('<Configure>', self.on_canvas_configure)
 
-        self.subplot.set_ylabel('Count')
-        self.subplot.set_xlabel(sensor_name)
-        self.subplot.set_title(title)
-        canvas = FigureCanvasTkAgg(figure=self.figure, master=self)
-        canvas.show()
-        canvas.get_tk_widget().pack(fill=tkinter.BOTH, expand=True)
+    def on_canvas_configure(self, event):
+        canvas_width = event.width
+        self.canvas.itemconfig(self.interior_frame_id, width=canvas_width)
+
+    def _on_frame_configure(self, _event):
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+
+    def get_interior_frame(self):
+        return self.interior_frame
 
 
-def get_data():  # TODO change this
+class GraphRowFrame(ttk.Frame):
+    class GraphFrame(ttk.Frame):
+        WIDTH = 0.75
+
+        def __init__(self, parent, data_func):
+            ttk.Frame.__init__(self, parent, relief='ridge', borderwidth=2)
+            self.figure = Figure()
+            self.subplot = self.figure.add_subplot(111)
+            self.figure.set_tight_layout(True)
+
+            sensor_name, x, y = data_func()
+            self.subplot.plot(x, y, 'b-o')
+            self.subplot.grid(linestyle='dashed')
+
+            self.subplot.set_title(sensor_name)
+            canvas = FigureCanvasTkAgg(figure=self.figure, master=self)
+            canvas.show()
+            canvas.get_tk_widget().pack(fill=tkinter.BOTH, expand=True)
+
+    def __init__(self, parent, data_func, **kwargs):
+        ttk.Frame.__init__(self, parent, **kwargs)
+        self.data = data_func
+        self.columnconfigure(0, weight=10)
+        self.columnconfigure(1, weight=1)
+        self.graph_frame = GraphRowFrame.GraphFrame(self, self.graph_data)
+        # self.graph_frame.pack(side=tkinter.LEFT)
+        self.graph_frame.grid(column=0, sticky='nsew', padx=5, pady=5)
+        self.label_frame = ttk.Frame(self)
+        # self.label_frame.pack(side=tkinter.LEFT)
+        self.label_frame.grid(row=0, column=1, sticky='nsew', padx=5, pady=5)
+        for data in self.label_data():
+            label = ttk.Label(self.label_frame, text=data)
+            label.pack(side=tkinter.TOP, anchor=tkinter.W)
+
+    def graph_data(self):
+        sensor_name, mode, mode_info, x, y = self.data()
+        return sensor_name, x, y
+
+    def label_data(self):
+        sensor_name, mode, mode_info, x, y = self.data()
+        return sensor_name, mode, mode_info
+
+
+def temp_get_data():  # TODO change this
+    mode = 'Morning Shift'
+    mode_info = '01 Jan 2018'
     sensor_name = 'Machine A'
-    title = 'Hourly Output (Morning)'
     y = [103, 23, 34, 21, 36, 42, 48, 58, 77, 89, 92, 100]
     x= []
     for i in range(len(y)):
         x.append(str(i+8).zfill(2))
-    return sensor_name, title, x, y
-
-
-class GraphData(tkinter.Toplevel):
-    SETTING_LIST_DICT = {'Hourly': ['Morning', 'Night'],
-                         'Minutely': [('{}00'.format(str(i).zfill(2))) for i in range(24)]}
-
-    def __init__(self, parent):
-        tkinter.Toplevel.__init__(self, parent)
-        self.title('Graph')
-        self.frame = ttk.Frame(self)
-        self.frame.pack(fill=tkinter.BOTH, expand=True)
-        self.frame.columnconfigure(0, weight=10)
-        self.frame.columnconfigure(1, weight=1)
-
-        option_frame = ttk.Frame(self.frame)
-        option_frame.grid(sticky='nsew', padx=5, pady=5)
-
-        # TODO get machine list
-        sensor_label = ttk.Label(option_frame, text='Machine:')
-        sensor_label.grid(row=0, column=0, sticky='sw')
-        sensor_option_list = ['Machine A', 'Machine B', 'Machine C']
-        sensor_option = tkinter.StringVar()
-        sensor_option.set('Machine A')
-        sensor_option_menu = ttk.OptionMenu(option_frame, sensor_option, sensor_option.get(), *sensor_option_list)
-        sensor_option_menu.config(width=15)
-        sensor_option_menu.grid(row=1, column=0, sticky='nw')
-        # Show Mode
-        mode_label = ttk.Label(option_frame, text='Mode:')
-        mode_label.grid(row=0, column=1, sticky='sw')
-        mode_option_list = ['Hourly', 'Minutely']
-        self.mode_option = tkinter.StringVar()
-        self.mode_option.set(mode_option_list[0])
-        mode_option_menu = ttk.OptionMenu(option_frame, self.mode_option, self.mode_option.get(), *mode_option_list,
-                                          command=lambda x: self.reset_mode_settings())
-        mode_option_menu.config(width=6)
-        mode_option_menu.grid(row=1, column=1, sticky='nw')
-        # Mode Settings
-        self.settings_option_list = self.SETTING_LIST_DICT[self.mode_option.get()]
-        self.settings_option = tkinter.StringVar()
-        self.settings_option.set(self.settings_option_list[0])
-        self.settings_option_menu = ttk.OptionMenu(option_frame, self.settings_option, self.settings_option.get(),
-                                                   *self.settings_option_list)
-        self.settings_option_menu.config(width=10)
-        self.settings_option_menu.grid(row=1, column=2, sticky='nw')
-
-        # Graph
-        self.graphFrame = BarChartFrame(self.frame, get_data)
-        self.graphFrame.grid(row=1, column=0, sticky='nsew', padx=5, pady=5, columnspan=2)
-
-        # Set button
-        button_frame = ttk.Frame(self.frame)
-        button_frame.grid(row=0, column=1, sticky='nsew', padx=5, pady=5)
-        button_frame.rowconfigure(0, weight=1)
-        set_button = ttk.Button(button_frame, text='Set')  # TODO set command
-        set_button.grid()
-
-    def reset_mode_settings(self):
-        self.settings_option_list = self.SETTING_LIST_DICT[self.mode_option.get()]
-        self.settings_option_menu.set_menu(self.settings_option_list[0], *self.settings_option_list)
+    return sensor_name, mode, mode_info, x, y
 
 
 if __name__ == '__main__':
     root = tkinter.Tk()
-    root.title('Hello Graph')
-    button = tkinter.Button(root, text='Show Graph', command=lambda: GraphData(root))
-    button.pack()
-    button2 = tkinter.Button(root, text='Exit', command=root.quit)
-    button2.pack()
-    root.mainloop()
+    root.title = 'Hello'
+    some = VerticalScrollFrame(root)
+    some.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
+    another1 = GraphRowFrame(some.get_interior_frame(), temp_get_data)
+    another1.pack(side=tkinter.TOP, fill=tkinter.X)
+    another2 = GraphRowFrame(some.get_interior_frame(), temp_get_data)
+    another2.pack(side=tkinter.TOP, fill=tkinter.X)
+    another3 = GraphRowFrame(some.get_interior_frame(), temp_get_data)
+    another3.pack(side=tkinter.TOP, fill=tkinter.X)
+    # root.mainloop()
+    while True:
+        try:
+            root.mainloop()
+        except UnicodeDecodeError:
+            continue
+        else:
+            break
