@@ -3,6 +3,7 @@ from tkinter import ttk
 from tkinter import messagebox
 from collections import OrderedDict
 from sensor import sensorGlobal
+import logging
 
 
 def multi_func(*fs):
@@ -12,6 +13,8 @@ def multi_func(*fs):
 
 class MainGUI:
     def __init__(self, root, r_pi_controller):
+        self.logger = logging.getLogger('afRPIsens')  # Get logger
+
         self.readingFrame = None
         self.rPiController = r_pi_controller
         self.pinDataManager = r_pi_controller.pinDataManager
@@ -32,6 +35,7 @@ class MainGUI:
         self.mainWindow.bind('<F11>', lambda event: self.toggle_fullscreen(event))
         self.mainWindow.bind('<Escape>', lambda event: self.toggle_fullscreen(event))
         self.mainWindow.bind('<Control-w>', lambda event: self.quit_and_destroy(event))
+        self.mainWindow.protocol('WM_DELETE_WINDOW', self.quit_and_destroy)
         self.labelStyle = ttk.Style()
         self.labelStyle.configure('name.TLabel', font=('TkFixedFont', 12, 'bold'))
         self.labelStyle.configure('count.TLabel', font=('TkFixedFont', 20))
@@ -58,6 +62,7 @@ class MainGUI:
         self.main_window_frame.grid_rowconfigure(0, weight=10, minsize=150)
 
         self.draw_reading_rows()
+        self.logger.info('Completed setup')
 
     def draw_reading_rows(self):
         def readings_row_setup(parent, row):
@@ -100,6 +105,7 @@ class MainGUI:
         self.readingFrame = readings_frame
 
     def start_gui(self):
+        self.logger.debug('Starting mainloop')
         self.mainWindow.mainloop()
 
     def launch_settings(self):
@@ -143,8 +149,10 @@ class MainGUI:
                 return True
 
         def save_settings():
+            self.logger.debug('Saving settings')
             msg = network_validate_entry()
             if msg is not True:
+                self.logger.debug('Saving settings error. Prompting')
                 messagebox.showerror('Error', msg)
             else:
                 # Save Network Configurations
@@ -176,6 +184,7 @@ class MainGUI:
                 self.rPiController.reset_pins()
                 self.draw_reading_rows()
                 quit_window()
+                self.logger.info('Saved settings')
 
         def network_setup():
             def network_validate(values, new, widget):
@@ -237,6 +246,7 @@ class MainGUI:
                                                  save_class.removed_option.get(), *removed_option_list)
             removed_option_menu.config(width=10)
             removed_option_menu.grid(row=2, column=1, sticky='ew')
+            self.logger.debug('Completed network config setup')
 
         def pins_setup():
             def delete_item():
@@ -304,7 +314,9 @@ class MainGUI:
                         tree_view.insert('', tkinter.END, values=(id_entry.get(), name_entry.get(), pin_entry.get(),
                                                                   bounce_entry.get()))
                         quit_item_window()
+                        self.logger.debug('Add succeeded.')
                     else:
+                        self.logger.debug('Add error prompting.')
                         messagebox.showerror('Error', msg)
 
                 def change_and_quit():
@@ -325,10 +337,13 @@ class MainGUI:
 
                         else:
                             change_and_quit()
+                        self.logger.debug('Edit succeeded.')
 
                     else:
+                        self.logger.debug('Edit error prompting.')
                         messagebox.showerror('Error', msg)
 
+                self.logger.debug('Launched item window')
                 item_window = tkinter.Toplevel(self.pinConfigWindow)
                 item_window.title('Item')
                 item_window.geometry('-200-200')
@@ -383,9 +398,11 @@ class MainGUI:
                     name_entry.insert(0, i_name)
                     pin_entry.insert(0, i_pin)
                     bounce_entry.insert(0, i_bounce)
+                    self.logger.debug('Editing pin info')
                 else:
                     _add_button = ttk.Button(button_frame, text='Add', command=add_item)
                     _add_button.pack(side=tkinter.LEFT)
+                    self.logger.debug('Adding pin info')
 
                 _cancel_button = ttk.Button(button_frame, text='Cancel', command=quit_item_window)
                 _cancel_button.pack(side=tkinter.RIGHT)
@@ -447,6 +464,7 @@ class MainGUI:
             down_button.pack(side=tkinter.LEFT)
             up_button = ttk.Button(middle_button_frame, text=u'\u25B2', command=lambda: move_item(-1))
             up_button.pack(side=tkinter.RIGHT)
+            self.logger.debug('Completed pin config setup')
 
         if self.settingsWindow is not None:
             self.settingsWindow.lift()
@@ -478,7 +496,7 @@ class MainGUI:
             pins_setup()
             network_setup()
             settings_notebook.enable_traversal()
-
+            self.logger.debug('Completed settings window setup')
             self.settingsWindow.grab_set()
 
     def toggle_fullscreen(self, event=None):
@@ -494,5 +512,6 @@ class MainGUI:
         self.draw_reading_rows()
 
     def quit_and_destroy(self, _event=None):
+        self.logger.info('Closing the main window!\n\n')
         self.mainWindow.quit()
         self.mainWindow.destroy()

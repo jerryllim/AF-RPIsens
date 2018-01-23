@@ -6,7 +6,7 @@ from collections import Counter
 from collections import namedtuple
 import threading
 from apscheduler.schedulers.background import BackgroundScheduler
-import datetime  # imported for testing TODO remove
+import logging
 
 
 sensorInfo = namedtuple('sensorInfo', ['name', 'pin', 'bounce'])
@@ -18,6 +18,7 @@ class NetworkDataManager:
     IP_ADDRESS = 'IPAddress'
 
     def __init__(self, pin_data_manager):
+        self.logger = logging.getLogger('afRPIsens')
         self.pinDataManager = pin_data_manager
         self.scheduler = BackgroundScheduler()
         self.removed_minutes = '60'
@@ -25,6 +26,7 @@ class NetworkDataManager:
         self.removedLock = threading.Lock()
         self.address = '152.228.1.48'
         self.port_number = '9999'
+        self.logger.debug('Completed setup')
 
     def get_content(self):
         temp = self.pinDataManager.clear_countDict()
@@ -32,12 +34,14 @@ class NetworkDataManager:
         return temp
 
     def transfer_to_removed(self, temp):
+        self.logger.debug('Transferring to removed')
         with self.removedLock:
             for _key in temp.keys():
                 if self.removedCount.get(_key, None) is None:
                     self.removedCount[_key] = temp[_key]
                 else:
                     self.removedCount[_key].update(temp[_key])
+        self.logger.debug('Completed transfer')
 
     def rep_data(self):
         context = zmq.Context()
@@ -46,12 +50,12 @@ class NetworkDataManager:
 
         while True:
             #  Wait for next request from client
-            _message = str(socket.recv(), "utf-8")  # TODO check purpose, only to wait till server request?
-            print("Received request: {} at {}".format(_message, datetime.datetime.utcnow().strftime('%X')))
-            # ^ for logging test TODO to remove
+            _message = str(socket.recv(), "utf-8")
+            self.logger.info('Received request ({})'.format(_message))
             time.sleep(1)
             msg_json = json.dumps(self.get_content())
             socket.send_string(msg_json)
+            self.logger.info('Sent data')
 
     def rep_start(self):
         thread = threading.Thread(target=self.rep_data)
@@ -60,6 +64,7 @@ class NetworkDataManager:
     def clear_removed_count(self):
         with self.removedLock:
             self.removedCount.clear()
+        self.logger.debug('Cleared removed count')
 
     def to_save_settings(self):
         return {NetworkDataManager.REMOVED_ID: self.removed_minutes, NetworkDataManager.PORT_NUMBER: self.port_number,
@@ -114,9 +119,11 @@ class PinDataManager:
     pinToID = {}
 
     def __init__(self, file_name='sensorInfo.json'):
+        self.logger = logging.getLogger('afRPIsens')
         self.fileName = file_name
         self.pinToID = None
         self.countDictLock = threading.Lock()
+        self.logger.debug('Completed setup')
 
     def to_save_settings(self):
         temp_dict = OrderedDict()
@@ -211,19 +218,24 @@ class DataManager:
     NETWORK_CONFIG_KEY = 'NetworkConfig'
 
     def __init__(self, pin_data_manager, network_data_manager, filename='settings.json'):
+        self.logger = logging.getLogger('afRPIsens')
         self.pinDataManager = pin_data_manager
         self.networkDataManager = network_data_manager
         self.fileName = filename
         self.load_data()
+        self.logger.debug('Completed setup')
 
     def save_data(self):
+        self.logger.debug('Saving data')
         temp_dict = self.pinDataManager.to_save_settings()
         temp_dict2 = self.networkDataManager.to_save_settings()
         settings_dict = {DataManager.PIN_CONFIG_KEY: temp_dict, DataManager.NETWORK_CONFIG_KEY: temp_dict2}
         with open(self.fileName, 'w') as outfile:
             json.dump(settings_dict, outfile)
+        self.logger.debug('Saved data')
 
     def load_data(self):
+        self.logger.debug('Loading data')
         try:
             with open(self.fileName, 'r') as infile:
                 settings_dict = json.load(infile, object_pairs_hook=OrderedDict)
@@ -234,6 +246,7 @@ class DataManager:
         finally:
             self.networkDataManager.add_jobs()
             self.networkDataManager.start_schedule()
+        self.logger.debug('Loaded data')
 
 
 if __name__ == '__main__':

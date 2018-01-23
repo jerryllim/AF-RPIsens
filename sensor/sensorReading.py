@@ -3,10 +3,20 @@ import sensor.sensorGlobal as sensorGlobal
 import pigpio
 import datetime
 from collections import Counter
+import logging
 
 
 class RaspberryPiController:
     def __init__(self, root):
+        # Logger setup
+        self.logger = logging.getLogger('afRPIsens')
+        self.logger.setLevel(logging.DEBUG)
+        file_handler = logging.FileHandler('afRPIsens.log')
+        file_handler.setLevel(logging.DEBUG)
+        log_format = logging.Formatter('%(asctime)s - %(threadName)s - %(levelname)s: %(module)s - %(message)s')
+        file_handler.setFormatter(log_format)
+        self.logger.addHandler(file_handler)
+
         self.pinDataManager = sensorGlobal.PinDataManager()
         self.networkDataManager = sensorGlobal.NetworkDataManager(self.pinDataManager)
         self.networkDataManager.rep_start()
@@ -14,10 +24,13 @@ class RaspberryPiController:
         self.mainWindow = sensorGUI.MainGUI(root, self)
         self.pi = pigpio.pi()
         self.callbacks = []
+        self.logger.info('Completed initial setup')
 
         for pin, bounce in self.pinDataManager.get_pin_and_bounce_list():
             RaspberryPiController.pin_setup(self, pin, bounce)
+        self.logger.info('Completed pin setup')
 
+        self.logger.info('Starting GUI')
         self.mainWindow.start_gui()
 
     def pin_triggered(self, pin, _level, _tick):
@@ -34,6 +47,7 @@ class RaspberryPiController:
             callback.cancel()
 
     def reset_pins(self):
+        self.logger.debug('Resetting pins')
         self.remove_detections()
         for pin, bounce in self.pinDataManager.get_pin_and_bounce_list():
             RaspberryPiController.pin_setup(self, pin, bounce)
@@ -47,15 +61,27 @@ class RaspberryPiController:
 
 class TempClass:  # Used for internal testing TODO remove once not needed
     def __init__(self, root):
+        # Logger setup
+        self.logger = logging.getLogger('afRPIsens')
+        self.logger.setLevel(logging.DEBUG)
+        file_handler = logging.FileHandler('afRPIsens.log')
+        file_handler.setLevel(logging.DEBUG)
+        log_format = logging.Formatter('%(asctime)s - %(threadName)s - %(levelname)s: %(module)s - %(message)s')
+        file_handler.setFormatter(log_format)
+        self.logger.addHandler(file_handler)
+
         self.pinDataManager = sensorGlobal.PinDataManager()
         self.networkDataManager = sensorGlobal.NetworkDataManager(self.pinDataManager)
         # self.networkDataManager.rep_start()
         self.dataManager = sensorGlobal.DataManager(self.pinDataManager, self.networkDataManager)
         self.mainWindow = sensorGUI.MainGUI(root, self)
+        self.logger.info('Completed initial setup')
 
+        self.logger.info('Starting GUI')
         self.mainWindow.start_gui()
 
     def reset_pins(self):
+        self.logger.debug('Resetting pins')
         pass
 
     def pin_triggered(self, pin, _level, _tick):
