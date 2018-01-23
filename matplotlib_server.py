@@ -1,6 +1,8 @@
 import tkinter
 from tkinter import ttk
+
 import matplotlib
+
 matplotlib.use('TkAgg')
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
@@ -38,7 +40,7 @@ class GraphRowFrame(ttk.Frame):
         WIDTH = 0.75
 
         def __init__(self, parent, data_func):
-            ttk.Frame.__init__(self, parent, relief='ridge', borderwidth=2)
+            ttk.Frame.__init__(self, parent, relief='ridge', borderwidth=2, width=50)
             self.figure = Figure()
             self.subplot = self.figure.add_subplot(111)
             self.figure.set_tight_layout(True)
@@ -60,7 +62,7 @@ class GraphRowFrame(ttk.Frame):
         self.graph_frame = GraphRowFrame.GraphFrame(self, self.graph_data)
         # self.graph_frame.pack(side=tkinter.LEFT)
         self.graph_frame.grid(column=0, sticky='nsew', padx=5, pady=5)
-        self.label_frame = ttk.Frame(self)
+        self.label_frame = ttk.Frame(self, width=10)
         # self.label_frame.pack(side=tkinter.LEFT)
         self.label_frame.grid(row=0, column=1, sticky='nsew', padx=5, pady=5)
         for data in self.label_data():
@@ -81,15 +83,16 @@ def temp_get_data():  # TODO change this
     mode_info = '01 Jan 2018'
     sensor_name = 'Machine A'
     y = [103, 23, 34, 21, 36, 42, 48, 58, 77, 89, 92, 100]
-    x= []
+    x = []
     for i in range(len(y)):
-        x.append(str(i+8).zfill(2))
+        x.append(str(i + 8).zfill(2))
     return sensor_name, mode, mode_info, x, y
 
 
 if __name__ == '__main__':
     root = tkinter.Tk()
     root.title = 'Hello'
+    root.minsize(width=1000, height=500)
     some = VerticalScrollFrame(root)
     some.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
     another1 = GraphRowFrame(some.get_interior_frame(), temp_get_data)
