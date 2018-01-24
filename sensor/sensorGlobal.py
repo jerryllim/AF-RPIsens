@@ -15,7 +15,6 @@ sensorInfo = namedtuple('sensorInfo', ['name', 'pin', 'bounce'])
 class NetworkDataManager:
     REMOVED_ID = 'removedID'
     PORT_NUMBER = 'portNumber'
-    IP_ADDRESS = 'IPAddress'
 
     def __init__(self, pin_data_manager):
         self.logger = logging.getLogger('afRPIsens')
@@ -24,7 +23,6 @@ class NetworkDataManager:
         self.removed_minutes = '60'
         self.removedCount = {}
         self.removedLock = threading.Lock()
-        self.address = '152.228.1.48'
         self.port_number = '9999'
         self.logger.debug('Completed setup')
 
@@ -46,7 +44,7 @@ class NetworkDataManager:
     def rep_data(self):
         context = zmq.Context()
         socket = context.socket(zmq.REP)
-        socket.connect("tcp://{0}:{1}".format(self.address, self.port_number))
+        socket.connect("tcp://*:{}".format(self.port_number))
 
         while True:
             #  Wait for next request from client
@@ -67,13 +65,11 @@ class NetworkDataManager:
         self.logger.debug('Cleared removed count')
 
     def to_save_settings(self):
-        return {NetworkDataManager.REMOVED_ID: self.removed_minutes, NetworkDataManager.PORT_NUMBER: self.port_number,
-                NetworkDataManager.IP_ADDRESS: self.address}
+        return {NetworkDataManager.REMOVED_ID: self.removed_minutes, NetworkDataManager.PORT_NUMBER: self.port_number}
 
     def to_load_settings(self, temp_dict):
         self.removed_minutes = temp_dict.get(NetworkDataManager.REMOVED_ID, self.removed_minutes)
         self.port_number = temp_dict.get(NetworkDataManager.PORT_NUMBER, self.port_number)
-        self.address = temp_dict.get(NetworkDataManager.IP_ADDRESS, self.address)
 
     def add_jobs(self):
         if not self.scheduler.get_jobs():  # To prevent duplicating jobs
@@ -91,9 +87,6 @@ class NetworkDataManager:
 
     def set_port_number(self, number):
         self.port_number = number
-
-    def set_address(self, address):
-        self.address = address
 
     def start_schedule(self):
         self.scheduler.start()

@@ -112,7 +112,6 @@ class MainGUI:
         class SaveClass:
             def __init__(self):
                 self.tree_view = None
-                self.address_entry = None
                 self.port_entry = None
                 self.removed_option = None
                 self.entries = {}
@@ -123,20 +122,6 @@ class MainGUI:
 
         def network_validate_entry():
             messages = []
-            address = save_class.address_entry.get()
-            if len(address) == 0:
-                messages.append('Please enter a network address.')
-            else:
-                try:
-                    address_list = [int(x) for x in address.split('.')]
-                    if len(address_list) == 4:
-                        if not max(address_list) < 256:
-                            messages.append('Incorrect Network address format.')
-                    else:
-                        messages.append('Incorrect Network address format.')
-                except ValueError:
-                    messages.append('Incorrect Network address format.')
-
             port_number = save_class.port_entry.get()
             if len(port_number) == 0:
                 messages.append('Please enter a port number.')
@@ -156,11 +141,9 @@ class MainGUI:
                 messagebox.showerror('Error', msg)
             else:
                 # Save Network Configurations
-                if (self.networkDataManager.address != save_class.address_entry.get() or
-                        self.networkDataManager.port_number != save_class.port_entry.get()):
+                if self.networkDataManager.port_number != save_class.port_entry.get():
                     messagebox.showinfo(title='Network configuration changed',
                                         message='Network configuration changes require application restart')
-                self.networkDataManager.set_address(save_class.address_entry.get())
                 self.networkDataManager.set_port_number(save_class.port_entry.get())
                 removed_time = save_class.removed_option.get().rsplit(sep=' ', maxsplit=1)[0]
                 self.networkDataManager.set_removed_time(removed_time)
@@ -190,16 +173,7 @@ class MainGUI:
             def network_validate(values, new, widget):
                 if widget == 'port' and len(values) > 5:
                     return False
-                elif widget == 'address' and len(values) > 15:
-                    return False
-                if new.isdigit():
-                    return True
-                elif widget == 'address' and new == '.':
-                    return True
-                elif widget == 'address':
-                    for s in new:
-                        if not (s.isdigit() or s == '.'):
-                            return False
+                elif new.isdigit():
                     return True
                 else:
                     return False
@@ -218,14 +192,6 @@ class MainGUI:
             option_frame.columnconfigure(0, weight=1)
             option_frame.columnconfigure(1, weight=1)
             network_validation = self.mainWindow.register(network_validate)
-            # Network Address
-            address_label = ttk.Label(option_frame, text='Network Address: ', width=20)
-            address_label.grid(row=0, column=0, sticky='w')
-            save_class.address_entry = ttk.Entry(option_frame, width=17, validate='key',
-                                                 validatecommand=(network_validation, '%P', '%S', 'address'))
-            save_class.address_entry.grid(row=0, column=1, sticky='w')
-            save_class.address_entry.delete(0, tkinter.END)
-            save_class.address_entry.insert(0, self.networkDataManager.address)
             # Port Number
             port_label = ttk.Label(option_frame, text='Port Number: ', width=20)
             port_label.grid(row=1, column=0, sticky='w')
