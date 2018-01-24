@@ -189,20 +189,21 @@ class MainGUI:
             option_frame = ttk.Frame(network_sett_frame)
             option_frame.grid(row=0, column=0, padx=5, pady=5)
             option_frame.rowconfigure(0, weight=1)
+            option_frame.rowconfigure(1, weight=1)
             option_frame.columnconfigure(0, weight=1)
             option_frame.columnconfigure(1, weight=1)
             network_validation = self.mainWindow.register(network_validate)
             # Port Number
             port_label = ttk.Label(option_frame, text='Port Number: ', width=20)
-            port_label.grid(row=1, column=0, sticky='w')
+            port_label.grid(row=0, column=0, sticky='w')
             save_class.port_entry = ttk.Entry(option_frame, width=6, justify=tkinter.RIGHT, validate='key',
                                               validatecommand=(network_validation, '%P', '%S', 'port'))
-            save_class.port_entry.grid(row=1, column=1, sticky='w')
+            save_class.port_entry.grid(row=0, column=1, sticky='w')
             save_class.port_entry.delete(0, tkinter.END)
             save_class.port_entry.insert(0, self.networkDataManager.port_number)
             # Removed Time
             removed_label = ttk.Label(option_frame, text='Reset count frequency: ', width=20)
-            removed_label.grid(row=2, column=0, sticky='w')
+            removed_label.grid(row=1, column=0, sticky='w')
             removed_option_list = ('15 minutes', '30 minutes', '60 minutes', '120 minutes')
             save_class.removed_option = tkinter.StringVar()
             current = [string for string in removed_option_list if self.networkDataManager.removed_minutes in
@@ -211,7 +212,7 @@ class MainGUI:
             removed_option_menu = ttk.OptionMenu(option_frame, save_class.removed_option,
                                                  save_class.removed_option.get(), *removed_option_list)
             removed_option_menu.config(width=10)
-            removed_option_menu.grid(row=2, column=1, sticky='ew')
+            removed_option_menu.grid(row=1, column=1, sticky='ew')
             self.logger.debug('Completed network config setup')
 
         def pins_setup():
