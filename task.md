@@ -29,3 +29,4 @@
 - [ ] parsing json -> csv -> excel log
 - [ ] handling multiple clients
 - [ ] introducing timeout with polling for server request
+- [ ] embed updatable graphs - https://pythonprogramming.net/plotting-live-bitcoin-price-data-tkinter-matplotlib/
