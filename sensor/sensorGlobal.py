@@ -44,7 +44,7 @@ class NetworkDataManager:
     def rep_data(self):
         context = zmq.Context()
         socket = context.socket(zmq.REP)
-        socket.connect("tcp://*:{}".format(self.port_number))
+        socket.bind("tcp://*:{}".format(self.port_number))
 
         while True:
             #  Wait for next request from client
@@ -100,7 +100,7 @@ class NetworkDataManager:
             hour = '*/' + str(minutes//60)
 
         if minutes % 60 == 0:
-            minute = '*'
+            minute = '0'
         else:
             minute = '*/' + str(minutes % 60)
         return hour, minute

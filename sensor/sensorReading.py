@@ -16,6 +16,7 @@ class RaspberryPiController:
         log_format = logging.Formatter('%(asctime)s - %(threadName)s - %(levelname)s: %(module)s - %(message)s')
         file_handler.setFormatter(log_format)
         self.logger.addHandler(file_handler)
+        self.logger.info('Started program')
 
         self.pinDataManager = sensorGlobal.PinDataManager()
         self.networkDataManager = sensorGlobal.NetworkDataManager(self.pinDataManager)
