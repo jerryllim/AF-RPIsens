@@ -35,7 +35,7 @@ class MainApplication(tk.Frame):
 
         for request in range(len(self.ports)):
             print("Sending request ", request, "...")
-            self.socket.send_string("", zmq.SNDMORE)  # delimiter
+            self.socket.send_string("", zmq.SNDMORE)  # delimeter
             self.socket.send_string("Sensor Data")  # actual message
 
             # use poll for timeouts:
@@ -58,6 +58,14 @@ class MainApplication(tk.Frame):
                     print("Could not connect to machine")
             else:
                 print("Machine did not respond")
+                self.popup = tk.Toplevel(self.master)
+                self.popup.title("Error")
+                # error label
+                self.error_label = ttk.Label(self.popup, text="Machine did not respond %s" % port)
+                self.error_label.grid(row=0)
+                # OK button
+                self.ok_button = ttk.Button(self.popup, text="Okay", command=self.popup.destroy)
+                self.ok_button.grid(row=1, pady=10)
 
             currentDT = datetime.datetime.now()
 
