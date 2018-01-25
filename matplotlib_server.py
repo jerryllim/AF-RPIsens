@@ -5,8 +5,8 @@ import string  # TODO for testing
 import matplotlib
 
 matplotlib.use('TkAgg')
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg  # noqa
+from matplotlib.figure import Figure  # noqa
 
 
 class TempClassWithRandomData:  # TODO to delete for testing
@@ -25,27 +25,46 @@ class MainWindow(ttk.Frame):
         self.rowconfigure(0, weight=1)
         self.rowconfigure(1, weight=100)
         self.columnconfigure(0, weight=1)
-        top_frame = ttk.Frame(self)
+
+        # Top Frame settings
+        top_frame = ttk.Frame(self, relief='raise', borderwidth=2)
         top_frame.grid(row=0, column=0, sticky='nsew')
-        temp_label = ttk.Label(top_frame, text='Some text')
-        temp_label.pack()
-        bottom_scrollable_frame = VerticalScrollFrame(self)
-        bottom_scrollable_frame.grid(row=1, column=0, sticky='nsew')
+        top_frame.columnconfigure(0, weight=1)
+        top_frame.columnconfigure(1, weight=1)
+        top_frame.rowconfigure(0, weight=1)
+        top_frame.rowconfigure(1, weight=2)
+        request_label = ttk.Label(top_frame, text='Request every {} minutes'.format('X'))  # TODO add tkinter variable?
+        request_label.grid(row=0, column=0, sticky='w')
+        request_button = ttk.Button(top_frame, text='Request now')  # TODO add command
+        request_button.grid(row=0, column=1)
+        quick_frame = ttk.LabelFrame(top_frame, text='Quick Access: ')
+        quick_frame.grid(row=1, column=0, columnspan=2, sticky='nsew')
+
+        # Quick Access TODO temporary
+        for col in range(MainWindow.NUM_COL):
+            quick_frame.columnconfigure(col, weight=1)
+        for index in range(4):
+            row = index//MainWindow.NUM_COL
+            col = index % MainWindow.NUM_COL
+            button = ttk.Button(quick_frame, text='Button {}'.format(index))
+            button.grid(row=row, column=col)
 
         # Make graphs
-        for col in range(MainWindow.NUM_COL):
-            bottom_scrollable_frame.get_interior_frame().columnconfigure(col, weight=1)
-
-        for index in range(len(self.data_class.sensorList)):
-            row = index//MainWindow.NUM_COL
-            col = index%MainWindow.NUM_COL
-            # graph = GraphFrame(bottom_scrollable_frame.get_interior_frame(),
-            #                    lambda: temp_get_data(title=self.data_class.sensorList[index]))
-            # graph.grid(row=row, column=col, sticky='nsew', padx=(0, 5), pady=5)
-            canvas = GraphCanvas(bottom_scrollable_frame.get_interior_frame(),
-                                 lambda: temp_get_data(title=self.data_class.sensorList[index]))
-            canvas.show()
-            canvas.grid(row=row, column=col, sticky='nsew', padx=5, pady=5)
+        # bottom_scrollable_frame = VerticalScrollFrame(self, relief='sunken')
+        # bottom_scrollable_frame.grid(row=1, column=0, sticky='nsew')
+        # for col in range(MainWindow.NUM_COL):
+        #     bottom_scrollable_frame.get_interior_frame().columnconfigure(col, weight=1)
+        #
+        # for index in range(len(self.data_class.sensorList)):
+        #     row = index//MainWindow.NUM_COL
+        #     col = index % MainWindow.NUM_COL
+        #     # graph = GraphFrame(bottom_scrollable_frame.get_interior_frame(),
+        #     #                    lambda: temp_get_data(title=self.data_class.sensorList[index]))
+        #     # graph.grid(row=row, column=col, sticky='nsew', padx=(0, 5), pady=5)
+        #     canvas = GraphCanvas(bottom_scrollable_frame.get_interior_frame(),
+        #                          lambda: temp_get_data(title=self.data_class.sensorList[index]))
+        #     canvas.show()
+        #     canvas.grid(row=row, column=col, sticky='nsew', padx=5, pady=5)
 
 
 class VerticalScrollFrame(ttk.Frame):
@@ -58,7 +77,7 @@ class VerticalScrollFrame(ttk.Frame):
         v_scrollbar.pack(side=tkinter.RIGHT, fill=tkinter.Y, expand=tkinter.FALSE)
         self.canvas.config(yscrollcommand=v_scrollbar.set, scrollregion=self.canvas.bbox('all'))
 
-        self.interior_frame = tkinter.Frame(self.canvas, bg='green')
+        self.interior_frame = ttk.Frame(self.canvas)
         self.interior_frame_id = self.canvas.create_window((0, 0), window=self.interior_frame, anchor=tkinter.NW)
 
         self.interior_frame.bind("<Configure>", self._on_frame_configure)
@@ -127,10 +146,11 @@ if __name__ == '__main__':
     root.minsize(width=1000, height=100)
     main_frame = MainWindow(root, TempClassWithRandomData())
     main_frame.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
-    while True:
-        try:
-            root.mainloop()
-        except UnicodeDecodeError:
-            continue
-        else:
-            break
+    root.mainloop()
+    # while True:
+    #     try:
+    #         root.mainloop()
+    #     except UnicodeDecodeError:
+    #         continue
+    #     else:
+    #         break
