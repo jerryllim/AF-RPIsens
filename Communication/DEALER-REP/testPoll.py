@@ -1,6 +1,5 @@
 import zmq
 import json
-import datetime
 import tkinter as tk
 from tkinter import ttk
 import apscheduler.schedulers.background
@@ -35,8 +34,8 @@ class MainApplication(tk.Frame):
 
         for request in range(len(self.ports)):
             print("Sending request ", request, "...")
-            self.socket.send_string("", zmq.SNDMORE)  # delimeter
-            self.socket.send_string("Sensor Data")  # actual message
+            self.socket.send_string("", zmq.SNDMORE)
+            self.socket.send_string("Sensor Data")
 
             # use poll for timeouts:
             poller = zmq.Poller()
@@ -46,44 +45,16 @@ class MainApplication(tk.Frame):
 
             if self.socket in socks:
                 try:
-                    self.socket.recv()  # discard delimiter
-                    msg_json = self.socket.recv()  # actual message
+                    self.socket.recv()
+                    msg_json = self.socket.recv()
+                    print(msg_json)
                     sens = json.loads(msg_json)
-
-                    for timestamp, values in sens.items():
-                        for uniqID, count in values.items():
-                            response = "Time: %s :: Data: %s :: Client: %s :: Sensor: %s" % (uniqID, count, port, timestamp)
-                            print("Received reply ", request, "[", response, "]")
+                    response = "Sensor: %s :: Data: %s :: Client: %s" % (sens['sensor'], sens['data'], sens['client'])
+                    print("Received reply ", request, "[", response, "]")
                 except IOError:
                     print("Could not connect to machine")
             else:
                 print("Machine did not respond")
-                self.popup = tk.Toplevel(self.master)
-                self.popup.title("Error")
-                # error label
-                self.error_label = ttk.Label(self.popup, text="Machine did not respond %s" % port)
-                self.error_label.grid(row=0)
-                # OK button
-                self.ok_button = ttk.Button(self.popup, text="Okay", command=self.popup.destroy)
-                self.ok_button.grid(row=1, pady=10)
-
-            currentDT = datetime.datetime.now()
-
-            try:
-                with open("sensorDataLog.txt", "a+") as outfile:
-                    outfile.write(("Requested on %s. \n %s \n" % (currentDT, sens)))
-
-                terminal = self.terminal_tree
-
-                for timestamp, values in sens.items():
-                    for uniqID, count in values.items():
-                        terminal.insert('', tk.END, values=(uniqID, count, port, timestamp))
-
-            except UnboundLocalError:
-                print("sens referenced but not bound to a value")
-
-            # terminal.insert('', tk.END, values=(sens['sensor'], sens['data'], sens['client'], str(currentDT.strftime("%H:%M:%S"))))
-            root.update()  # <-- run mainloop once
 
     def req_timer(self, option):
 
@@ -116,11 +87,14 @@ class MainApplication(tk.Frame):
 
     def port_settings(self):
         self.portSettings = tk.Toplevel(self.master)
-        self.main_app = PortSettings(self.portSettings)
+        try:
+            self.main_app = PortSettings(self.portSettings)
+        except FileNotFoundError:
+            pass
 
     def configure_gui(self):
         # set the gui window title
-        self.master.title("Server")
+        self.master.title("TEST")
 
     def create_widgets(self):
         # button to request data
@@ -151,6 +125,12 @@ class MainApplication(tk.Frame):
         # scroll bar for the terminal outputs
         self.terminal_scrollbar = ttk.Scrollbar(self)
         self.terminal_scrollbar.grid(row=2, column=5, sticky=tk.NS)
+
+        # terminal listbox output. Auto scrolls to the bottom but also has the scroll bar incase you want to go back up
+        '''self.terminal_listbox = tk.Listbox(root, yscrollcommand=self.terminal_scrollbar.set, width=100, height=13)
+        self.terminal_listbox.grid(row=2, column=0, columnspan=5, sticky=tk.NSEW)
+        self.terminal_listbox.see(tk.END)
+        self.terminal_scrollbar.config(command=self.terminal_listbox.yview)'''
 
         # terminal treeview output
         self.terminal_tree = ttk.Treeview(self)
