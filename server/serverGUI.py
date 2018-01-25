@@ -16,6 +16,10 @@ class TempClassWithRandomData:  # TODO to delete for testing
             self.sensorList.append('Machine {}\n1 Jan 2018 Morning'.format(string.ascii_uppercase[index]))
 
 
+class SettingsData:
+    pass
+
+
 class MainWindow(ttk.Frame):
     NUM_COL = 2
 
@@ -50,21 +54,18 @@ class MainWindow(ttk.Frame):
             button.grid(row=row, column=col)
 
         # Make graphs
-        # bottom_scrollable_frame = VerticalScrollFrame(self, relief='sunken')
-        # bottom_scrollable_frame.grid(row=1, column=0, sticky='nsew')
-        # for col in range(MainWindow.NUM_COL):
-        #     bottom_scrollable_frame.get_interior_frame().columnconfigure(col, weight=1)
-        #
-        # for index in range(len(self.data_class.sensorList)):
-        #     row = index//MainWindow.NUM_COL
-        #     col = index % MainWindow.NUM_COL
-        #     # graph = GraphFrame(bottom_scrollable_frame.get_interior_frame(),
-        #     #                    lambda: temp_get_data(title=self.data_class.sensorList[index]))
-        #     # graph.grid(row=row, column=col, sticky='nsew', padx=(0, 5), pady=5)
-        #     canvas = GraphCanvas(bottom_scrollable_frame.get_interior_frame(),
-        #                          lambda: temp_get_data(title=self.data_class.sensorList[index]))
-        #     canvas.show()
-        #     canvas.grid(row=row, column=col, sticky='nsew', padx=5, pady=5)
+        bottom_scrollable_frame = VerticalScrollFrame(self, relief='sunken')
+        bottom_scrollable_frame.grid(row=1, column=0, sticky='nsew')
+        for col in range(MainWindow.NUM_COL):
+            bottom_scrollable_frame.get_interior_frame().columnconfigure(col, weight=1)
+
+        for index in range(len(self.data_class.sensorList)):
+            row = index//MainWindow.NUM_COL
+            col = index % MainWindow.NUM_COL
+            canvas = GraphCanvas(bottom_scrollable_frame.get_interior_frame(),
+                                 lambda: temp_get_data(title=self.data_class.sensorList[index]))
+            canvas.show()
+            canvas.grid(row=row, column=col, sticky='nsew', padx=5, pady=5)
 
 
 class VerticalScrollFrame(ttk.Frame):

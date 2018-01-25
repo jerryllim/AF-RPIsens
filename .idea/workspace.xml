@@ -2,8 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="8c4eab11-9431-48ea-8992-fef6a6e722be" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/sensor/sensorGUI.py" afterPath="$PROJECT_DIR$/sensor/sensorGUI.py" />
+      <change beforePath="$PROJECT_DIR$/matplotlib_server.py" afterPath="$PROJECT_DIR$/server/serverGUI.py" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -15,11 +14,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="sensorGUI.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="sensorGUI.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/sensor/sensorGUI.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="163">
-              <caret line="321" column="56" lean-forward="true" selection-start-line="321" selection-start-column="56" selection-end-line="321" selection-end-column="56" />
+            <state relative-caret-position="-4675">
+              <caret line="16" column="21" lean-forward="false" selection-start-line="14" selection-start-column="13" selection-end-line="14" selection-end-column="27" />
               <folding>
                 <element signature="e#0#14#0" expanded="true" />
               </folding>
@@ -51,11 +50,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="matplotlib_server.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/matplotlib_server.py">
+      <file leaf-file-name="serverGUI.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="238">
-              <caret line="49" column="44" lean-forward="true" selection-start-line="0" selection-start-column="0" selection-end-line="156" selection-end-column="0" />
+            <state relative-caret-position="-220">
+              <caret line="15" column="33" lean-forward="false" selection-start-line="15" selection-start-column="33" selection-end-line="15" selection-end-column="33" />
               <folding>
                 <element signature="e#0#14#0" expanded="true" />
               </folding>
@@ -165,8 +164,8 @@
         <option value="$PROJECT_DIR$/sensor/sensorGlobal.py" />
         <option value="$PROJECT_DIR$/serverGUI.py" />
         <option value="$PROJECT_DIR$/test_matplotlib_server.py" />
-        <option value="$PROJECT_DIR$/matplotlib_server.py" />
         <option value="$PROJECT_DIR$/sensor/sensorGUI.py" />
+        <option value="$PROJECT_DIR$/matplotlib_server.py" />
       </list>
     </option>
   </component>
@@ -237,6 +236,11 @@
               <item name="afRPIsens" type="462c0819:PsiDirectoryNode" />
               <item name="sensor" type="462c0819:PsiDirectoryNode" />
             </path>
+            <path>
+              <item name="afRPIsens" type="b2602c69:ProjectViewProjectNode" />
+              <item name="afRPIsens" type="462c0819:PsiDirectoryNode" />
+              <item name="server" type="462c0819:PsiDirectoryNode" />
+            </path>
           </expand>
           <select />
         </subPane>
@@ -254,12 +258,13 @@
     <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
   </component>
   <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$" />
-      <recent name="$PROJECT_DIR$/test" />
-    </key>
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/server" />
+      <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/test" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -274,7 +279,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.macRunScript">
+  <component name="RunManager" selected="Python.matplotlib_server">
     <configuration default="true" type="Applet" factoryName="Applet">
       <option name="HTML_USED" value="false" />
       <option name="WIDTH" value="400" />
@@ -376,7 +381,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="afRPIsens" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/matplotlib_server.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/server/serverGUI.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -551,8 +556,8 @@
     </list>
     <recent_temporary>
       <list size="2">
-        <item index="0" class="java.lang.String" itemvalue="Python.macRunScript" />
-        <item index="1" class="java.lang.String" itemvalue="Python.matplotlib_server" />
+        <item index="0" class="java.lang.String" itemvalue="Python.matplotlib_server" />
+        <item index="1" class="java.lang.String" itemvalue="Python.macRunScript" />
       </list>
     </recent_temporary>
   </component>
@@ -583,7 +588,6 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="211" y="33" width="1391" height="987" extended-state="0" />
-    <editor active="true" />
     <layout>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32896176" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
@@ -597,7 +601,7 @@
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32896176" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.24946082" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.24946082" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.30054644" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -871,7 +875,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/serverGUI.py">
+    <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="102">
           <caret line="52" column="69" lean-forward="true" selection-start-line="52" selection-start-column="69" selection-end-line="52" selection-end-column="69" />
@@ -941,20 +945,20 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/matplotlib_server.py">
+    <entry file="file://$PROJECT_DIR$/sensor/sensorGUI.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="238">
-          <caret line="49" column="44" lean-forward="true" selection-start-line="0" selection-start-column="0" selection-end-line="156" selection-end-column="0" />
+        <state relative-caret-position="-4675">
+          <caret line="16" column="21" lean-forward="false" selection-start-line="14" selection-start-column="13" selection-end-line="14" selection-end-column="27" />
           <folding>
             <element signature="e#0#14#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sensor/sensorGUI.py">
+    <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="163">
-          <caret line="321" column="56" lean-forward="true" selection-start-line="321" selection-start-column="56" selection-end-line="321" selection-end-column="56" />
+        <state relative-caret-position="-220">
+          <caret line="15" column="33" lean-forward="false" selection-start-line="15" selection-start-column="33" selection-end-line="15" selection-end-column="33" />
           <folding>
             <element signature="e#0#14#0" expanded="true" />
           </folding>
