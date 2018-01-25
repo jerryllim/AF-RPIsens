@@ -35,7 +35,7 @@ class MainApplication(tk.Frame):
 
         for request in range(len(self.ports)):
             print("Sending request ", request, "...")
-            self.socket.send_string("", zmq.SNDMORE)  # delimeter
+            self.socket.send_string("", zmq.SNDMORE)  # delimiter
             self.socket.send_string("Sensor Data")  # actual message
 
             # use poll for timeouts:
