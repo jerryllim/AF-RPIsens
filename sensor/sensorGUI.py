@@ -6,11 +6,6 @@ from sensor import sensorGlobal
 import logging
 
 
-def multi_func(*fs):
-    for f in fs:
-        f()
-
-
 class MainGUI:
     def __init__(self, root, r_pi_controller):
         self.logger = logging.getLogger('afRPIsens')  # Get logger
@@ -20,8 +15,6 @@ class MainGUI:
         self.pinDataManager = r_pi_controller.pinDataManager
         self.networkDataManager = r_pi_controller.networkDataManager
         self.dataManager = r_pi_controller.dataManager
-        self.pinConfigWindow = None
-        self.networkSettWindow = None
         self.settingsWindow = None
         self.mainWindow = root
         self.mainWindow.title('Sensor Reading')
@@ -311,7 +304,7 @@ class MainGUI:
                         messagebox.showerror('Error', msg)
 
                 self.logger.debug('Launched item window')
-                item_window = tkinter.Toplevel(self.pinConfigWindow)
+                item_window = tkinter.Toplevel(self.settingsWindow)
                 item_window.title('Item')
                 item_window.geometry('-200-200')
                 item_window.columnconfigure(0, weight=1)
@@ -344,7 +337,7 @@ class MainGUI:
                 validation = self.mainWindow.register(key_validate)
                 pin_label = ttk.Label(entry_frame, text='Pin')
                 pin_label.grid(row=0, column=2, sticky='sw')
-                pin_entry = ttk.Entry(entry_frame, width=2, justify=tkinter.RIGHT, validate='key',
+                pin_entry = ttk.Entry(entry_frame, width=3, justify=tkinter.RIGHT, validate='key',
                                       validatecommand=(validation, '%P', '%S', 'pin'))
                 pin_entry.grid(row=1, column=2, sticky='nsew', pady=5)
                 pin_entry.delete(0, tkinter.END)
