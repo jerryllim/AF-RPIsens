@@ -1,120 +1,81 @@
 import zmq
 import json
-import csv
 import datetime
 import tkinter as tk
 from tkinter import ttk
-from queue import Queue
 import apscheduler.schedulers.background
 
 
 class MainApplication(tk.Frame):
 
-    def __init__(self, master):
+    def __init__(self, master, filename='portSetting.json'):
         self.master = master
         tk.Frame.__init__(self, self.master)
         self.configure_gui()
         self.create_widgets()
         self.job = None
+        self.filename = filename
+        self.ports = []
         self.pack(fill='both', expand=True)
 
     def req_client(self):
 
-        self.ports = ["9999"]
+        with open(self.filename, 'r') as infile:
+            machines_port = json.load(infile)
+
+        machines, self.ports = map(list, zip(*machines_port))
 
         self.context = zmq.Context()
-        print("Connecting to port...")
-        self.socket = self.context.socket(zmq.REQ)
+        print("Connecting to machine...")
+        self.socket = self.context.socket(zmq.DEALER)
         self.socket.setsockopt(zmq.LINGER, 0)
         for port in self.ports:
-            self.socket.bind("tcp://*:%s" % port)
-            print("Successfully connected to port %s" % port)
+            self.socket.connect("tcp://%s" % port)
+            print("Successfully connected to machine %s" % port)
 
         for request in range(len(self.ports)):
             print("Sending request ", request, "...")
+            self.socket.send_string("", zmq.SNDMORE)  # delimeter
+            self.socket.send_string("Sensor Data")  # actual message
+
             # use poll for timeouts:
             poller = zmq.Poller()
-            poller.register(self.socket, zmq.POLLOUT)
-            if poller.poll(10 * 1000):  # 10s timeout in milliseconds
-                self.socket.send_string("Sensor Data")
-            else:
-                self.popup = tk.Toplevel(self.master)
-                self.popup.title("Error")
-
-                # error label
-                self.error_label = ttk.Label(self.popup, text="Server was not able to detect port %s" % port)
-                self.error_label.grid(row=0)
-
-                # OK button
-                self.ok_button = ttk.Button(self.popup, text="Okay", command=self.popup.destroy)
-                self.ok_button.grid(row=1)
-                raise IOError("Timeout processing auth request")
-
-            # use poll for timeouts:
             poller.register(self.socket, zmq.POLLIN)
-            if poller.poll(30 * 1000):  # 30s timeout in milliseconds
-                # Get the reply.
-                msg_json = self.socket.recv()
-                sens = json.loads(msg_json)
-            else:
-                raise IOError("Timeout processing auth request")
 
-            # sens_data = sens['machine_details']
-            '''
-            for timestamp, values in sens.items():
-                for uniqID, count in values.items():
-                    response = "Sensor: %s :: Data: %s :: Client: %s" % (uniqID, count, port, timestamp)
-                    print("Received reply ", request, "[", response, "]")'''
+            socks = dict(poller.poll(5 * 1000))
+
+            if self.socket in socks:
+                try:
+                    self.socket.recv()  # discard delimiter
+                    msg_json = self.socket.recv()  # actual message
+                    sens = json.loads(msg_json)
+
+                    for timestamp, values in sens.items():
+                        for uniqID, count in values.items():
+                            response = "Time: %s :: Data: %s :: Client: %s :: Sensor: %s" % (uniqID, count, port, timestamp)
+                            print("Received reply ", request, "[", response, "]")
+                except IOError:
+                    print("Could not connect to machine")
+            else:
+                print("Machine did not respond")
 
             currentDT = datetime.datetime.now()
 
-            # open the file for writing and creates it, if it doesn't exist
-            f = open("sensorDataLog.txt", "a+")
+            try:
+                with open("sensorDataLog.txt", "a+") as outfile:
+                    outfile.write(("Requested on %s. \n %s \n" % (currentDT, sens)))
 
-            # write the data into the file
-            f.write("Requested on %s. \n %s \n" % (currentDT, sens))
+                terminal = self.terminal_tree
 
-            # close the file when done
-            f.close()
+                for timestamp, values in sens.items():
+                    for uniqID, count in values.items():
+                        terminal.insert('', tk.END, values=(uniqID, count, port, timestamp))
 
-            '''
-            # open the file for writing and creates it if it doesn't exist
-            sensor_data = open("sensorData.cs", "a+")
+            except UnboundLocalError:
+                print("sens referenced but not bound to a value")
 
-            # create the csv writer object
-            csvwriter = csv.writer(sensor_data)
-
-            count = 0
-
-            for sen in sens_data:
-
-                  if count == 0:
-
-                         header = sen.keys()
-
-                         csvwriter.writerow(header)
-
-                         count += 1
-
-                  csvwriter.writerow(sen.values())
-
-            sensor_data.close()'''
-
-            # label['text'] = response # <-- update label
-            # terminal.insert(tk.END, str(response))
-
-            terminal = self.terminal_tree
-
-            for timestamp, values in sens.items():
-                for uniqID, count in values.items():
-                    terminal.insert('', tk.END, values=(uniqID, count, port, timestamp))
-            print("Done")
-
-                    #tree_view.insert('', tkinter.END, values=(_id, sensor, _count))
-            #terminal.insert('', tk.END, values=(sens['sensor'], sens['data'], sens['client'], str(currentDT.strftime("%H:%M:%S"))))
+            # terminal.insert('', tk.END, values=(sens['sensor'], sens['data'], sens['client'], str(currentDT.strftime("%H:%M:%S"))))
             root.update()  # <-- run mainloop once
-
-            # time.sleep(1)
 
     def req_timer(self, option):
 
@@ -156,15 +117,14 @@ class MainApplication(tk.Frame):
     def create_widgets(self):
         # button to request data
         self.request_button = ttk.Button(self, text="Request", command=self.req_client)
-        self.request_button.grid(row=0, column=2, rowspan=2)
+        self.request_button.grid(row=0, column=2, rowspan=2, sticky=tk.EW)
 
         # button for port settings
         self.setting_button = ttk.Button(self, text="Settings", command=self.port_settings)
-        self.setting_button.grid(row=0, column=1, rowspan=2)
-
+        self.setting_button.grid(row=0, column=1, rowspan=2, sticky=tk.EW)
         # button to exit
         self.exit_button = ttk.Button(self, text="Exit", command=self.graceful_exit)
-        self.exit_button.grid(row=0, column=3, rowspan=2)
+        self.exit_button.grid(row=0, column=3, rowspan=2, sticky=tk.EW)
 
         # timer label
         self.timer_label = ttk.Label(self, text="Timer Settings")
@@ -184,12 +144,6 @@ class MainApplication(tk.Frame):
         self.terminal_scrollbar = ttk.Scrollbar(self)
         self.terminal_scrollbar.grid(row=2, column=5, sticky=tk.NS)
 
-        # terminal listbox output. Auto scrolls to the bottom but also has the scroll bar incase you want to go back up
-        '''self.terminal_listbox = tk.Listbox(root, yscrollcommand=self.terminal_scrollbar.set, width=100, height=13)
-        self.terminal_listbox.grid(row=2, column=0, columnspan=5, sticky=tk.NSEW)
-        self.terminal_listbox.see(tk.END)
-        self.terminal_scrollbar.config(command=self.terminal_listbox.yview)'''
-
         # terminal treeview output
         self.terminal_tree = ttk.Treeview(self)
         self.terminal_tree.grid(row=2, column=0, columnspan=5, sticky=tk.NSEW)
@@ -198,26 +152,26 @@ class MainApplication(tk.Frame):
         self.rowconfigure(2, weight=1)
         self.terminal_tree["columns"] = ("1", "2", "3", "4")
         self.terminal_tree['show'] = 'headings'
-        self.terminal_tree.column("1", width=100, anchor='c')
+        self.terminal_tree.column("1", width=200, anchor='c')
         self.terminal_tree.column("2", width=100, anchor='c')
-        self.terminal_tree.column("3", width=100, anchor='c')
+        self.terminal_tree.column("3", width=200, anchor='c')
         self.terminal_tree.column("4", width=100, anchor='c')
-        self.terminal_tree.heading("1", text="Sensor")
+        self.terminal_tree.heading("1", text="Timestamp")
         self.terminal_tree.heading("2", text="Data")
         self.terminal_tree.heading("3", text="Client")
-        self.terminal_tree.heading("4", text="Timestamp")
-
-        # LabelRep = Label(root)
-        # LabelRep.pack(pady=10, padx=10)
+        self.terminal_tree.heading("4", text="Sensor")
 
 
 class PortSettings(tk.Frame):
-    def __init__(self, master):
+    def __init__(self, master, filename='portSetting.json'):
         self.master = master
         tk.Frame.__init__(self, self.master)
         self.configure_gui()
         self.create_widgets()
         self.pack(fill='both', expand=True)
+        self.filename = filename
+        self.machine_ports = []
+        self.populate_treeview()
 
     def close_settings(self):
         self.master.destroy()
@@ -247,11 +201,6 @@ class PortSettings(tk.Frame):
         # add button
         self.addMachine_button = ttk.Button(self.add_window, text="Insert", command=self.add_port)
         self.addMachine_button.grid(row=3, column=1)
-
-        # exit button
-        '''
-        self.exitAdd_button = ttk.Button(self.add_window, text="Cancel", command=self.add_window.destroy)
-        self.exitAdd_button.grid(row=3, column=2)'''
 
     def editPort_window(self):
         editable_port = self.terminal_tree.selection()[0]
@@ -302,9 +251,18 @@ class PortSettings(tk.Frame):
         self.addPort_entry.delete(0, tk.END)
 
     def save_settings(self, item=""):
-        machine_ports = self.terminal_tree.get_children(item)
+        self.machine_ports = []
+
         for child in self.terminal_tree.get_children():
             print(self.terminal_tree.item(child)["values"])
+
+            self.machine_ports.append(self.terminal_tree.item(child)["values"])
+            print(self.machine_ports)
+
+        with open(self.filename, 'w+') as outfile:
+            json.dump(self.machine_ports, outfile)
+
+        return self.machine_ports
 
     def delete_port(self):
         selected_port = self.terminal_tree.selection()[0]  # <-- get selected item
@@ -325,7 +283,7 @@ class PortSettings(tk.Frame):
         self.terminal_tree.grid(row=0, column=0, columnspan=5, sticky=tk.NSEW)
         self.terminal_tree.configure(yscrollcommand=self.terminal_scrollbar.set)
         self.columnconfigure(2, weight=1)
-        self.rowconfigure(2, weight=1)
+        self.rowconfigure(0, weight=1)
         self.terminal_tree["columns"] = ("1", "2")
         self.terminal_tree['show'] = 'headings'
         self.terminal_tree.column("1", width=100, anchor='c')
@@ -347,6 +305,13 @@ class PortSettings(tk.Frame):
 
         self.exit_button = ttk.Button(self, text="Exit", command=self.close_settings)
         self.exit_button.grid(row=1, column=4)
+
+    def populate_treeview(self):
+        with open(self.filename, 'r') as infile:
+            self.machine_ports = json.load(infile)
+
+        for items in self.machine_ports:
+            self.terminal_tree.insert('', tk.END, values=items)
 
 
 if __name__ == '__main__':
