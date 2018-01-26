@@ -73,14 +73,20 @@ class DatabaseManager:
         finally:
             db.close()
 
-    def insert_into_table(self, table_name, database=None, timestamp, quantity):
-        self.create_table(table_name)
-        if database is None:
+    def insert_into_table(self, table_name, timestamp, quantity, database=None):
+        if database is None:  # Check for database name
             database = self.database_name
+        # Establish connection and create table if not exists
         db = sqlite3.connect(database, detect_types=sqlite3.PARSE_DECLTYPES)
         db.execute("CREATE TABLE IF NOT EXISTS {} (time TIMESTAMP PRIMARY KEY NOT NULL, quantity INTEGER NOT NULL)"
                    .format(table_name))
+        # Check if exist same timestamp for machine
         cursor = db.cursor()
         cursor.execute("SELECT * from {} WHERE time=datetime(?)", (timestamp,))
-        if cursor.rowcount == 0:
-            
+        query = cursor.fetchone()
+        if query:  # TODO to test
+            _timestamp, count = query
+            quantity = quantity + count
+            cursor.execute("UPDATE {} SET quantity = ? WHERE time = ?", (quantity, timestamp))
+        else:
+            cursor.execute("INSERT INTO {} VALUES(datetime(?), ?".format(table_name), (timestamp, quantity))
