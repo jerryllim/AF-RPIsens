@@ -30,3 +30,5 @@
 - [ ] handling multiple clients
 - [ ] introducing timeout with polling for server request
 - [ ] embed updatable graphs - https://pythonprogramming.net/plotting-live-bitcoin-price-data-tkinter-matplotlib/
+- [ ] move file location -> shutil.move - https://docs.python.org/3/library/shutil.html
+- [ ] Directory chooser - http://effbot.org/zone/tkinter-directory-chooser.htm
