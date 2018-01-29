@@ -1,5 +1,7 @@
 import tkinter
 from tkinter import ttk
+import calendar
+import datetime
 import string  # TODO for testing
 
 import matplotlib
@@ -118,7 +120,6 @@ class MainWindow(ttk.Frame):
     def launch_calendar(self):  # TODO
         test = tkinter.Toplevel(self.parent)
         test.title('Calendar')
-        test.geometry('-200-200')
         test.resizable(False, False)
         test2 = CalendarPop(test)
         test2.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
@@ -277,10 +278,13 @@ class GraphCanvas(FigureCanvasTkAgg):
         self.get_tk_widget().grid(**kwargs)
 
 
-class CalendarPop(ttk.Frame):
+class CalendarPop(tkinter.Frame):
+    DAYS_A_WEEK = 7
 
     def __init__(self, parent, **kwargs):
-        ttk.Frame.__init__(self, parent, **kwargs)
+        today = datetime.date.today()
+        self._date = datetime.date(today.year, today.month, 1)
+        tkinter.Frame.__init__(self, parent, **kwargs)
         self.columnconfigure(0, weight=0, uniform='equalWidth')
         self.columnconfigure(1, weight=0, uniform='equalWidth')
         self.columnconfigure(2, weight=0, uniform='equalWidth')
@@ -288,14 +292,53 @@ class CalendarPop(ttk.Frame):
         self.columnconfigure(4, weight=0, uniform='equalWidth')
         self.columnconfigure(5, weight=0, uniform='equalWidth')
         self.columnconfigure(6, weight=0, uniform='equalWidth')
-        left_button = ttk.Button(self, text=u'\u25C0')  # TODO add command
-        left_button.grid(row=0, column=0, sticky='nsew')
-        right_button = ttk.Button(self, text=u'\u25B6')  # TODO add command
-        right_button.grid(row=0, column=6, sticky='nsew')
-        month_var = tkinter.StringVar()
-        month_label = ttk.Label(self, textvariable=month_var, width=1000)
-        month_var.set('Month YEAR')
-        month_label.grid(row=0, column=1, sticky='nsew', columnspan=5)
+        left_button = tkinter.Button(self, text=u'\u25C0', width=3, command=self._prev_month)  # TODO add command
+        left_button.grid(row=0, column=0)
+        right_button = tkinter.Button(self, text=u'\u25B6', width=3, command=self._next_month)  # TODO add command
+        right_button.grid(row=0, column=6)
+        self.month_var = tkinter.StringVar()
+        self.month_var.set(self._date.strftime('%B %Y'))
+        month_label = tkinter.Label(self, textvariable=self.month_var)
+        month_label.grid(row=0, column=1, columnspan=5)
+        self._calendar = calendar.TextCalendar()
+        header = [day for day in self._calendar.formatweekheader(3).split(' ')]
+        for index in range(CalendarPop.DAYS_A_WEEK):
+            temp_label = tkinter.Label(self, text=header[index], background='red', foreground='white', width=4)
+            temp_label.grid(row=1, column=index)
+        self.day_buttons = []
+        self._update_calendar()
+        self.current_date = 0
+
+    def _update_calendar(self):
+        for button in self.day_buttons:
+            button.destroy()
+        month = self._calendar.monthdayscalendar(self._date.year, self._date.month)
+        for week in month:
+            for index in range(CalendarPop.DAYS_A_WEEK):
+                if week[index] != 0:
+                    row = month.index(week)+2
+                    date = week[index]
+                    button = tkinter.Button(self, text=date, command=lambda x=date: print(x))
+                    button.grid(row=row, column=index)
+                    self.day_buttons.append(button)
+        self.month_var.set(self._date.strftime('%B %Y'))
+
+    def _prev_month(self):
+        temp_date = self._date - datetime.timedelta(days=1)
+        self._date = datetime.date(temp_date.year, temp_date.month, 1)
+        self._update_calendar()
+
+    def _next_month(self):
+        temp_date = self._date + datetime.timedelta(days=31)
+        self._date = datetime.date(temp_date.year, temp_date.month, 1)
+        self._update_calendar()
+
+    def button_pressed(self, day):
+        if self.current_date > 0:
+            self.day_buttons[self.current_date-1].toggle_state(state=False)
+
+        self.current_date = self.day_buttons[day-1].cget('text')
+        self.day_buttons[day-1].toggle_state(state=True)
 
 
 def temp_get_data(title=None, y=None, x=None):  # TODO change this
