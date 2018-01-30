@@ -260,7 +260,7 @@ class GraphDetailSettingsPage(ttk.Frame):
         button_frame.grid(row=4, column=0, sticky='nsew', padx=5, pady=5)
         plot_button = ttk.Button(button_frame, text='Plot')  # TODO add command
         plot_button.pack(side=tkinter.RIGHT)
-        cancel_button = ttk.Button(button_frame, text='Cancel', command=self.parent.destroy())
+        cancel_button = ttk.Button(button_frame, text='Cancel', command=self.parent.destroy)
         cancel_button.pack(side=tkinter.RIGHT)
 
     def set_mutable_frame(self, _selected=None):
