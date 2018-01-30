@@ -137,7 +137,7 @@ class Communication:
                     for uniq_id, values in sens.items():
                         for timestamp, count in values.items():
                             table_name = ""'{}-{}'"".format(port, uniq_id)
-                            database_name = datetime.date.today().strftime('%B_%Y.sqlite')
+                            database_name = datetime.date.today().strftime('%m_%B_%Y.sqlite')
                             self.database.insert_into_table(table_name, timestamp, count, database_name)
                 except IOError:
                     self.logger.warning('Could not connect to machine {}, {}'.format(machine, port))
