@@ -190,6 +190,7 @@ class GraphDetailSettingsPage(ttk.Frame):
 
     def __init__(self, parent, **kwargs):
         ttk.Frame.__init__(self, parent, **kwargs)
+        self.parent = parent
         self.rowconfigure(0, weight=1)
         self.rowconfigure(1, weight=1)
         self.rowconfigure(3, weight=1)
@@ -205,7 +206,8 @@ class GraphDetailSettingsPage(ttk.Frame):
         mode_list = ['Daily', 'Hourly', 'Minutely']
         self.mode_var = tkinter.StringVar()
         self.mode_var.set(mode_list[0])
-        mode_menu = ttk.OptionMenu(choice_frame, self.mode_var, self.mode_var.get(), *mode_list)
+        mode_menu = ttk.OptionMenu(choice_frame, self.mode_var, self.mode_var.get(), *mode_list,
+                                   command=self.set_mutable_frame)
         mode_menu.config(width=10)
         mode_menu.grid(row=1, column=1, sticky='ew')
         # Mutable options
@@ -225,13 +227,71 @@ class GraphDetailSettingsPage(ttk.Frame):
         cancel_button = ttk.Button(button_frame, text='Cancel')  # TODO add command
         cancel_button.pack(side=tkinter.RIGHT)
 
-    def set_mutable_frame(self):
+    def set_mutable_frame(self, _selected=None):
         if self.mutable_frame is not None:
             self.mutable_frame.destroy()
         self.mutable_frame = ttk.Frame(self)
         self.mutable_frame.grid(row=1, column=0, sticky='nsew')
         self.mutable_frame.rowconfigure(0, weight=1)
         self.mutable_frame.columnconfigure(0, weight=1)
+        self.mutable_frame.columnconfigure(1, weight=1)
+        self.mutable_frame.columnconfigure(2, weight=1)
+        if self.mode_var.get() == 'Daily':
+            from_label = ttk.Label(self.mutable_frame, text='From: ')
+            from_label.grid(row=0, column=0, sticky='e')
+            from_var = tkinter.StringVar()
+            from_entry = ttk.Entry(self.mutable_frame, textvariable=from_var, state=tkinter.DISABLED, width=10)
+            from_entry.grid(row=0, column=1, sticky='w')
+            from_calendar = ttk.Button(self.mutable_frame, text=u'\u2380',
+                                       command=lambda: self.launch_calendar(from_var))
+            from_calendar.grid(row=0, column=2, sticky='w')
+            to_label = ttk.Label(self.mutable_frame, text='To: ')
+            to_label.grid(row=1, column=0, sticky='e')
+            to_var = tkinter.StringVar()
+            to_entry = ttk.Entry(self.mutable_frame, textvariable=to_var, state=tkinter.DISABLED, width=10)
+            to_entry.grid(row=1, column=1, sticky='w')
+            to_calendar = ttk.Button(self.mutable_frame, text=u'\u2380',
+                                     command=lambda: self.launch_calendar(to_var))
+            to_calendar.grid(row=1, column=2, sticky='w')
+        elif self.mode_var.get() == 'Hourly':
+            date_label = ttk.Label(self.mutable_frame, text='Date: ')
+            date_label.grid(row=0, column=0, sticky='e')
+            date_var = tkinter.StringVar()
+            date_entry = ttk.Entry(self.mutable_frame, textvariable=date_var, state=tkinter.DISABLED, width=10)
+            date_entry.grid(row=0, column=1, sticky='w')
+            date_calendar = ttk.Button(self.mutable_frame, text=u'\u2380',
+                                       command=lambda: self.launch_calendar(from_var))
+            date_calendar.grid(row=0, column=2, sticky='w')
+            shift_label = ttk.Label(self.mutable_frame, text='Shift: ')
+            shift_label.grid(row=1, column=0, sticky='e')
+            shift_list = ['Morning', 'Night']  # TODO to retrieve
+            shift_var = tkinter.StringVar()
+            shift_var.set(shift_list[0])
+            shift_option = ttk.OptionMenu(self.mutable_frame, shift_var, shift_var.get(), *shift_list)
+            shift_option.grid(row=1, column=1, sticky='w')
+        elif self.mode_var.get() == 'Minutely':
+            date_label = ttk.Label(self.mutable_frame, text='Date: ')
+            date_label.grid(row=0, column=0, sticky='e')
+            date_var = tkinter.StringVar()
+            date_entry = ttk.Entry(self.mutable_frame, textvariable=date_var, state=tkinter.DISABLED, width=10)
+            date_entry.grid(row=0, column=1, sticky='w')
+            date_calendar = ttk.Button(self.mutable_frame, text=u'\u2380',
+                                       command=lambda: self.launch_calendar(from_var))
+            date_calendar.grid(row=0, column=2, sticky='w')
+            hour_label = ttk.Label(self.mutable_frame, text='Hour: ')
+            hour_label.grid(row=1, column=0, sticky='e')
+            hour_list = [('{}00'.format(str(i).zfill(2))) for i in range(24)]
+            hour_var = tkinter.StringVar()
+            hour_var.set(hour_list[0])
+            hour_option = ttk.OptionMenu(self.mutable_frame, hour_var, hour_var.get(), *hour_list)
+            hour_option.grid(row=1, column=1, sticky='w')
+
+    def launch_calendar(self, variable):
+        calendar_pop = tkinter.Toplevel(self.parent)
+        calendar_pop.title('Select date')
+        calendar_pop.resizable(False, False)
+        calendar_pop_frame = CalendarPop(calendar_pop, variable)
+        calendar_pop_frame.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
 
 
 class VerticalScrollFrame(ttk.Frame):
@@ -280,7 +340,9 @@ class GraphCanvas(FigureCanvasTkAgg):
 class CalendarPop(tkinter.Frame):
     DAYS_A_WEEK = 7
 
-    def __init__(self, parent, **kwargs):
+    def __init__(self, parent, variable, **kwargs):
+        self.variable = variable
+        self.parent = parent
         today = datetime.date.today()
         self._date = datetime.date(today.year, today.month, 1)
         tkinter.Frame.__init__(self, parent, **kwargs)
@@ -332,8 +394,8 @@ class CalendarPop(tkinter.Frame):
         self._update_calendar()
 
     def button_pressed(self, day):
-        # TODO day is the day thus day + self._date's month & year to get date chosen
-        pass
+        self.variable.set(datetime.date(self._date.year, self._date.month, day).strftime('%d-%m-%Y'))
+        self.parent.destroy()
 
 
 def temp_get_data(title=None, y=None, x=None):  # TODO change this
