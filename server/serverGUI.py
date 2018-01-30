@@ -191,27 +191,37 @@ class GraphDetailView(ttk.Frame):
 
 
 class GraphDetailSettingsPage(ttk.Frame):
-    class PlotSettingFrame(ttk.Frame):
+    class PlotSettingFrame(tkinter.Frame):
         LABEL_NAMES = ['Machine: ', 'Mode: ', 'Detail: ']
 
-        def __init__(self, parent, settings, **kwargs):
-            ttk.Frame.__init__(self, parent, **kwargs)
+        def __init__(self, parent, settings):
+            tkinter.Frame.__init__(self, parent, highlightbackground='black', highlightthickness=2)
             self.settings = settings
             self.columnconfigure(0, weight=1)
             self.columnconfigure(1, weight=1)
             for index in range(len(GraphDetailSettingsPage.PlotSettingFrame.LABEL_NAMES)):
-                label = ttk.Label(self, text=GraphDetailSettingsPage.PlotSettingFrame.LABEL_NAMES[index])
-                label.grid(row=index, column=0, sticky='e')
-            self.machine_label = ttk.Label(self, text=self.settings['machine'])
+                label = tkinter.Label(self, text=GraphDetailSettingsPage.PlotSettingFrame.LABEL_NAMES[index], width=7)
+                label.grid(row=index, column=0, sticky='w')
+            self.machine_label = tkinter.Label(self, text=self.settings.machine)
             self.machine_label.grid(row=0, column=1)
-            self.mode_label = ttk.Label(self, text=self.settings['mode'])
+            mode = self.settings.mode
+            self.mode_label = tkinter.Label(self, text=mode)
             self.mode_label.grid(row=1, column=1)
-            self.detail_label = ttk.Label(self, text=self.settings['details'])
-            self.mode_label.grid(row=2, column=1)
+            detail1, detail2 = self.settings.details
+            if mode == 'Daily':
+                detail_connector = 'to'
+            elif mode == 'Hourly':
+                detail_connector = 'for'
+            else:
+                detail_connector = 'at'
+            detail_string = '{} {} {}'.format(detail1, detail_connector, detail2)
+            self.detail_label = tkinter.Label(self, text=detail_string)
+            self.detail_label.grid(row=2, column=1)
 
     def __init__(self, parent, **kwargs):
         ttk.Frame.__init__(self, parent, **kwargs)
         self.parent = parent
+        self.plot_settings_list = []
         self.rowconfigure(0, weight=1)
         self.rowconfigure(1, weight=1)
         self.rowconfigure(3, weight=1)
@@ -221,7 +231,11 @@ class GraphDetailSettingsPage(ttk.Frame):
         choice_frame.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
         sensor_label = ttk.Label(choice_frame, text='Sensor: ')
         sensor_label.grid(row=0, column=0, sticky='e')
-        # TODO add option menu for sensor
+        self.sensor_var = tkinter.StringVar()
+        sensor_list = ['A', 'B', 'C', 'D', 'E']  # TODO change this
+        self.sensor_var.set(sensor_list[0])
+        sensor_option = ttk.OptionMenu(choice_frame, self.sensor_var, self.sensor_var.get(), *sensor_list)
+        sensor_option.grid(row=0, column=1, sticky='w')
         mode_label = ttk.Label(choice_frame, text='Mode: ')
         mode_label.grid(row=1, column=0, sticky='e')
         mode_list = ['Daily', 'Hourly', 'Minutely']
@@ -229,23 +243,24 @@ class GraphDetailSettingsPage(ttk.Frame):
         self.mode_var.set(mode_list[0])
         mode_menu = ttk.OptionMenu(choice_frame, self.mode_var, self.mode_var.get(), *mode_list,
                                    command=self.set_mutable_frame)
-        mode_menu.config(width=10)
         mode_menu.grid(row=1, column=1, sticky='ew')
         # Mutable options
         self.mutable_frame = None
+        self.detail1_var = tkinter.StringVar()
+        self.detail2_var = tkinter.StringVar()
         self.set_mutable_frame()
         # Add Buttons
-        add_button = ttk.Button(self, text='Add')  # TODO add command
+        add_button = ttk.Button(self, text='Add', command=self.add_plot_settings)  # TODO add command
         add_button.grid(row=2, column=0, sticky='e')
         # Graphs setting
-        self.data_frame = VerticalScrollFrame(self)
-        self.data_frame.grid(row=3, column=0, sticky='nsew', padx=5, pady=5)
+        self.data_frame = None
+        self.set_data_frame()
         # Okay & Cancel Buttons
         button_frame = ttk.Frame(self)
         button_frame.grid(row=4, column=0, sticky='nsew', padx=5, pady=5)
         plot_button = ttk.Button(button_frame, text='Plot')  # TODO add command
         plot_button.pack(side=tkinter.RIGHT)
-        cancel_button = ttk.Button(button_frame, text='Cancel')  # TODO add command
+        cancel_button = ttk.Button(button_frame, text='Cancel', command=self.parent.destroy())
         cancel_button.pack(side=tkinter.RIGHT)
 
     def set_mutable_frame(self, _selected=None):
@@ -257,55 +272,60 @@ class GraphDetailSettingsPage(ttk.Frame):
         self.mutable_frame.columnconfigure(0, weight=1)
         self.mutable_frame.columnconfigure(1, weight=1)
         self.mutable_frame.columnconfigure(2, weight=1)
+        self.detail1_var.set('')
+        self.detail2_var.set('')
         if self.mode_var.get() == 'Daily':
             from_label = ttk.Label(self.mutable_frame, text='From: ')
             from_label.grid(row=0, column=0, sticky='e')
-            from_var = tkinter.StringVar()
-            from_entry = ttk.Entry(self.mutable_frame, textvariable=from_var, state=tkinter.DISABLED, width=10)
+            from_entry = ttk.Entry(self.mutable_frame, textvariable=self.detail1_var, state=tkinter.DISABLED, width=10)
             from_entry.grid(row=0, column=1, sticky='w')
             from_calendar = ttk.Button(self.mutable_frame, text=u'\u2380',
-                                       command=lambda: self.launch_calendar(from_var))
+                                       command=lambda: self.launch_calendar(self.detail1_var))
             from_calendar.grid(row=0, column=2, sticky='w')
             to_label = ttk.Label(self.mutable_frame, text='To: ')
             to_label.grid(row=1, column=0, sticky='e')
-            to_var = tkinter.StringVar()
-            to_entry = ttk.Entry(self.mutable_frame, textvariable=to_var, state=tkinter.DISABLED, width=10)
+            to_entry = ttk.Entry(self.mutable_frame, textvariable=self.detail2_var, state=tkinter.DISABLED, width=10)
             to_entry.grid(row=1, column=1, sticky='w')
             to_calendar = ttk.Button(self.mutable_frame, text=u'\u2380',
-                                     command=lambda: self.launch_calendar(to_var))
+                                     command=lambda: self.launch_calendar(self.detail2_var))
             to_calendar.grid(row=1, column=2, sticky='w')
         elif self.mode_var.get() == 'Hourly':
             date_label = ttk.Label(self.mutable_frame, text='Date: ')
             date_label.grid(row=0, column=0, sticky='e')
-            date_var = tkinter.StringVar()
-            date_entry = ttk.Entry(self.mutable_frame, textvariable=date_var, state=tkinter.DISABLED, width=10)
+            date_entry = ttk.Entry(self.mutable_frame, textvariable=self.detail1_var, state=tkinter.DISABLED, width=10)
             date_entry.grid(row=0, column=1, sticky='w')
             date_calendar = ttk.Button(self.mutable_frame, text=u'\u2380',
-                                       command=lambda: self.launch_calendar(date_var))
+                                       command=lambda: self.launch_calendar(self.detail1_var))
             date_calendar.grid(row=0, column=2, sticky='w')
             shift_label = ttk.Label(self.mutable_frame, text='Shift: ')
             shift_label.grid(row=1, column=0, sticky='e')
             shift_list = ['Morning', 'Night']  # TODO to retrieve
-            shift_var = tkinter.StringVar()
-            shift_var.set(shift_list[0])
-            shift_option = ttk.OptionMenu(self.mutable_frame, shift_var, shift_var.get(), *shift_list)
+            self.detail2_var.set(shift_list[0])
+            shift_option = ttk.OptionMenu(self.mutable_frame, self.detail2_var, self.detail2_var.get(), *shift_list)
             shift_option.grid(row=1, column=1, sticky='w')
         elif self.mode_var.get() == 'Minutely':
             date_label = ttk.Label(self.mutable_frame, text='Date: ')
             date_label.grid(row=0, column=0, sticky='e')
-            date_var = tkinter.StringVar()
-            date_entry = ttk.Entry(self.mutable_frame, textvariable=date_var, state=tkinter.DISABLED, width=10)
+            date_entry = ttk.Entry(self.mutable_frame, textvariable=self.detail1_var, state=tkinter.DISABLED, width=10)
             date_entry.grid(row=0, column=1, sticky='w')
             date_calendar = ttk.Button(self.mutable_frame, text=u'\u2380',
-                                       command=lambda: self.launch_calendar(date_var))
+                                       command=lambda: self.launch_calendar(self.detail1_var))
             date_calendar.grid(row=0, column=2, sticky='w')
             hour_label = ttk.Label(self.mutable_frame, text='Hour: ')
             hour_label.grid(row=1, column=0, sticky='e')
             hour_list = [('{}00'.format(str(i).zfill(2))) for i in range(24)]
-            hour_var = tkinter.StringVar()
-            hour_var.set(hour_list[0])
-            hour_option = ttk.OptionMenu(self.mutable_frame, hour_var, hour_var.get(), *hour_list)
+            self.detail2_var.set(hour_list[0])
+            hour_option = ttk.OptionMenu(self.mutable_frame, self.detail2_var, self.detail2_var.get(), *hour_list)
             hour_option.grid(row=1, column=1, sticky='w')
+
+    def set_data_frame(self):
+        if self.data_frame is not None:
+            self.data_frame.destroy()
+        self.data_frame = VerticalScrollFrame(self)
+        self.data_frame.grid(row=3, column=0, sticky='nsew', padx=5, pady=5)
+        for setting in self.plot_settings_list:
+            data = GraphDetailSettingsPage.PlotSettingFrame(self.data_frame.get_interior_frame(), setting)
+            data.pack(side=tkinter.TOP, fill=tkinter.BOTH)
 
     def launch_calendar(self, variable):
         calendar_pop = tkinter.Toplevel(self.parent)
@@ -315,7 +335,12 @@ class GraphDetailSettingsPage(ttk.Frame):
         calendar_pop_frame.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
 
     def add_plot_settings(self):
-        pass
+        if self.detail1_var.get() == '' or self.detail2_var.get() == '':
+            return
+        setting = plotSetting(self.sensor_var.get(), self.mode_var.get(),
+                              (self.detail1_var.get(), self.detail2_var.get()))
+        self.plot_settings_list.append(setting)
+        self.set_data_frame()
 
 
 class VerticalScrollFrame(ttk.Frame):

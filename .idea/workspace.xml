@@ -2,8 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="8c4eab11-9431-48ea-8992-fef6a6e722be" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/dbnavigator.xml" afterPath="$PROJECT_DIR$/.idea/dbnavigator.xml" />
-      <change beforePath="$PROJECT_DIR$/server/serverDB.py" afterPath="$PROJECT_DIR$/server/serverDB.py" />
       <change beforePath="$PROJECT_DIR$/server/serverGUI.py" afterPath="$PROJECT_DIR$/server/serverGUI.py" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
@@ -63,11 +61,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="serverGUI.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="serverGUI.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="404">
-              <caret line="317" column="12" lean-forward="false" selection-start-line="317" selection-start-column="12" selection-end-line="317" selection-end-column="12" />
+            <state relative-caret-position="565">
+              <caret line="272" column="55" lean-forward="true" selection-start-line="272" selection-start-column="55" selection-end-line="272" selection-end-column="55" />
               <folding>
                 <element signature="e#0#14#0" expanded="true" />
               </folding>
@@ -78,21 +76,9 @@
       <file leaf-file-name="sensorGUI.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/sensor/sensorGUI.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="408">
+            <state relative-caret-position="174">
               <caret line="147" column="70" lean-forward="false" selection-start-line="147" selection-start-column="67" selection-end-line="147" selection-end-column="70" />
               <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="sensorGlobal.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/sensor/sensorGlobal.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1395">
-              <caret line="93" column="9" lean-forward="false" selection-start-line="93" selection-start-column="5" selection-end-line="93" selection-end-column="9" />
-              <folding>
-                <element signature="e#0#11#0" expanded="true" />
-              </folding>
             </state>
           </provider>
         </entry>
@@ -120,7 +106,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>item_</find>
       <find>time</find>
       <find>save_sett</find>
       <find>Singapore</find>
@@ -133,7 +118,6 @@
       <find>titl</find>
       <find>reading</find>
       <find>readingFrame</find>
-      <find>equal</find>
       <find>TopLevel</find>
       <find>populate</find>
       <find>Toplevel</find>
@@ -150,6 +134,8 @@
       <find>get_jobs</find>
       <find>stat</find>
       <find>save_settings</find>
+      <find>shift_va</find>
+      <find>equal</find>
     </findStrings>
     <replaceStrings>
       <replace>TMessage</replace>
@@ -418,7 +404,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.test_db">
+  <component name="RunManager" selected="Python.matplotlib_server">
     <configuration default="true" type="Applet" factoryName="Applet">
       <option name="HTML_USED" value="false" />
       <option name="WIDTH" value="400" />
@@ -734,8 +720,8 @@
     </list>
     <recent_temporary>
       <list size="4">
-        <item index="0" class="java.lang.String" itemvalue="Python.test_db" />
-        <item index="1" class="java.lang.String" itemvalue="Python.matplotlib_server" />
+        <item index="0" class="java.lang.String" itemvalue="Python.matplotlib_server" />
+        <item index="1" class="java.lang.String" itemvalue="Python.test_db" />
         <item index="2" class="java.lang.String" itemvalue="Python.macRunScript" />
         <item index="3" class="java.lang.String" itemvalue="Python.sensorReading" />
       </list>
@@ -1097,9 +1083,19 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/sensor/sensorGlobal.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="248">
+          <caret line="251" column="29" lean-forward="false" selection-start-line="251" selection-start-column="29" selection-end-line="251" selection-end-column="29" />
+          <folding>
+            <element signature="e#0#11#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/sensor/sensorGUI.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="408">
+        <state relative-caret-position="174">
           <caret line="147" column="70" lean-forward="false" selection-start-line="147" selection-start-column="67" selection-end-line="147" selection-end-column="70" />
           <folding />
         </state>
@@ -1107,20 +1103,10 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="404">
-          <caret line="317" column="12" lean-forward="false" selection-start-line="317" selection-start-column="12" selection-end-line="317" selection-end-column="12" />
+        <state relative-caret-position="565">
+          <caret line="272" column="55" lean-forward="true" selection-start-line="272" selection-start-column="55" selection-end-line="272" selection-end-column="55" />
           <folding>
             <element signature="e#0#14#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sensor/sensorGlobal.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1395">
-          <caret line="93" column="9" lean-forward="false" selection-start-line="93" selection-start-column="5" selection-end-line="93" selection-end-column="9" />
-          <folding>
-            <element signature="e#0#11#0" expanded="true" />
           </folding>
         </state>
       </provider>
