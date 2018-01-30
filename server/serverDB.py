@@ -2,6 +2,7 @@ import json
 import zmq
 import logging
 import sqlite3
+import datetime
 from collections import OrderedDict
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -43,12 +44,58 @@ class ServerSettings:
         self.logger.debug('Loaded settings')
 
 
+class DatabaseManager:
+    def __init__(self, database_name='afRPIsens.sqlite'):
+        self.database_name = database_name
+
+    @staticmethod
+    def create_table(table_name, database):
+        db = sqlite3.connect(database, detect_types=sqlite3.PARSE_DECLTYPES)
+        try:
+            db.execute("DROP TABLE IF EXISTS {}".format(table_name))
+            db.execute("CREATE TABLE IF NOT EXISTS {} (time TIMESTAMP PRIMARY KEY NOT NULL, quantity INTEGER NOT NULL)"
+                       .format(table_name))
+        except Exception as e:
+            db.rollback()
+        finally:
+            db.close()
+
+    @staticmethod
+    def insert_into_table(table_name, timestamp, quantity, database):
+        # Establish connection and create table if not exists
+        db = sqlite3.connect(database, detect_types=sqlite3.PARSE_DECLTYPES)
+        db.execute("CREATE TABLE IF NOT EXISTS {} (time TIMESTAMP PRIMARY KEY NOT NULL, quantity INTEGER NOT NULL)"
+                   .format(table_name))
+        # Check if exist same timestamp for machine
+        cursor = db.cursor()
+        cursor.execute("SELECT * from {} WHERE time=datetime(?)", (timestamp,))
+        query = cursor.fetchone()
+        if query:  # TODO to test
+            _timestamp, count = query
+            quantity = quantity + count
+            cursor.execute("UPDATE {} SET quantity = ? WHERE time = ?", (quantity, timestamp))
+        else:
+            cursor.execute("INSERT INTO {} VALUES(datetime(?), ?".format(table_name), (timestamp, quantity))
+        db.commit()
+        db.close()
+
+    @staticmethod
+    def sum_from_table(table_name, from_timestamp, to_timestamp, database):
+        db = sqlite3.connect(database, detect_types=sqlite3.PARSE_DECLTYPES)
+        cursor = db.cursor()
+        cursor.execute("SELECT SUM(quantity) from {} WHERE time >= datetime(?) AND time <= "
+                       "datetime(?)".format(table_name), (from_timestamp, to_timestamp))
+        summation = cursor.fetchone()[0]
+        return summation
+
+
 class Communication:
     REQUEST_ID = 'request'
 
-    def __init__(self, server_settings: ServerSettings):
+    def __init__(self, server_settings: ServerSettings, database: DatabaseManager):
         self.logger = logging.getLogger('afRPIsens_server')
         self.server_settings = server_settings
+        self.database = database
         self.scheduler = BackgroundScheduler()
         self.ports = []
         self.context = None
@@ -64,10 +111,10 @@ class Communication:
         self.socket.setsockopt(zmq.LINGER, 0)
         for port in self.ports:
             self.socket.connect("tcp://{}".format(port))
-            self.logger.debug("Successfully connected to machine %s" % port)
+            self.logger.debug("Successfully connected to machine at {}".format(port))
 
-        for request in range(len(self.ports)):
-            print("Sending request ", request, "...")
+        for index in range(len(self.ports)):
+            print("Sending request ", index, "...")
             self.socket.send_string("", zmq.SNDMORE)  # delimiter
             self.socket.send_string("Sensor Data")  # actual message
 
@@ -76,61 +123,30 @@ class Communication:
             poller.register(self.socket, zmq.POLLIN)
 
             socks = dict(poller.poll(5 * 1000))
+            port = self.ports[index]
+            # get machine name for port
+            for machine, _port in self.server_settings.machine_ports.items():
+                if _port == port:
+                    break
 
             if self.socket in socks:
                 try:
                     self.socket.recv()  # discard delimiter
                     msg_json = self.socket.recv()  # actual message
                     sens = json.loads(msg_json)
-                    # TODO edit here
-                    for timestamp, values in sens.items():
-                        for uniqID, count in values.items():
-                            response = "Time: %s :: Data: %s :: Client: %s :: Sensor: %s" % (uniqID, count, port, timestamp)
-                            print("Received reply ", request, "[", response, "]")
+                    for uniq_id, values in sens.items():
+                        for timestamp, count in values.items():
+                            table_name = ""'{}-{}'"".format(port, uniq_id)
+                            database_name = datetime.date.today().strftime('%B_%Y.sqlite')
+                            self.database.insert_into_table(table_name, timestamp, count, database_name)
                 except IOError:
-                    print("Could not connect to machine")
+                    self.logger.warning('Could not connect to machine {}, {}'.format(machine, port))
             else:
-                # TODO machine not respond
-                print("Machine did not respond")
+                self.logger.warning('Machine did not respond, ({}:{})'.format(machine, port))
+
+        # TODO update the treeview
 
     def set_jobs(self):
         self.scheduler.remove_all_jobs()
-        cron_trigger = CronTrigger(hour='*', minute='*/1')  # TODO set here
+        cron_trigger = CronTrigger(hour='*', minute='*/15')  # TODO set here
         self.scheduler.add_job(self.req_client, cron_trigger, id=Communication.REQUEST_ID)
-
-
-class DatabaseManager:
-    def __init__(self, database_name='afRPIsens.sqlite'):
-        self.database_name = database_name
-        pass
-
-    def create_table(self, table_name, database=None):
-        if database is None:
-            database = self.database_name
-        db = sqlite3.connect(database, detect_types=sqlite3.PARSE_DECLTYPES)
-        try:
-            db.execute("DROP TABLE IF EXISTS {}".format(table_name))
-            db.execute("CREATE TABLE IF NOT EXISTS {} (time TIMESTAMP PRIMARY KEY NOT NULL, quantity INTEGER NOT NULL)"
-                       .format(table_name))
-        except Exception as e:
-            db.rollback()
-        finally:
-            db.close()
-
-    def insert_into_table(self, table_name, timestamp, quantity, database=None):
-        if database is None:  # Check for database name
-            database = self.database_name
-        # Establish connection and create table if not exists
-        db = sqlite3.connect(database, detect_types=sqlite3.PARSE_DECLTYPES)
-        db.execute("CREATE TABLE IF NOT EXISTS {} (time TIMESTAMP PRIMARY KEY NOT NULL, quantity INTEGER NOT NULL)"
-                   .format(table_name))
-        # Check if exist same timestamp for machine
-        cursor = db.cursor()
-        cursor.execute("SELECT * from {} WHERE time=datetime(?)", (timestamp,))
-        query = cursor.fetchone()
-        if query:  # TODO to test
-            _timestamp, count = query
-            quantity = quantity + count
-            cursor.execute("UPDATE {} SET quantity = ? WHERE time = ?", (quantity, timestamp))
-        else:
-            cursor.execute("INSERT INTO {} VALUES(datetime(?), ?".format(table_name), (timestamp, quantity))

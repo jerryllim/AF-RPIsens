@@ -2,6 +2,7 @@ import tkinter
 from tkinter import ttk
 import calendar
 import datetime
+from collections import namedtuple
 import string  # TODO for testing
 
 import matplotlib
@@ -9,6 +10,9 @@ import matplotlib
 matplotlib.use('TkAgg')
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg  # noqa
 from matplotlib.figure import Figure  # noqa
+
+# sensor -> table_name, mode -> (daily, hourly, minutely), datetime -> (either Date, Date or Date, Shift or Date, Hour)
+plotSetting = namedtuple('plotSetting', ['machine', 'mode', 'details'])
 
 
 class TempClassWithRandomData:  # TODO to delete for testing
@@ -187,6 +191,23 @@ class GraphDetailView(ttk.Frame):
 
 
 class GraphDetailSettingsPage(ttk.Frame):
+    class PlotSettingFrame(ttk.Frame):
+        LABEL_NAMES = ['Machine: ', 'Mode: ', 'Detail: ']
+
+        def __init__(self, parent, settings, **kwargs):
+            ttk.Frame.__init__(self, parent, **kwargs)
+            self.settings = settings
+            self.columnconfigure(0, weight=1)
+            self.columnconfigure(1, weight=1)
+            for index in range(len(GraphDetailSettingsPage.PlotSettingFrame.LABEL_NAMES)):
+                label = ttk.Label(self, text=GraphDetailSettingsPage.PlotSettingFrame.LABEL_NAMES[index])
+                label.grid(row=index, column=0, sticky='e')
+            self.machine_label = ttk.Label(self, text=self.settings['machine'])
+            self.machine_label.grid(row=0, column=1)
+            self.mode_label = ttk.Label(self, text=self.settings['mode'])
+            self.mode_label.grid(row=1, column=1)
+            self.detail_label = ttk.Label(self, text=self.settings['details'])
+            self.mode_label.grid(row=2, column=1)
 
     def __init__(self, parent, **kwargs):
         ttk.Frame.__init__(self, parent, **kwargs)
@@ -217,8 +238,8 @@ class GraphDetailSettingsPage(ttk.Frame):
         add_button = ttk.Button(self, text='Add')  # TODO add command
         add_button.grid(row=2, column=0, sticky='e')
         # Graphs setting
-        data_frame = VerticalScrollFrame(self)
-        data_frame.grid(row=3, column=0, sticky='nsew', padx=5, pady=5)
+        self.data_frame = VerticalScrollFrame(self)
+        self.data_frame.grid(row=3, column=0, sticky='nsew', padx=5, pady=5)
         # Okay & Cancel Buttons
         button_frame = ttk.Frame(self)
         button_frame.grid(row=4, column=0, sticky='nsew', padx=5, pady=5)
@@ -260,7 +281,7 @@ class GraphDetailSettingsPage(ttk.Frame):
             date_entry = ttk.Entry(self.mutable_frame, textvariable=date_var, state=tkinter.DISABLED, width=10)
             date_entry.grid(row=0, column=1, sticky='w')
             date_calendar = ttk.Button(self.mutable_frame, text=u'\u2380',
-                                       command=lambda: self.launch_calendar(from_var))
+                                       command=lambda: self.launch_calendar(date_var))
             date_calendar.grid(row=0, column=2, sticky='w')
             shift_label = ttk.Label(self.mutable_frame, text='Shift: ')
             shift_label.grid(row=1, column=0, sticky='e')
@@ -276,7 +297,7 @@ class GraphDetailSettingsPage(ttk.Frame):
             date_entry = ttk.Entry(self.mutable_frame, textvariable=date_var, state=tkinter.DISABLED, width=10)
             date_entry.grid(row=0, column=1, sticky='w')
             date_calendar = ttk.Button(self.mutable_frame, text=u'\u2380',
-                                       command=lambda: self.launch_calendar(from_var))
+                                       command=lambda: self.launch_calendar(date_var))
             date_calendar.grid(row=0, column=2, sticky='w')
             hour_label = ttk.Label(self.mutable_frame, text='Hour: ')
             hour_label.grid(row=1, column=0, sticky='e')
@@ -292,6 +313,9 @@ class GraphDetailSettingsPage(ttk.Frame):
         calendar_pop.resizable(False, False)
         calendar_pop_frame = CalendarPop(calendar_pop, variable)
         calendar_pop_frame.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
+
+    def add_plot_settings(self):
+        pass
 
 
 class VerticalScrollFrame(ttk.Frame):
