@@ -192,7 +192,7 @@ class GraphDetailSettingsPage(ttk.Frame):
         ttk.Frame.__init__(self, parent, **kwargs)
         self.rowconfigure(0, weight=1)
         self.rowconfigure(1, weight=1)
-        self.rowconfigure(2, weight=1)
+        self.rowconfigure(3, weight=1)
         self.columnconfigure(0, weight=1)
         # New
         choice_frame = ttk.Frame(self)
@@ -211,12 +211,15 @@ class GraphDetailSettingsPage(ttk.Frame):
         # Mutable options
         self.mutable_frame = None
         self.set_mutable_frame()
-        # Graphs to plot
+        # Add Buttons
+        add_button = ttk.Button(self, text='Add')  # TODO add command
+        add_button.grid(row=2, column=0, sticky='e')
+        # Graphs setting
         data_frame = VerticalScrollFrame(self)
-        data_frame.grid(row=2, column=0, sticky='nsew', padx=5, pady=5)
-        # Buttons
+        data_frame.grid(row=3, column=0, sticky='nsew', padx=5, pady=5)
+        # Okay & Cancel Buttons
         button_frame = ttk.Frame(self)
-        button_frame.grid(row=3, column=0, sticky='nsew', padx=5, pady=5)
+        button_frame.grid(row=4, column=0, sticky='nsew', padx=5, pady=5)
         plot_button = ttk.Button(button_frame, text='Plot')  # TODO add command
         plot_button.pack(side=tkinter.RIGHT)
         cancel_button = ttk.Button(button_frame, text='Cancel')  # TODO add command
@@ -229,10 +232,6 @@ class GraphDetailSettingsPage(ttk.Frame):
         self.mutable_frame.grid(row=1, column=0, sticky='nsew')
         self.mutable_frame.rowconfigure(0, weight=1)
         self.mutable_frame.columnconfigure(0, weight=1)
-        add_button = ttk.Button(self.mutable_frame, text='Add')  # TODO add command
-        add_button.grid(row=1, column=0, sticky='e')
-        date_spinner = tkinter.Spinbox(self.mutable_frame, from_=0, to=10)
-        date_spinner.grid(row=0, column=0)
 
 
 class VerticalScrollFrame(ttk.Frame):
@@ -292,9 +291,9 @@ class CalendarPop(tkinter.Frame):
         self.columnconfigure(4, weight=0, uniform='equalWidth')
         self.columnconfigure(5, weight=0, uniform='equalWidth')
         self.columnconfigure(6, weight=0, uniform='equalWidth')
-        left_button = tkinter.Button(self, text=u'\u25C0', width=3, command=self._prev_month)  # TODO add command
+        left_button = tkinter.Button(self, text=u'\u25C0', width=3, command=self._prev_month)
         left_button.grid(row=0, column=0)
-        right_button = tkinter.Button(self, text=u'\u25B6', width=3, command=self._next_month)  # TODO add command
+        right_button = tkinter.Button(self, text=u'\u25B6', width=3, command=self._next_month)
         right_button.grid(row=0, column=6)
         self.month_var = tkinter.StringVar()
         self.month_var.set(self._date.strftime('%B %Y'))
@@ -307,7 +306,6 @@ class CalendarPop(tkinter.Frame):
             temp_label.grid(row=1, column=index)
         self.day_buttons = []
         self._update_calendar()
-        self.current_date = 0
 
     def _update_calendar(self):
         for button in self.day_buttons:
@@ -318,7 +316,7 @@ class CalendarPop(tkinter.Frame):
                 if week[index] != 0:
                     row = month.index(week)+2
                     date = week[index]
-                    button = tkinter.Button(self, text=date, command=lambda x=date: print(x))
+                    button = tkinter.Button(self, text=date, command=lambda x=date: self.button_pressed(x))
                     button.grid(row=row, column=index)
                     self.day_buttons.append(button)
         self.month_var.set(self._date.strftime('%B %Y'))
@@ -334,11 +332,8 @@ class CalendarPop(tkinter.Frame):
         self._update_calendar()
 
     def button_pressed(self, day):
-        if self.current_date > 0:
-            self.day_buttons[self.current_date-1].toggle_state(state=False)
-
-        self.current_date = self.day_buttons[day-1].cget('text')
-        self.day_buttons[day-1].toggle_state(state=True)
+        # TODO day is the day thus day + self._date's month & year to get date chosen
+        pass
 
 
 def temp_get_data(title=None, y=None, x=None):  # TODO change this
