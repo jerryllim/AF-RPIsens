@@ -45,7 +45,7 @@ class MainWindow(ttk.Frame):
         request_label.grid(row=0, column=0, sticky='w')
         request_button = ttk.Button(self.top_frame, text='Request now', command=self.launch_another)  # TODO add command
         request_button.grid(row=0, column=1)
-        plot_button = ttk.Button(self.top_frame, text='Plot new', command=self.launch_calendar)  # TODO add command to plot new set of graphs
+        plot_button = ttk.Button(self.top_frame, text='Plot new', command=self.launch_something)  # TODO add command to plot new set of graphs
         plot_button.grid(row=0, column=2)
         self.quick_frame = None
         self.quick_access_setup()

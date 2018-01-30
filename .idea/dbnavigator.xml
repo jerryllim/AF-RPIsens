@@ -42,7 +42,15 @@
   </component>
   <component name="DBNavigator.Project.DatasetFilterManager">
     <filter-list connection-id="e872ebba-28d8-456d-a71f-c83170012945" dataset="main.S001_Today" active-filter-id="EMPTY_FILTER" />
+    <filter-list connection-id="37d1817d-c0c2-4da4-a4ce-ef1379fccd47" dataset="main.Line5-Label" active-filter-id="EMPTY_FILTER">
+      <filter id="de92e1d2-6370-47f8-84e2-91ca9b384ca8" name="Filter 1" temporary="false" custom-name="false" type="basic" join-type="AND">
+        <condition column="quantity" operator="=" value="" active="true" />
+      </filter>
+    </filter-list>
+    <filter-list connection-id="37d1817d-c0c2-4da4-a4ce-ef1379fccd47" dataset="main.Line5-Inner" active-filter-id="EMPTY_FILTER" />
     <filter-list connection-id="37d1817d-c0c2-4da4-a4ce-ef1379fccd47" dataset="main.A001-S001" active-filter-id="EMPTY_FILTER" />
+    <filter-list connection-id="37d1817d-c0c2-4da4-a4ce-ef1379fccd47" dataset="main.Line5-Slitter" active-filter-id="EMPTY_FILTER" />
+    <filter-list connection-id="37d1817d-c0c2-4da4-a4ce-ef1379fccd47" dataset="main.Line5-Outer" active-filter-id="EMPTY_FILTER" />
   </component>
   <component name="DBNavigator.Project.EditorStateManager">
     <last-used-providers />
