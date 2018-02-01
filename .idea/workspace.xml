@@ -2,11 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="8c4eab11-9431-48ea-8992-fef6a6e722be" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/01_January_2018.sqlite" afterPath="$PROJECT_DIR$/01_January_2018.sqlite" />
-      <change beforePath="$PROJECT_DIR$/02_February_2018.sqlite" afterPath="$PROJECT_DIR$/02_February_2018.sqlite" />
-      <change beforePath="$PROJECT_DIR$/03_March_2018.sqlite" afterPath="$PROJECT_DIR$/03_March_2018.sqlite" />
       <change beforePath="$PROJECT_DIR$/server/serverDB.py" afterPath="$PROJECT_DIR$/server/serverDB.py" />
-      <change beforePath="$PROJECT_DIR$/server/serverGUI.py" afterPath="$PROJECT_DIR$/server/serverGUI.py" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -40,11 +36,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="serverDB.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="serverDB.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/server/serverDB.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="261">
-              <caret line="115" column="89" lean-forward="true" selection-start-line="115" selection-start-column="89" selection-end-line="115" selection-end-column="89" />
+            <state relative-caret-position="-130">
+              <caret line="104" column="19" lean-forward="true" selection-start-line="104" selection-start-column="19" selection-end-line="104" selection-end-column="19" />
               <folding>
                 <element signature="e#0#11#0" expanded="true" />
               </folding>
@@ -65,7 +61,7 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="serverGUI.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="serverGUI.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="244">
@@ -182,8 +178,8 @@
         <option value="$PROJECT_DIR$/sensor/sensorGlobal.py" />
         <option value="$PROJECT_DIR$/Communication/ServerView/reqrep_server.py" />
         <option value="$PROJECT_DIR$/test_db.py" />
-        <option value="$PROJECT_DIR$/server/serverDB.py" />
         <option value="$PROJECT_DIR$/server/serverGUI.py" />
+        <option value="$PROJECT_DIR$/server/serverDB.py" />
       </list>
     </option>
   </component>
@@ -1174,16 +1170,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/server/serverDB.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="261">
-          <caret line="115" column="89" lean-forward="true" selection-start-line="115" selection-start-column="89" selection-end-line="115" selection-end-column="89" />
-          <folding>
-            <element signature="e#0#11#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/test_db.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="417">
@@ -1217,6 +1203,16 @@
           <caret line="161" column="65" lean-forward="true" selection-start-line="161" selection-start-column="65" selection-end-line="161" selection-end-column="65" />
           <folding>
             <element signature="e#0#14#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/serverDB.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-130">
+          <caret line="104" column="19" lean-forward="true" selection-start-line="104" selection-start-column="19" selection-end-line="104" selection-end-column="19" />
+          <folding>
+            <element signature="e#0#11#0" expanded="true" />
           </folding>
         </state>
       </provider>

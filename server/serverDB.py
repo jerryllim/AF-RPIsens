@@ -98,6 +98,14 @@ class DatabaseManager:
 
     @staticmethod
     def get_sums(machine, start, end, mode):
+        """
+        Returns lists from database, Hourly and Minutely is 'end' exclusive but Daily is 'end' inclusive.
+        :param machine:
+        :param start:
+        :param end:
+        :param mode:
+        :return: date_list, count_list
+        """
         date_list = []
         count_list = []
         check_date = start
@@ -105,7 +113,7 @@ class DatabaseManager:
         if mode == 'Daily':
             time_diff = datetime.timedelta(days=1)
             next_date = start.replace(minute=0, second=0, microsecond=0) + time_diff
-            end = end + time_diff
+            end = end + time_diff  # So that the end date is inclusive
         elif mode == 'Hourly':
             time_diff = datetime.timedelta(hours=1)
             next_date = start.replace(minute=0, second=0, microsecond=0) + time_diff
