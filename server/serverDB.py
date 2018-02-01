@@ -98,23 +98,22 @@ class DatabaseManager:
 
     @staticmethod
     def get_sums(machine, start, end, mode):
-        if mode == 'Daily':
-            format_string = '%d-%m-%Y'
-            time_diff = datetime.timedelta(days=1)
-        elif mode == 'Hourly':
-            format_string = '%d-%m-%Y %H:%M'
-            time_diff = datetime.timedelta(hours=1)
-        else:
-            format_string = '%d-%m-%Y %H:%M'
-            time_diff = datetime.timedelta(minutes=5)
-
-        start_date = datetime.datetime.strptime(start, format_string)
-        end_date = datetime.datetime.strptime(end, format_string)
         date_list = []
         count_list = []
-        check_date = start_date
-        next_date = start_date.replace(minute=0, second=0, microsecond=0) + time_diff
-        while next_date < end_date:  # Loop till next_date is larger than or equal to end_date
+        check_date = start
+
+        if mode == 'Daily':
+            time_diff = datetime.timedelta(days=1)
+            next_date = start.replace(minute=0, second=0, microsecond=0) + time_diff
+            end = end + time_diff
+        elif mode == 'Hourly':
+            time_diff = datetime.timedelta(hours=1)
+            next_date = start.replace(minute=0, second=0, microsecond=0) + time_diff
+        else:
+            time_diff = datetime.timedelta(minutes=5)
+            next_date = start + time_diff
+
+        while next_date < end:  # Loop till next_date is larger than or equal to end_date
             database = check_date.strftime('%m_%B_%Y.sqlite')
             summation = DatabaseManager.sum_from_table(machine, check_date.strftime('%Y-%m-%d %H:%M'),
                                                        next_date.strftime('%Y-%m-%d %H:%M'), database, option='exclude')
@@ -125,7 +124,7 @@ class DatabaseManager:
         # Check for the last time for between check_date and end_date
         database = check_date.strftime('%m_%B_%Y.sqlite')
         summation = DatabaseManager.sum_from_table(machine, check_date.strftime('%Y-%m-%d %H:%M'),
-                                                   end_date.strftime('%Y-%m-%d %H:%M'), database, option='exclude')
+                                                   end.strftime('%Y-%m-%d %H:%M'), database, option='exclude')
         date_list.append(check_date)
         count_list.append(summation)
 

@@ -134,6 +134,7 @@ class GraphDetailView(ttk.Frame):
         self.top_frame = ttk.Frame(self)
         self.top_frame.grid(row=0, column=0, sticky='nsew')
         self.data = data
+        self.num_col = GraphDetailView.NUM_COL
 
         # Notebook setup
         view_notebook = ttk.Notebook(self)
@@ -154,9 +155,9 @@ class GraphDetailView(ttk.Frame):
         self.treeview.grid(row=0, column=0, sticky='nsew')
         self.treeview['show'] = 'headings'
         self.treeview['column'] = ('machine', 'count', 'timestamp')
-        self.treeview.heading('machine', text='Machine')
-        self.treeview.heading('count', text='Count')
-        self.treeview.heading('timestamp', text='Timestamp')
+        self.treeview.heading('machine', text='Machine', command=lambda: self.sort_tree_view('machine', False))
+        self.treeview.heading('count', text='Count', command=lambda: self.sort_tree_view('count', False))
+        self.treeview.heading('timestamp', text='Timestamp', command=lambda: self.sort_tree_view('timestamp', False))
         self.treeview.column('machine', width=100)
         self.treeview.column('count', width=60, anchor=tkinter.E)
         self.treeview.column('timestamp', width=70)
@@ -165,32 +166,50 @@ class GraphDetailView(ttk.Frame):
         treeview_v_scroll.grid(row=0, column=1, sticky='nsw')
         self.treeview.configure(yscrollcommand=treeview_v_scroll.set)
 
-    def graph_setups(self, data):
-        for column in range(MainWindow.NUM_COL):
+        self.graph_treeview_populate(self.data)
+
+    def graph_treeview_populate(self, data):
+        for column in range(self.num_col):
             self.graph_scrollable_frame.get_interior_frame().columnconfigure(column, weight=1)
-        # TODO data structure
         for index in range(len(data)):
-            row = index//MainWindow.NUM_COL
-            col = index % MainWindow.NUM_COL
-            canvas = GraphCanvas(self.graph_scrollable_frame.get_interior_frame(),
-                                 data[index])
+            machine, title, date_list, count_list = GraphDetailView.get_data_from_database(data[index])
+            row = index//self.num_col
+            col = index % self.num_col
+            canvas = GraphCanvas(self.graph_scrollable_frame.get_interior_frame(), (title, date_list, count_list))
             canvas.show()
             canvas.grid(row=row, column=col, sticky='nsew', padx=5, pady=5)
+            for pos in range(len(date_list)):
+                self.treeview.insert('', tkinter.END, values=(machine, count_list[pos], date_list[pos]))
 
-    def treeview_setups(self, data):
-        # TODO data structure
-        for machine, sensor, timestamp, count in data:
-            self.treeview.insert('', tkinter.END, values=(machine, sensor, count, timestamp))
-
-    def get_data_from_database(self, setting):
+    @staticmethod
+    def get_data_from_database(setting):
         machine, mode, (detail1, detail2) = setting
         if mode == 'Daily':
-            date_list, count_list = serverDB.DatabaseManager.get_sums(machine, detail1, detail2, mode)
+            start_date = datetime.datetime.strptime(detail1, '%Y-%m-%d')
+            end_date = datetime.datetime.strptime(detail2, '%Y-%m-%d')
         elif mode == 'Hourly':
-            pass
+            # TODO get shift duration to get end date
+            start_time = '08:00'
+            end_time = '20:00'
+            start_date = datetime.datetime.strptime(' '.join([detail1, start_time]), '%Y-%m-%d %H:%M')
+            end_date = datetime.datetime.strptime(' '.join([detail1, end_time]), '%Y-%m-%d %H:%M')
+        else:
+            start_date = datetime.datetime.strptime(' '.join([detail1, detail2]), '%Y-%m-%d %H:%M')
+            end_date = start_date + datetime.timedelta(hours=1)
+
+        date_list, count_list = serverDB.DatabaseManager.get_sums(machine, start_date, end_date, mode)
 
         title = '{}\n{} - {}'.format(machine, detail1, detail2)
-        return title, date_list, count_list
+        return machine, title, date_list, count_list
+
+    def sort_tree_view(self, column, reverse):
+        item_list = [(self.treeview.set(_iid, column=column), _iid) for _iid in self.treeview.get_children()]
+        item_list.sort(reverse=reverse)
+        # Arrange the tree_view based on item_list
+        for index, (value, _iid) in enumerate(item_list):
+            self.treeview.move(_iid, '', index)
+
+        self.treeview.heading(column, command=lambda col=column: self.sort_tree_view(col, not reverse))
 
 
 class PlotSettingFrame(tkinter.Frame):
@@ -313,7 +332,7 @@ class GraphDetailSettingsPage(ttk.Frame):
             date_calendar.grid(row=0, column=2, sticky='w')
             hour_label = ttk.Label(self.mutable_frame, text='Hour: ')
             hour_label.grid(row=1, column=0, sticky='e')
-            hour_list = [('{}00'.format(str(i).zfill(2))) for i in range(24)]
+            hour_list = [('{}:00'.format(str(i).zfill(2))) for i in range(24)]
             self.detail2_var.set(hour_list[0])
             hour_option = ttk.OptionMenu(self.mutable_frame, self.detail2_var, self.detail2_var.get(), *hour_list)
             hour_option.grid(row=1, column=1, sticky='w')
@@ -389,12 +408,12 @@ class GraphCanvas(FigureCanvasTkAgg):
 class CalendarPop(tkinter.Frame):
     DAYS_A_WEEK = 7
 
-    def __init__(self, parent, variable, **kwargs):
+    def __init__(self, parent, variable):
         self.variable = variable
         self.parent = parent
         today = datetime.date.today()
         self._date = datetime.date(today.year, today.month, 1)
-        tkinter.Frame.__init__(self, parent, **kwargs)
+        tkinter.Frame.__init__(self, parent, padx=5, pady=5)
         self.columnconfigure(0, weight=0, uniform='equalWidth')
         self.columnconfigure(1, weight=0, uniform='equalWidth')
         self.columnconfigure(2, weight=0, uniform='equalWidth')
@@ -413,8 +432,8 @@ class CalendarPop(tkinter.Frame):
         self._calendar = calendar.TextCalendar()
         header = [day for day in self._calendar.formatweekheader(3).split(' ')]
         for index in range(CalendarPop.DAYS_A_WEEK):
-            temp_label = tkinter.Label(self, text=header[index], background='red', foreground='white', width=4)
-            temp_label.grid(row=1, column=index)
+            header_label = tkinter.Label(self, text=header[index], background='red', foreground='white', width=4)
+            header_label.grid(row=1, column=index)
         self.day_buttons = []
         self._update_calendar()
 
@@ -427,7 +446,7 @@ class CalendarPop(tkinter.Frame):
                 if week[index] != 0:
                     row = month.index(week)+2
                     date = week[index]
-                    button = tkinter.Button(self, text=date, command=lambda x=date: self.button_pressed(x))
+                    button = tkinter.Button(self, text=date, width=2, command=lambda x=date: self.button_pressed(x))
                     button.grid(row=row, column=index)
                     self.day_buttons.append(button)
         self.month_var.set(self._date.strftime('%B %Y'))
@@ -443,7 +462,7 @@ class CalendarPop(tkinter.Frame):
         self._update_calendar()
 
     def button_pressed(self, day):
-        self.variable.set(datetime.date(self._date.year, self._date.month, day).strftime('%d-%m-%Y'))
+        self.variable.set(datetime.date(self._date.year, self._date.month, day).strftime('%Y-%m-%d'))
         self.parent.destroy()
 
 
