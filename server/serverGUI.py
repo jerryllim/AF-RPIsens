@@ -3,6 +3,7 @@ from tkinter import ttk
 import calendar
 import datetime
 from collections import namedtuple
+import server.serverDB as serverDB
 import string  # TODO for testing
 
 import matplotlib
@@ -121,13 +122,6 @@ class MainWindow(ttk.Frame):
         test2 = GraphDetailSettingsPage(test)
         test2.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
 
-    def launch_calendar(self):  # TODO
-        test = tkinter.Toplevel(self.parent)
-        test.title('Calendar')
-        test.resizable(False, False)
-        test2 = CalendarPop(test)
-        test2.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
-
 
 class GraphDetailView(ttk.Frame):
     NUM_COL = 2
@@ -139,6 +133,7 @@ class GraphDetailView(ttk.Frame):
         self.columnconfigure(0, weight=1)
         self.top_frame = ttk.Frame(self)
         self.top_frame.grid(row=0, column=0, sticky='nsew')
+        self.data = data
 
         # Notebook setup
         view_notebook = ttk.Notebook(self)
@@ -158,13 +153,11 @@ class GraphDetailView(ttk.Frame):
         self.treeview = ttk.Treeview(treeview_frame)
         self.treeview.grid(row=0, column=0, sticky='nsew')
         self.treeview['show'] = 'headings'
-        self.treeview['column'] = ('machine', 'sensor', 'count', 'timestamp')
+        self.treeview['column'] = ('machine', 'count', 'timestamp')
         self.treeview.heading('machine', text='Machine')
-        self.treeview.heading('sensor', text='Sensor')
         self.treeview.heading('count', text='Count')
         self.treeview.heading('timestamp', text='Timestamp')
         self.treeview.column('machine', width=100)
-        self.treeview.column('sensor', width=100)
         self.treeview.column('count', width=60, anchor=tkinter.E)
         self.treeview.column('timestamp', width=70)
         # Scroll for Treeview
@@ -189,34 +182,40 @@ class GraphDetailView(ttk.Frame):
         for machine, sensor, timestamp, count in data:
             self.treeview.insert('', tkinter.END, values=(machine, sensor, count, timestamp))
 
+    def get_data_from_database(self, setting):
+        machine, mode, (detail1, detail2) = setting
+        if mode == 'Daily':
+            date_list, count_list = serverDB.DatabaseManager.get_sums(machine, detail1, detail2, mode)
+        elif mode == 'Hourly':
+            pass
+
+        title = '{}\n{} - {}'.format(machine, detail1, detail2)
+        return title, date_list, count_list
+
+
+class PlotSettingFrame(tkinter.Frame):
+    LABEL_NAMES = ['Machine: ', 'Mode: ', 'Detail: ']
+
+    def __init__(self, parent, settings):
+        tkinter.Frame.__init__(self, parent, highlightbackground='black', highlightthickness=2)
+        self.settings = settings
+        self.columnconfigure(0, weight=1)
+        self.columnconfigure(1, weight=1)
+        for index in range(len(PlotSettingFrame.LABEL_NAMES)):
+            label = tkinter.Label(self, text=PlotSettingFrame.LABEL_NAMES[index], width=7)
+            label.grid(row=index, column=0, sticky='w')
+        self.machine_label = tkinter.Label(self, text=self.settings.machine)
+        self.machine_label.grid(row=0, column=1)
+        mode = self.settings.mode
+        self.mode_label = tkinter.Label(self, text=mode)
+        self.mode_label.grid(row=1, column=1)
+        detail1, detail2 = self.settings.details
+        detail_string = u'{} \u2192 {}'.format(detail1, detail2)
+        self.detail_label = tkinter.Label(self, text=detail_string)
+        self.detail_label.grid(row=2, column=1)
+
 
 class GraphDetailSettingsPage(ttk.Frame):
-    class PlotSettingFrame(tkinter.Frame):
-        LABEL_NAMES = ['Machine: ', 'Mode: ', 'Detail: ']
-
-        def __init__(self, parent, settings):
-            tkinter.Frame.__init__(self, parent, highlightbackground='black', highlightthickness=2)
-            self.settings = settings
-            self.columnconfigure(0, weight=1)
-            self.columnconfigure(1, weight=1)
-            for index in range(len(GraphDetailSettingsPage.PlotSettingFrame.LABEL_NAMES)):
-                label = tkinter.Label(self, text=GraphDetailSettingsPage.PlotSettingFrame.LABEL_NAMES[index], width=7)
-                label.grid(row=index, column=0, sticky='w')
-            self.machine_label = tkinter.Label(self, text=self.settings.machine)
-            self.machine_label.grid(row=0, column=1)
-            mode = self.settings.mode
-            self.mode_label = tkinter.Label(self, text=mode)
-            self.mode_label.grid(row=1, column=1)
-            detail1, detail2 = self.settings.details
-            if mode == 'Daily':
-                detail_connector = 'to'
-            elif mode == 'Hourly':
-                detail_connector = 'for'
-            else:
-                detail_connector = 'at'
-            detail_string = '{} {} {}'.format(detail1, detail_connector, detail2)
-            self.detail_label = tkinter.Label(self, text=detail_string)
-            self.detail_label.grid(row=2, column=1)
 
     def __init__(self, parent, **kwargs):
         ttk.Frame.__init__(self, parent, **kwargs)
@@ -232,7 +231,8 @@ class GraphDetailSettingsPage(ttk.Frame):
         sensor_label = ttk.Label(choice_frame, text='Sensor: ')
         sensor_label.grid(row=0, column=0, sticky='e')
         self.sensor_var = tkinter.StringVar()
-        sensor_list = ['A', 'B', 'C', 'D', 'E']  # TODO change this
+        sensor_list = ["Line6-Outer", "Line6-Inner", "Line6-Label", "Line6-Slitter",
+                       "Line5-Outer", "Line5-Inner", "Line5-Label", "Line5-Slitter"]  # TODO change this
         self.sensor_var.set(sensor_list[0])
         sensor_option = ttk.OptionMenu(choice_frame, self.sensor_var, self.sensor_var.get(), *sensor_list)
         sensor_option.grid(row=0, column=1, sticky='w')
@@ -324,7 +324,7 @@ class GraphDetailSettingsPage(ttk.Frame):
         self.data_frame = VerticalScrollFrame(self)
         self.data_frame.grid(row=3, column=0, sticky='nsew', padx=5, pady=5)
         for setting in self.plot_settings_list:
-            data = GraphDetailSettingsPage.PlotSettingFrame(self.data_frame.get_interior_frame(), setting)
+            data = PlotSettingFrame(self.data_frame.get_interior_frame(), setting)
             data.pack(side=tkinter.TOP, fill=tkinter.BOTH)
 
     def launch_calendar(self, variable):

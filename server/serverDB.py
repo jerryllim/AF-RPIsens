@@ -11,6 +11,7 @@ from apscheduler.triggers.cron import CronTrigger
 class ServerSettings:
     MACHINE_PORTS = 'machine_ports'
     QUICK_ACCESS = 'quick_access'
+    SHIFT_SETTINGS = 'shift_settings'
     MISC_SETTINGS = 'misc_settings'
 
     def __init__(self, filename='server_settings.json'):
@@ -18,6 +19,7 @@ class ServerSettings:
         self.logger = logging.getLogger('afRPIsens_server')
         self.machine_ports = OrderedDict()
         self.quick_access = OrderedDict()
+        self.shift_settings = {}
         self.misc_settings = {}
         self.load_settings()
         self.logger.debug('Completed setup')
@@ -26,6 +28,7 @@ class ServerSettings:
         self.logger.debug('Saving settings')
         settings_dict = {ServerSettings.MACHINE_PORTS: self.machine_ports,
                          ServerSettings.QUICK_ACCESS: self.quick_access,
+                         ServerSettings.SHIFT_SETTINGS: self.shift_settings,
                          ServerSettings.MISC_SETTINGS: self.misc_settings}
         with open(self.filename, 'w') as outfile:
             json.dump(settings_dict, outfile)
@@ -38,7 +41,8 @@ class ServerSettings:
                 settings_dict = json.load(infile, object_pairs_hook=OrderedDict)
                 self.machine_ports = settings_dict[ServerSettings.MACHINE_PORTS]
                 self.quick_access = settings_dict[ServerSettings.QUICK_ACCESS]
-                self.misc_settings = settings_dict[ServerSettings.MISC_SETTINGS]
+                self.shift_settings = settings_dict.get(ServerSettings.SHIFT_SETTINGS, self.shift_settings)
+                self.misc_settings = settings_dict.get(ServerSettings.MISC_SETTINGS, self.misc_settings)
         except FileNotFoundError:
             pass
         self.logger.debug('Loaded settings')
@@ -80,13 +84,52 @@ class DatabaseManager:
         db.close()
 
     @staticmethod
-    def sum_from_table(table_name, from_timestamp, to_timestamp, database):
+    def sum_from_table(table_name, from_timestamp, to_timestamp, database, option='include'):
         db = sqlite3.connect(database, detect_types=sqlite3.PARSE_DECLTYPES)
         cursor = db.cursor()
-        cursor.execute("SELECT SUM(quantity) from {} WHERE time >= datetime(?) AND time <= "
-                       "datetime(?)".format(table_name), (from_timestamp, to_timestamp))
+        if option == 'exclude':
+            cursor.execute("SELECT SUM(quantity) from {} WHERE time >= datetime(?) AND time < "
+                           "datetime(?)".format(table_name), (from_timestamp, to_timestamp))
+        else:
+            cursor.execute("SELECT SUM(quantity) from {} WHERE time >= datetime(?) AND time <= "
+                           "datetime(?)".format(table_name), (from_timestamp, to_timestamp))
         summation = cursor.fetchone()[0]
         return summation
+
+    @staticmethod
+    def get_sums(machine, start, end, mode):
+        if mode == 'Daily':
+            format_string = '%d-%m-%Y'
+            time_diff = datetime.timedelta(days=1)
+        elif mode == 'Hourly':
+            format_string = '%d-%m-%Y %H:%M'
+            time_diff = datetime.timedelta(hours=1)
+        else:
+            format_string = '%d-%m-%Y %H:%M'
+            time_diff = datetime.timedelta(minutes=5)
+
+        start_date = datetime.datetime.strptime(start, format_string)
+        end_date = datetime.datetime.strptime(end, format_string)
+        date_list = []
+        count_list = []
+        check_date = start_date
+        next_date = start_date.replace(minute=0, second=0, microsecond=0) + time_diff
+        while next_date < end_date:  # Loop till next_date is larger than or equal to end_date
+            database = check_date.strftime('%m_%B_%Y.sqlite')
+            summation = DatabaseManager.sum_from_table(machine, check_date.strftime('%Y-%m-%d %H:%M'),
+                                                       next_date.strftime('%Y-%m-%d %H:%M'), database, option='exclude')
+            date_list.append(check_date)
+            count_list.append(summation)
+            check_date = next_date
+            next_date = next_date + time_diff
+        # Check for the last time for between check_date and end_date
+        database = check_date.strftime('%m_%B_%Y.sqlite')
+        summation = DatabaseManager.sum_from_table(machine, check_date.strftime('%Y-%m-%d %H:%M'),
+                                                   end_date.strftime('%Y-%m-%d %H:%M'), database, option='exclude')
+        date_list.append(check_date)
+        count_list.append(summation)
+
+        return date_list, count_list
 
 
 class Communication:
