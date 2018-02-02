@@ -1,12 +1,12 @@
 import tkinter
 from tkinter import ttk
+from tkinter import messagebox
 import calendar
 import datetime
 from collections import namedtuple
 import server.serverDB as serverDB
 import string  # TODO for testing
 
-import matplotlib.dates
 import matplotlib
 
 matplotlib.use('TkAgg')
@@ -489,6 +489,8 @@ class ConfigurationSettings(ttk.Frame):
         self.configuration_notebook.grid(row=0, column=0, sticky='nsew')
         self.button_frame = ttk.Frame(self)
         self.button_frame.grid(row=1, column=0, sticky='nsew')
+        self.port_tv = None
+        self.quick_tv = None
 
     def port_network_setup(self): # Port Settings
         port_config_frame = ttk.Frame(self.configuration_notebook)
@@ -501,16 +503,25 @@ class ConfigurationSettings(ttk.Frame):
         port_tv_frame.grid(row=0, column=0, sticky='nsew')
         port_tv_frame.rowconfigure(0, weight=1)
         port_tv_frame.columnconfigure(0, weight=1)
-        port_tv = ttk.Treeview(port_tv_frame)
-        port_tv.grid(row=0, column=0, sticky='nsew')
+        self.port_tv = ttk.Treeview(port_tv_frame)
+        self.port_tv.grid(row=0, column=0, sticky='nsew')
         # Scroll for Treeview
-        port_tv_v_scroll = ttk.Scrollbar(port_tv_frame, orient='vertical', command=port_tv.yview)
+        port_tv_v_scroll = ttk.Scrollbar(port_tv_frame, orient='vertical', command=self.port_tv.yview)
         port_tv_v_scroll.grid(row=0, column=1, sticky='nsw')
-        port_tv.configure(yscrollcommand=port_tv_v_scroll.set)
+        self.port_tv.configure(yscrollcommand=port_tv_v_scroll.set)
         # Populate port_tv here
 
         # Add & Delete buttons
-        ConfigurationSettings.button_frame_setup(port_config_frame, port_tv)
+        button_frame = ttk.Frame(port_config_frame)
+        button_frame.grid(row=0, column=1, padx=5, pady=5)
+        add_button = ttk.Button(button_frame, text='Add', command=self.launch_network_port_window)  # TODO Add command
+        add_button.pack()
+        edit_button = ttk.Button(button_frame, text='Edit', command=lambda: self.launch_network_port_window(
+            iid=self.port_tv.focus()))
+        edit_button.pack()
+        delete_button = ttk.Button(button_frame, text='Delete', command=lambda: self.port_tv.delete(
+            self.port_tv.focus()))
+        delete_button.pack()
 
     def quick_access_setup(self): # Quick Access
         quick_access_frame = ttk.Frame(self.configuration_notebook)
@@ -520,42 +531,40 @@ class ConfigurationSettings(ttk.Frame):
         quick_tv_frame.grid(row=0, column=0, sticky='nsew')
         quick_tv_frame.rowconfigure(0, weight=1)
         quick_tv_frame.columnconfigure(0, weight=1)
-        quick_tv = ttk.Treeview(quick_tv_frame)
-        quick_tv.grid(row=0, column=0, sticky='nsew')
+        self.quick_tv = ttk.Treeview(quick_tv_frame)
+        self.quick_tv.grid(row=0, column=0, sticky='nsew')
         # Scroll for Treeview
-        quick_tv_v_scroll = ttk.Scrollbar(quick_tv_frame, orient='vertical', command=quick_tv.yview)
+        quick_tv_v_scroll = ttk.Scrollbar(quick_tv_frame, orient='vertical', command=self.quick_tv.yview)
         quick_tv_v_scroll.grid(row=0, column=1, sticky='nsw')
-        quick_tv.configure(yscrollcommand=quick_tv_v_scroll.set)
+        self.quick_tv.configure(yscrollcommand=quick_tv_v_scroll.set)
         # Populate quick_tv here
 
         # Add & Delete buttons
-        ConfigurationSettings.button_frame_setup(quick_access_frame, quick_tv)
-
-    @staticmethod
-    def button_frame_setup(parent, treeview):
-        button_frame = ttk.Frame(parent)
+        button_frame = ttk.Frame(quick_access_frame)
         button_frame.grid(row=0, column=1, padx=5, pady=5)
         add_button = ttk.Button(button_frame, text='Add')  # TODO Add command
         add_button.pack()
         edit_button = ttk.Button(button_frame, text='Edit')  # TODO Add command
         edit_button.pack()
-        delete_button = ttk.Button(button_frame, text='Delete')  # TODO Add command
+        delete_button = ttk.Button(button_frame, text='Delete', command=lambda: self.quick_tv.delete(
+            self.quick_tv.focus()))
         delete_button.pack()
 
-    def launch_network_port_window(self):
+    def launch_network_port_window(self, iid=None):
         network_port_window = tkinter.Toplevel(self)
         network_port_window.resizable(True, False)
 
-        network_port_frame = AddNetworkPort(network_port_window)
+        network_port_frame = AddNetworkPort(network_port_window, self.port_tv, iid)
         network_port_frame.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
 
 
 class AddNetworkPort(ttk.Frame):
 
-    def __init__(self, parent, item=None):
+    def __init__(self, parent, treeview: ttk.Treeview, _iid=None):
         ttk.Frame.__init__(self, parent)
-        self.item = item
-        self.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
+        self.parent = parent
+        self.iid = _iid
+        self.treeview = treeview
         self.columnconfigure(0, weight=1)
         self.columnconfigure(1, weight=1)
         # Labels
@@ -566,27 +575,102 @@ class AddNetworkPort(ttk.Frame):
         port_label = ttk.Label(self, text='Port')
         port_label.grid(row=2, column=0, sticky='e')
         # Entries
+        entry_validation = self.register(AddNetworkPort.validate_entries)
         self.machine_entry = ttk.Entry(self)
         self.machine_entry.delete(0, tkinter.END)
-        self.machine_entry.grid(row=0, column=1, sticky='w')
+        self.machine_entry.grid(row=0, column=1, sticky='w', validate='key',
+                                validationcommand=(entry_validation, '%P', '%S', 'name'))
         self.address_entry = ttk.Entry(self)
         self.address_entry.delete(0, tkinter.END)
-        self.address_entry.grid(row=0, column=1, sticky='w')
+        self.address_entry.grid(row=1, column=1, sticky='w', justify=tkinter.RIGHT, width=17,
+                                validate='key', validationcommand=(entry_validation, '%P', '%S', 'name'))
         self.port_entry = ttk.Entry(self)
         self.port_entry.delete(0, tkinter.END)
-        self.port_entry.grid(row=0, column=1, sticky='w')
+        self.port_entry.grid(row=2, column=1, sticky='w', justify=tkinter.RIGHT, width=6,
+                             validate='key', validationcommand=(entry_validation, '%P', '%S', 'name'))
 
-        if self.item:
-            name, address, port = self.item
+        # Button Frame
+        button_frame = ttk.Frame(self)
+        button_frame.grid(row=3, column=0, columnspan=2, sticky='nsew', padx=5, pady=5)
+        save_button = ttk.Button(button_frame, text='Save', command=self.save_clicked)
+        save_button.pack(side=tkinter.RIGHT)
+        cancel_button = ttk.Button(button_frame, text='Cancel', command=self.parent.destroy)
+        cancel_button.pack(side=tkinter.RIGHT)
+
+        if self.iid:
+            name, address, port = self.treeview.item(self.iid)['values']
             self.machine_entry.insert(0, name)
             self.address_entry.insert(0, address)
             self.port_entry.insert(0, port)
 
-    def validate_entries(self):
-        name, address, port = self.item
-        if self.address_entry.get() != name:
-            # TODO issue warning
-            pass
+    def validate_before_save(self):
+        if self.iid:
+            name, address, port = self.treeview.item(self.iid)['values']
+            if self.address_entry.get() != name:
+                result = messagebox.askokcancel(title='Warning', message='Will not be able to retrieve pass data once '
+                                                                         'name is changed.\nProceed?', icon='warning')
+                if result is False:
+                    return
+        messages = []
+        if len(self.machine_entry.get()) < 1:
+            messages.append('Please enter a name')
+        address = self.address_entry.get()
+        if len(address) < 1:
+            messages.append('Please enter a network address.')
+        else:
+            try:
+                address_list = [int(x) for x in address.split('.')]
+                if len(address_list) == 4:
+                    if not max(address_list) < 256:
+                        messages.append('Incorrect Network address format.')
+                    else:
+                        messages.append('Incorrect Network address format.')
+            except ValueError:
+                messages.append('Incorrect Network address format.')
+
+        if len(self.port_entry.get()) < 1:
+            messages.append('Please enter a port')
+
+        for _iid in self.treeview.get_children():
+            if _iid != self.iid:
+                c_name, c_address, c_port = self.treeview.item(_iid)['values']
+                if c_name == self.machine_entry.get():
+                    messages.append('Duplicate ID Found')
+                if c_address == self.address_entry.get():
+                    messages.append('Duplicate Address Found')
+
+        if messages:
+            return '\n'.join(messages)
+        else:
+            return True
+
+    def save_clicked(self):
+        msg = self.validate_before_save()
+        if msg is True:
+            if self.iid is None:
+                self.treeview.insert('', tkinter.END, values=(self.machine_entry.get(), self.address_entry.get(),
+                                                              self.port_entry.get()))
+            else:
+                self.treeview.item(self.iid, values=(self.machine_entry.get(), self.address_entry.get(),
+                                                     self.port_entry.get()))
+            self.quit()
+        else:
+            messagebox.showerror('Error', msg)
+
+    def quit(self):
+        # TODO return grabset
+        self.parent.destroy()
+
+    @staticmethod
+    def validate_entries(values, new, widget):
+        if widget == 'name':
+            return new.isalphanum()
+        elif widget == 'address' and len(values) < 16:
+            return new.isdigit() or (new == '.')
+        elif widget == 'port' and len(values) < 6:
+            return new.isdigit()
+        else:
+            return False
 
 
 def temp_get_data(title=None, y=None, x=None):  # TODO change this
