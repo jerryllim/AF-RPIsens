@@ -2,7 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="8c4eab11-9431-48ea-8992-fef6a6e722be" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/server/serverDB.py" afterPath="$PROJECT_DIR$/server/serverDB.py" />
+      <change beforePath="$PROJECT_DIR$/.idea/dbnavigator.xml" afterPath="$PROJECT_DIR$/.idea/dbnavigator.xml" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change beforePath="$PROJECT_DIR$/sensor/sensorGUI.py" afterPath="$PROJECT_DIR$/sensor/sensorGUI.py" />
+      <change beforePath="$PROJECT_DIR$/server/serverGUI.py" afterPath="$PROJECT_DIR$/server/serverGUI.py" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -27,8 +30,8 @@
       <file leaf-file-name="reqrep_server.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Communication/ServerView/reqrep_server.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="354">
-              <caret line="48" column="28" lean-forward="false" selection-start-line="48" selection-start-column="28" selection-end-line="48" selection-end-column="28" />
+            <state relative-caret-position="173">
+              <caret line="177" column="29" lean-forward="true" selection-start-line="177" selection-start-column="29" selection-end-line="177" selection-end-column="29" />
               <folding>
                 <element signature="e#0#10#0" expanded="true" />
               </folding>
@@ -36,11 +39,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="serverDB.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="serverDB.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/server/serverDB.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-130">
-              <caret line="104" column="19" lean-forward="true" selection-start-line="104" selection-start-column="19" selection-end-line="104" selection-end-column="19" />
+            <state relative-caret-position="725">
+              <caret line="200" column="63" lean-forward="false" selection-start-line="200" selection-start-column="63" selection-end-line="200" selection-end-column="63" />
               <folding>
                 <element signature="e#0#11#0" expanded="true" />
               </folding>
@@ -51,21 +54,21 @@
       <file leaf-file-name="test_db.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/test_db.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="417">
-              <caret line="223" column="0" lean-forward="false" selection-start-line="223" selection-start-column="0" selection-end-line="223" selection-end-column="0" />
+            <state relative-caret-position="381">
+              <caret line="210" column="43" lean-forward="true" selection-start-line="210" selection-start-column="43" selection-end-line="210" selection-end-column="43" />
               <folding>
                 <element signature="e#0#14#0" expanded="true" />
-                <marker date="1517474652751" expanded="true" signature="3443:3538" ph="..." />
+                <marker date="1517542378392" expanded="true" signature="3443:3538" ph="..." />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="serverGUI.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="serverGUI.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="244">
-              <caret line="161" column="65" lean-forward="true" selection-start-line="161" selection-start-column="65" selection-end-line="161" selection-end-column="65" />
+            <state relative-caret-position="717">
+              <caret line="588" column="16" lean-forward="true" selection-start-line="588" selection-start-column="16" selection-end-line="588" selection-end-column="16" />
               <folding>
                 <element signature="e#0#14#0" expanded="true" />
               </folding>
@@ -76,8 +79,8 @@
       <file leaf-file-name="sensorGUI.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/sensor/sensorGUI.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1205">
-              <caret line="220" column="21" lean-forward="false" selection-start-line="220" selection-start-column="21" selection-end-line="220" selection-end-column="21" />
+            <state relative-caret-position="248">
+              <caret line="372" column="58" lean-forward="false" selection-start-line="372" selection-start-column="50" selection-end-line="372" selection-end-column="58" />
               <folding />
             </state>
           </provider>
@@ -94,19 +97,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>optionMenu</find>
-      <find>treeview</find>
-      <find>_cal</find>
-      <find>uniform</find>
-      <find>u'</find>
-      <find>textvariable</find>
-      <find>datetime</find>
-      <find>Butt</find>
-      <find>destroy</find>
-      <find>logger</find>
-      <find>get_jobs</find>
-      <find>stat</find>
-      <find>shift_va</find>
       <find>equal</find>
       <find>%B_%Y</find>
       <find>TODO</find>
@@ -124,6 +114,19 @@
       <find>populate</find>
       <find>exclude</find>
       <find>.move</find>
+      <find>graphview</find>
+      <find>notebook</find>
+      <find>import matplotlib.dates</find>
+      <find>date_label</find>
+      <find>set_x</find>
+      <find>date_format</find>
+      <find>note</find>
+      <find>treeview</find>
+      <find>launch</find>
+      <find>TopLevel</find>
+      <find>Entry</find>
+      <find>.Entry</find>
+      <find>if iid</find>
     </findStrings>
     <replaceStrings>
       <replace>TMessage</replace>
@@ -171,15 +174,15 @@
         <option value="$PROJECT_DIR$/test_apscheduler.py" />
         <option value="$PROJECT_DIR$/runScript.py" />
         <option value="$PROJECT_DIR$/sensor/sensorReading.py" />
-        <option value="$PROJECT_DIR$/sensor/sensorGUI.py" />
         <option value="$PROJECT_DIR$/test_matplotlib_server.py" />
         <option value="$PROJECT_DIR$/server/serverMain.py" />
         <option value="$PROJECT_DIR$/serverMain.py" />
         <option value="$PROJECT_DIR$/sensor/sensorGlobal.py" />
         <option value="$PROJECT_DIR$/Communication/ServerView/reqrep_server.py" />
-        <option value="$PROJECT_DIR$/test_db.py" />
-        <option value="$PROJECT_DIR$/server/serverGUI.py" />
         <option value="$PROJECT_DIR$/server/serverDB.py" />
+        <option value="$PROJECT_DIR$/sensor/sensorGUI.py" />
+        <option value="$PROJECT_DIR$/server/serverGUI.py" />
+        <option value="$PROJECT_DIR$/test_db.py" />
       </list>
     </option>
   </component>
@@ -223,9 +226,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="AndroidView" />
-      <pane id="PackagesPane" />
-      <pane id="Scratches" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -247,6 +247,9 @@
           <select />
         </subPane>
       </pane>
+      <pane id="PackagesPane" />
+      <pane id="AndroidView" />
+      <pane id="Scratches" />
       <pane id="Scope" />
     </panes>
   </component>
@@ -269,116 +272,6 @@
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$" />
     </key>
-  </component>
-  <component name="RestoreUpdateTree" date="Moments ago" ActionInfo="_Update">
-    <UpdatedFiles>
-      <FILE-GROUP>
-        <option name="myUpdateName" value="Updated from server" />
-        <option name="myStatusName" value="Changed on server" />
-        <option name="mySupportsDeletion" value="false" />
-        <option name="myCanBeAbsent" value="false" />
-        <option name="myId" value="CHANGED_ON_SERVER" />
-        <FILE-GROUP>
-          <option name="myUpdateName" value="Updated" />
-          <option name="myStatusName" value="Changed" />
-          <option name="mySupportsDeletion" value="false" />
-          <option name="myCanBeAbsent" value="false" />
-          <option name="myId" value="UPDATED" />
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/task.md</PATH>
-        </FILE-GROUP>
-        <FILE-GROUP>
-          <option name="myUpdateName" value="Created" />
-          <option name="myStatusName" value="Created" />
-          <option name="mySupportsDeletion" value="false" />
-          <option name="myCanBeAbsent" value="false" />
-          <option name="myId" value="CREATED" />
-        </FILE-GROUP>
-        <FILE-GROUP>
-          <option name="myUpdateName" value="Deleted" />
-          <option name="myStatusName" value="Deleted" />
-          <option name="mySupportsDeletion" value="false" />
-          <option name="myCanBeAbsent" value="true" />
-          <option name="myId" value="REMOVED_FROM_REPOSITORY" />
-        </FILE-GROUP>
-        <FILE-GROUP>
-          <option name="myUpdateName" value="Restored" />
-          <option name="myStatusName" value="Will be restored" />
-          <option name="mySupportsDeletion" value="false" />
-          <option name="myCanBeAbsent" value="false" />
-          <option name="myId" value="RESTORED" />
-        </FILE-GROUP>
-      </FILE-GROUP>
-      <FILE-GROUP>
-        <option name="myUpdateName" value="Modified" />
-        <option name="myStatusName" value="Modified" />
-        <option name="mySupportsDeletion" value="false" />
-        <option name="myCanBeAbsent" value="false" />
-        <option name="myId" value="MODIFIED" />
-      </FILE-GROUP>
-      <FILE-GROUP>
-        <option name="myUpdateName" value="Skipped" />
-        <option name="myStatusName" value="Skipped" />
-        <option name="mySupportsDeletion" value="false" />
-        <option name="myCanBeAbsent" value="false" />
-        <option name="myId" value="SKIPPED" />
-      </FILE-GROUP>
-      <FILE-GROUP>
-        <option name="myUpdateName" value="Merged with conflicts" />
-        <option name="myStatusName" value="Will be merged with conflicts" />
-        <option name="mySupportsDeletion" value="false" />
-        <option name="myCanBeAbsent" value="false" />
-        <option name="myId" value="MERGED_WITH_CONFLICTS" />
-      </FILE-GROUP>
-      <FILE-GROUP>
-        <option name="myUpdateName" value="Merged with tree conflicts" />
-        <option name="myStatusName" value="Merged with tree conflicts" />
-        <option name="mySupportsDeletion" value="false" />
-        <option name="myCanBeAbsent" value="false" />
-        <option name="myId" value="MERGED_WITH_TREE_CONFLICT" />
-      </FILE-GROUP>
-      <FILE-GROUP>
-        <option name="myUpdateName" value="Merged with property conflicts" />
-        <option name="myStatusName" value="Will be merged with property conflicts" />
-        <option name="mySupportsDeletion" value="false" />
-        <option name="myCanBeAbsent" value="false" />
-        <option name="myId" value="MERGED_WITH_PROPERTY_CONFLICT" />
-      </FILE-GROUP>
-      <FILE-GROUP>
-        <option name="myUpdateName" value="Merged" />
-        <option name="myStatusName" value="Will be merged" />
-        <option name="mySupportsDeletion" value="false" />
-        <option name="myCanBeAbsent" value="false" />
-        <option name="myId" value="MERGED" />
-      </FILE-GROUP>
-      <FILE-GROUP>
-        <option name="myUpdateName" value="Not in repository" />
-        <option name="myStatusName" value="Not in repository" />
-        <option name="mySupportsDeletion" value="true" />
-        <option name="myCanBeAbsent" value="false" />
-        <option name="myId" value="UNKNOWN" />
-      </FILE-GROUP>
-      <FILE-GROUP>
-        <option name="myUpdateName" value="Locally added" />
-        <option name="myStatusName" value="Locally added" />
-        <option name="mySupportsDeletion" value="false" />
-        <option name="myCanBeAbsent" value="false" />
-        <option name="myId" value="LOCALLY_ADDED" />
-      </FILE-GROUP>
-      <FILE-GROUP>
-        <option name="myUpdateName" value="Locally removed" />
-        <option name="myStatusName" value="Locally removed" />
-        <option name="mySupportsDeletion" value="false" />
-        <option name="myCanBeAbsent" value="false" />
-        <option name="myId" value="LOCALLY_REMOVED" />
-      </FILE-GROUP>
-      <FILE-GROUP>
-        <option name="myUpdateName" value="Switched" />
-        <option name="myStatusName" value="Switched" />
-        <option name="mySupportsDeletion" value="false" />
-        <option name="myCanBeAbsent" value="false" />
-        <option name="myId" value="SWITCHED" />
-      </FILE-GROUP>
-    </UpdatedFiles>
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -700,7 +593,7 @@
       <option name="_new_targetType" value="&quot;PATH&quot;" />
     </configuration>
     <list size="5">
-      <item index="0" class="java.lang.String" itemvalue="Python.reqrep_server" />
+      <item index="0" class="java.lang.String" itemvalue="Python.ttkcalendar" />
       <item index="1" class="java.lang.String" itemvalue="Python.matplotlib_server" />
       <item index="2" class="java.lang.String" itemvalue="Python.test_db" />
       <item index="3" class="java.lang.String" itemvalue="Python.sensorReading" />
@@ -745,7 +638,7 @@
     <editor active="true" />
     <layout>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32896176" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32847533" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="DB Browser" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.18619698" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Palette&#9;" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Image Layers" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
@@ -753,13 +646,13 @@
       <window_info id="Capture Analysis" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32896176" sideWeight="0.5053918" order="8" side_tool="true" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32896176" sideWeight="0.4946082" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33744395" sideWeight="0.4946082" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32896176" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.24946082" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.30054644" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.25722757" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.30044842" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
@@ -828,9 +721,6 @@
     <entry file="db://[test] TABLE - main.S001_Today" />
     <entry file="db://[test] TABLE - main.S001_Today" />
     <entry file="db://[test] TABLE - main.S001_Today" />
-    <entry file="db://[test] TABLE - main.S001_Today" />
-    <entry file="db://[test] TABLE - main.S001_Today" />
-    <entry file="db://[test] TABLE - main.S001_Today" />
     <entry file="file:///Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/tkinter/constants.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-851">
@@ -876,69 +766,21 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="90">
           <caret line="6" column="0" lean-forward="true" selection-start-line="6" selection-start-column="0" selection-end-line="6" selection-end-column="0" />
-          <folding>
-            <element signature="e#0#14#0" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="db://[test] TABLE - main.S001_Today">
-      <provider selected="true" editor-type-id="1.DATA">
-        <state row-count="0" readonly="false">
-          <columns>
-            <column name="datetime" position="0" visible="true" />
-            <column name="quantity" position="1" visible="true" />
-          </columns>
-          <sorting />
-          <content-types />
-        </state>
-      </provider>
-    </entry>
-    <entry file="db://[test] TABLE - main.S001_Today">
-      <provider selected="true" editor-type-id="1.DATA">
-        <state row-count="0" readonly="false">
-          <columns>
-            <column name="datetime" position="0" visible="true" />
-            <column name="quantity" position="1" visible="true" />
-          </columns>
-          <sorting />
-          <content-types />
-        </state>
-      </provider>
-    </entry>
-    <entry file="db://[test] TABLE - main.S001_Today">
-      <provider selected="true" editor-type-id="1.DATA">
-        <state row-count="10" readonly="false">
-          <columns>
-            <column name="datetime" position="0" visible="true" />
-            <column name="quantity" position="1" visible="true" />
-          </columns>
-          <sorting />
-          <content-types />
-        </state>
-      </provider>
-    </entry>
+    <entry file="db://[test] TABLE - main.S001_Today" />
+    <entry file="db://[test] TABLE - main.S001_Today" />
+    <entry file="db://[test] TABLE - main.S001_Today" />
     <entry file="db://[test] TABLE - main.S001_Today" />
     <entry file="file://$PROJECT_DIR$/test_apscheduler.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="205">
           <caret line="19" column="16" lean-forward="false" selection-start-line="19" selection-start-column="16" selection-end-line="19" selection-end-column="16" />
-          <folding />
         </state>
       </provider>
     </entry>
-    <entry file="db://[jan_2018] TABLE - main.A001-S001">
-      <provider selected="true" editor-type-id="1.DATA">
-        <state row-count="0" readonly="false">
-          <columns>
-            <column name="datetime" position="0" visible="true" />
-            <column name="quantity" position="1" visible="true" />
-          </columns>
-          <sorting />
-          <content-types />
-        </state>
-      </provider>
-    </entry>
+    <entry file="db://[jan_2018] TABLE - main.A001-S001" />
     <entry file="file://$PROJECT_DIR$/serverMain.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
@@ -947,213 +789,25 @@
         </state>
       </provider>
     </entry>
-    <entry file="db://[jan_2018] TABLE - main.Line5-Slitter">
-      <provider selected="true" editor-type-id="1.DATA">
-        <state row-count="0" readonly="false">
-          <columns>
-            <column name="time" position="0" visible="true" />
-            <column name="quantity" position="1" visible="true" />
-          </columns>
-          <sorting>
-            <column name="quantity" index="1" direction="DESCENDING" />
-          </sorting>
-          <content-types />
-        </state>
-      </provider>
-    </entry>
-    <entry file="db://[jan_2018] TABLE - main.Line5-Outer">
-      <provider selected="true" editor-type-id="1.DATA">
-        <state row-count="0" readonly="false">
-          <columns>
-            <column name="time" position="0" visible="true" />
-            <column name="quantity" position="1" visible="true" />
-          </columns>
-          <sorting />
-          <content-types />
-        </state>
-      </provider>
-    </entry>
-    <entry file="db://[jan_2018] TABLE - main.Line5-Label">
-      <provider selected="true" editor-type-id="1.DATA">
-        <state row-count="100" readonly="false">
-          <columns>
-            <column name="time" position="0" visible="true" />
-            <column name="quantity" position="1" visible="true" />
-          </columns>
-          <sorting />
-          <content-types />
-        </state>
-      </provider>
-    </entry>
-    <entry file="db://[jan_2018] TABLE - main.Line5-Inner">
-      <provider selected="true" editor-type-id="1.DATA">
-        <state row-count="100" readonly="false">
-          <columns>
-            <column name="time" position="0" visible="true" />
-            <column name="quantity" position="1" visible="true" />
-          </columns>
-          <sorting />
-          <content-types />
-        </state>
-      </provider>
-    </entry>
-    <entry file="db://[apr_2018] TABLE - main.Line5-Inner">
-      <provider selected="true" editor-type-id="1.DATA">
-        <state row-count="0" readonly="false">
-          <columns>
-            <column name="time" position="0" visible="true" />
-            <column name="quantity" position="1" visible="true" />
-          </columns>
-          <sorting />
-          <content-types />
-        </state>
-      </provider>
-    </entry>
-    <entry file="db://[apr_2018] TABLE - main.Line5-Outer">
-      <provider selected="true" editor-type-id="1.DATA">
-        <state row-count="0" readonly="false">
-          <columns>
-            <column name="time" position="0" visible="true" />
-            <column name="quantity" position="1" visible="true" />
-          </columns>
-          <sorting />
-          <content-types />
-        </state>
-      </provider>
-    </entry>
-    <entry file="db://[apr_2018] TABLE - main.Line6-Label">
-      <provider selected="true" editor-type-id="1.DATA">
-        <state row-count="0" readonly="false">
-          <columns>
-            <column name="time" position="0" visible="true" />
-            <column name="quantity" position="1" visible="true" />
-          </columns>
-          <sorting />
-          <content-types />
-        </state>
-      </provider>
-    </entry>
-    <entry file="db://[jan_2018] TABLE - main.Line5-Inner">
-      <provider selected="true" editor-type-id="1.DATA">
-        <state row-count="0" readonly="false">
-          <columns>
-            <column name="time" position="0" visible="true" />
-            <column name="quantity" position="1" visible="true" />
-          </columns>
-          <sorting />
-          <content-types />
-        </state>
-      </provider>
-    </entry>
-    <entry file="db://[jan_2018] TABLE - main.Line5-Inner">
-      <provider selected="true" editor-type-id="1.DATA">
-        <state row-count="0" readonly="false">
-          <columns>
-            <column name="time" position="0" visible="true" />
-            <column name="quantity" position="1" visible="true" />
-          </columns>
-          <sorting />
-          <content-types />
-        </state>
-      </provider>
-    </entry>
-    <entry file="db://[jan_2018] TABLE - main.Line5-Inner">
-      <provider selected="true" editor-type-id="1.DATA">
-        <state row-count="100" readonly="false">
-          <columns>
-            <column name="time" position="0" visible="true" />
-            <column name="quantity" position="1" visible="true" />
-          </columns>
-          <sorting />
-          <content-types />
-        </state>
-      </provider>
-    </entry>
-    <entry file="db://[jan_2018] TABLE - main.Line5-Inner" />
-    <entry file="db://[jan_2018] TABLE - main.Line5-Label">
-      <provider selected="true" editor-type-id="1.DATA">
-        <state row-count="0" readonly="false">
-          <columns>
-            <column name="time" position="0" visible="true" />
-            <column name="quantity" position="1" visible="true" />
-          </columns>
-          <sorting />
-          <content-types />
-        </state>
-      </provider>
-    </entry>
-    <entry file="db://[jan_2018] TABLE - main.Line5-Label">
-      <provider selected="true" editor-type-id="1.DATA">
-        <state row-count="0" readonly="false">
-          <columns>
-            <column name="time" position="0" visible="true" />
-            <column name="quantity" position="1" visible="true" />
-          </columns>
-          <sorting />
-          <content-types />
-        </state>
-      </provider>
-    </entry>
-    <entry file="db://[jan_2018] TABLE - main.Line5-Label">
-      <provider selected="true" editor-type-id="1.DATA">
-        <state row-count="100" readonly="false">
-          <columns>
-            <column name="time" position="0" visible="true" />
-            <column name="quantity" position="1" visible="true" />
-          </columns>
-          <sorting />
-          <content-types />
-        </state>
-      </provider>
-    </entry>
+    <entry file="db://[jan_2018] TABLE - main.Line5-Slitter" />
+    <entry file="db://[jan_2018] TABLE - main.Line5-Outer" />
     <entry file="db://[jan_2018] TABLE - main.Line5-Label" />
-    <entry file="db://[jan_2018] TABLE - main.Line5-Inner">
-      <provider selected="true" editor-type-id="1.DATA">
-        <state row-count="0" readonly="false">
-          <columns>
-            <column name="time" position="0" visible="true" />
-            <column name="quantity" position="1" visible="true" />
-          </columns>
-          <sorting />
-          <content-types />
-        </state>
-      </provider>
-    </entry>
-    <entry file="db://[jan_2018] TABLE - main.Line5-Inner">
-      <provider selected="true" editor-type-id="1.DATA">
-        <state row-count="0" readonly="false">
-          <columns>
-            <column name="time" position="0" visible="true" />
-            <column name="quantity" position="1" visible="true" />
-          </columns>
-          <sorting />
-          <content-types />
-        </state>
-      </provider>
-    </entry>
-    <entry file="db://[jan_2018] TABLE - main.Line5-Inner">
-      <provider selected="true" editor-type-id="1.DATA">
-        <state row-count="8927" readonly="false">
-          <columns>
-            <column name="time" position="0" visible="true" />
-            <column name="quantity" position="1" visible="true" />
-          </columns>
-          <sorting />
-          <content-types />
-        </state>
-      </provider>
-    </entry>
     <entry file="db://[jan_2018] TABLE - main.Line5-Inner" />
-    <entry file="file://$PROJECT_DIR$/Communication/ServerView/reqrep_server.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="354">
-          <caret line="48" column="28" lean-forward="false" selection-start-line="48" selection-start-column="28" selection-end-line="48" selection-end-column="28" />
-          <folding>
-            <element signature="e#0#10#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
+    <entry file="db://[apr_2018] TABLE - main.Line5-Inner" />
+    <entry file="db://[apr_2018] TABLE - main.Line5-Outer" />
+    <entry file="db://[apr_2018] TABLE - main.Line6-Label" />
+    <entry file="db://[jan_2018] TABLE - main.Line5-Inner" />
+    <entry file="db://[jan_2018] TABLE - main.Line5-Inner" />
+    <entry file="db://[jan_2018] TABLE - main.Line5-Inner" />
+    <entry file="db://[jan_2018] TABLE - main.Line5-Inner" />
+    <entry file="db://[jan_2018] TABLE - main.Line5-Label" />
+    <entry file="db://[jan_2018] TABLE - main.Line5-Label" />
+    <entry file="db://[jan_2018] TABLE - main.Line5-Label" />
+    <entry file="db://[jan_2018] TABLE - main.Line5-Label" />
+    <entry file="db://[jan_2018] TABLE - main.Line5-Inner" />
+    <entry file="db://[jan_2018] TABLE - main.Line5-Inner" />
+    <entry file="db://[jan_2018] TABLE - main.Line5-Inner" />
+    <entry file="db://[jan_2018] TABLE - main.Line5-Inner" />
     <entry file="file://$PROJECT_DIR$/sensor/sensorReading.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="172">
@@ -1170,25 +824,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test_db.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="417">
-          <caret line="223" column="0" lean-forward="false" selection-start-line="223" selection-start-column="0" selection-end-line="223" selection-end-column="0" />
-          <folding>
-            <element signature="e#0#14#0" expanded="true" />
-            <marker date="1517474652751" expanded="true" signature="3443:3538" ph="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sensor/sensorGUI.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1205">
-          <caret line="220" column="21" lean-forward="false" selection-start-line="220" selection-start-column="21" selection-end-line="220" selection-end-column="21" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file:///Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/tkinter/ttk.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="214">
@@ -1197,22 +832,75 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
+    <entry file="file:///Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/site-packages/matplotlib/figure.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="244">
-          <caret line="161" column="65" lean-forward="true" selection-start-line="161" selection-start-column="65" selection-end-line="161" selection-end-column="65" />
+        <state relative-caret-position="43">
+          <caret line="1036" column="0" lean-forward="true" selection-start-line="1036" selection-start-column="0" selection-end-line="1037" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/site-packages/matplotlib/artist.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="286">
+          <caret line="90" column="13" lean-forward="false" selection-start-line="90" selection-start-column="13" selection-end-line="90" selection-end-column="13" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/site-packages/matplotlib/axes/_base.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="301">
+          <caret line="3490" column="35" lean-forward="false" selection-start-line="3490" selection-start-column="35" selection-end-line="3490" selection-end-column="35" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Communication/ServerView/reqrep_server.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="173">
+          <caret line="177" column="29" lean-forward="true" selection-start-line="177" selection-start-column="29" selection-end-line="177" selection-end-column="29" />
           <folding>
-            <element signature="e#0#14#0" expanded="true" />
+            <element signature="e#0#10#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sensor/sensorGUI.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="248">
+          <caret line="372" column="58" lean-forward="false" selection-start-line="372" selection-start-column="50" selection-end-line="372" selection-end-column="58" />
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/server/serverDB.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-130">
-          <caret line="104" column="19" lean-forward="true" selection-start-line="104" selection-start-column="19" selection-end-line="104" selection-end-column="19" />
+        <state relative-caret-position="725">
+          <caret line="200" column="63" lean-forward="false" selection-start-line="200" selection-start-column="63" selection-end-line="200" selection-end-column="63" />
           <folding>
             <element signature="e#0#11#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test_db.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="381">
+          <caret line="210" column="43" lean-forward="true" selection-start-line="210" selection-start-column="43" selection-end-line="210" selection-end-column="43" />
+          <folding>
+            <element signature="e#0#14#0" expanded="true" />
+            <marker date="1517542378392" expanded="true" signature="3443:3538" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="717">
+          <caret line="588" column="16" lean-forward="true" selection-start-line="588" selection-start-column="16" selection-end-line="588" selection-end-column="16" />
+          <folding>
+            <element signature="e#0#14#0" expanded="true" />
           </folding>
         </state>
       </provider>

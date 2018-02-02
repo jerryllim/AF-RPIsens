@@ -6,6 +6,7 @@ from collections import namedtuple
 import server.serverDB as serverDB
 import string  # TODO for testing
 
+import matplotlib.dates
 import matplotlib
 
 matplotlib.use('TkAgg')
@@ -42,7 +43,7 @@ class MainWindow(ttk.Frame):
         self.top_frame.columnconfigure(2, weight=1, uniform='equalWidth')
         self.top_frame.rowconfigure(0, weight=1)
         self.top_frame.rowconfigure(1, weight=2)
-        request_label = ttk.Label(self.top_frame, text='Requesting every {} minutes'.format('X'))  # TODO add tkinter variable?
+        request_label = ttk.Label(self.top_frame, text='Requesting every {} minutes'.format('15'))  # TODO variable request time
         request_label.grid(row=0, column=0, sticky='w')
         request_button = ttk.Button(self.top_frame, text='Request now', command=self.launch_another)  # TODO add command
         request_button.grid(row=0, column=1)
@@ -123,30 +124,21 @@ class MainWindow(ttk.Frame):
         test2.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
 
 
-class GraphDetailView(ttk.Frame):
+class NotebookView(ttk.Notebook):
     NUM_COL = 2
 
     def __init__(self, parent, data, **kwargs):
-        ttk.Frame.__init__(self, parent, **kwargs)
-        self.rowconfigure(0, weight=1)
-        self.rowconfigure(1, weight=5)
-        self.columnconfigure(0, weight=1)
-        self.top_frame = ttk.Frame(self)
-        self.top_frame.grid(row=0, column=0, sticky='nsew')
+        ttk.Notebook.__init__(self, parent, **kwargs)
         self.data = data
-        self.num_col = GraphDetailView.NUM_COL
-
-        # Notebook setup
-        view_notebook = ttk.Notebook(self)
-        view_notebook.grid(row=1, column=0, sticky='nsew')
+        self.num_col = NotebookView.NUM_COL
         # Graph
-        self.graph_scrollable_frame = VerticalScrollFrame(view_notebook)
+        self.graph_scrollable_frame = VerticalScrollFrame(self)
         self.graph_scrollable_frame.grid(sticky='nsew')
-        view_notebook.add(self.graph_scrollable_frame, text='Graph')
+        self.add(self.graph_scrollable_frame, text='Graph')
         # TreeView Frame
         treeview_frame = ttk.Frame(self)
         treeview_frame.grid(sticky='nsew', padx=5, pady=5)
-        view_notebook.add(treeview_frame, text='Details')
+        self.add(treeview_frame, text='Details')
         treeview_frame.rowconfigure(0, weight=1)
         treeview_frame.columnconfigure(0, weight=1)
         treeview_frame.columnconfigure(1, weight=0)
@@ -172,10 +164,11 @@ class GraphDetailView(ttk.Frame):
         for column in range(self.num_col):
             self.graph_scrollable_frame.get_interior_frame().columnconfigure(column, weight=1)
         for index in range(len(data)):
-            machine, title, date_list, count_list = GraphDetailView.get_data_from_database(data[index])
+            machine, title, date_list, date_format, count_list = NotebookView.get_data_from_database(data[index])
             row = index//self.num_col
             col = index % self.num_col
-            canvas = GraphCanvas(self.graph_scrollable_frame.get_interior_frame(), (title, date_list, count_list))
+            canvas = GraphCanvas(self.graph_scrollable_frame.get_interior_frame(), (title, date_list, date_format,
+                                                                                    count_list))
             canvas.show()
             canvas.grid(row=row, column=col, sticky='nsew', padx=5, pady=5)
             for pos in range(len(date_list)):
@@ -184,9 +177,11 @@ class GraphDetailView(ttk.Frame):
     @staticmethod
     def get_data_from_database(setting):
         machine, mode, (detail1, detail2) = setting
+        date_format = '%H:%M'
         if mode == 'Daily':
             start_date = datetime.datetime.strptime(detail1, '%Y-%m-%d')
             end_date = datetime.datetime.strptime(detail2, '%Y-%m-%d')
+            date_format = '%Y-%m-%d'
         elif mode == 'Hourly':
             # TODO get shift duration to get end date
             start_time = '08:00'
@@ -200,7 +195,7 @@ class GraphDetailView(ttk.Frame):
         date_list, count_list = serverDB.DatabaseManager.get_sums(machine, start_date, end_date, mode)
 
         title = '{}\n{} - {}'.format(machine, detail1, detail2)
-        return machine, title, date_list, count_list
+        return machine, title, date_list, date_format, count_list
 
     def sort_tree_view(self, column, reverse):
         item_list = [(self.treeview.set(_iid, column=column), _iid) for _iid in self.treeview.get_children()]
@@ -212,7 +207,18 @@ class GraphDetailView(ttk.Frame):
         self.treeview.heading(column, command=lambda col=column: self.sort_tree_view(col, not reverse))
 
 
-class PlotSettingFrame(tkinter.Frame):
+class GraphDetailView(ttk.Frame):
+
+    def __init__(self, parent, data, **kwargs):
+        ttk.Frame.__init__(self, parent, **kwargs)
+        self.data = data
+
+        # Notebook setup
+        view_notebook = NotebookView(self, self.data)
+        view_notebook.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
+
+
+class SettingsFrame(tkinter.Frame):
     LABEL_NAMES = ['Machine: ', 'Mode: ', 'Detail: ']
 
     def __init__(self, parent, settings):
@@ -220,8 +226,8 @@ class PlotSettingFrame(tkinter.Frame):
         self.settings = settings
         self.columnconfigure(0, weight=1)
         self.columnconfigure(1, weight=1)
-        for index in range(len(PlotSettingFrame.LABEL_NAMES)):
-            label = tkinter.Label(self, text=PlotSettingFrame.LABEL_NAMES[index], width=7)
+        for index in range(len(SettingsFrame.LABEL_NAMES)):
+            label = tkinter.Label(self, text=SettingsFrame.LABEL_NAMES[index], width=7)
             label.grid(row=index, column=0, sticky='w')
         self.machine_label = tkinter.Label(self, text=self.settings.machine)
         self.machine_label.grid(row=0, column=1)
@@ -343,7 +349,7 @@ class GraphDetailSettingsPage(ttk.Frame):
         self.data_frame = VerticalScrollFrame(self)
         self.data_frame.grid(row=3, column=0, sticky='nsew', padx=5, pady=5)
         for setting in self.plot_settings_list:
-            data = PlotSettingFrame(self.data_frame.get_interior_frame(), setting)
+            data = SettingsFrame(self.data_frame.get_interior_frame(), setting)
             data.pack(side=tkinter.TOP, fill=tkinter.BOTH)
 
     def launch_calendar(self, variable):
@@ -395,10 +401,17 @@ class GraphCanvas(FigureCanvasTkAgg):
         self.figure.set_tight_layout(True)
 
         subplot = self.figure.add_subplot(1, 1, 1)
-        title, x, y = data
+        title, x, x_format, y = data
         subplot.plot(x, y, 'b-o')
         subplot.grid(linestyle='dashed')
         subplot.set_title(title)
+        # Format tick location and label
+        tick_num = len(x)//5
+        subplot.set_xticks(x[0::tick_num])
+        date_label = []
+        for date in x[0::tick_num]:
+            date_label.append(date.strftime(x_format))
+        subplot.set_xticklabels(date_label)
         FigureCanvasTkAgg.__init__(self, self.figure, parent)
 
     def grid(self, **kwargs):
@@ -464,6 +477,116 @@ class CalendarPop(tkinter.Frame):
     def button_pressed(self, day):
         self.variable.set(datetime.date(self._date.year, self._date.month, day).strftime('%Y-%m-%d'))
         self.parent.destroy()
+
+
+class ConfigurationSettings(ttk.Frame):
+
+    def __init__(self, parent, **kwargs):
+        ttk.Frame.__init__(self, parent, **kwargs)
+        self.columnconfigure(0, weight=1)
+        self.rowconfigure(0, weight=1)
+        self.configuration_notebook = ttk.Notebook(self)
+        self.configuration_notebook.grid(row=0, column=0, sticky='nsew')
+        self.button_frame = ttk.Frame(self)
+        self.button_frame.grid(row=1, column=0, sticky='nsew')
+
+    def port_network_setup(self): # Port Settings
+        port_config_frame = ttk.Frame(self.configuration_notebook)
+        self.configuration_notebook.add(port_config_frame, text='Network Ports')
+        port_config_frame.columnconfigure(0, weight=5)
+        port_config_frame.columnconfigure(1, weight=1)
+        port_config_frame.rowconfigure(0, weight=1)
+        # Port Settings TreeView
+        port_tv_frame = ttk.Frame(port_config_frame)
+        port_tv_frame.grid(row=0, column=0, sticky='nsew')
+        port_tv_frame.rowconfigure(0, weight=1)
+        port_tv_frame.columnconfigure(0, weight=1)
+        port_tv = ttk.Treeview(port_tv_frame)
+        port_tv.grid(row=0, column=0, sticky='nsew')
+        # Scroll for Treeview
+        port_tv_v_scroll = ttk.Scrollbar(port_tv_frame, orient='vertical', command=port_tv.yview)
+        port_tv_v_scroll.grid(row=0, column=1, sticky='nsw')
+        port_tv.configure(yscrollcommand=port_tv_v_scroll.set)
+        # Populate port_tv here
+
+        # Add & Delete buttons
+        ConfigurationSettings.button_frame_setup(port_config_frame, port_tv)
+
+    def quick_access_setup(self): # Quick Access
+        quick_access_frame = ttk.Frame(self.configuration_notebook)
+        self.configuration_notebook.add(quick_access_frame, text='Quick Access')
+        # Quick Access TreeView
+        quick_tv_frame = ttk.Frame(quick_access_frame)
+        quick_tv_frame.grid(row=0, column=0, sticky='nsew')
+        quick_tv_frame.rowconfigure(0, weight=1)
+        quick_tv_frame.columnconfigure(0, weight=1)
+        quick_tv = ttk.Treeview(quick_tv_frame)
+        quick_tv.grid(row=0, column=0, sticky='nsew')
+        # Scroll for Treeview
+        quick_tv_v_scroll = ttk.Scrollbar(quick_tv_frame, orient='vertical', command=quick_tv.yview)
+        quick_tv_v_scroll.grid(row=0, column=1, sticky='nsw')
+        quick_tv.configure(yscrollcommand=quick_tv_v_scroll.set)
+        # Populate quick_tv here
+
+        # Add & Delete buttons
+        ConfigurationSettings.button_frame_setup(quick_access_frame, quick_tv)
+
+    @staticmethod
+    def button_frame_setup(parent, treeview):
+        button_frame = ttk.Frame(parent)
+        button_frame.grid(row=0, column=1, padx=5, pady=5)
+        add_button = ttk.Button(button_frame, text='Add')  # TODO Add command
+        add_button.pack()
+        edit_button = ttk.Button(button_frame, text='Edit')  # TODO Add command
+        edit_button.pack()
+        delete_button = ttk.Button(button_frame, text='Delete')  # TODO Add command
+        delete_button.pack()
+
+    def launch_network_port_window(self):
+        network_port_window = tkinter.Toplevel(self)
+        network_port_window.resizable(True, False)
+
+        network_port_frame = AddNetworkPort(network_port_window)
+        network_port_frame.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
+
+
+class AddNetworkPort(ttk.Frame):
+
+    def __init__(self, parent, item=None):
+        ttk.Frame.__init__(self, parent)
+        self.item = item
+        self.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
+        self.columnconfigure(0, weight=1)
+        self.columnconfigure(1, weight=1)
+        # Labels
+        machine_label = ttk.Label(self, text='Name')
+        machine_label.grid(row=0, column=0, sticky='e')
+        address_label = ttk.Label(self, text='Network Address')
+        address_label.grid(row=1, column=0, sticky='e')
+        port_label = ttk.Label(self, text='Port')
+        port_label.grid(row=2, column=0, sticky='e')
+        # Entries
+        self.machine_entry = ttk.Entry(self)
+        self.machine_entry.delete(0, tkinter.END)
+        self.machine_entry.grid(row=0, column=1, sticky='w')
+        self.address_entry = ttk.Entry(self)
+        self.address_entry.delete(0, tkinter.END)
+        self.address_entry.grid(row=0, column=1, sticky='w')
+        self.port_entry = ttk.Entry(self)
+        self.port_entry.delete(0, tkinter.END)
+        self.port_entry.grid(row=0, column=1, sticky='w')
+
+        if self.item:
+            name, address, port = self.item
+            self.machine_entry.insert(0, name)
+            self.address_entry.insert(0, address)
+            self.port_entry.insert(0, port)
+
+    def validate_entries(self):
+        name, address, port = self.item
+        if self.address_entry.get() != name:
+            # TODO issue warning
+            pass
 
 
 def temp_get_data(title=None, y=None, x=None):  # TODO change this

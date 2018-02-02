@@ -382,8 +382,7 @@ class MainGUI:
             treeview_frame = ttk.Frame(pin_config_frame)
             treeview_frame.grid(row=0, column=0, rowspan=3, sticky='nsew', padx=5, pady=5)
             treeview_frame.rowconfigure(0, weight=1)
-            treeview_frame.columnconfigure(0, weight=10)
-            treeview_frame.columnconfigure(1, weight=0)
+            treeview_frame.columnconfigure(0, weight=1)
             save_class.tree_view = ttk.Treeview(treeview_frame)
             tree_view = save_class.tree_view
             tree_view.grid(row=0, column=0, sticky='nsew')
