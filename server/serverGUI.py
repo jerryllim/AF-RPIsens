@@ -127,8 +127,9 @@ class MainWindow(ttk.Frame):
 class NotebookView(ttk.Notebook):
     NUM_COL = 2
 
-    def __init__(self, parent, data, **kwargs):
+    def __init__(self, parent, data, save, **kwargs):
         ttk.Notebook.__init__(self, parent, **kwargs)
+        self.save = save
         self.data = data
         self.num_col = NotebookView.NUM_COL
         # Graph
@@ -164,7 +165,8 @@ class NotebookView(ttk.Notebook):
         for column in range(self.num_col):
             self.graph_scrollable_frame.get_interior_frame().columnconfigure(column, weight=1)
         for index in range(len(data)):
-            machine, title, date_list, date_format, count_list = NotebookView.get_data_from_database(data[index])
+            machine, title, date_list, date_format, count_list = NotebookView.get_data_from_database(data[index],
+                                                                                                     self.save)
             row = index//self.num_col
             col = index % self.num_col
             canvas = GraphCanvas(self.graph_scrollable_frame.get_interior_frame(), (title, date_list, date_format,
@@ -175,7 +177,7 @@ class NotebookView(ttk.Notebook):
                 self.treeview.insert('', tkinter.END, values=(machine, count_list[pos], date_list[pos]))
 
     @staticmethod
-    def get_data_from_database(setting):
+    def get_data_from_database(setting, save):
         machine, mode, (detail1, detail2) = setting
         date_format = '%H:%M'
         if mode == 'Daily':
@@ -183,11 +185,9 @@ class NotebookView(ttk.Notebook):
             end_date = datetime.datetime.strptime(detail2, '%Y-%m-%d')
             date_format = '%Y-%m-%d'
         elif mode == 'Hourly':
-            # TODO get shift duration to get end date
-            start_time = '08:00'
-            end_time = '20:00'
+            start_time, duration = save.shift_settings[detail2]
             start_date = datetime.datetime.strptime(' '.join([detail1, start_time]), '%Y-%m-%d %H:%M')
-            end_date = datetime.datetime.strptime(' '.join([detail1, end_time]), '%Y-%m-%d %H:%M')
+            end_date = start_time + datetime.timedelta(seconds=duration)
         else:
             start_date = datetime.datetime.strptime(' '.join([detail1, detail2]), '%Y-%m-%d %H:%M')
             end_date = start_date + datetime.timedelta(hours=1)
@@ -209,12 +209,12 @@ class NotebookView(ttk.Notebook):
 
 class GraphDetailView(ttk.Frame):
 
-    def __init__(self, parent, data, **kwargs):
+    def __init__(self, parent, data, save, **kwargs):
         ttk.Frame.__init__(self, parent, **kwargs)
         self.data = data
 
         # Notebook setup
-        view_notebook = NotebookView(self, self.data)
+        view_notebook = NotebookView(self, self.data, save)
         view_notebook.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
 
 
@@ -357,7 +357,7 @@ class GraphDetailSettingsPage(ttk.Frame):
         calendar_pop.title('Select date')
         calendar_pop.resizable(False, False)
         calendar_pop_frame = CalendarPop(calendar_pop, variable)
-        calendar_pop_frame.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
+        calendar_pop_frame.pack(fill=tkinter.X, expand=tkinter.TRUE)
 
     def add_plot_settings(self):
         if self.detail1_var.get() == '' or self.detail2_var.get() == '':
@@ -480,6 +480,11 @@ class CalendarPop(tkinter.Frame):
 
 
 class ConfigurationSettings(ttk.Frame):
+    class SaveSettings:
+        def __init__(self):
+            self.port_tv = None
+            self.quick_tv = None
+            self.shift_frame = None
 
     def __init__(self, parent, **kwargs):
         ttk.Frame.__init__(self, parent, **kwargs)
@@ -489,8 +494,7 @@ class ConfigurationSettings(ttk.Frame):
         self.configuration_notebook.grid(row=0, column=0, sticky='nsew')
         self.button_frame = ttk.Frame(self)
         self.button_frame.grid(row=1, column=0, sticky='nsew')
-        self.port_tv = None
-        self.quick_tv = None
+        self.save = ConfigurationSettings.SaveSettings()
 
     def port_network_setup(self): # Port Settings
         port_config_frame = ttk.Frame(self.configuration_notebook)
@@ -503,12 +507,12 @@ class ConfigurationSettings(ttk.Frame):
         port_tv_frame.grid(row=0, column=0, sticky='nsew')
         port_tv_frame.rowconfigure(0, weight=1)
         port_tv_frame.columnconfigure(0, weight=1)
-        self.port_tv = ttk.Treeview(port_tv_frame)
-        self.port_tv.grid(row=0, column=0, sticky='nsew')
+        self.save.port_tv = ttk.Treeview(port_tv_frame)
+        self.save.port_tv.grid(row=0, column=0, sticky='nsew')
         # Scroll for Treeview
-        port_tv_v_scroll = ttk.Scrollbar(port_tv_frame, orient='vertical', command=self.port_tv.yview)
+        port_tv_v_scroll = ttk.Scrollbar(port_tv_frame, orient='vertical', command=self.save.port_tv.yview)
         port_tv_v_scroll.grid(row=0, column=1, sticky='nsw')
-        self.port_tv.configure(yscrollcommand=port_tv_v_scroll.set)
+        self.save.port_tv.configure(yscrollcommand=port_tv_v_scroll.set)
         # Populate port_tv here
 
         # Add & Delete buttons
@@ -517,10 +521,10 @@ class ConfigurationSettings(ttk.Frame):
         add_button = ttk.Button(button_frame, text='Add', command=self.launch_network_port_window)  # TODO Add command
         add_button.pack()
         edit_button = ttk.Button(button_frame, text='Edit', command=lambda: self.launch_network_port_window(
-            iid=self.port_tv.focus()))
+            iid=self.save.port_tv.focus()))
         edit_button.pack()
-        delete_button = ttk.Button(button_frame, text='Delete', command=lambda: self.port_tv.delete(
-            self.port_tv.focus()))
+        delete_button = ttk.Button(button_frame, text='Delete', command=lambda: self.save.port_tv.delete(
+            self.save.port_tv.focus()))
         delete_button.pack()
 
     def quick_access_setup(self): # Quick Access
@@ -531,12 +535,12 @@ class ConfigurationSettings(ttk.Frame):
         quick_tv_frame.grid(row=0, column=0, sticky='nsew')
         quick_tv_frame.rowconfigure(0, weight=1)
         quick_tv_frame.columnconfigure(0, weight=1)
-        self.quick_tv = ttk.Treeview(quick_tv_frame)
-        self.quick_tv.grid(row=0, column=0, sticky='nsew')
+        self.save.quick_tv = ttk.Treeview(quick_tv_frame)
+        self.save.quick_tv.grid(row=0, column=0, sticky='nsew')
         # Scroll for Treeview
-        quick_tv_v_scroll = ttk.Scrollbar(quick_tv_frame, orient='vertical', command=self.quick_tv.yview)
+        quick_tv_v_scroll = ttk.Scrollbar(quick_tv_frame, orient='vertical', command=self.save.quick_tv.yview)
         quick_tv_v_scroll.grid(row=0, column=1, sticky='nsw')
-        self.quick_tv.configure(yscrollcommand=quick_tv_v_scroll.set)
+        self.save.quick_tv.configure(yscrollcommand=quick_tv_v_scroll.set)
         # Populate quick_tv here
 
         # Add & Delete buttons
@@ -546,16 +550,175 @@ class ConfigurationSettings(ttk.Frame):
         add_button.pack()
         edit_button = ttk.Button(button_frame, text='Edit')  # TODO Add command
         edit_button.pack()
-        delete_button = ttk.Button(button_frame, text='Delete', command=lambda: self.quick_tv.delete(
-            self.quick_tv.focus()))
+        delete_button = ttk.Button(button_frame, text='Delete', command=lambda: self.save.quick_tv.delete(
+            self.save.quick_tv.focus()))
         delete_button.pack()
+
+    def miscellaneous_setup(self): # Miscellaneous
+
+        def shift_frame_setup():
+            if self.save.shift_frame:
+                self.save.shift_frame.destroy()
+            self.save.shift_frame = ttk.Frame(misc_frame)
+            self.save.shift_frame.grid(row=0, column=0)
+            # TODO get shift info
+
+        misc_frame = ttk.Frame(self.configuration_notebook)
+        self.configuration_notebook.add(misc_frame, text='Miscellaneous')
+        # Shift settings
+        shift_frame_setup()
+        shift_button = ttk.Button(misc_frame, text='Shift settings')
+        shift_button.grid(row=0, column=0)
 
     def launch_network_port_window(self, iid=None):
         network_port_window = tkinter.Toplevel(self)
         network_port_window.resizable(True, False)
 
-        network_port_frame = AddNetworkPort(network_port_window, self.port_tv, iid)
+        network_port_frame = AddNetworkPort(network_port_window, self.save.port_tv, iid)
         network_port_frame.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
+
+
+class ShiftSettings(ttk.Frame):
+    LABEL_NAMES = ('Name: ', 'Start time: ', 'End time: ')
+    MAX = 7
+
+    def __init__(self, parent, save: serverDB.ServerSettings):
+        ttk.Frame.__init__(self, parent)
+        self.parent = parent
+        self.save = save
+        self.shifts = save.shift_settings.copy()
+        self.rowconfigure(1, weight=1)
+        self.columnconfigure(0, weight=5)
+        top_frame = ttk.Frame(self)
+        top_frame.grid(row=0, column=0, sticky='nsew')
+        top_frame.columnconfigure(0, weight=1)
+        top_frame.columnconfigure(1, weight=1)
+        for index in range(len(ShiftSettings.LABEL_NAMES)):
+            label = ttk.Label(top_frame, text=ShiftSettings.LABEL_NAMES[index], width=11)
+            label.grid(row=index, column=0, sticky='w')
+        # Entries
+        entry_validation = self.register(ShiftSettings.validate_dates)
+        self.name_entry = ttk.Entry(top_frame)
+        self.name_entry.grid(row=0, column=1, sticky='w')
+        self.start_entry = ttk.Entry(top_frame, width=5, validate='key',
+                                     validatecommand=(entry_validation, '%P', '%S'))
+        self.start_entry.grid(row=1, column=1, sticky='w')
+        self.end_entry = ttk.Entry(top_frame, width=5, validate='key',
+                                   validatecommand=(entry_validation, '%P', '%S'))
+        self.end_entry.grid(row=2, column=1, sticky='w')
+        # Add button
+        add_button = ttk.Button(top_frame, text='Add', command=self.add_shift)
+        add_button.grid(row=3, column=1, sticky='e')
+
+        # Middle frame
+        self.middle_frame = None
+        self.middle_frame_setup()
+
+        # Bottom frame
+        bottom_frame = ttk.Frame(self)
+        bottom_frame.grid(row=2, column=0, sticky='nsew')
+        save_button = ttk.Button(bottom_frame, text='Save', command=self.save_clicked)
+        save_button.pack(side=tkinter.RIGHT)
+        cancel_button = ttk.Button(bottom_frame, text='Cancel', command=self.quit)
+        cancel_button.pack(side=tkinter.RIGHT)
+
+    def middle_frame_setup(self):
+        if self.middle_frame:
+            self.middle_frame.destroy()
+
+        middle_frame = VerticalScrollFrame(self)
+        middle_frame.grid(row=1, column=0, sticky='nsew', padx=10, pady=5)
+        for name, (start, end) in self.shifts.items():
+            frame = self.create_shift_frame(middle_frame.get_interior_frame(), (name, start, end))
+            frame.pack(side=tkinter.TOP, fill=tkinter.X, expand=tkinter.TRUE)
+
+    def create_shift_frame(self, parent, shift):
+        shift_frame = tkinter.Frame(parent, highlightbackground='black', highlightthickness=2)
+        shift_frame.columnconfigure(0, weight=1)
+        shift_frame.columnconfigure(1, weight=1)
+        name, start, duration = shift
+        start_time = datetime.datetime.strptime(start, '%H:%M')
+        time_diff = datetime.timedelta(seconds=duration)
+        end = (start_time + time_diff).strftime('%H:%M')
+        for index in range(len(ShiftSettings.LABEL_NAMES)):
+            label = tkinter.Label(shift_frame, text=ShiftSettings.LABEL_NAMES[index], width=11)
+            label.grid(row=index, column=0, sticky='e')
+        name_label = tkinter.Label(shift_frame, text=name)
+        name_label.grid(row=0, column=1, sticky='w')
+        start_label = tkinter.Label(shift_frame, text=start)
+        start_label.grid(row=1, column=1, sticky='w')
+        end_label = tkinter.Label(shift_frame, text=end)
+        end_label.grid(row=2, column=1, sticky='w')
+        delete_frame = tkinter.Frame(shift_frame)
+        delete_frame.grid(row=0, column=2, rowspan=3)
+        del_button = tkinter.Button(delete_frame, text=u'\u232B', command=lambda: self.remove_shift(name))
+        del_button.grid(row=0, column=0)
+
+        return shift_frame
+
+    def add_shift(self):
+        if len(self.shifts) > ShiftSettings.MAX:
+            messagebox.showinfo(title='Max', message='Maximum number of shifts is {}'.format(ShiftSettings.MAX))
+            return
+        msg = self.add_validation()
+        if msg is True:
+            name = self.name_entry.get()
+            start = self.start_entry.get()
+            end = self.end_entry.get()
+            start_time = datetime.datetime.strptime(start, '%H:%M')
+            end_time = datetime.datetime.strptime(end, '%H:%M')
+            time_diff = end_time - start_time
+
+            self.shifts[name] = (start, time_diff.total_seconds())
+            self.middle_frame_setup()
+        else:
+            messagebox.showerror(title='Error', message=msg)
+
+    def remove_shift(self, shift):
+        del self.shifts[shift]
+        self.middle_frame_setup()
+
+    def save_clicked(self):
+        self.save.shift_settings.clear()
+        self.save.shift_settings = dict(self.shifts)
+        self.quit()
+
+    def add_validation(self):
+        messages = []
+        if len(self.name_entry.get()) < 1:
+            messages.append('Please enter a name')
+        start = self.start_entry.get()
+        if len(start) < 1:
+            messages.append('Please enter a start time')
+        else:
+            try:
+                datetime.datetime.strptime(start, '%H:%M')
+            except ValueError:
+                messages.append('Incorrect time format, HH:MM')
+
+        end = self.end_entry.get()
+        if len(end) < 1:
+            messages.append('Please enter an end time')
+        else:
+            try:
+                datetime.datetime.strptime(end, '%H:%M')
+            except ValueError:
+                messages.append('Incorrect time format, HH:MM')
+
+        if messages:
+            return '\n'.join(messages)
+        else:
+            return True
+
+    def quit(self):
+        self.parent.destroy()
+
+    @staticmethod
+    def validate_dates(values, new):
+        if len(values) < 6:
+            return new.isdigit() or (new == ':')
+        else:
+            return False
 
 
 class AddNetworkPort(ttk.Frame):
@@ -579,15 +742,15 @@ class AddNetworkPort(ttk.Frame):
         self.machine_entry = ttk.Entry(self)
         self.machine_entry.delete(0, tkinter.END)
         self.machine_entry.grid(row=0, column=1, sticky='w', validate='key',
-                                validationcommand=(entry_validation, '%P', '%S', 'name'))
+                                validatecommand=(entry_validation, '%P', '%S', 'name'))
         self.address_entry = ttk.Entry(self)
         self.address_entry.delete(0, tkinter.END)
         self.address_entry.grid(row=1, column=1, sticky='w', justify=tkinter.RIGHT, width=17,
-                                validate='key', validationcommand=(entry_validation, '%P', '%S', 'name'))
+                                validate='key', validatecommand=(entry_validation, '%P', '%S', 'name'))
         self.port_entry = ttk.Entry(self)
         self.port_entry.delete(0, tkinter.END)
         self.port_entry.grid(row=2, column=1, sticky='w', justify=tkinter.RIGHT, width=6,
-                             validate='key', validationcommand=(entry_validation, '%P', '%S', 'name'))
+                             validate='key', validatecommand=(entry_validation, '%P', '%S', 'name'))
 
         # Button Frame
         button_frame = ttk.Frame(self)

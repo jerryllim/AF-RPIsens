@@ -19,7 +19,7 @@ class ServerSettings:
         self.logger = logging.getLogger('afRPIsens_server')
         self.machine_ports = OrderedDict()
         self.quick_access = OrderedDict()
-        self.shift_settings = {}
+        self.shift_settings = {'Morning': ('08:00', 43200), 'Night': ('20:00', 43200)}
         self.misc_settings = {}
         self.load_settings()
         self.logger.debug('Completed setup')
