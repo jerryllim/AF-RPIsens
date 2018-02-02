@@ -50,6 +50,18 @@ class DatabaseManager:
         self.database_name = database_name
 
     @staticmethod
+    def get_table_names(database):
+        # TODO check if there is the file
+        db = sqlite3.connect(database, detect_types=sqlite3.PARSE_DECLTYPES)
+        cursor = db.cursor()
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+        tables = []
+        for table in cursor.fetchall():
+            tables.append(table[0])
+
+        return tables
+
+    @staticmethod
     def create_table(table_name, database):
         db = sqlite3.connect(database, detect_types=sqlite3.PARSE_DECLTYPES)
         try:

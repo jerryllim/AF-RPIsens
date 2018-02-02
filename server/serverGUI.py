@@ -27,13 +27,15 @@ class TempClassWithRandomData:  # TODO to delete for testing
 class MainWindow(ttk.Frame):
     NUM_COL = 2
 
-    def __init__(self, parent, data_class: TempClassWithRandomData, **kwargs):
+    def __init__(self, parent, save, **kwargs):
         self.parent = parent
-        self.data_class = data_class
+        self.save = save
         ttk.Frame.__init__(self, parent, **kwargs)
         self.rowconfigure(0, weight=1)
         self.rowconfigure(1, weight=100)
         self.columnconfigure(0, weight=1)
+        self.database = serverDB.DatabaseManager()
+        self.graphs = []
 
         # Top Frame settings
         self.top_frame = ttk.Frame(self, relief='raise', borderwidth=2)
@@ -53,48 +55,8 @@ class MainWindow(ttk.Frame):
         self.quick_access_setup()
 
         # Notebook setup
-        view_notebook = ttk.Notebook(self)
-        view_notebook.grid(row=1, column=0, sticky='nsew')
-
-        # Make graphs
-        graph_scrollable_frame = VerticalScrollFrame(view_notebook)
-        graph_scrollable_frame.grid(sticky='nsew')
-        view_notebook.add(graph_scrollable_frame, text='Graph')
-        for col in range(MainWindow.NUM_COL):
-            graph_scrollable_frame.get_interior_frame().columnconfigure(col, weight=1)
-
-        for index in range(len(self.data_class.sensorList)):
-            row = index//MainWindow.NUM_COL
-            col = index % MainWindow.NUM_COL
-            canvas = GraphCanvas(graph_scrollable_frame.get_interior_frame(),
-                                 temp_get_data(title=self.data_class.sensorList[index]))
-            canvas.show()
-            canvas.grid(row=row, column=col, sticky='nsew', padx=5, pady=5)
-
-        # TreeView Frame
-        treeview_frame = ttk.Frame(self)
-        treeview_frame.grid(sticky='nsew', padx=5, pady=5)
-        view_notebook.add(treeview_frame, text='Details')
-        treeview_frame.rowconfigure(0, weight=1)
-        treeview_frame.columnconfigure(0, weight=1)
-        treeview_frame.columnconfigure(1, weight=0)
-        # TreeView
-        self.live_treeview = ttk.Treeview(treeview_frame)
-        self.live_treeview.grid(row=0, column=0, sticky='nsew')
-        self.live_treeview['show'] = 'headings'
-        self.live_treeview['column'] = ('machine', 'sensor', 'count', 'timestamp')
-        self.live_treeview.heading('machine', text='Machine')
-        self.live_treeview.heading('sensor', text='Sensor')
-        self.live_treeview.heading('count', text='Count')
-        self.live_treeview.heading('timestamp', text='Timestamp')
-        self.live_treeview.column('machine', width=100)
-        self.live_treeview.column('sensor', width=100)
-        self.live_treeview.column('count', width=60, anchor=tkinter.E)
-        self.live_treeview.column('timestamp', width=70)
-        # Scroll for Treeview
-        treeview_v_scroll = ttk.Scrollbar(treeview_frame, orient='vertical', command=self.live_treeview.yview)
-        treeview_v_scroll.grid(row=0, column=1, sticky='nsw')
-        self.live_treeview.configure(yscrollcommand=treeview_v_scroll.set)
+        self.view_notebook = NotebookView(self, save)
+        self.view_notebook.grid(row=1, column=0, sticky='nsew')
 
     def quick_access_setup(self):  # TODO
         if self.quick_frame is not None:
@@ -123,11 +85,32 @@ class MainWindow(ttk.Frame):
         test2 = GraphDetailSettingsPage(test)
         test2.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
 
+    def populate_graph_treeview(self):
+        for column in range(self.NUM_COL):
+            self.view_notebook.graph_scrollable_frame.get_interior_frame().columnconfigure(column, weight=1)
+        # Draw Graph Canvas
+        database_name = datetime.datetime.today().strftime('%m_%B_%Y.sqlite')
+        tables = self.database.get_table_names(database_name)
+        for index in range(len(tables)):
+            row = index//self.NUM_COL
+            col = index % self.NUM_COL
+            canvas = GraphCanvas(self.view_notebook.graph_scrollable_frame.get_interior_frame())
+            canvas.show()
+            canvas.grid(row=row, column=col, sticky='nsew', padx=5, pady=5)
+            self.graphs.append(canvas)
+
+    def plot_graph_add_treeview(self):
+        tables = self.database.get_table_names()
+        if len(tables) != len(self.graphs):
+            self.populate_graph_treeview()
+            return
+
+
 
 class NotebookView(ttk.Notebook):
     NUM_COL = 2
 
-    def __init__(self, parent, data, save, **kwargs):
+    def __init__(self, parent, data=None, save=None, **kwargs):
         ttk.Notebook.__init__(self, parent, **kwargs)
         self.save = save
         self.data = data
@@ -159,7 +142,8 @@ class NotebookView(ttk.Notebook):
         treeview_v_scroll.grid(row=0, column=1, sticky='nsw')
         self.treeview.configure(yscrollcommand=treeview_v_scroll.set)
 
-        self.graph_treeview_populate(self.data)
+        if self.data is not None and self.save is not None:
+            self.graph_treeview_populate(self.data)
 
     def graph_treeview_populate(self, data):
         for column in range(self.num_col):
@@ -169,8 +153,8 @@ class NotebookView(ttk.Notebook):
                                                                                                      self.save)
             row = index//self.num_col
             col = index % self.num_col
-            canvas = GraphCanvas(self.graph_scrollable_frame.get_interior_frame(), (title, date_list, date_format,
-                                                                                    count_list))
+            canvas = GraphCanvas(self.graph_scrollable_frame.get_interior_frame(), title, date_format, date_list,
+                                 count_list)
             canvas.show()
             canvas.grid(row=row, column=col, sticky='nsew', padx=5, pady=5)
             for pos in range(len(date_list)):
@@ -396,26 +380,29 @@ class VerticalScrollFrame(ttk.Frame):
 
 
 class GraphCanvas(FigureCanvasTkAgg):
-    def __init__(self, parent, data):
+    def __init__(self, parent, title=None, x_format=None, x=None, y=None):
         self.figure = Figure()
         self.figure.set_tight_layout(True)
 
-        subplot = self.figure.add_subplot(1, 1, 1)
-        title, x, x_format, y = data
-        subplot.plot(x, y, 'b-o')
-        subplot.grid(linestyle='dashed')
-        subplot.set_title(title)
-        # Format tick location and label
-        tick_num = len(x)//5
-        subplot.set_xticks(x[0::tick_num])
-        date_label = []
-        for date in x[0::tick_num]:
-            date_label.append(date.strftime(x_format))
-        subplot.set_xticklabels(date_label)
+        self.subplot = self.figure.add_subplot(1, 1, 1)
         FigureCanvasTkAgg.__init__(self, self.figure, parent)
+        if title is not None:
+            self.plot(title, x_format, x, y)
 
     def grid(self, **kwargs):
         self.get_tk_widget().grid(**kwargs)
+
+    def plot(self, title, x_format, x, y):
+        self.subplot.plot(x, y, 'b-o')
+        self.subplot.grid(linestyle='dashed')
+        self.subplot.set_title(title)
+        # Format tick location and label
+        tick_num = len(x)//5
+        self.subplot.set_xticks(x[0::tick_num])
+        date_label = []
+        for date in x[0::tick_num]:
+            date_label.append(date.strftime(x_format))
+        self.subplot.set_xticklabels(date_label)
 
 
 class CalendarPop(tkinter.Frame):
