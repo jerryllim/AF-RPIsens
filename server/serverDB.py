@@ -16,6 +16,7 @@ class ServerSettings:
         self.logger = logging.getLogger('afRPIsens_server')
         self.machine_ports = OrderedDict()
         self.quick_access = OrderedDict()
+        # 43200 is 12 hours in seconds
         self.shift_settings = {'Morning': ('08:00', 43200), 'Night': ('20:00', 43200)}
         self.misc_settings = {}
         self.load_settings()
@@ -43,6 +44,18 @@ class ServerSettings:
         except FileNotFoundError:
             pass
         self.logger.debug('Loaded settings')
+
+    @staticmethod
+    def convert_to_duration(start, end):
+        start_time = datetime.datetime.strptime(start, '%H:%M')
+        end_time = datetime.datetime.strptime(end, '%H:%M')
+        time_diff = end_time - start_time
+
+        return time_diff
+
+    @staticmethod
+    def get_end_time(start_date, duration):
+        return start_date + datetime.timedelta(seconds=duration)
 
 
 class DatabaseManager:
