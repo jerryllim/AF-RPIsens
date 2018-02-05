@@ -6,7 +6,6 @@ import datetime
 from collections import namedtuple
 import server.serverDB as serverDB
 import string  # TODO for testing
-
 import matplotlib
 
 matplotlib.use('TkAgg')
@@ -27,8 +26,7 @@ class TempClassWithRandomData:  # TODO to delete for testing
 class MainWindow(ttk.Frame):
     NUM_COL = 2
 
-    def __init__(self, parent, save, **kwargs):
-        self.parent = parent
+    def __init__(self, parent, save: serverDB.ServerSettings, **kwargs):
         self.save = save
         ttk.Frame.__init__(self, parent, **kwargs)
         self.rowconfigure(0, weight=1)
@@ -36,6 +34,13 @@ class MainWindow(ttk.Frame):
         self.columnconfigure(0, weight=1)
         self.database = serverDB.DatabaseManager()
         self.graphs = []
+
+        # MenuBar
+        self.menu_bar = tkinter.Menu(self.master)
+        settings = tkinter.Menu(self.menu_bar, tearoff=0)
+        settings.add_command(label='Settings', command=self.launch_settings)  # TODO add command
+        self.menu_bar.add_cascade(label='Settings', menu=settings)
+        self.master.config(menu=self.menu_bar)
 
         # Top Frame settings
         self.top_frame = ttk.Frame(self, relief='raise', borderwidth=2)
@@ -47,9 +52,9 @@ class MainWindow(ttk.Frame):
         self.top_frame.rowconfigure(1, weight=2)
         request_label = ttk.Label(self.top_frame, text='Requesting every {} minutes'.format('15'))  # TODO variable request time
         request_label.grid(row=0, column=0, sticky='w')
-        request_button = ttk.Button(self.top_frame, text='Request now', command=self.launch_another)  # TODO add command
+        request_button = ttk.Button(self.top_frame, text='Request now')  # TODO add command
         request_button.grid(row=0, column=1)
-        plot_button = ttk.Button(self.top_frame, text='Plot new', command=self.launch_something)  # TODO add command to plot new set of graphs
+        plot_button = ttk.Button(self.top_frame, text='Plot new', command=self.launch_plot_new)
         plot_button.grid(row=0, column=2)
         self.quick_frame = None
         self.quick_access_setup()
@@ -57,6 +62,8 @@ class MainWindow(ttk.Frame):
         # Notebook setup
         self.view_notebook = NotebookView(self, save)
         self.view_notebook.grid(row=1, column=0, sticky='nsew')
+        self.populate_graph_treeview()
+        self.plot_graph_add_treeview()
 
     def quick_access_setup(self):  # TODO
         if self.quick_frame is not None:
@@ -71,19 +78,12 @@ class MainWindow(ttk.Frame):
             button = ttk.Button(self.quick_frame, text='Button {}'.format(index))
             button.grid(row=row, column=col)
 
-    def launch_something(self):  # TODO
-        test = tkinter.Toplevel(self.parent)
-        test.title('Test')
-        test.geometry('-200-200')
-        test2 = GraphDetailView(test, ('some',))
-        test2.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
-
-    def launch_another(self):  # TODO
-        test = tkinter.Toplevel(self.parent)
-        test.title('Test')
-        test.geometry('-200-200')
-        test2 = GraphDetailSettingsPage(test)
-        test2.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
+    def launch_plot_new(self):
+        plot_settings = tkinter.Toplevel(self.master)
+        plot_settings.title('Plot New')
+        plot_settings.geometry('-200-200')
+        plot_settings_frame = GraphDetailSettingsPage(plot_settings, self.save)
+        plot_settings_frame.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
 
     def populate_graph_treeview(self):
         for column in range(self.NUM_COL):
@@ -100,12 +100,41 @@ class MainWindow(ttk.Frame):
             self.graphs.append(canvas)
 
     def plot_graph_add_treeview(self):
-        database_name = datetime.datetime.today().strftime('%m_%B_%Y.sqlite')
+        now = datetime.datetime.now()
+        database_name = now.strftime('%m_%B_%Y.sqlite')
+        # Get current shift
+        shift_name, shift_start, shift_end = self.get_shift(now)
         tables = self.database.get_table_names(database_name)
         if len(tables) != len(self.graphs):
             self.populate_graph_treeview()
             return
-        # TODO animate graph
+        self.view_notebook.treeview.delete(*self.view_notebook.treeview.get_children())
+        for index in range(len(self.graphs)):
+            table = tables[index]
+            title = '{}\n{}   {}'.format(table, shift_name, now.strftime('%Y-%m-%d'))
+            x, y = self.database.get_sums(table, shift_start, shift_end, 'Hourly')
+            self.graphs[index].plot(title, '%H:%M', x, y)
+            for pos in range(len(x)):
+                self.view_notebook.treeview.insert('', tkinter.END, values=(table, y[pos], x[pos]))
+
+    def get_shift(self, date_time):
+        date = date_time.strftime('%Y-%m-%d')
+        for name, (start, duration) in self.save.shift_settings.items():
+            start_date = datetime.datetime.strptime(' '.join([date, start]), '%Y-%m-%d %H:%M')
+            end_date = start_date + datetime.timedelta(seconds=duration)
+            if start_date <= date_time < end_date:
+                return name, start_date, end_date
+
+        start_date = date_time.replace(minute=0, second=0, microsecond=0)
+        end_date = start_date + datetime.timedelta(hours=1)
+        return date_time.strftime('Hour %H:00'), start_date, end_date
+
+    def launch_settings(self):
+        configuration_settings = tkinter.Toplevel(self.master)
+        configuration_settings.title('Configuration & Settings')
+        configuration_settings.geometry('-200-200')
+        configuration_settings_frame = ConfigurationSettings(configuration_settings, self.save)
+        configuration_settings_frame.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
 
 
 class NotebookView(ttk.Notebook):
@@ -168,7 +197,7 @@ class NotebookView(ttk.Notebook):
         if mode == 'Daily':
             start_date = datetime.datetime.strptime(detail1, '%Y-%m-%d')
             end_date = datetime.datetime.strptime(detail2, '%Y-%m-%d')
-            date_format = '%Y-%m-%d'
+            date_format = '%d'
         elif mode == 'Hourly':
             start_time, duration = save.shift_settings[detail2]
             start_date = datetime.datetime.strptime(' '.join([detail1, start_time]), '%Y-%m-%d %H:%M')
@@ -196,10 +225,9 @@ class GraphDetailView(ttk.Frame):
 
     def __init__(self, parent, data, save, **kwargs):
         ttk.Frame.__init__(self, parent, **kwargs)
-        self.data = data
 
         # Notebook setup
-        view_notebook = NotebookView(self, self.data, save)
+        view_notebook = NotebookView(self, data, save)
         view_notebook.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
 
 
@@ -227,9 +255,9 @@ class SettingsFrame(tkinter.Frame):
 
 class GraphDetailSettingsPage(ttk.Frame):
 
-    def __init__(self, parent, **kwargs):
+    def __init__(self, parent, save, **kwargs):
+        self.save = save
         ttk.Frame.__init__(self, parent, **kwargs)
-        self.parent = parent
         self.plot_settings_list = []
         self.rowconfigure(0, weight=1)
         self.rowconfigure(1, weight=1)
@@ -241,8 +269,8 @@ class GraphDetailSettingsPage(ttk.Frame):
         sensor_label = ttk.Label(choice_frame, text='Sensor: ')
         sensor_label.grid(row=0, column=0, sticky='e')
         self.sensor_var = tkinter.StringVar()
-        sensor_list = ["Line6-Outer", "Line6-Inner", "Line6-Label", "Line6-Slitter",
-                       "Line5-Outer", "Line5-Inner", "Line5-Label", "Line5-Slitter"]  # TODO change this
+        database_name = datetime.datetime.now().strftime('%m_%B_%Y.sqlite')
+        sensor_list = serverDB.DatabaseManager.get_table_names(database_name)
         self.sensor_var.set(sensor_list[0])
         sensor_option = ttk.OptionMenu(choice_frame, self.sensor_var, self.sensor_var.get(), *sensor_list)
         sensor_option.grid(row=0, column=1, sticky='w')
@@ -268,9 +296,9 @@ class GraphDetailSettingsPage(ttk.Frame):
         # Okay & Cancel Buttons
         button_frame = ttk.Frame(self)
         button_frame.grid(row=4, column=0, sticky='nsew', padx=5, pady=5)
-        plot_button = ttk.Button(button_frame, text='Plot')  # TODO add command
+        plot_button = ttk.Button(button_frame, text='Plot', command=self.launch_graph_detail_view)  # TODO add command
         plot_button.pack(side=tkinter.RIGHT)
-        cancel_button = ttk.Button(button_frame, text='Cancel', command=self.parent.destroy)
+        cancel_button = ttk.Button(button_frame, text='Cancel', command=self.master.destroy)
         cancel_button.pack(side=tkinter.RIGHT)
 
     def set_mutable_frame(self, _selected=None):
@@ -338,7 +366,7 @@ class GraphDetailSettingsPage(ttk.Frame):
             data.pack(side=tkinter.TOP, fill=tkinter.BOTH)
 
     def launch_calendar(self, variable):
-        calendar_pop = tkinter.Toplevel(self.parent)
+        calendar_pop = tkinter.Toplevel(self.master)
         calendar_pop.title('Select date')
         calendar_pop.resizable(False, False)
         calendar_pop_frame = CalendarPop(calendar_pop, variable)
@@ -351,6 +379,14 @@ class GraphDetailSettingsPage(ttk.Frame):
                               (self.detail1_var.get(), self.detail2_var.get()))
         self.plot_settings_list.append(setting)
         self.set_data_frame()
+
+    def launch_graph_detail_view(self):
+        graph_detail_view = tkinter.Toplevel(self.master.master)
+        graph_detail_view.title('Plot')
+        gdv_frame = GraphDetailView(graph_detail_view, self.plot_settings_list, self.save)
+        gdv_frame.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
+
+        self.master.destroy()
 
 
 class VerticalScrollFrame(ttk.Frame):
@@ -394,6 +430,7 @@ class GraphCanvas(FigureCanvasTkAgg):
         self.get_tk_widget().grid(**kwargs)
 
     def plot(self, title, x_format, x, y):
+        self.subplot.clear()
         self.subplot.plot(x, y, 'b-o')
         self.subplot.grid(linestyle='dashed')
         self.subplot.set_title(title)
@@ -411,7 +448,6 @@ class CalendarPop(tkinter.Frame):
 
     def __init__(self, parent, variable):
         self.variable = variable
-        self.parent = parent
         today = datetime.date.today()
         self._date = datetime.date(today.year, today.month, 1)
         tkinter.Frame.__init__(self, parent, padx=5, pady=5)
@@ -464,7 +500,7 @@ class CalendarPop(tkinter.Frame):
 
     def button_pressed(self, day):
         self.variable.set(datetime.date(self._date.year, self._date.month, day).strftime('%Y-%m-%d'))
-        self.parent.destroy()
+        self.master.destroy()
 
 
 class ConfigurationSettings(ttk.Frame):
@@ -487,7 +523,6 @@ class ConfigurationSettings(ttk.Frame):
 
     def __init__(self, parent, save: serverDB.ServerSettings, **kwargs):
         ttk.Frame.__init__(self, parent, **kwargs)
-        self.parent = parent
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
         self.configuration_notebook = ttk.Notebook(self)
@@ -634,7 +669,7 @@ class ConfigurationSettings(ttk.Frame):
         pass
 
     def quit_parent(self):
-        self.parent.destroy()
+        self.master.destroy()
 
     @staticmethod
     def validate_time(values, new):
@@ -650,7 +685,6 @@ class ShiftSettings(ttk.Frame):
 
     def __init__(self, parent, treeview: ttk.Treeview):
         ttk.Frame.__init__(self, parent)
-        self.parent = parent
         self.treeview = treeview
         self.grid(row=0, column=0, sticky='nsew')
         self.columnconfigure(0, weight=1)
@@ -715,7 +749,7 @@ class ShiftSettings(ttk.Frame):
             return True
 
     def quit_parent(self):
-        self.parent.destroy()
+        self.master.destroy()
 
     @staticmethod
     def validate_dates(values, new):
@@ -729,7 +763,6 @@ class AddNetworkPort(ttk.Frame):
 
     def __init__(self, parent, treeview: ttk.Treeview, _iid=None):
         ttk.Frame.__init__(self, parent)
-        self.parent = parent
         self.iid = _iid
         self.treeview = treeview
         self.columnconfigure(0, weight=1)
@@ -761,7 +794,7 @@ class AddNetworkPort(ttk.Frame):
         button_frame.grid(row=3, column=0, columnspan=2, sticky='nsew', padx=5, pady=5)
         save_button = ttk.Button(button_frame, text='Save', command=self.save_clicked)
         save_button.pack(side=tkinter.RIGHT)
-        cancel_button = ttk.Button(button_frame, text='Cancel', command=self.parent.destroy)
+        cancel_button = ttk.Button(button_frame, text='Cancel', command=self.master.destroy)
         cancel_button.pack(side=tkinter.RIGHT)
 
         if self.iid:
@@ -820,13 +853,13 @@ class AddNetworkPort(ttk.Frame):
             else:
                 self.treeview.item(self.iid, values=(self.machine_entry.get(), self.address_entry.get(),
                                                      self.port_entry.get()))
-            self.quit()
+            self.quit_parent()
         else:
             messagebox.showerror('Error', msg)
 
-    def quit(self):
-        # TODO return grabset
-        self.parent.destroy()
+    def quit_parent(self):
+        # TODO return grabset?
+        self.master.destroy()
 
     @staticmethod
     def validate_entries(values, new, widget):
@@ -856,7 +889,7 @@ if __name__ == '__main__':
     root = tkinter.Tk()
     root.title('Test')
     root.minsize(width=1000, height=100)
-    main_frame = MainWindow(root, TempClassWithRandomData())
+    main_frame = MainWindow(root, serverDB.ServerSettings())
     main_frame.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
     # root.mainloop()
     while True:

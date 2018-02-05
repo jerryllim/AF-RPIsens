@@ -115,13 +115,17 @@ class DatabaseManager:
     def sum_from_table(table_name, from_timestamp, to_timestamp, database, option='include'):
         db = sqlite3.connect(database, detect_types=sqlite3.PARSE_DECLTYPES)
         cursor = db.cursor()
-        if option == 'exclude':
-            cursor.execute("SELECT SUM(quantity) from {} WHERE time >= datetime(?) AND time < "
-                           "datetime(?)".format(table_name), (from_timestamp, to_timestamp))
-        else:
-            cursor.execute("SELECT SUM(quantity) from {} WHERE time >= datetime(?) AND time <= "
-                           "datetime(?)".format(table_name), (from_timestamp, to_timestamp))
-        summation = cursor.fetchone()[0]
+        try:
+            if option == 'exclude':
+                cursor.execute("SELECT SUM(quantity) from '{}' WHERE time >= datetime(?) AND time < "
+                               "datetime(?)".format(table_name), (from_timestamp, to_timestamp))
+            else:
+                cursor.execute("SELECT SUM(quantity) from '{}' WHERE time >= datetime(?) AND time <= "
+                               "datetime(?)".format(table_name), (from_timestamp, to_timestamp))
+            summation = cursor.fetchone()[0]
+        except sqlite3.OperationalError:
+            summation = 0
+
         return summation
 
     @staticmethod
