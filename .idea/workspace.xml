@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="8c4eab11-9431-48ea-8992-fef6a6e722be" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/server/serverRUN.py" afterPath="$PROJECT_DIR$/server/serverRUN.py" />
+      <change beforePath="$PROJECT_DIR$/server/serverGUI.py" afterPath="$PROJECT_DIR$/server/serverGUI.py" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -13,7 +13,7 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.5">
+    <splitter split-orientation="horizontal" split-proportion="0.5174203">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
           <file leaf-file-name="serverMain.py" pinned="false" current-in-tab="false">
@@ -62,25 +62,13 @@
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="serverGUI.py" pinned="false" current-in-tab="false">
+          <file leaf-file-name="serverGUI.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="-1639">
-                  <caret line="60" column="37" lean-forward="false" selection-start-line="60" selection-start-column="37" selection-end-line="60" selection-end-column="37" />
+                <state relative-caret-position="418">
+                  <caret line="94" column="32" lean-forward="false" selection-start-line="94" selection-start-column="32" selection-end-line="94" selection-end-column="32" />
                   <folding>
                     <element signature="e#0#14#0" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="serverRUN.py" pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/server/serverRUN.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="270">
-                  <caret line="18" column="20" lean-forward="true" selection-start-line="18" selection-start-column="20" selection-end-line="18" selection-end-column="20" />
-                  <folding>
-                    <element signature="e#0#34#0" expanded="true" />
                   </folding>
                 </state>
               </provider>
@@ -90,7 +78,7 @@
             <entry file="file:///Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/tkinter/__init__.py">
               <provider selected="true" editor-type-id="text-editor">
                 <state relative-caret-position="184">
-                  <caret line="2292" column="0" lean-forward="false" selection-start-line="2292" selection-start-column="0" selection-end-line="2292" selection-end-column="0" />
+                  <caret line="1698" column="0" lean-forward="false" selection-start-line="1698" selection-start-column="0" selection-end-line="1698" selection-end-column="0" />
                   <folding />
                 </state>
               </provider>
@@ -100,13 +88,18 @@
       </split-first>
       <split-second>
         <leaf>
-          <file leaf-file-name="serverGUI.py" pinned="false" current-in-tab="true">
+          <file leaf-file-name="serverGUI.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="546">
-                  <caret line="965" column="23" lean-forward="true" selection-start-line="965" selection-start-column="23" selection-end-line="967" selection-end-column="40" />
+                <state relative-caret-position="99">
+                  <caret line="644" column="51" lean-forward="true" selection-start-line="644" selection-start-column="51" selection-end-line="644" selection-end-column="51" />
                   <folding>
                     <element signature="e#0#14#0" expanded="true" />
+                    <marker date="1517904716261" expanded="true" signature="591:6906" ph="..." />
+                    <marker date="1517904716261" expanded="true" signature="3926:4216" ph="..." />
+                    <marker date="1517904716261" expanded="true" signature="6555:6906" ph="..." />
+                    <marker date="1517904716261" expanded="true" signature="36191:36627" ph="..." />
+                    <marker date="1517904716261" expanded="true" signature="36691:36983" ph="..." />
                   </folding>
                 </state>
               </provider>
@@ -125,11 +118,11 @@
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="sensorGUI.py" pinned="false" current-in-tab="false">
+          <file leaf-file-name="sensorGUI.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/sensor/sensorGUI.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="216">
-                  <caret line="399" column="22" lean-forward="false" selection-start-line="399" selection-start-column="14" selection-end-line="399" selection-end-column="22" />
+                <state relative-caret-position="182">
+                  <caret line="212" column="41" lean-forward="false" selection-start-line="212" selection-start-column="41" selection-end-line="212" selection-end-column="41" />
                   <folding />
                 </state>
               </provider>
@@ -148,11 +141,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>maximu</find>
-      <find>get_data_from_database</find>
-      <find>subplot123</find>
-      <find>validation</find>
-      <find>tree_view</find>
       <find>duplicate</find>
       <find>%Y</find>
       <find>canvas</find>
@@ -172,12 +160,17 @@
       <find>graphdetail</find>
       <find>calendar_pop</find>
       <find>configuration_se</find>
-      <find>configurationS</find>
       <find>print</find>
       <find>populate</find>
       <find>Setting</find>
       <find>DetailSetting</find>
       <find>Configuration</find>
+      <find>lambda</find>
+      <find>configurati</find>
+      <find>configurationS</find>
+      <find>self.master</find>
+      <find>save_con</find>
+      <find>quick_access</find>
     </findStrings>
     <replaceStrings>
       <replace>TMessage</replace>
@@ -235,8 +228,8 @@
         <option value="$PROJECT_DIR$/test_db.py" />
         <option value="$PROJECT_DIR$/server/serverCommunication.py" />
         <option value="$PROJECT_DIR$/server/serverDB.py" />
-        <option value="$PROJECT_DIR$/server/serverGUI.py" />
         <option value="$PROJECT_DIR$/server/serverRUN.py" />
+        <option value="$PROJECT_DIR$/server/serverGUI.py" />
       </list>
     </option>
   </component>
@@ -700,7 +693,7 @@
       <window_info id="Capture Analysis" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32847533" sideWeight="0.5053918" order="8" side_tool="true" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33744395" sideWeight="0.4946082" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.33744395" sideWeight="0.4946082" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3295964" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32847533" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -918,24 +911,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sensor/sensorGUI.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="216">
-          <caret line="399" column="22" lean-forward="false" selection-start-line="399" selection-start-column="14" selection-end-line="399" selection-end-column="22" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/server/serverDB.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="132">
-          <caret line="18" column="38" lean-forward="true" selection-start-line="18" selection-start-column="38" selection-end-line="18" selection-end-column="38" />
-          <folding>
-            <element signature="e#0#11#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/server/serverCommunication.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="120">
@@ -964,30 +939,48 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/server/serverRUN.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="255">
+          <caret line="17" column="28" lean-forward="true" selection-start-line="17" selection-start-column="28" selection-end-line="17" selection-end-column="28" />
+          <folding>
+            <element signature="e#0#34#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/serverDB.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="132">
+          <caret line="18" column="38" lean-forward="true" selection-start-line="18" selection-start-column="38" selection-end-line="18" selection-end-column="38" />
+          <folding>
+            <element signature="e#0#11#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file:///Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/tkinter/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="184">
-          <caret line="2292" column="0" lean-forward="false" selection-start-line="2292" selection-start-column="0" selection-end-line="2292" selection-end-column="0" />
+          <caret line="1698" column="0" lean-forward="false" selection-start-line="1698" selection-start-column="0" selection-end-line="1698" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sensor/sensorGUI.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="182">
+          <caret line="212" column="41" lean-forward="false" selection-start-line="212" selection-start-column="41" selection-end-line="212" selection-end-column="41" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1639">
-          <caret line="60" column="37" lean-forward="false" selection-start-line="60" selection-start-column="37" selection-end-line="60" selection-end-column="37" />
+        <state relative-caret-position="418">
+          <caret line="94" column="32" lean-forward="false" selection-start-line="94" selection-start-column="32" selection-end-line="94" selection-end-column="32" />
           <folding>
             <element signature="e#0#14#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/server/serverRUN.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="270">
-          <caret line="18" column="20" lean-forward="true" selection-start-line="18" selection-start-column="20" selection-end-line="18" selection-end-column="20" />
-          <folding>
-            <element signature="e#0#34#0" expanded="true" />
           </folding>
         </state>
       </provider>

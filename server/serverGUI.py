@@ -63,13 +63,28 @@ class MainWindow(ttk.Frame):
             self.quick_frame.destroy()
         self.quick_frame = ttk.LabelFrame(self.top_frame, text='Quick Access: ')
         self.quick_frame.grid(row=1, column=0, columnspan=3, sticky='nsew')
-        for col in range(MainWindow.NUM_COL):
-            self.quick_frame.columnconfigure(col, weight=1)
-        for index in range(4):
-            row = index//MainWindow.NUM_COL
-            col = index % MainWindow.NUM_COL
-            button = ttk.Button(self.quick_frame, text='Button {}'.format(index))
-            button.grid(row=row, column=col)
+        if len(self.save.quick_access) < 1:
+            label = ttk.Label(self.quick_frame, text='Set up quick access in Settings')
+            label.pack()
+        else:
+            num_col = MainWindow.NUM_COL
+            for col in range(num_col):
+                self.quick_frame.columnconfigure(col, weight=1)
+            keys = list(self.save.quick_access.keys())
+            for index in range(len(self.save.quick_access)):
+                row = index//num_col
+                col = index % num_col
+                key = keys[index]
+                value = self.save.quick_access[key]
+                button = ttk.Button(self.quick_frame, text=key, command=lambda text=key, settings=value:
+                                    self.launch_quick_plot(text, settings))
+                button.grid(row=row, column=col)
+
+    def launch_quick_plot(self, button, settings):
+        graph_detail_view = tkinter.Toplevel(self.master)
+        graph_detail_view.title(button)
+        gdv_frame = GraphDetailView(graph_detail_view, settings, self.save)
+        gdv_frame.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
 
     def launch_plot_new(self):
         plot_settings = tkinter.Toplevel(self.master)
@@ -77,6 +92,7 @@ class MainWindow(ttk.Frame):
         plot_settings.geometry('-200-200')
         plot_settings_frame = GraphDetailSettingsPage(plot_settings, self.save)
         plot_settings_frame.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
+        plot_settings.grab_set()
 
     def populate_graph_treeview(self):
         for column in range(self.NUM_COL):
@@ -123,11 +139,12 @@ class MainWindow(ttk.Frame):
         return date_time.strftime('Hour %H:00'), start_date, end_date
 
     def launch_settings(self):
-        configuration_settings = tkinter.Toplevel(self.master)
+        configuration_settings = tkinter.Toplevel(self)
         configuration_settings.title('Configuration & Settings')
         configuration_settings.geometry('-200-200')
         configuration_settings_frame = ConfigurationSettings(configuration_settings, self.save)
         configuration_settings_frame.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
+        configuration_settings_frame.grab_set()
 
 
 class NotebookView(ttk.Notebook):
@@ -651,7 +668,7 @@ class ConfigurationSettings(ttk.Frame):
         # Add & Delete buttons
         button_frame = ttk.Frame(quick_access_frame)
         button_frame.grid(row=0, column=1, padx=5, pady=5)
-        add_button = ttk.Button(button_frame, text='Add', command=self.add_quick_access)  # TODO Add command
+        add_button = ttk.Button(button_frame, text='Add', command=self.add_quick_access)
         add_button.pack()
         delete_button = ttk.Button(button_frame, text='Delete', command=lambda: self.delete_treeview_item(
             self.to_save.quick_tv))
@@ -716,10 +733,6 @@ class ConfigurationSettings(ttk.Frame):
         network_port_frame.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
         network_port_window.grab_set()
 
-    def del_shift(self):
-        for item in self.to_save.shift_tv.selection():
-            self.to_save.shift_tv.delete(item)
-
     def add_shift(self):
         if len(self.to_save.shift_tv.get_children()) > ShiftSettings.MAX:
             messagebox.showinfo(title='Max', message='Maximum number of shifts is {}'.format(ShiftSettings.MAX))
@@ -729,6 +742,7 @@ class ConfigurationSettings(ttk.Frame):
 
         shift_frame = ShiftSettings(shift_window, self.to_save.shift_tv)
         shift_frame.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
+        shift_frame.grab_set()
 
     def add_quick_access(self):
         detail_settings_window = tkinter.Toplevel(self)
@@ -736,16 +750,38 @@ class ConfigurationSettings(ttk.Frame):
 
         detail_frame = GraphDetailSettingsPage(detail_settings_window, self.save, quick_tv=self.to_save.quick_tv)
         detail_frame.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
+        detail_frame.grab_set()
 
     def save_configuration_settings(self):
-        self.to_save.shift_settings = OrderedDict()
+        self.to_save.machine_ports.clear()
+        for iid in self.to_save.port_tv.get_children():
+            machine, address, port = self.to_save.port_tv.item(iid)['values']
+            self.to_save.machine_ports[machine] = (address, port)
+
+        self.to_save.quick_access.clear()
+        for iid in self.to_save.quick_tv.get_children():
+            key = self.to_save.quick_tv.item(iid)['values'][0]
+            settings_list = []
+            for _iid in self.to_save.quick_tv.get_children(iid):
+                machine, mode, detail = self.to_save.quick_tv.item(_iid)['values']
+                detail = detail.split(' - ')
+                detail1 = detail[0]
+                detail2 = detail[1]
+                settings_list.append((machine, mode, (detail1, detail2)))
+            self.to_save.quick_access[key] = settings_list
+
+        self.to_save.shift_settings.clear()
         for iid in self.to_save.shift_tv.get_children():
             name, start, end = self.to_save.shift_tv.item(iid)['values']
             duration = self.save.convert_to_duration(start, end)
             self.to_save.shift_settings[name] = (start, duration.total_seconds())
 
+        self.save.machine_ports = self.to_save.machine_ports
+        self.save.quick_access = self.to_save.quick_access
         self.save.shift_settings = self.to_save.shift_settings
+        self.save.save_settings()
         self.quit_parent()
+        self.master.master.quick_access_setup()
 
     def quit_parent(self):
         self.master.destroy()
@@ -759,7 +795,12 @@ class ConfigurationSettings(ttk.Frame):
 
     @staticmethod
     def delete_treeview_item(treeview: ttk.Treeview):
-        iid = treeview.focus()
+        iid = treeview.selection()
+        if len(iid) > 0:
+            iid = iid[0]
+        else:
+            return
+
         if treeview.parent(iid) == '':
             treeview.delete(iid)
 
