@@ -16,19 +16,24 @@
 - [x] auto resize font -> **Fullscreen + one font change**
 - [x] set to clear IntVar once an hour (new list?) -> **Added new Counter**
 - [x] launch pigpiod at startup -> **added to runScript**
-- [ ] change to executable file?
+- [ ] create executable file
+- [ ] Remove UTC and change to localise
 
 ## Server
 - [x] add log.txt for log purposes
 - [x] add timer options
 - [x] add terminal listbox to contain reply data
-- [ ] determine computer specifications
+- [x] determine computer specifications
 - [x] add timestamps in view
 - [x] change listbox to treeview
 - [x] change client side message format to match machine
 - [ ] parsing json -> csv -> excel log
 - [ ] handling multiple clients
 - [ ] introducing timeout with polling for server request
-- [ ] embed updatable graphs - https://pythonprogramming.net/plotting-live-bitcoin-price-data-tkinter-matplotlib/
+
+- [x] embed updatable graphs - https://pythonprogramming.net/plotting-live-bitcoin-price-data-tkinter-matplotlib/
 - [ ] move file location -> shutil.move - https://docs.python.org/3/library/shutil.html
+- [ ] Add Misc Settings
 - [ ] Directory chooser - http://effbot.org/zone/tkinter-directory-chooser.htm
+- [ ] Today/Current for quick access
+- [ ] create executable file
