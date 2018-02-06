@@ -50,6 +50,8 @@ class ServerSettings:
         start_time = datetime.datetime.strptime(start, '%H:%M')
         end_time = datetime.datetime.strptime(end, '%H:%M')
         time_diff = end_time - start_time
+        if time_diff.days < 0:
+            time_diff = time_diff + datetime.timedelta(days=1)
 
         return time_diff
 
@@ -64,7 +66,6 @@ class DatabaseManager:
 
     @staticmethod
     def get_table_names(database):
-        # TODO check if there is the file
         db = sqlite3.connect(database, detect_types=sqlite3.PARSE_DECLTYPES)
         cursor = db.cursor()
         cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")

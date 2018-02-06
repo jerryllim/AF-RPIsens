@@ -6,7 +6,7 @@ from apscheduler.triggers.cron import CronTrigger
 import server.serverDB as serverDB
 
 
-class Communication:
+class CommunicationManager:
     REQUEST_ID = 'request'
 
     def __init__(self, server_settings: serverDB.ServerSettings, database: serverDB.DatabaseManager):
@@ -63,4 +63,4 @@ class Communication:
     def set_jobs(self):
         self.scheduler.remove_all_jobs()
         cron_trigger = CronTrigger(hour='*', minute='*/15')  # TODO set here
-        self.scheduler.add_job(self.req_client, cron_trigger, id=Communication.REQUEST_ID)
+        self.scheduler.add_job(self.req_client, cron_trigger, id=CommunicationManager.REQUEST_ID)
