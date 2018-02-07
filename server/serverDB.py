@@ -21,7 +21,7 @@ class ServerSettings:
         self.quick_access = OrderedDict()
         # 43200 is 12 hours in seconds
         self.shift_settings = {'Morning': ('08:00', 43200), 'Night': ('20:00', 43200)}
-        self.misc_settings = {}
+        self.misc_settings = {self.REQUEST_TIME: 15, self.FILE_PATH: os.path.expanduser('~/Documents')}
         self.load_settings()
         self.logger.debug('Completed setup')
 
@@ -40,10 +40,15 @@ class ServerSettings:
         try:
             with open(self.filename, 'r') as infile:
                 settings_dict = json.load(infile, object_pairs_hook=OrderedDict)
-                self.machine_ports = settings_dict[ServerSettings.MACHINE_PORTS]
-                self.quick_access = settings_dict[ServerSettings.QUICK_ACCESS]
+                self.machine_ports = settings_dict.get(ServerSettings.MACHINE_PORTS, self.machine_ports)
+                self.quick_access = settings_dict.get(ServerSettings.QUICK_ACCESS, self.quick_access)
                 self.shift_settings = settings_dict.get(ServerSettings.SHIFT_SETTINGS, self.shift_settings)
+                temp_misc = self.misc_settings
                 self.misc_settings = settings_dict.get(ServerSettings.MISC_SETTINGS, self.misc_settings)
+                self.misc_settings[self.REQUEST_TIME] = self.misc_settings.get(self.REQUEST_TIME,
+                                                                               temp_misc[self.REQUEST_TIME])
+                self.misc_settings[self.FILE_PATH] = self.misc_settings.get(self.FILE_PATH,
+                                                                            temp_misc[self.FILE_PATH])
         except FileNotFoundError:
             pass
         self.logger.debug('Loaded settings')
