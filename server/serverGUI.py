@@ -93,7 +93,7 @@ class MainWindow(ttk.Frame):
         plot_settings = tkinter.Toplevel(self.master)
         plot_settings.title('Plot New')
         plot_settings.geometry('-200-200')
-        plot_settings_frame = GraphDetailSettingsPage(plot_settings, self.save)
+        plot_settings_frame = GraphDetailSettingsPage(plot_settings, self.save, self.database)
         plot_settings_frame.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
         plot_settings.grab_set()
 
@@ -145,7 +145,8 @@ class MainWindow(ttk.Frame):
         configuration_settings = tkinter.Toplevel(self)
         configuration_settings.title('Configuration & Settings')
         configuration_settings.geometry('-200-200')
-        configuration_settings_frame = ConfigurationSettings(configuration_settings, self.save, self.request_interval)
+        configuration_settings_frame = ConfigurationSettings(configuration_settings, self.save, self.database,
+                                                             self.request_interval)
         configuration_settings_frame.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
         configuration_settings_frame.grab_set()
 
@@ -153,8 +154,9 @@ class MainWindow(ttk.Frame):
 class NotebookView(ttk.Notebook):
     NUM_COL = 2
 
-    def __init__(self, parent, data=None, save=None, **kwargs):
+    def __init__(self, parent, database, data=None, save=None, **kwargs):
         ttk.Notebook.__init__(self, parent, **kwargs)
+        self.database = database
         self.save = save
         self.data = data
         self.num_col = NotebookView.NUM_COL
@@ -194,8 +196,7 @@ class NotebookView(ttk.Notebook):
         for column in range(self.num_col):
             self.graph_scrollable_frame.get_interior_frame().columnconfigure(column, weight=1)
         for index in range(len(data)):
-            machine, title, date_list, date_format, count_list = NotebookView.get_data_from_database(data[index],
-                                                                                                     self.save)
+            machine, title, date_list, date_format, count_list = self.get_data_from_database(data[index], self.save)
             row = index//self.num_col
             col = index % self.num_col
             canvas = GraphCanvas(self.graph_scrollable_frame.get_interior_frame(), title, date_format, date_list,
@@ -205,8 +206,7 @@ class NotebookView(ttk.Notebook):
             for pos in range(len(date_list)):
                 self.treeview.insert('', tkinter.END, values=(machine, count_list[pos], date_list[pos]))
 
-    @staticmethod
-    def get_data_from_database(setting, save):
+    def get_data_from_database(self, setting, save):
         machine, mode, (detail1, detail2) = setting
         date_format = '%H:%M'
         if mode == 'Daily':
@@ -221,7 +221,7 @@ class NotebookView(ttk.Notebook):
             start_date = datetime.datetime.strptime(' '.join([detail1, detail2]), '%Y-%m-%d %H:%M')
             end_date = start_date + datetime.timedelta(hours=1)
 
-        date_list, count_list = serverDB.DatabaseManager.get_sums(machine, start_date, end_date, mode)
+        date_list, count_list = self.database.get_sums(machine, start_date, end_date, mode)
 
         title = '{}\n{} - {}'.format(machine, detail1, detail2)
         return machine, title, date_list, date_format, count_list
@@ -270,8 +270,10 @@ class SettingsFrame(tkinter.Frame):
 
 class GraphDetailSettingsPage(ttk.Frame):
 
-    def __init__(self, parent, save: serverDB.ServerSettings, quick_tv=None, **kwargs):
+    def __init__(self, parent, save: serverDB.ServerSettings, database: serverDB.DatabaseManager, quick_tv=None,
+                 **kwargs):
         self.save = save
+        self.database = database
         ttk.Frame.__init__(self, parent, **kwargs)
         self.plot_settings_list = []
         self.rowconfigure(1, weight=1)
@@ -298,7 +300,7 @@ class GraphDetailSettingsPage(ttk.Frame):
         sensor_label.grid(row=0, column=0, sticky='e')
         self.sensor_var = tkinter.StringVar()
         database_name = datetime.datetime.now().strftime('%m_%B_%Y.sqlite')
-        sensor_list = serverDB.DatabaseManager.get_table_names(database_name)
+        sensor_list = self.database.get_table_names(database_name)
         self.sensor_var.set(sensor_list[0])
         sensor_option = ttk.OptionMenu(choice_frame, self.sensor_var, self.sensor_var.get(), *sensor_list)
         sensor_option.grid(row=0, column=1, sticky='w')
@@ -580,7 +582,8 @@ class ConfigurationSettings(ttk.Frame):
             self.request_time.set(misc_settings[save.REQUEST_TIME])
             self.file_path.set(misc_settings[save.FILE_PATH])
 
-    def __init__(self, parent, save: serverDB.ServerSettings, request_interval, **kwargs):
+    def __init__(self, parent, save: serverDB.ServerSettings, database: serverDB.DatabaseManager, request_interval,
+                 **kwargs):
         ttk.Frame.__init__(self, parent, **kwargs)
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
@@ -594,6 +597,7 @@ class ConfigurationSettings(ttk.Frame):
         cancel_button.pack(side=tkinter.RIGHT)
         self.to_save = ConfigurationSettings.SaveSettings(save)
         self.save = save
+        self.database = database
         self.request_interval = request_interval
         self.port_network_setup()
         self.quick_access_setup()
@@ -775,7 +779,8 @@ class ConfigurationSettings(ttk.Frame):
         detail_settings_window = tkinter.Toplevel(self)
         detail_settings_window.resizable(False, False)
 
-        detail_frame = GraphDetailSettingsPage(detail_settings_window, self.save, quick_tv=self.to_save.quick_tv)
+        detail_frame = GraphDetailSettingsPage(detail_settings_window, self.save, self.database,
+                                               quick_tv=self.to_save.quick_tv)
         detail_frame.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
         detail_frame.grab_set()
 
