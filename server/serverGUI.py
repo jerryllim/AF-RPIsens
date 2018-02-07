@@ -86,7 +86,7 @@ class MainWindow(ttk.Frame):
     def launch_quick_plot(self, button, settings):
         graph_detail_view = tkinter.Toplevel(self.master)
         graph_detail_view.title(button)
-        gdv_frame = GraphDetailView(graph_detail_view, settings, self.save)
+        gdv_frame = GraphDetailView(graph_detail_view, self.database, data=settings, save=self.save)
         gdv_frame.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
 
     def launch_plot_new(self):
@@ -208,6 +208,14 @@ class NotebookView(ttk.Notebook):
 
     def get_data_from_database(self, setting, save):
         machine, mode, (detail1, detail2) = setting
+        if detail2 == 'Current day':
+            detail2 = datetime.datetime.now()
+            detail1 = detail2 - datetime.timedelta(days=6)
+            detail2 = detail2.strftime('%Y-%m-%d')
+            detail1 = detail1.strftime('%Y-%m-%d')
+        elif detail1 == 'Current day':
+            detail1 = datetime.datetime.now().strftime('%Y-%m-%d')
+
         date_format = '%H:%M'
         if mode == 'Daily':
             start_date = datetime.datetime.strptime(detail1, '%Y-%m-%d')
@@ -238,11 +246,11 @@ class NotebookView(ttk.Notebook):
 
 class GraphDetailView(ttk.Frame):
 
-    def __init__(self, parent, data, save, **kwargs):
+    def __init__(self, parent, database, data=None, save=None, **kwargs):
         ttk.Frame.__init__(self, parent, **kwargs)
 
         # Notebook setup
-        view_notebook = NotebookView(self, data, save)
+        view_notebook = NotebookView(self, database, data=data, save=save)
         view_notebook.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
 
 
@@ -281,13 +289,14 @@ class GraphDetailSettingsPage(ttk.Frame):
         self.rowconfigure(4, weight=1)
         self.columnconfigure(0, weight=1)
         self.quick_tv = quick_tv
+        self.label_width = 8
         # Quick Access Button Name
         if self.quick_tv:
             name_validation = self.register(GraphDetailSettingsPage.validate_name)
             quick_frame = ttk.Frame(self)
             quick_frame.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
             quick_frame.columnconfigure(1, weight=1)
-            quick_label = ttk.Label(quick_frame, text='Button name: ', width=12)
+            quick_label = ttk.Label(quick_frame, text='Name: ', width=self.label_width)
             quick_label.grid(row=0, column=0, sticky='e')
             self.quick_entry = ttk.Entry(quick_frame, validate='key', validatecommand=(name_validation, '%P'))
             self.quick_entry.grid(row=0, column=1, sticky='w')
@@ -296,7 +305,7 @@ class GraphDetailSettingsPage(ttk.Frame):
         choice_frame = ttk.Frame(self)
         choice_frame.grid(row=1, column=0, sticky='nsew', padx=5, pady=5)
         choice_frame.columnconfigure(1, weight=1)
-        sensor_label = ttk.Label(choice_frame, text='Sensor: ', width=12)
+        sensor_label = ttk.Label(choice_frame, text='Sensor: ', width=self.label_width)
         sensor_label.grid(row=0, column=0, sticky='e')
         self.sensor_var = tkinter.StringVar()
         database_name = datetime.datetime.now().strftime('%m_%B_%Y.sqlite')
@@ -304,7 +313,7 @@ class GraphDetailSettingsPage(ttk.Frame):
         self.sensor_var.set(sensor_list[0])
         sensor_option = ttk.OptionMenu(choice_frame, self.sensor_var, self.sensor_var.get(), *sensor_list)
         sensor_option.grid(row=0, column=1, sticky='w')
-        mode_label = ttk.Label(choice_frame, text='Mode: ', width=12)
+        mode_label = ttk.Label(choice_frame, text='Mode: ', width=self.label_width)
         mode_label.grid(row=1, column=0, sticky='e')
         mode_list = ['Daily', 'Hourly', 'Minutely']
         self.mode_var = tkinter.StringVar()
@@ -317,9 +326,13 @@ class GraphDetailSettingsPage(ttk.Frame):
         self.detail1_var = tkinter.StringVar()
         self.detail2_var = tkinter.StringVar()
         self.set_mutable_frame()
-        # Add Buttons
-        add_button = ttk.Button(self, text='Add', command=self.add_plot_settings)
-        add_button.grid(row=3, column=0, sticky='e', padx=5, pady=5)
+        # Current & Add Buttons
+        current_add_frame = ttk.Frame(self)
+        current_add_frame.grid(row=3, column=0, padx=5, pady=5, sticky='nsew')
+        add_button = ttk.Button(current_add_frame, text='Add', command=self.add_plot_settings)
+        add_button.pack(side=tkinter.RIGHT)
+        self.current_button = ttk.Button(current_add_frame, text='Current', command=self.current_pressed)
+        self.current_button.pack(side=tkinter.RIGHT, padx=(5, 20))
         # Graphs setting
         self.data_frame = None
         self.set_data_frame()
@@ -345,14 +358,14 @@ class GraphDetailSettingsPage(ttk.Frame):
         self.detail1_var.set('')
         self.detail2_var.set('')
         if self.mode_var.get() == 'Daily':
-            from_label = ttk.Label(self.mutable_frame, text='From: ', width=12)
+            from_label = ttk.Label(self.mutable_frame, text='From: ', width=self.label_width)
             from_label.grid(row=0, column=0, sticky='e')
             from_entry = ttk.Entry(self.mutable_frame, textvariable=self.detail1_var, state=tkinter.DISABLED, width=10)
             from_entry.grid(row=0, column=1, sticky='w')
             from_calendar = ttk.Button(self.mutable_frame, text=u'\u2380',
                                        command=lambda: self.launch_calendar(self.detail1_var))
             from_calendar.grid(row=0, column=2, sticky='w')
-            to_label = ttk.Label(self.mutable_frame, text='To: ', width=12)
+            to_label = ttk.Label(self.mutable_frame, text='To: ', width=self.label_width)
             to_label.grid(row=1, column=0, sticky='e')
             to_entry = ttk.Entry(self.mutable_frame, textvariable=self.detail2_var, state=tkinter.DISABLED, width=10)
             to_entry.grid(row=1, column=1, sticky='w')
@@ -360,33 +373,42 @@ class GraphDetailSettingsPage(ttk.Frame):
                                      command=lambda: self.launch_calendar(self.detail2_var))
             to_calendar.grid(row=1, column=2, sticky='w')
         elif self.mode_var.get() == 'Hourly':
-            date_label = ttk.Label(self.mutable_frame, text='Date: ', width=12)
+            date_label = ttk.Label(self.mutable_frame, text='Date: ', width=self.label_width)
             date_label.grid(row=0, column=0, sticky='e')
             date_entry = ttk.Entry(self.mutable_frame, textvariable=self.detail1_var, state=tkinter.DISABLED, width=10)
             date_entry.grid(row=0, column=1, sticky='w')
             date_calendar = ttk.Button(self.mutable_frame, text=u'\u2380',
                                        command=lambda: self.launch_calendar(self.detail1_var))
             date_calendar.grid(row=0, column=2, sticky='w')
-            shift_label = ttk.Label(self.mutable_frame, text='Shift: ', width=12)
+            shift_label = ttk.Label(self.mutable_frame, text='Shift: ', width=self.label_width)
             shift_label.grid(row=1, column=0, sticky='e')
             shift_list = list(self.save.shift_settings.keys())
             self.detail2_var.set(shift_list[0])
             shift_option = ttk.OptionMenu(self.mutable_frame, self.detail2_var, self.detail2_var.get(), *shift_list)
             shift_option.grid(row=1, column=1, sticky='w')
         elif self.mode_var.get() == 'Minutely':
-            date_label = ttk.Label(self.mutable_frame, text='Date: ', width=12)
+            date_label = ttk.Label(self.mutable_frame, text='Date: ', width=self.label_width)
             date_label.grid(row=0, column=0, sticky='e')
             date_entry = ttk.Entry(self.mutable_frame, textvariable=self.detail1_var, state=tkinter.DISABLED, width=10)
             date_entry.grid(row=0, column=1, sticky='w')
             date_calendar = ttk.Button(self.mutable_frame, text=u'\u2380',
                                        command=lambda: self.launch_calendar(self.detail1_var))
             date_calendar.grid(row=0, column=2, sticky='w')
-            hour_label = ttk.Label(self.mutable_frame, text='Hour: ', width=12)
+            hour_label = ttk.Label(self.mutable_frame, text='Hour: ', width=self.label_width)
             hour_label.grid(row=1, column=0, sticky='e')
             hour_list = [('{}:00'.format(str(i).zfill(2))) for i in range(24)]
             self.detail2_var.set(hour_list[0])
             hour_option = ttk.OptionMenu(self.mutable_frame, self.detail2_var, self.detail2_var.get(), *hour_list)
             hour_option.grid(row=1, column=1, sticky='w')
+
+    def current_pressed(self):
+        if self.mode_var.get() == 'Daily':
+            self.detail2_var.set('Current day')
+            self.detail1_var.set('7 days ago')
+        elif self.mode_var.get() == 'Hourly':
+            self.detail1_var.set('Current day')
+        elif self.mode_var.get() == 'Minutely':
+            self.detail1_var.set('Current day')
 
     def set_data_frame(self):
         if self.data_frame is not None:
@@ -418,7 +440,7 @@ class GraphDetailSettingsPage(ttk.Frame):
             return
         graph_detail_view = tkinter.Toplevel(self.master.master)
         graph_detail_view.title('Plot')
-        gdv_frame = GraphDetailView(graph_detail_view, self.plot_settings_list, self.save)
+        gdv_frame = GraphDetailView(graph_detail_view, self.database, data=self.plot_settings_list, save=self.save)
         gdv_frame.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
 
         self.quit_parent()
@@ -769,6 +791,7 @@ class ConfigurationSettings(ttk.Frame):
             messagebox.showinfo(title='Max', message='Maximum number of shifts is {}'.format(ShiftSettings.MAX))
             return
         shift_window = tkinter.Toplevel(self)
+        shift_window.title('Add to Quick Access')
         shift_window.resizable(False, False)
 
         shift_frame = ShiftSettings(shift_window, self.to_save.shift_tv)

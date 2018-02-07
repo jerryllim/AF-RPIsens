@@ -17,6 +17,7 @@ class CommunicationManager:
         self.ports = []
         self.context = None
         self.socket = None
+        self.set_jobs()
 
     def req_client(self):
 
@@ -62,5 +63,6 @@ class CommunicationManager:
 
     def set_jobs(self):
         self.scheduler.remove_all_jobs()
-        cron_trigger = CronTrigger(hour='*', minute='*/15')  # TODO set here
+        interval = self.server_settings.misc_settings[self.server_settings.REQUEST_TIME]
+        cron_trigger = CronTrigger(hour='*', minute='*/{}'.format(interval))
         self.scheduler.add_job(self.req_client, cron_trigger, id=CommunicationManager.REQUEST_ID)
