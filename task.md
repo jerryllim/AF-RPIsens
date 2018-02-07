@@ -28,8 +28,8 @@
 - [x] change listbox to treeview
 - [x] change client side message format to match machine
 - [ ] parsing json -> csv -> excel log
-- [ ] handling multiple clients
-- [ ] introducing timeout with polling for server request
+- [x] handling multiple clients
+- [x] introducing timeout with polling for server request
 
 - [x] embed updatable graphs - https://pythonprogramming.net/plotting-live-bitcoin-price-data-tkinter-matplotlib/
 - [ ] move file location -> shutil.move - https://docs.python.org/3/library/shutil.html
