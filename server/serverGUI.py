@@ -1,11 +1,11 @@
 import tkinter
 from tkinter import ttk
 from tkinter import messagebox
+from tkinter import filedialog
 import calendar
 import datetime
 from collections import namedtuple
 import server.serverDB as serverDB
-from collections import OrderedDict
 import matplotlib
 
 matplotlib.use('TkAgg')
@@ -25,7 +25,7 @@ class MainWindow(ttk.Frame):
         self.rowconfigure(0, weight=1)
         self.rowconfigure(1, weight=100)
         self.columnconfigure(0, weight=1)
-        self.database = serverDB.DatabaseManager()
+        self.database = serverDB.DatabaseManager(save)
         self.graphs = []
 
         # MenuBar
@@ -43,7 +43,10 @@ class MainWindow(ttk.Frame):
         self.top_frame.columnconfigure(2, weight=1, uniform='equalWidth')
         self.top_frame.rowconfigure(0, weight=1)
         self.top_frame.rowconfigure(1, weight=2)
-        request_label = ttk.Label(self.top_frame, text='Requesting every {} minutes'.format('15'))  # TODO variable request time
+        self.request_interval = tkinter.StringVar()
+        self.request_interval.set('Requesting every {} minutes'.format(
+            self.save.misc_settings[self.save.REQUEST_TIME]))
+        request_label = ttk.Label(self.top_frame, textvariable=self.request_interval)
         request_label.grid(row=0, column=0, sticky='w')
         request_button = ttk.Button(self.top_frame, text='Request now')  # TODO add command
         request_button.grid(row=0, column=1)
@@ -142,7 +145,7 @@ class MainWindow(ttk.Frame):
         configuration_settings = tkinter.Toplevel(self)
         configuration_settings.title('Configuration & Settings')
         configuration_settings.geometry('-200-200')
-        configuration_settings_frame = ConfigurationSettings(configuration_settings, self.save)
+        configuration_settings_frame = ConfigurationSettings(configuration_settings, self.save, self.request_interval)
         configuration_settings_frame.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
         configuration_settings_frame.grab_set()
 
@@ -556,6 +559,7 @@ class CalendarPop(tkinter.Frame):
 
 
 class ConfigurationSettings(ttk.Frame):
+
     class SaveSettings:
         def __init__(self, save):
             self.port_tv = None
@@ -564,16 +568,19 @@ class ConfigurationSettings(ttk.Frame):
             self.machine_ports = None
             self.quick_access = None
             self.shift_settings = None
-            self.misc_settings = None
+            self.request_time = tkinter.IntVar()
+            self.file_path = tkinter.StringVar()
             self.get_copies(save)
 
         def get_copies(self, save: serverDB.ServerSettings):
             self.machine_ports = save.machine_ports.copy()
             self.quick_access = save.quick_access.copy()
             self.shift_settings = save.shift_settings.copy()
-            self.misc_settings = save.misc_settings.copy()
+            misc_settings = save.misc_settings.copy()
+            self.request_time.set(misc_settings[save.REQUEST_TIME])
+            self.file_path.set(misc_settings[save.FILE_PATH])
 
-    def __init__(self, parent, save: serverDB.ServerSettings, **kwargs):
+    def __init__(self, parent, save: serverDB.ServerSettings, request_interval, **kwargs):
         ttk.Frame.__init__(self, parent, **kwargs)
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
@@ -587,9 +594,11 @@ class ConfigurationSettings(ttk.Frame):
         cancel_button.pack(side=tkinter.RIGHT)
         self.to_save = ConfigurationSettings.SaveSettings(save)
         self.save = save
+        self.request_interval = request_interval
         self.port_network_setup()
         self.quick_access_setup()
         self.shift_setup()
+        self.miscellaneous_setup()
 
         self.grab_set()
 
@@ -624,7 +633,7 @@ class ConfigurationSettings(ttk.Frame):
         # Add & Delete buttons
         button_frame = ttk.Frame(port_config_frame)
         button_frame.grid(row=0, column=2, padx=5, pady=5)
-        add_button = ttk.Button(button_frame, text='Add', command=self.launch_network_port_window)  # TODO Add command
+        add_button = ttk.Button(button_frame, text='Add', command=self.launch_network_port_window)
         add_button.pack()
         edit_button = ttk.Button(button_frame, text='Edit', command=lambda: self.launch_network_port_window(edit=True))
         edit_button.pack()
@@ -717,10 +726,28 @@ class ConfigurationSettings(ttk.Frame):
 
     def miscellaneous_setup(self):  # Miscellaneous
         # Create Frame
-        # Add Frame to Notebook
+        misc_frame = ttk.Frame(self.configuration_notebook)
+        self.configuration_notebook.add(misc_frame, text='Miscellaneous')
         # Add label & OptionMenu for Request
+        request_label = ttk.Label(misc_frame, text='Request interval: ')
+        request_label.grid(row=0, column=0, sticky='e')
+        request_list = (5, 10, 15, 20, 30)
+        minute = int(self.request_interval.get().split()[2])
+        self.to_save.request_time.set(minute)
+        request_option = ttk.OptionMenu(misc_frame, self.to_save.request_time, self.to_save.request_time.get(),
+                                        *request_list)
+        request_option.grid(row=0, column=1, sticky='w')
         # Add location to save the databases
-        pass
+        location_label = ttk.Label(misc_frame, text='Database location: ')
+        location_label.grid(row=1, column=0, sticky='e')
+        location_entry = ttk.Entry(misc_frame, textvariable=self.to_save.file_path, state=tkinter.DISABLED, width=40)
+        location_entry.grid(row=1, column=1, sticky='w')
+        dir_browser = ttk.Button(misc_frame, text=u'\u2026', command=self.launch_file_dir)
+        dir_browser.grid(row=1, column=2)
+
+    def launch_file_dir(self):
+        path = filedialog.askdirectory()
+        self.to_save.file_path.set(path)
 
     def launch_network_port_window(self, edit=False):
         iid = self.to_save.port_tv.focus()
@@ -776,11 +803,16 @@ class ConfigurationSettings(ttk.Frame):
             duration = self.save.convert_to_duration(start, end)
             self.to_save.shift_settings[name] = (start, duration.total_seconds())
 
+        misc_temp = {self.save.REQUEST_TIME: self.to_save.request_time.get(),
+                     self.save.FILE_PATH: self.to_save.file_path.get()}
+
         self.save.machine_ports = self.to_save.machine_ports
         self.save.quick_access = self.to_save.quick_access
         self.save.shift_settings = self.to_save.shift_settings
+        self.save.misc_settings = misc_temp
         self.save.save_settings()
         self.quit_parent()
+        self.request_interval.set('Requesting every {} minutes'.format(self.to_save.request_time.get()))
         self.master.master.quick_access_setup()
 
     def quit_parent(self):

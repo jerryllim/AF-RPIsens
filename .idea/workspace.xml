@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="8c4eab11-9431-48ea-8992-fef6a6e722be" name="Default" comment="">
+      <change beforePath="$PROJECT_DIR$/server/serverDB.py" afterPath="$PROJECT_DIR$/server/serverDB.py" />
       <change beforePath="$PROJECT_DIR$/server/serverGUI.py" afterPath="$PROJECT_DIR$/server/serverGUI.py" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
@@ -38,11 +39,11 @@
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="serverDB.py" pinned="false" current-in-tab="false">
+          <file leaf-file-name="serverDB.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/server/serverDB.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="132">
-                  <caret line="18" column="38" lean-forward="true" selection-start-line="18" selection-start-column="38" selection-end-line="18" selection-end-column="38" />
+                <state relative-caret-position="180">
+                  <caret line="12" column="35" lean-forward="true" selection-start-line="12" selection-start-column="35" selection-end-line="12" selection-end-column="35" />
                   <folding>
                     <element signature="e#0#11#0" expanded="true" />
                   </folding>
@@ -62,24 +63,14 @@
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="serverGUI.py" pinned="false" current-in-tab="true">
+          <file leaf-file-name="serverGUI.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="418">
-                  <caret line="94" column="32" lean-forward="false" selection-start-line="94" selection-start-column="32" selection-end-line="94" selection-end-column="32" />
+                <state relative-caret-position="82">
+                  <caret line="23" column="50" lean-forward="true" selection-start-line="23" selection-start-column="50" selection-end-line="23" selection-end-column="50" />
                   <folding>
                     <element signature="e#0#14#0" expanded="true" />
                   </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="__init__.py" pinned="false" current-in-tab="false">
-            <entry file="file:///Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/tkinter/__init__.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="184">
-                  <caret line="1698" column="0" lean-forward="false" selection-start-line="1698" selection-start-column="0" selection-end-line="1698" selection-end-column="0" />
-                  <folding />
                 </state>
               </provider>
             </entry>
@@ -88,18 +79,13 @@
       </split-first>
       <split-second>
         <leaf>
-          <file leaf-file-name="serverGUI.py" pinned="false" current-in-tab="false">
+          <file leaf-file-name="serverGUI.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="99">
-                  <caret line="644" column="51" lean-forward="true" selection-start-line="644" selection-start-column="51" selection-end-line="644" selection-end-column="51" />
+                <state relative-caret-position="5385">
+                  <caret line="359" column="21" lean-forward="true" selection-start-line="359" selection-start-column="21" selection-end-line="359" selection-end-column="21" />
                   <folding>
                     <element signature="e#0#14#0" expanded="true" />
-                    <marker date="1517904716261" expanded="true" signature="591:6906" ph="..." />
-                    <marker date="1517904716261" expanded="true" signature="3926:4216" ph="..." />
-                    <marker date="1517904716261" expanded="true" signature="6555:6906" ph="..." />
-                    <marker date="1517904716261" expanded="true" signature="36191:36627" ph="..." />
-                    <marker date="1517904716261" expanded="true" signature="36691:36983" ph="..." />
                   </folding>
                 </state>
               </provider>
@@ -108,17 +94,17 @@
           <file leaf-file-name="test_db.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/test_db.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="345">
-                  <caret line="276" column="37" lean-forward="true" selection-start-line="276" selection-start-column="37" selection-end-line="276" selection-end-column="37" />
+                <state relative-caret-position="420">
+                  <caret line="289" column="31" lean-forward="false" selection-start-line="289" selection-start-column="31" selection-end-line="289" selection-end-column="31" />
                   <folding>
                     <element signature="e#0#14#0" expanded="true" />
-                    <marker date="1517821786504" expanded="true" signature="3540:3635" ph="..." />
+                    <marker date="1517966203774" expanded="true" signature="3540:3635" ph="..." />
                   </folding>
                 </state>
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="sensorGUI.py" pinned="false" current-in-tab="true">
+          <file leaf-file-name="sensorGUI.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/sensor/sensorGUI.py">
               <provider selected="true" editor-type-id="text-editor">
                 <state relative-caret-position="182">
@@ -141,12 +127,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>duplicate</find>
-      <find>%Y</find>
-      <find>canvas</find>
-      <find>self.parent</find>
-      <find>Toplebeb</find>
-      <find>window</find>
       <find>launch_graph</find>
       <find>sensor_list</find>
       <find>plot_settings_list</find>
@@ -171,6 +151,12 @@
       <find>self.master</find>
       <find>save_con</find>
       <find>quick_access</find>
+      <find>del</find>
+      <find>Misc</find>
+      <find>optionmenu</find>
+      <find>entry</find>
+      <find>ConfigurationSe</find>
+      <find>re</find>
     </findStrings>
     <replaceStrings>
       <replace>TMessage</replace>
@@ -225,11 +211,11 @@
         <option value="$PROJECT_DIR$/sensor/sensorGlobal.py" />
         <option value="$PROJECT_DIR$/Communication/ServerView/reqrep_server.py" />
         <option value="$PROJECT_DIR$/sensor/sensorGUI.py" />
-        <option value="$PROJECT_DIR$/test_db.py" />
         <option value="$PROJECT_DIR$/server/serverCommunication.py" />
-        <option value="$PROJECT_DIR$/server/serverDB.py" />
         <option value="$PROJECT_DIR$/server/serverRUN.py" />
+        <option value="$PROJECT_DIR$/test_db.py" />
         <option value="$PROJECT_DIR$/server/serverGUI.py" />
+        <option value="$PROJECT_DIR$/server/serverDB.py" />
       </list>
     </option>
   </component>
@@ -693,7 +679,7 @@
       <window_info id="Capture Analysis" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32847533" sideWeight="0.5053918" order="8" side_tool="true" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.33744395" sideWeight="0.4946082" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33744395" sideWeight="0.4946082" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3295964" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32847533" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -760,7 +746,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="db://[test] TABLE - main.S001_Today" />
     <entry file="db://[test] TABLE - main.S001_Today" />
     <entry file="db://[test] TABLE - main.S001_Today" />
     <entry file="db://[test] TABLE - main.S001_Today" />
@@ -900,17 +885,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test_db.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="345">
-          <caret line="276" column="37" lean-forward="true" selection-start-line="276" selection-start-column="37" selection-end-line="276" selection-end-column="37" />
-          <folding>
-            <element signature="e#0#14#0" expanded="true" />
-            <marker date="1517821786504" expanded="true" signature="3540:3635" ph="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/server/serverCommunication.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="120">
@@ -949,16 +923,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/server/serverDB.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="132">
-          <caret line="18" column="38" lean-forward="true" selection-start-line="18" selection-start-column="38" selection-end-line="18" selection-end-column="38" />
-          <folding>
-            <element signature="e#0#11#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file:///Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/tkinter/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="184">
@@ -975,12 +939,41 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
+    <entry file="file:///Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/ntpath.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="418">
-          <caret line="94" column="32" lean-forward="false" selection-start-line="94" selection-start-column="32" selection-end-line="94" selection-end-column="32" />
+        <state relative-caret-position="-283">
+          <caret line="73" column="4" lean-forward="false" selection-start-line="73" selection-start-column="4" selection-end-line="73" selection-end-column="4" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test_db.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="420">
+          <caret line="289" column="31" lean-forward="false" selection-start-line="289" selection-start-column="31" selection-end-line="289" selection-end-column="31" />
           <folding>
             <element signature="e#0#14#0" expanded="true" />
+            <marker date="1517966203774" expanded="true" signature="3540:3635" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="82">
+          <caret line="23" column="50" lean-forward="true" selection-start-line="23" selection-start-column="50" selection-end-line="23" selection-end-column="50" />
+          <folding>
+            <element signature="e#0#14#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/serverDB.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="180">
+          <caret line="12" column="35" lean-forward="true" selection-start-line="12" selection-start-column="35" selection-end-line="12" selection-end-column="35" />
+          <folding>
+            <element signature="e#0#11#0" expanded="true" />
           </folding>
         </state>
       </provider>

@@ -2,6 +2,7 @@ import json
 import logging
 import sqlite3
 import datetime
+import os
 from collections import OrderedDict
 
 
@@ -10,6 +11,8 @@ class ServerSettings:
     QUICK_ACCESS = 'quick_access'
     SHIFT_SETTINGS = 'shift_settings'
     MISC_SETTINGS = 'misc_settings'
+    REQUEST_TIME = 'request_time'
+    FILE_PATH = 'file_path'
 
     def __init__(self, filename='server_settings.json'):
         self.filename = filename
@@ -61,12 +64,13 @@ class ServerSettings:
 
 
 class DatabaseManager:
-    def __init__(self, database_name='afRPIsens.sqlite'):
-        self.database_name = database_name
+    def __init__(self, save: ServerSettings):
+        self.save = save
+        self.path = self.save.misc_settings[self.save.FILE_PATH]
 
-    @staticmethod
-    def get_table_names(database):
-        db = sqlite3.connect(database, detect_types=sqlite3.PARSE_DECLTYPES)
+    def get_table_names(self, database):
+        full_path = os.path.join(self.path, database)
+        db = sqlite3.connect(full_path, detect_types=sqlite3.PARSE_DECLTYPES)
         cursor = db.cursor()
         cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
         tables = []
@@ -75,29 +79,29 @@ class DatabaseManager:
 
         return tables
 
-    @staticmethod
-    def create_table(table_name, database):
-        db = sqlite3.connect(database, detect_types=sqlite3.PARSE_DECLTYPES)
+    def create_table(self, table_name, database):
+        full_path = os.path.join(self.path, database)
+        db = sqlite3.connect(full_path, detect_types=sqlite3.PARSE_DECLTYPES)
         try:
             db.execute("DROP TABLE IF EXISTS {}".format(table_name))
             db.execute("CREATE TABLE IF NOT EXISTS {} (time TIMESTAMP PRIMARY KEY NOT NULL, quantity INTEGER NOT NULL)"
                        .format(table_name))
-        except Exception as e:
+        except Exception:
             db.rollback()
         finally:
             db.close()
 
-    @staticmethod
-    def insert_into_table(table_name, timestamp, quantity, database):
+    def insert_into_table(self, table_name, timestamp, quantity, database):
+        full_path = os.path.join(self.path, database)
         # Establish connection and create table if not exists
-        db = sqlite3.connect(database, detect_types=sqlite3.PARSE_DECLTYPES)
+        db = sqlite3.connect(full_path, detect_types=sqlite3.PARSE_DECLTYPES)
         db.execute("CREATE TABLE IF NOT EXISTS {} (time TIMESTAMP PRIMARY KEY NOT NULL, quantity INTEGER NOT NULL)"
                    .format(table_name))
         # Check if exist same timestamp for machine
         cursor = db.cursor()
         cursor.execute("SELECT * from {} WHERE time=datetime(?)", (timestamp,))
         query = cursor.fetchone()
-        if query:  # TODO to test
+        if query:
             _timestamp, count = query
             quantity = quantity + count
             cursor.execute("UPDATE {} SET quantity = ? WHERE time = ?", (quantity, timestamp))
@@ -106,15 +110,14 @@ class DatabaseManager:
         db.commit()
         db.close()
 
-    @staticmethod
-    def insert_to_database(table_name, timestamp, quantity):
+    def insert_to_database(self, table_name, timestamp, quantity):
         date = datetime.datetime.strptime(timestamp, '%Y-%m-%d %H:%M')
         database_name = date.strftime('%m_%B_%Y.sqlite')
-        DatabaseManager.insert_into_table(table_name, timestamp, quantity, database_name)
+        self.insert_into_table(table_name, timestamp, quantity, database_name)
 
-    @staticmethod
-    def sum_from_table(table_name, from_timestamp, to_timestamp, database, option='include'):
-        db = sqlite3.connect(database, detect_types=sqlite3.PARSE_DECLTYPES)
+    def sum_from_table(self, table_name, from_timestamp, to_timestamp, database, option='include'):
+        full_path = os.path.join(self.path, database)
+        db = sqlite3.connect(full_path, detect_types=sqlite3.PARSE_DECLTYPES)
         cursor = db.cursor()
         try:
             if option == 'exclude':
@@ -129,8 +132,7 @@ class DatabaseManager:
 
         return summation
 
-    @staticmethod
-    def get_sums(machine, start, end, mode):
+    def get_sums(self, machine, start, end, mode):
         """
         Returns lists from database, Hourly and Minutely is 'end' exclusive but Daily is 'end' inclusive.
         :param machine:
@@ -156,16 +158,16 @@ class DatabaseManager:
 
         while next_date < end:  # Loop till next_date is larger than or equal to end_date
             database = check_date.strftime('%m_%B_%Y.sqlite')
-            summation = DatabaseManager.sum_from_table(machine, check_date.strftime('%Y-%m-%d %H:%M'),
-                                                       next_date.strftime('%Y-%m-%d %H:%M'), database, option='exclude')
+            summation = self.sum_from_table(machine, check_date.strftime('%Y-%m-%d %H:%M'),
+                                            next_date.strftime('%Y-%m-%d %H:%M'), database, option='exclude')
             date_list.append(check_date)
             count_list.append(summation)
             check_date = next_date
             next_date = next_date + time_diff
         # Check for the last time for between check_date and end_date
         database = check_date.strftime('%m_%B_%Y.sqlite')
-        summation = DatabaseManager.sum_from_table(machine, check_date.strftime('%Y-%m-%d %H:%M'),
-                                                   end.strftime('%Y-%m-%d %H:%M'), database, option='exclude')
+        summation = self.sum_from_table(machine, check_date.strftime('%Y-%m-%d %H:%M'),
+                                        end.strftime('%Y-%m-%d %H:%M'), database, option='exclude')
         date_list.append(check_date)
         count_list.append(summation)
 
