@@ -2,9 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="8c4eab11-9431-48ea-8992-fef6a6e722be" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/server/serverCommunication.py" afterPath="$PROJECT_DIR$/server/serverCommunication.py" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change beforePath="$PROJECT_DIR$/sensor/sensorGUI.py" afterPath="$PROJECT_DIR$/sensor/sensorGUI.py" />
       <change beforePath="$PROJECT_DIR$/server/serverGUI.py" afterPath="$PROJECT_DIR$/server/serverGUI.py" />
-      <change beforePath="$PROJECT_DIR$/server/serverRUN.py" afterPath="$PROJECT_DIR$/server/serverRUN.py" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -43,7 +43,7 @@
           <file leaf-file-name="serverDB.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/server/serverDB.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="525">
+                <state relative-caret-position="-303">
                   <caret line="35" column="27" lean-forward="false" selection-start-line="35" selection-start-column="27" selection-end-line="35" selection-end-column="27" />
                   <folding>
                     <element signature="e#0#11#0" expanded="true" />
@@ -64,24 +64,34 @@
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="serverRUN.py" pinned="false" current-in-tab="true">
+          <file leaf-file-name="serverRUN.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/server/serverRUN.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="300">
-                  <caret line="23" column="17" lean-forward="true" selection-start-line="23" selection-start-column="17" selection-end-line="23" selection-end-column="17" />
+                <state relative-caret-position="90">
+                  <caret line="9" column="49" lean-forward="true" selection-start-line="9" selection-start-column="49" selection-end-line="9" selection-end-column="49" />
                   <folding />
                 </state>
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="serverGUI.py" pinned="false" current-in-tab="false">
+          <file leaf-file-name="serverGUI.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="5897">
-                  <caret line="406" column="46" lean-forward="true" selection-start-line="406" selection-start-column="46" selection-end-line="406" selection-end-column="46" />
+                <state relative-caret-position="359">
+                  <caret line="705" column="30" lean-forward="true" selection-start-line="705" selection-start-column="30" selection-end-line="705" selection-end-column="30" />
                   <folding>
                     <element signature="e#0#14#0" expanded="true" />
                   </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="test_matplotlib.py" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/test_matplotlib.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="395">
+                  <caret line="28" column="22" lean-forward="true" selection-start-line="28" selection-start-column="22" selection-end-line="29" selection-end-column="36" />
+                  <folding />
                 </state>
               </provider>
             </entry>
@@ -90,13 +100,14 @@
       </split-first>
       <split-second>
         <leaf>
-          <file leaf-file-name="serverGUI.py" pinned="false" current-in-tab="true">
+          <file leaf-file-name="serverGUI.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="178">
-                  <caret line="210" column="0" lean-forward="false" selection-start-line="210" selection-start-column="0" selection-end-line="210" selection-end-column="0" />
+                <state relative-caret-position="238">
+                  <caret line="216" column="30" lean-forward="true" selection-start-line="216" selection-start-column="30" selection-end-line="216" selection-end-column="30" />
                   <folding>
                     <element signature="e#0#14#0" expanded="true" />
+                    <marker date="1518054392506" expanded="true" signature="676:2645" ph="..." />
                   </folding>
                 </state>
               </provider>
@@ -105,8 +116,8 @@
           <file leaf-file-name="test_db.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/test_db.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="420">
-                  <caret line="289" column="31" lean-forward="false" selection-start-line="289" selection-start-column="31" selection-end-line="289" selection-end-column="31" />
+                <state relative-caret-position="669">
+                  <caret line="264" column="0" lean-forward="true" selection-start-line="264" selection-start-column="0" selection-end-line="264" selection-end-column="0" />
                   <folding>
                     <element signature="e#0#14#0" expanded="true" />
                     <marker date="1517966203774" expanded="true" signature="3540:3635" ph="..." />
@@ -115,11 +126,11 @@
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="sensorGUI.py" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/sensor/sensorGUI.py">
+          <file leaf-file-name="test_matplotlib_server.py" pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/test_matplotlib_server.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="182">
-                  <caret line="212" column="41" lean-forward="false" selection-start-line="212" selection-start-column="41" selection-end-line="212" selection-end-column="41" />
+                <state relative-caret-position="396">
+                  <caret line="134" column="0" lean-forward="true" selection-start-line="134" selection-start-column="0" selection-end-line="134" selection-end-column="0" />
                   <folding />
                 </state>
               </provider>
@@ -138,10 +149,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>shift_sett</find>
-      <find>save_s</find>
-      <find>plotsetting</find>
-      <find>graphdetail</find>
       <find>calendar_pop</find>
       <find>configuration_se</find>
       <find>print</find>
@@ -154,8 +161,6 @@
       <find>configurationS</find>
       <find>self.master</find>
       <find>save_con</find>
-      <find>quick_access</find>
-      <find>del</find>
       <find>Misc</find>
       <find>optionmenu</find>
       <find>entry</find>
@@ -168,6 +173,12 @@
       <find>plot_new</find>
       <find>SettingsPage</find>
       <find>insert</find>
+      <find>plotsetting</find>
+      <find>misc_fra</find>
+      <find>save_co</find>
+      <find>del</find>
+      <find>quick_access</find>
+      <find>to_save</find>
     </findStrings>
     <replaceStrings>
       <replace>TMessage</replace>
@@ -205,7 +216,6 @@
         <option value="$PROJECT_DIR$/sensor/settings.json" />
         <option value="$PROJECT_DIR$/test_pigpio.py" />
         <option value="$PROJECT_DIR$/macRunScript.py" />
-        <option value="$PROJECT_DIR$/test_matplotlib.py" />
         <option value="/Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/site-packages/PyInstaller/hooks/hook-_tkinter.py" />
         <option value="/Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/site-packages/PyInstaller/loader/rthooks/pyi_rth__tkinter.py" />
         <option value="$PROJECT_DIR$/test_scrollframe.py" />
@@ -216,24 +226,25 @@
         <option value="$PROJECT_DIR$/test_apscheduler.py" />
         <option value="$PROJECT_DIR$/runScript.py" />
         <option value="$PROJECT_DIR$/sensor/sensorReading.py" />
-        <option value="$PROJECT_DIR$/test_matplotlib_server.py" />
         <option value="$PROJECT_DIR$/server/serverMain.py" />
         <option value="$PROJECT_DIR$/serverMain.py" />
         <option value="$PROJECT_DIR$/sensor/sensorGlobal.py" />
         <option value="$PROJECT_DIR$/Communication/ServerView/reqrep_server.py" />
-        <option value="$PROJECT_DIR$/sensor/sensorGUI.py" />
         <option value="$PROJECT_DIR$/test_db.py" />
         <option value="$PROJECT_DIR$/server_settings.json" />
         <option value="$PROJECT_DIR$/server/serverDB.py" />
-        <option value="$PROJECT_DIR$/server/serverGUI.py" />
         <option value="$PROJECT_DIR$/server/serverCommunication.py" />
         <option value="$PROJECT_DIR$/server/serverRUN.py" />
+        <option value="$PROJECT_DIR$/test_matplotlib.py" />
+        <option value="$PROJECT_DIR$/test_matplotlib_server.py" />
+        <option value="$PROJECT_DIR$/sensor/sensorGUI.py" />
+        <option value="$PROJECT_DIR$/server/serverGUI.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="185" />
-    <option name="y" value="23" />
+    <option name="x" value="253" />
+    <option name="y" value="30" />
     <option name="width" value="1391" />
     <option name="height" value="987" />
   </component>
@@ -330,7 +341,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.serverRUN">
+  <component name="RunManager" selected="Python.matplotlib_server">
     <configuration default="true" type="Applet" factoryName="Applet">
       <option name="HTML_USED" value="false" />
       <option name="WIDTH" value="400" />
@@ -456,24 +467,6 @@
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
     </configuration>
-    <configuration name="sensorReading" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/sensor" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <module name="afRPIsens" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/sensor/sensorReading.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-    </configuration>
     <configuration name="serverRUN" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -492,7 +485,7 @@
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
     </configuration>
-    <configuration name="test_db" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="test_matplotlib" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -504,7 +497,25 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="afRPIsens" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/test_db.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/test_matplotlib.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+    </configuration>
+    <configuration name="test_matplotlib_server" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="afRPIsens" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/test_matplotlib_server.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -639,18 +650,18 @@
     </configuration>
     <list size="5">
       <item index="0" class="java.lang.String" itemvalue="Python.matplotlib_server" />
-      <item index="1" class="java.lang.String" itemvalue="Python.test_db" />
-      <item index="2" class="java.lang.String" itemvalue="Python.sensorReading" />
-      <item index="3" class="java.lang.String" itemvalue="Python.macRunScript" />
-      <item index="4" class="java.lang.String" itemvalue="Python.serverRUN" />
+      <item index="1" class="java.lang.String" itemvalue="Python.serverRUN" />
+      <item index="2" class="java.lang.String" itemvalue="Python.test_matplotlib" />
+      <item index="3" class="java.lang.String" itemvalue="Python.test_matplotlib_server" />
+      <item index="4" class="java.lang.String" itemvalue="Python.macRunScript" />
     </list>
     <recent_temporary>
       <list size="5">
-        <item index="0" class="java.lang.String" itemvalue="Python.serverRUN" />
-        <item index="1" class="java.lang.String" itemvalue="Python.matplotlib_server" />
-        <item index="2" class="java.lang.String" itemvalue="Python.test_db" />
-        <item index="3" class="java.lang.String" itemvalue="Python.macRunScript" />
-        <item index="4" class="java.lang.String" itemvalue="Python.sensorReading" />
+        <item index="0" class="java.lang.String" itemvalue="Python.matplotlib_server" />
+        <item index="1" class="java.lang.String" itemvalue="Python.macRunScript" />
+        <item index="2" class="java.lang.String" itemvalue="Python.test_matplotlib_server" />
+        <item index="3" class="java.lang.String" itemvalue="Python.test_matplotlib" />
+        <item index="4" class="java.lang.String" itemvalue="Python.serverRUN" />
       </list>
     </recent_temporary>
   </component>
@@ -680,7 +691,7 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="185" y="23" width="1391" height="987" extended-state="0" />
+    <frame x="253" y="30" width="1391" height="987" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
@@ -697,7 +708,7 @@
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32847533" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.25722757" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25722757" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.30044842" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -759,37 +770,10 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="db://[test] TABLE - main.S001_Today" />
-    <entry file="db://[test] TABLE - main.S001_Today" />
-    <entry file="file:///Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/tkinter/constants.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-851">
-          <caret line="10" column="0" lean-forward="false" selection-start-line="10" selection-start-column="0" selection-end-line="10" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/Downloads/ttkcalendar.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1">
           <caret line="149" column="65" lean-forward="false" selection-start-line="149" selection-start-column="65" selection-end-line="149" selection-end-column="65" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test_matplotlib_server.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="374">
-          <caret line="42" column="90" lean-forward="true" selection-start-line="42" selection-start-column="37" selection-end-line="42" selection-end-column="90" />
-          <folding>
-            <element signature="e#0#14#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/macRunScript.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="90">
-          <caret line="6" column="0" lean-forward="true" selection-start-line="6" selection-start-column="0" selection-end-line="6" selection-end-column="0" />
         </state>
       </provider>
     </entry>
@@ -913,14 +897,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sensor/sensorGUI.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="182">
-          <caret line="212" column="41" lean-forward="false" selection-start-line="212" selection-start-column="41" selection-end-line="212" selection-end-column="41" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file:///Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/ntpath.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-283">
@@ -929,32 +905,11 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test_db.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="420">
-          <caret line="289" column="31" lean-forward="false" selection-start-line="289" selection-start-column="31" selection-end-line="289" selection-end-column="31" />
-          <folding>
-            <element signature="e#0#14#0" expanded="true" />
-            <marker date="1517966203774" expanded="true" signature="3540:3635" ph="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/server_settings.json">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="498" lean-forward="false" selection-start-line="0" selection-start-column="498" selection-end-line="0" selection-end-column="498" />
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="5897">
-          <caret line="406" column="46" lean-forward="true" selection-start-line="406" selection-start-column="46" selection-end-line="406" selection-end-column="46" />
-          <folding>
-            <element signature="e#0#14#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -980,7 +935,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/server/serverDB.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="525">
+        <state relative-caret-position="-303">
           <caret line="35" column="27" lean-forward="false" selection-start-line="35" selection-start-column="27" selection-end-line="35" selection-end-column="27" />
           <folding>
             <element signature="e#0#11#0" expanded="true" />
@@ -988,11 +943,80 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/test_db.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="669">
+          <caret line="264" column="0" lean-forward="true" selection-start-line="264" selection-start-column="0" selection-end-line="264" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#14#0" expanded="true" />
+            <marker date="1517966203774" expanded="true" signature="3540:3635" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/string.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="279">
+          <caret line="25" column="0" lean-forward="false" selection-start-line="25" selection-start-column="0" selection-end-line="25" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/site-packages/matplotlib/axes/_axes.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="179">
+          <caret line="1818" column="8" lean-forward="false" selection-start-line="1818" selection-start-column="8" selection-end-line="1818" selection-end-column="8" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test_matplotlib.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="395">
+          <caret line="28" column="22" lean-forward="true" selection-start-line="28" selection-start-column="22" selection-end-line="29" selection-end-column="36" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/server/serverRUN.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="300">
-          <caret line="23" column="17" lean-forward="true" selection-start-line="23" selection-start-column="17" selection-end-line="23" selection-end-column="17" />
+        <state relative-caret-position="90">
+          <caret line="9" column="49" lean-forward="true" selection-start-line="9" selection-start-column="49" selection-end-line="9" selection-end-column="49" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/macRunScript.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="75">
+          <caret line="6" column="0" lean-forward="true" selection-start-line="6" selection-start-column="0" selection-end-line="6" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sensor/sensorGUI.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="398">
+          <caret line="474" column="0" lean-forward="false" selection-start-line="474" selection-start-column="0" selection-end-line="474" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test_matplotlib_server.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="396">
+          <caret line="134" column="0" lean-forward="true" selection-start-line="134" selection-start-column="0" selection-end-line="134" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="359">
+          <caret line="705" column="30" lean-forward="true" selection-start-line="705" selection-start-column="30" selection-end-line="705" selection-end-column="30" />
+          <folding>
+            <element signature="e#0#14#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

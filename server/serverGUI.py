@@ -60,6 +60,7 @@ class MainWindow(ttk.Frame):
         self.view_notebook.grid(row=1, column=0, sticky='nsew')
         self.populate_graph_treeview()
         self.plot_graph_add_treeview()
+        # TODO apschduler to refresh/animate the live graphs
 
     def quick_access_setup(self):  # TODO
         if self.quick_frame is not None:
@@ -142,6 +143,7 @@ class MainWindow(ttk.Frame):
         return date_time.strftime('Hour %H:00'), start_date, end_date
 
     def launch_settings(self):
+        # TODO lift configuration_settings
         configuration_settings = tkinter.Toplevel(self)
         configuration_settings.title('Configuration & Settings')
         configuration_settings.geometry('-200-200')
@@ -327,6 +329,7 @@ class GraphDetailSettingsPage(ttk.Frame):
         self.detail2_var = tkinter.StringVar()
         self.set_mutable_frame()
         # Current & Add Buttons
+        # TODO add previous button
         current_add_frame = ttk.Frame(self)
         current_add_frame.grid(row=3, column=0, padx=5, pady=5, sticky='nsew')
         add_button = ttk.Button(current_add_frame, text='Add', command=self.add_plot_settings)
@@ -451,7 +454,7 @@ class GraphDetailSettingsPage(ttk.Frame):
         _iid = self.quick_tv.insert('', tkinter.END, values=(self.quick_entry.get(), ), tag=('top', ), open=True)
         for (machine, mode, detail) in self.plot_settings_list:
             details = ' - '.join(detail)
-            self.quick_tv.insert(_iid, tkinter.END, values=(machine, mode, details))
+            self.quick_tv.insert(_iid, tkinter.END, text=machine, values=(mode, details))
 
         self.quit_parent()
 
@@ -684,20 +687,20 @@ class ConfigurationSettings(ttk.Frame):
         quick_tv_v_scroll = ttk.Scrollbar(quick_tv_frame, orient='vertical', command=self.to_save.quick_tv.yview)
         quick_tv_v_scroll.grid(row=0, column=1, sticky='nsw')
         self.to_save.quick_tv.configure(yscrollcommand=quick_tv_v_scroll.set)
-        self.to_save.quick_tv['show'] = 'headings'
-        self.to_save.quick_tv['column'] = ('machine', 'mode', 'detail')
-        self.to_save.quick_tv.heading('machine', text='Machine')
+        # self.to_save.quick_tv['show'] = 'headings'
+        self.to_save.quick_tv['column'] = ('mode', 'detail')
+        self.to_save.quick_tv.heading('#0', text='Machine')
         self.to_save.quick_tv.heading('mode', text='Mode')
         self.to_save.quick_tv.heading('detail', text='Details')
-        self.to_save.quick_tv.column('machine', width=150)
+        self.to_save.quick_tv.column('#0', width=150)
         self.to_save.quick_tv.column('mode', width=50)
         self.to_save.quick_tv.column('detail', width=200)
         # Populate quick_tv here
         for key, setting_list in self.to_save.quick_access.items():
-            _iid = self.to_save.quick_tv.insert('', tkinter.END, values=(key,), tag=('top', ), open=True)
+            _iid = self.to_save.quick_tv.insert('', tkinter.END, text=key, tag=('top', ), open=True)
             for (machine, mode, detail) in setting_list:
-                details = ' - '.join(detail)
-                self.to_save.quick_tv.insert(_iid, tkinter.END, values=(machine, mode, details))
+                details = ' \u27A1 '.join(detail)
+                self.to_save.quick_tv.insert(_iid, tkinter.END, text=machine, values=(mode, details))
 
         self.to_save.quick_tv.tag_configure('top', font=('Helvetica', 15, 'bold'))
         # Add & Delete buttons
@@ -841,6 +844,7 @@ class ConfigurationSettings(ttk.Frame):
         self.save.save_settings()
         self.quit_parent()
         self.request_interval.set('Requesting every {} minutes'.format(self.to_save.request_time.get()))
+        # TODO reset apscheduler for job
         self.master.master.quick_access_setup()
 
     def quit_parent(self):

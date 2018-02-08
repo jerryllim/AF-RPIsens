@@ -472,5 +472,4 @@ class MainGUI:
 
     def quit_and_destroy(self, _event=None):
         self.logger.info('Closing the main window!\n\n')
-        self.mainWindow.quit_parent()
         self.mainWindow.destroy()
