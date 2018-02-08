@@ -190,14 +190,17 @@ class NotebookView(ttk.Notebook):
         self.treeview.configure(yscrollcommand=treeview_v_scroll.set)
 
         if self.data is not None and self.save is not None:
-            if len(self.data) < NotebookView.NUM_COL:
+            if len(self.data) < self.num_col:
                 self.num_col = 1
             self.graph_treeview_populate(self.data)
 
     def graph_treeview_populate(self, data):
         for column in range(self.num_col):
             self.graph_scrollable_frame.get_interior_frame().columnconfigure(column, weight=1)
+
+        data_keys = data.keys()
         for index in range(len(data)):
+
             machine, title, date_list, date_format, count_list = self.get_data_from_database(data[index], self.save)
             row = index//self.num_col
             col = index % self.num_col
@@ -215,8 +218,15 @@ class NotebookView(ttk.Notebook):
             detail1 = detail2 - datetime.timedelta(days=6)
             detail2 = detail2.strftime('%Y-%m-%d')
             detail1 = detail1.strftime('%Y-%m-%d')
+        elif detail2 == 'Previous day':
+            detail2 = datetime.datetime.now() - datetime.timedelta(days=1)
+            detail1 = detail2 - datetime.timedelta(days=6)
+            detail2 = detail2.strftime('%Y-%m-%d')
+            detail1 = detail1.strftime('%Y-%m-%d')
         elif detail1 == 'Current day':
             detail1 = datetime.datetime.now().strftime('%Y-%m-%d')
+        elif detail1 == 'Previous day':
+            detail1 = (datetime.datetime.now() - datetime.timedelta(days=1)).strftime('%Y-%m-%d')
 
         date_format = '%H:%M'
         if mode == 'Daily':
@@ -256,6 +266,7 @@ class GraphDetailView(ttk.Frame):
         view_notebook.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
 
 
+# TODO remove?
 class SettingsFrame(tkinter.Frame):
     LABEL_NAMES = ['Machine: ', 'Mode: ', 'Detail: ']
 
@@ -285,13 +296,13 @@ class GraphDetailSettingsPage(ttk.Frame):
         self.save = save
         self.database = database
         ttk.Frame.__init__(self, parent, **kwargs)
-        self.plot_settings_list = []
-        self.rowconfigure(1, weight=1)
-        self.rowconfigure(2, weight=1)
+        self.plot_settings = []
         self.rowconfigure(4, weight=1)
         self.columnconfigure(0, weight=1)
         self.quick_tv = quick_tv
         self.label_width = 8
+        self.widgets1 = []
+        self.widgets2 = []
         # Quick Access Button Name
         if self.quick_tv:
             name_validation = self.register(GraphDetailSettingsPage.validate_name)
@@ -307,38 +318,65 @@ class GraphDetailSettingsPage(ttk.Frame):
         choice_frame = ttk.Frame(self)
         choice_frame.grid(row=1, column=0, sticky='nsew', padx=5, pady=5)
         choice_frame.columnconfigure(1, weight=1)
+        # Graph Name
+        graph_label = ttk.Label(choice_frame, text='Graph: ', width=self.label_width)
+        graph_label.grid(row=0, column=0, sticky='e')
+        self.graph_var = tkinter.StringVar()
+        graph_validation = self.register(self.validate_graph_name)
+        self.graph_combo = ttk.Combobox(choice_frame, textvariable=self.graph_var, postcommand=self.set_graph_values,
+                                        validate='focus', validatecommand=(graph_validation, '%P', '%V'))
+        self.graph_combo.grid(row=0, column=1, sticky='w')
         sensor_label = ttk.Label(choice_frame, text='Sensor: ', width=self.label_width)
-        sensor_label.grid(row=0, column=0, sticky='e')
+        sensor_label.grid(row=1, column=0, sticky='e')
         self.sensor_var = tkinter.StringVar()
         database_name = datetime.datetime.now().strftime('%m_%B_%Y.sqlite')
         sensor_list = self.database.get_table_names(database_name)
         self.sensor_var.set(sensor_list[0])
         sensor_option = ttk.OptionMenu(choice_frame, self.sensor_var, self.sensor_var.get(), *sensor_list)
-        sensor_option.grid(row=0, column=1, sticky='w')
+        sensor_option.grid(row=1, column=1, sticky='w')
         mode_label = ttk.Label(choice_frame, text='Mode: ', width=self.label_width)
-        mode_label.grid(row=1, column=0, sticky='e')
+        mode_label.grid(row=2, column=0, sticky='e')
         mode_list = ['Daily', 'Hourly', 'Minutely']
         self.mode_var = tkinter.StringVar()
         self.mode_var.set(mode_list[0])
         mode_menu = ttk.OptionMenu(choice_frame, self.mode_var, self.mode_var.get(), *mode_list,
                                    command=self.set_mutable_frame)
-        mode_menu.grid(row=1, column=1, sticky='ew')
+        mode_menu.grid(row=2, column=1, sticky='ew')
+        self.widgets1.append(mode_menu)
         # Mutable options
         self.mutable_frame = None
         self.detail1_var = tkinter.StringVar()
         self.detail2_var = tkinter.StringVar()
         self.set_mutable_frame()
         # Current & Add Buttons
-        # TODO add previous button
         current_add_frame = ttk.Frame(self)
         current_add_frame.grid(row=3, column=0, padx=5, pady=5, sticky='nsew')
         add_button = ttk.Button(current_add_frame, text='Add', command=self.add_plot_settings)
         add_button.pack(side=tkinter.RIGHT)
-        self.current_button = ttk.Button(current_add_frame, text='Current', command=self.current_pressed)
-        self.current_button.pack(side=tkinter.RIGHT, padx=(5, 20))
+        current_button = ttk.Button(current_add_frame, text='Current', command=self.current_pressed)
+        current_button.pack(side=tkinter.RIGHT, padx=(5, 20))
+        self.widgets1.append(current_button)
+        prev_button = ttk.Button(current_add_frame, text='Previous', command=self.previous_pressed)  # TODO add command
+        prev_button.pack(side=tkinter.RIGHT)
+        self.widgets1.append(prev_button)
         # Graphs setting
-        self.data_frame = None
-        self.set_data_frame()
+        data_frame = ttk.Frame(self)
+        data_frame.grid(row=4, column=0, sticky='nsew', padx=5, pady=5)
+        data_frame.columnconfigure(0, weight=1)
+        data_frame.rowconfigure(0, weight=1)
+        self.data_treeview = ttk.Treeview(data_frame)
+        self.data_treeview.grid(row=0, column=0, sticky='nsew')
+        # Scroll for Treeview
+        data_tv_v_scroll = ttk.Scrollbar(data_frame, orient='vertical', command=self.data_treeview.yview)
+        data_tv_v_scroll.grid(row=0, column=1, sticky='nsw')
+        self.data_treeview.configure(yscrollcommand=data_tv_v_scroll.set)
+        self.data_treeview['column'] = ('mode', 'detail')
+        self.data_treeview.heading('#0', text='Machine')
+        self.data_treeview.heading('mode', text='Mode')
+        self.data_treeview.heading('detail', text='Details')
+        self.data_treeview.column('#0', width=150)
+        self.data_treeview.column('mode', width=50)
+        self.data_treeview.column('detail', width=200)
         # Okay & Cancel Buttons
         button_frame = ttk.Frame(self)
         button_frame.grid(row=5, column=0, sticky='nsew', padx=5, pady=5)
@@ -360,49 +398,56 @@ class GraphDetailSettingsPage(ttk.Frame):
         self.mutable_frame.columnconfigure(2, weight=1)
         self.detail1_var.set('')
         self.detail2_var.set('')
+        self.widgets2.clear()
         if self.mode_var.get() == 'Daily':
             from_label = ttk.Label(self.mutable_frame, text='From: ', width=self.label_width)
             from_label.grid(row=0, column=0, sticky='e')
-            from_entry = ttk.Entry(self.mutable_frame, textvariable=self.detail1_var, state=tkinter.DISABLED, width=10)
+            from_entry = ttk.Entry(self.mutable_frame, textvariable=self.detail1_var, state=tkinter.DISABLED)
             from_entry.grid(row=0, column=1, sticky='w')
             from_calendar = ttk.Button(self.mutable_frame, text=u'\u2380',
                                        command=lambda: self.launch_calendar(self.detail1_var))
             from_calendar.grid(row=0, column=2, sticky='w')
+            self.widgets2.append(from_calendar)
             to_label = ttk.Label(self.mutable_frame, text='To: ', width=self.label_width)
             to_label.grid(row=1, column=0, sticky='e')
-            to_entry = ttk.Entry(self.mutable_frame, textvariable=self.detail2_var, state=tkinter.DISABLED, width=10)
+            to_entry = ttk.Entry(self.mutable_frame, textvariable=self.detail2_var, state=tkinter.DISABLED)
             to_entry.grid(row=1, column=1, sticky='w')
             to_calendar = ttk.Button(self.mutable_frame, text=u'\u2380',
                                      command=lambda: self.launch_calendar(self.detail2_var))
             to_calendar.grid(row=1, column=2, sticky='w')
+            self.widgets2.append(to_calendar)
         elif self.mode_var.get() == 'Hourly':
             date_label = ttk.Label(self.mutable_frame, text='Date: ', width=self.label_width)
             date_label.grid(row=0, column=0, sticky='e')
-            date_entry = ttk.Entry(self.mutable_frame, textvariable=self.detail1_var, state=tkinter.DISABLED, width=10)
+            date_entry = ttk.Entry(self.mutable_frame, textvariable=self.detail1_var, state=tkinter.DISABLED)
             date_entry.grid(row=0, column=1, sticky='w')
             date_calendar = ttk.Button(self.mutable_frame, text=u'\u2380',
                                        command=lambda: self.launch_calendar(self.detail1_var))
             date_calendar.grid(row=0, column=2, sticky='w')
+            self.widgets2.append(date_calendar)
             shift_label = ttk.Label(self.mutable_frame, text='Shift: ', width=self.label_width)
             shift_label.grid(row=1, column=0, sticky='e')
             shift_list = list(self.save.shift_settings.keys())
             self.detail2_var.set(shift_list[0])
             shift_option = ttk.OptionMenu(self.mutable_frame, self.detail2_var, self.detail2_var.get(), *shift_list)
             shift_option.grid(row=1, column=1, sticky='w')
+            self.widgets2.append(shift_option)
         elif self.mode_var.get() == 'Minutely':
             date_label = ttk.Label(self.mutable_frame, text='Date: ', width=self.label_width)
             date_label.grid(row=0, column=0, sticky='e')
-            date_entry = ttk.Entry(self.mutable_frame, textvariable=self.detail1_var, state=tkinter.DISABLED, width=10)
+            date_entry = ttk.Entry(self.mutable_frame, textvariable=self.detail1_var, state=tkinter.DISABLED)
             date_entry.grid(row=0, column=1, sticky='w')
             date_calendar = ttk.Button(self.mutable_frame, text=u'\u2380',
                                        command=lambda: self.launch_calendar(self.detail1_var))
             date_calendar.grid(row=0, column=2, sticky='w')
+            self.widgets2.append(date_calendar)
             hour_label = ttk.Label(self.mutable_frame, text='Hour: ', width=self.label_width)
             hour_label.grid(row=1, column=0, sticky='e')
             hour_list = [('{}:00'.format(str(i).zfill(2))) for i in range(24)]
             self.detail2_var.set(hour_list[0])
             hour_option = ttk.OptionMenu(self.mutable_frame, self.detail2_var, self.detail2_var.get(), *hour_list)
             hour_option.grid(row=1, column=1, sticky='w')
+            self.widgets2.append(hour_option)
 
     def current_pressed(self):
         if self.mode_var.get() == 'Daily':
@@ -413,14 +458,14 @@ class GraphDetailSettingsPage(ttk.Frame):
         elif self.mode_var.get() == 'Minutely':
             self.detail1_var.set('Current day')
 
-    def set_data_frame(self):
-        if self.data_frame is not None:
-            self.data_frame.destroy()
-        self.data_frame = VerticalScrollFrame(self)
-        self.data_frame.grid(row=4, column=0, sticky='nsew', padx=5, pady=5)
-        for setting in self.plot_settings_list:
-            data = SettingsFrame(self.data_frame.get_interior_frame(), setting)
-            data.pack(side=tkinter.TOP, fill=tkinter.BOTH)
+    def previous_pressed(self):
+        if self.mode_var.get() == 'Daily':
+            self.detail2_var.set('Previous day')
+            self.detail1_var.set('8 days ago')
+        elif self.mode_var.get() == 'Hourly':
+            self.detail1_var.set('Previous day')
+        elif self.mode_var.get() == 'Minutely':
+            self.detail1_var.set('Previous day')
 
     def launch_calendar(self, variable):
         calendar_pop = tkinter.Toplevel(self.master)
@@ -430,29 +475,87 @@ class GraphDetailSettingsPage(ttk.Frame):
         calendar_pop_frame.pack(fill=tkinter.X, expand=tkinter.TRUE)
         calendar_pop.grab_set()
 
+    def set_graph_values(self):
+        self.graph_combo.configure(values=self.data_treeview.get_children())
+
+    def validate_graph_name(self, graph, _reason):
+        if graph == '':
+            return False
+
+        if self.data_treeview.exists(graph):
+            mode, details = self.data_treeview.item(graph)['values']
+            details = details.split(' \u27A1 ')
+            detail1 = details[0]
+            detail2 = details[1]
+            self.mode_var.set(mode)
+            self.set_mutable_frame()
+            self.detail1_var.set(detail1)
+            self.detail2_var.set(detail2)
+            for widget in self.widgets1 + self.widgets2:
+                widget.state(('disabled', ))
+        else:
+            for widget in self.widgets1:
+                widget.state(('!disabled', ))
+            self.set_mutable_frame()
+
+        return True
+
     def add_plot_settings(self):
-        if self.detail1_var.get() == '' or self.detail2_var.get() == '':
+        graph_name = self.graph_var.get()
+        if graph_name == '' or self.detail1_var.get() == '' or self.detail2_var.get() == '':
             return
-        setting = plotSetting(self.sensor_var.get(), self.mode_var.get(),
-                              (self.detail1_var.get(), self.detail2_var.get()))
-        self.plot_settings_list.append(setting)
-        self.set_data_frame()
+        # Checks if graph name exist
+        if not self.data_treeview.exists(graph_name):
+            # Maximum of 6 graphs per view
+            if len(self.data_treeview.get_children('')) > 6:
+                messagebox.showinfo(title='Excess', message='Maximum of 6 graphs per view')
+                return
+
+            details = ' \u27A1 '.join([self.detail1_var.get(), self.detail2_var.get()])
+            self.data_treeview.insert('', tkinter.END, iid=graph_name, text=graph_name,
+                                      values=(self.mode_var.get(), details), tag=('graph', ), open=True)
+            self.validate_graph_name(graph_name, 'Add')
+        # Maximum of 5 plots per view otherwise too messy
+        if len(self.data_treeview.get_children(graph_name)) > 5:
+            messagebox.showinfo(title='Excess', message='Maximum of 5 plots per graph')
+            return
+
+        self.data_treeview.insert(graph_name, tkinter.END, text=self.sensor_var.get())
+        # TODO migrate this to save_plot_settings and launch_graph_detail_view
+        # setting = plotSetting(self.sensor_var.get(), self.mode_var.get(),
+        #                       (self.detail1_var.get(), self.detail2_var.get()))
+        # self.plot_settings_list.append(setting)
+        # self.set_data_frame()
+
+    def tree_view_to_plot_settings(self):
+        self.plot_settings.clear()
+        for graph in self.data_treeview.get_children():
+            mode, detail = self.data_treeview.item(graph)['values']
+            detail = detail.split(' \u27A1 ')
+            detail1 = detail[0]
+            detail2 = detail[1]
+            machine_list = []
+            for iid in self.data_treeview.get_children(graph):
+                machine_list.append(self.data_treeview.item(iid)['text'])
+            self.plot_settings[graph] = plotSetting(machine_list, mode, (detail1, detail2))
 
     def launch_graph_detail_view(self):
-        if len(self.plot_settings_list) < 1:
+        self.tree_view_to_plot_settings()
+        if len(self.plot_settings) < 1:
             return
         graph_detail_view = tkinter.Toplevel(self.master.master)
         graph_detail_view.title('Plot')
-        gdv_frame = GraphDetailView(graph_detail_view, self.database, data=self.plot_settings_list, save=self.save)
+        gdv_frame = GraphDetailView(graph_detail_view, self.database, data=self.plot_settings, save=self.save)
         gdv_frame.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
 
         self.quit_parent()
 
-    def save_plot_settings(self):
-        if len(self.plot_settings_list) < 1:
+    def save_plot_settings(self):  # TODO
+        self.tree_view_to_plot_settings()
+        if len(self.plot_settings) < 1:
             return
         _iid = self.quick_tv.insert('', tkinter.END, values=(self.quick_entry.get(), ), tag=('top', ), open=True)
-        for (machine, mode, detail) in self.plot_settings_list:
+        for (machine, mode, detail) in self.plot_settings:
             details = ' - '.join(detail)
             self.quick_tv.insert(_iid, tkinter.END, text=machine, values=(mode, details))
 
@@ -497,32 +600,46 @@ class VerticalScrollFrame(ttk.Frame):
 
 
 class GraphCanvas(FigureCanvasTkAgg):
-    def __init__(self, parent, title=None, x_format=None, x=None, y=None):
-        self.figure = Figure()
-        self.figure.set_tight_layout(True)
+    NUM_COL = 2
 
-        self.subplot = self.figure.add_subplot(1, 1, 1)
+    def __init__(self, parent, total_plots, title=None, x_format=None, x=None, y=None):
+        self.figure = Figure(figsize=(10, 10))
+        self.figure.set_tight_layout(True)
+        self.num_col = GraphCanvas.NUM_COL
+        self.num_row = (total_plots - 1)//2 + 1
+
+        if total_plots < self.num_col:
+            self.num_col = 1
+
+        self.subplots = []
+        for loc in range(total_plots):
+            self.subplots.append(self.figure.add_subplot(self.num_row, self.num_col, loc))
+
         FigureCanvasTkAgg.__init__(self, self.figure, parent)
         if title is not None:
-            self.plot(title, x_format, x, y)
+            self.plot(x_format, x, y, title=title)
 
     def grid(self, **kwargs):
         self.get_tk_widget().grid(**kwargs)
 
-    def plot(self, title, x_format, x, y):
-        self.subplot.clear()
-        self.subplot.plot(x, y, 'b-o')
-        self.subplot.grid(linestyle='dashed')
-        self.subplot.set_title(title)
-        # Format tick location and label
-        tick_num = len(x)//5
-        if tick_num == 0:
-            tick_num = 1
-        self.subplot.set_xticks(x[0::tick_num])
-        date_label = []
-        for date in x[0::tick_num]:
-            date_label.append(date.strftime(x_format))
-        self.subplot.set_xticklabels(date_label)
+    def plot(self, plot_num, x, y, x_format=None, title=None):
+        if title:
+            self.subplots[plot_num].set_title(title)
+
+        self.subplots[plot_num].clear()
+        self.subplots[plot_num].plot(x, y, '-o')
+        self.subplots[plot_num].grid(linestyle='dashed')
+
+        if x_format:
+            # Format tick location and label
+            tick_num = len(x)//5
+            if tick_num == 0:
+                tick_num = 1
+            self.subplots[plot_num].set_xticks(x[0::tick_num])
+            date_label = []
+            for date in x[0::tick_num]:
+                date_label.append(date.strftime(x_format))
+            self.subplots[plot_num].set_xticklabels(date_label)
 
 
 class CalendarPop(tkinter.Frame):
@@ -687,7 +804,6 @@ class ConfigurationSettings(ttk.Frame):
         quick_tv_v_scroll = ttk.Scrollbar(quick_tv_frame, orient='vertical', command=self.to_save.quick_tv.yview)
         quick_tv_v_scroll.grid(row=0, column=1, sticky='nsw')
         self.to_save.quick_tv.configure(yscrollcommand=quick_tv_v_scroll.set)
-        # self.to_save.quick_tv['show'] = 'headings'
         self.to_save.quick_tv['column'] = ('mode', 'detail')
         self.to_save.quick_tv.heading('#0', text='Machine')
         self.to_save.quick_tv.heading('mode', text='Mode')
