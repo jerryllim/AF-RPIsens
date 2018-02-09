@@ -26,7 +26,7 @@ class MainWindow(ttk.Frame):
         self.rowconfigure(1, weight=100)
         self.columnconfigure(0, weight=1)
         self.database = serverDB.DatabaseManager(save)
-        self.graphs = []
+        self.configuration_settings = None
 
         # MenuBar
         self.menu_bar = tkinter.Menu(self.master)
@@ -61,8 +61,9 @@ class MainWindow(ttk.Frame):
         self.populate_graph_treeview()
         self.plot_graph_add_treeview()
         # TODO apschduler to refresh/animate the live graphs
+        # TODO setup save_settings to change apscheduler in communication
 
-    def quick_access_setup(self):  # TODO
+    def quick_access_setup(self):
         if self.quick_frame is not None:
             self.quick_frame.destroy()
         self.quick_frame = ttk.LabelFrame(self.top_frame, text='Quick Access: ')
@@ -99,18 +100,10 @@ class MainWindow(ttk.Frame):
         plot_settings.grab_set()
 
     def populate_graph_treeview(self):
-        for column in range(self.NUM_COL):
-            self.view_notebook.graph_scrollable_frame.get_interior_frame().columnconfigure(column, weight=1)
         # Draw Graph Canvas
         database_name = datetime.datetime.today().strftime('%m_%B_%Y.sqlite')
         tables = self.database.get_table_names(database_name)
-        for index in range(len(tables)):
-            row = index//self.NUM_COL
-            col = index % self.NUM_COL
-            canvas = GraphCanvas(self.view_notebook.graph_scrollable_frame.get_interior_frame())
-            canvas.show()
-            canvas.grid(row=row, column=col, sticky='nsew', padx=5, pady=5)
-            self.graphs.append(canvas)
+        self.view_notebook.graph_canvas.set_total_plots(len(tables))
 
     def plot_graph_add_treeview(self):
         now = datetime.datetime.now()
@@ -118,17 +111,17 @@ class MainWindow(ttk.Frame):
         # Get current shift
         shift_name, shift_start, shift_end = self.get_shift(now)
         tables = self.database.get_table_names(database_name)
-        if len(tables) != len(self.graphs):
+        if len(tables) != self.view_notebook.graph_canvas.total_plots:
             self.populate_graph_treeview()
             return
         self.view_notebook.treeview.delete(*self.view_notebook.treeview.get_children())
-        for index in range(len(self.graphs)):
+        for index in range(self.view_notebook.graph_canvas.total_plots):
             table = tables[index]
             title = '{}\n{}   {}'.format(table, shift_name, now.strftime('%Y-%m-%d'))
-            x, y = self.database.get_sums(table, shift_start, shift_end, 'Hourly')
-            self.graphs[index].plot(title, '%H:%M', x, y)
-            for pos in range(len(x)):
-                self.view_notebook.treeview.insert('', tkinter.END, values=(table, y[pos], x[pos]))
+            time_list, count_list = self.database.get_sums(table, shift_start, shift_end, 'Hourly')
+            self.view_notebook.graph_canvas.plot(index, x=time_list, y=count_list, x_format='%H:%M', title=table)
+            for pos in range(len(time_list)):
+                self.view_notebook.treeview.insert('', tkinter.END, values=(table, count_list[pos], time_list[pos]))
 
     def get_shift(self, date_time):
         date = date_time.strftime('%Y-%m-%d')
@@ -143,11 +136,13 @@ class MainWindow(ttk.Frame):
         return date_time.strftime('Hour %H:00'), start_date, end_date
 
     def launch_settings(self):
-        # TODO lift configuration_settings
-        configuration_settings = tkinter.Toplevel(self)
-        configuration_settings.title('Configuration & Settings')
-        configuration_settings.geometry('-200-200')
-        configuration_settings_frame = ConfigurationSettings(configuration_settings, self.save, self.database,
+        if self.configuration_settings is not None:
+            self.configuration_settings.lift()
+            return
+        self.configuration_settings = tkinter.Toplevel(self)
+        self.configuration_settings.title('Configuration & Settings')
+        self.configuration_settings.geometry('-200-200')
+        configuration_settings_frame = ConfigurationSettings(self.configuration_settings, self.save, self.database,
                                                              self.request_interval)
         configuration_settings_frame.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
         configuration_settings_frame.grab_set()
@@ -163,9 +158,11 @@ class NotebookView(ttk.Notebook):
         self.data = data
         self.num_col = NotebookView.NUM_COL
         # Graph
-        self.graph_scrollable_frame = VerticalScrollFrame(self)
-        self.graph_scrollable_frame.grid(sticky='nsew')
-        self.add(self.graph_scrollable_frame, text='Graph')
+        self.graph_frame = VerticalScrollFrame(self)
+        self.graph_frame.grid(sticky='nsew')
+        self.graph_canvas = GraphCanvas(self.graph_frame.get_interior_frame())
+        self.graph_canvas.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
+        self.add(self.graph_frame, text='Graph')
         # TreeView Frame
         treeview_frame = ttk.Frame(self)
         treeview_frame.grid(sticky='nsew', padx=5, pady=5)
@@ -195,24 +192,34 @@ class NotebookView(ttk.Notebook):
             self.graph_treeview_populate(self.data)
 
     def graph_treeview_populate(self, data):
-        for column in range(self.num_col):
-            self.graph_scrollable_frame.get_interior_frame().columnconfigure(column, weight=1)
-
-        data_keys = data.keys()
+        data_keys = list(data.keys())
+        self.graph_canvas.set_total_plots(len(data))
         for index in range(len(data)):
+            graph = data_keys[index]
+            machine_list, mode, (detail1, detail2) = data[graph]
+            date_format = '%Y-%m-%\n%H:%M'
+            inverse = False
+            legend_list = []
 
-            machine, title, date_list, date_format, count_list = self.get_data_from_database(data[index], self.save)
-            row = index//self.num_col
-            col = index % self.num_col
-            canvas = GraphCanvas(self.graph_scrollable_frame.get_interior_frame(), title, date_format, date_list,
-                                 count_list)
-            canvas.show()
-            canvas.grid(row=row, column=col, sticky='nsew', padx=5, pady=5)
-            for pos in range(len(date_list)):
-                self.treeview.insert('', tkinter.END, values=(machine, count_list[pos], date_list[pos]))
+            for position in range(len(machine_list)):
+                _temp_out = self.get_data_from_database(machine=machine_list[position], mode=mode, detail1=detail1,
+                                                        detail2=detail2, save=self.save)
+                machine, title, date_list, date_format, count_list = _temp_out
+                self.graph_canvas.plot(index, date_list, count_list)
+                legend_list.append('{} - {}'.format(machine, sum(count_list)))
+                # Treeview
+                for pos in range(len(date_list)):
+                    self.treeview.insert('', tkinter.END, values=(machine, count_list[pos], date_list[pos]))
 
-    def get_data_from_database(self, setting, save):
-        machine, mode, (detail1, detail2) = setting
+            x_label = '{} \u27A1 {}'.format(detail1, detail2)
+            if mode == 'Daily':
+                inverse = True
+            self.graph_canvas.format_subplot(index, x_format=date_format, title=graph, legend=legend_list,
+                                             x_label=x_label, invert_x=inverse)
+
+        self.graph_canvas.show()
+
+    def get_data_from_database(self, machine, mode, detail1, detail2, save):
         if detail2 == 'Current day':
             detail2 = datetime.datetime.now()
             detail1 = detail2 - datetime.timedelta(days=6)
@@ -260,43 +267,23 @@ class GraphDetailView(ttk.Frame):
 
     def __init__(self, parent, database, data=None, save=None, **kwargs):
         ttk.Frame.__init__(self, parent, **kwargs)
+        self.master.minsize(width=1000, height=400)
 
         # Notebook setup
         view_notebook = NotebookView(self, database, data=data, save=save)
         view_notebook.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
 
 
-# TODO remove?
-class SettingsFrame(tkinter.Frame):
-    LABEL_NAMES = ['Machine: ', 'Mode: ', 'Detail: ']
-
-    def __init__(self, parent, settings):
-        tkinter.Frame.__init__(self, parent, highlightbackground='black', highlightthickness=2)
-        self.settings = settings
-        self.columnconfigure(0, weight=1)
-        self.columnconfigure(1, weight=1)
-        for index in range(len(SettingsFrame.LABEL_NAMES)):
-            label = tkinter.Label(self, text=SettingsFrame.LABEL_NAMES[index], width=7)
-            label.grid(row=index, column=0, sticky='w')
-        self.machine_label = tkinter.Label(self, text=self.settings.machine)
-        self.machine_label.grid(row=0, column=1)
-        mode = self.settings.mode
-        self.mode_label = tkinter.Label(self, text=mode)
-        self.mode_label.grid(row=1, column=1)
-        detail1, detail2 = self.settings.details
-        detail_string = u'{} \u2192 {}'.format(detail1, detail2)
-        self.detail_label = tkinter.Label(self, text=detail_string)
-        self.detail_label.grid(row=2, column=1)
-
-
 class GraphDetailSettingsPage(ttk.Frame):
+    MAX_PLOTS = 5
+    MAX_GRAPHS = 6
 
     def __init__(self, parent, save: serverDB.ServerSettings, database: serverDB.DatabaseManager, quick_tv=None,
                  **kwargs):
         self.save = save
         self.database = database
         ttk.Frame.__init__(self, parent, **kwargs)
-        self.plot_settings = []
+        self.plot_settings = {}
         self.rowconfigure(4, weight=1)
         self.columnconfigure(0, weight=1)
         self.quick_tv = quick_tv
@@ -356,7 +343,7 @@ class GraphDetailSettingsPage(ttk.Frame):
         current_button = ttk.Button(current_add_frame, text='Current', command=self.current_pressed)
         current_button.pack(side=tkinter.RIGHT, padx=(5, 20))
         self.widgets1.append(current_button)
-        prev_button = ttk.Button(current_add_frame, text='Previous', command=self.previous_pressed)  # TODO add command
+        prev_button = ttk.Button(current_add_frame, text='Previous', command=self.previous_pressed)
         prev_button.pack(side=tkinter.RIGHT)
         self.widgets1.append(prev_button)
         # Graphs setting
@@ -377,6 +364,16 @@ class GraphDetailSettingsPage(ttk.Frame):
         self.data_treeview.column('#0', width=150)
         self.data_treeview.column('mode', width=50)
         self.data_treeview.column('detail', width=200)
+        # Treeview buttons
+        button_frame = ttk.Frame(data_frame)
+        button_frame.grid(row=0, column=2)
+        up_button = ttk.Button(button_frame, text='\u25B2', command=lambda: self.move_item(-1))
+        up_button.pack(side=tkinter.TOP)
+        down_button = ttk.Button(button_frame, text='\u25BC', command=lambda: self.move_item(1))
+        down_button.pack(side=tkinter.TOP)
+        delete_button = ttk.Button(button_frame, text='Delete', command=self.delete_item)
+        delete_button.pack(side=tkinter.TOP, pady=(20, 0))
+
         # Okay & Cancel Buttons
         button_frame = ttk.Frame(self)
         button_frame.grid(row=5, column=0, sticky='nsew', padx=5, pady=5)
@@ -507,8 +504,8 @@ class GraphDetailSettingsPage(ttk.Frame):
         # Checks if graph name exist
         if not self.data_treeview.exists(graph_name):
             # Maximum of 6 graphs per view
-            if len(self.data_treeview.get_children('')) > 6:
-                messagebox.showinfo(title='Excess', message='Maximum of 6 graphs per view')
+            if len(self.data_treeview.get_children('')) >= self.MAX_GRAPHS:
+                messagebox.showinfo(title='Excess', message='Maximum of {} graphs per view'.format(self.MAX_GRAPHS))
                 return
 
             details = ' \u27A1 '.join([self.detail1_var.get(), self.detail2_var.get()])
@@ -516,16 +513,22 @@ class GraphDetailSettingsPage(ttk.Frame):
                                       values=(self.mode_var.get(), details), tag=('graph', ), open=True)
             self.validate_graph_name(graph_name, 'Add')
         # Maximum of 5 plots per view otherwise too messy
-        if len(self.data_treeview.get_children(graph_name)) > 5:
-            messagebox.showinfo(title='Excess', message='Maximum of 5 plots per graph')
+        if len(self.data_treeview.get_children(graph_name)) >= self.MAX_PLOTS:
+            messagebox.showinfo(title='Excess', message='Maximum of {} plots per graph'.format(self.MAX_PLOTS))
             return
 
         self.data_treeview.insert(graph_name, tkinter.END, text=self.sensor_var.get())
-        # TODO migrate this to save_plot_settings and launch_graph_detail_view
-        # setting = plotSetting(self.sensor_var.get(), self.mode_var.get(),
-        #                       (self.detail1_var.get(), self.detail2_var.get()))
-        # self.plot_settings_list.append(setting)
-        # self.set_data_frame()
+
+    def move_item(self, direction):
+        item = self.data_treeview.focus()
+        if item != '':
+            index = self.data_treeview.index(item) + direction
+            self.data_treeview.move(item, self.data_treeview.parent(item), index)
+
+    def delete_item(self):
+        item = self.data_treeview.focus()
+        if item != '':
+            self.data_treeview.delete(item)
 
     def tree_view_to_plot_settings(self):
         self.plot_settings.clear()
@@ -550,14 +553,17 @@ class GraphDetailSettingsPage(ttk.Frame):
 
         self.quit_parent()
 
-    def save_plot_settings(self):  # TODO
+    def save_plot_settings(self):
         self.tree_view_to_plot_settings()
         if len(self.plot_settings) < 1:
             return
-        _iid = self.quick_tv.insert('', tkinter.END, values=(self.quick_entry.get(), ), tag=('top', ), open=True)
-        for (machine, mode, detail) in self.plot_settings:
-            details = ' - '.join(detail)
-            self.quick_tv.insert(_iid, tkinter.END, text=machine, values=(mode, details))
+
+        _iid = self.quick_tv.insert('', tkinter.END, text=self.quick_entry.get(), tag=('top', ), open=True)
+        for graph, (machine_list, mode, detail) in self.plot_settings.items():
+            details = ' \u27A1 '.join(detail)
+            graph_iid = self.quick_tv.insert(_iid, tkinter.END, text=graph, values=(mode, details))
+            for machine in machine_list:
+                self.quick_tv.insert(graph_iid, tkinter.END, text=machine)
 
         self.quit_parent()
 
@@ -602,19 +608,14 @@ class VerticalScrollFrame(ttk.Frame):
 class GraphCanvas(FigureCanvasTkAgg):
     NUM_COL = 2
 
-    def __init__(self, parent, total_plots, title=None, x_format=None, x=None, y=None):
-        self.figure = Figure(figsize=(10, 10))
+    def __init__(self, parent, total_plots=1, title=None, x_format=None, x=None, y=None):
+        self.figure = Figure()
         self.figure.set_tight_layout(True)
         self.num_col = GraphCanvas.NUM_COL
-        self.num_row = (total_plots - 1)//2 + 1
-
-        if total_plots < self.num_col:
-            self.num_col = 1
-
+        self.num_row = GraphCanvas.NUM_COL
         self.subplots = []
-        for loc in range(total_plots):
-            self.subplots.append(self.figure.add_subplot(self.num_row, self.num_col, loc))
-
+        self.total_plots = total_plots
+        self.set_total_plots(total_plots)
         FigureCanvasTkAgg.__init__(self, self.figure, parent)
         if title is not None:
             self.plot(x_format, x, y, title=title)
@@ -622,24 +623,64 @@ class GraphCanvas(FigureCanvasTkAgg):
     def grid(self, **kwargs):
         self.get_tk_widget().grid(**kwargs)
 
+    def pack(self, **kwargs):
+        self.get_tk_widget().pack(**kwargs)
+
     def plot(self, plot_num, x, y, x_format=None, title=None):
+        subplot = self.subplots[plot_num]
+
+        subplot.plot(x, y, '-o')
+        subplot.grid(linestyle='dashed')
+
+        self.format_subplot(plot_num=plot_num, x_format=x_format, title=title)
+
+        subplot.grid(linestyle='dashed')
+
+    def clear_all_subplots(self):
+        for subplot in self.subplots:
+            subplot.clear()
+
+    def format_subplot(self, plot_num, x_format=None, title=None, legend=None, x_label=None, invert_x=False):
+        subplot = self.subplots[plot_num]
+
+        if invert_x:
+            subplot.invert_xaxis()
+
+        if x_label:
+            subplot.set_xlabel(x_label)
+
+        if legend:
+            subplot.legend(legend)
+
         if title:
-            self.subplots[plot_num].set_title(title)
+            subplot.set_title(title)
 
-        self.subplots[plot_num].clear()
-        self.subplots[plot_num].plot(x, y, '-o')
-        self.subplots[plot_num].grid(linestyle='dashed')
-
+        # Format tick location and label
         if x_format:
-            # Format tick location and label
+            x = subplot.lines[0].get_xdata()
             tick_num = len(x)//5
             if tick_num == 0:
                 tick_num = 1
-            self.subplots[plot_num].set_xticks(x[0::tick_num])
+            subplot.set_xticks(x[0::tick_num])
             date_label = []
             for date in x[0::tick_num]:
                 date_label.append(date.strftime(x_format))
-            self.subplots[plot_num].set_xticklabels(date_label)
+            subplot.set_xticklabels(date_label)
+
+    def set_total_plots(self, total_plots):
+        self.figure.clear()
+        self.subplots.clear()
+        self.total_plots = total_plots
+        # Reset num_row & num_col
+        self.num_row = (self.total_plots - 1)//2 + 1
+        self.num_col = GraphCanvas.NUM_COL
+        self.figure.set_figheight(self.num_row*10, forward=True)
+        if self.total_plots < self.num_col:
+            self.num_col = 1
+
+        for loc in range(self.total_plots):
+            pos = loc + 1
+            self.subplots.append(self.figure.add_subplot(self.num_row, self.num_col, pos))
 
 
 class CalendarPop(tkinter.Frame):
@@ -725,8 +766,10 @@ class ConfigurationSettings(ttk.Frame):
             self.file_path.set(misc_settings[save.FILE_PATH])
 
     def __init__(self, parent, save: serverDB.ServerSettings, database: serverDB.DatabaseManager, request_interval,
-                 **kwargs):
+                 being=None, **kwargs):
         ttk.Frame.__init__(self, parent, **kwargs)
+        self.being = being
+        self.master.protocol('WM_DELETE_WINDOW', self.quit_parent)
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
         self.configuration_notebook = ttk.Notebook(self)
@@ -775,17 +818,22 @@ class ConfigurationSettings(ttk.Frame):
         self.to_save.port_tv.configure(yscrollcommand=port_tv_v_scroll.set)
         # Populate port_tv
         for machine, (address, port) in self.to_save.machine_ports.items():
-            self.to_save.port_tv.insert('', tkinter.END, values=(machine, address, port))
+            self.to_save.port_tv.insert('', tkinter.END, values=(machine, address, port), tag=('move', ))
         # Add & Delete buttons
         button_frame = ttk.Frame(port_config_frame)
         button_frame.grid(row=0, column=2, padx=5, pady=5)
         add_button = ttk.Button(button_frame, text='Add', command=self.launch_network_port_window)
-        add_button.pack()
+        add_button.pack(side=tkinter.TOP)
         edit_button = ttk.Button(button_frame, text='Edit', command=lambda: self.launch_network_port_window(edit=True))
-        edit_button.pack()
+        edit_button.pack(side=tkinter.TOP)
         delete_button = ttk.Button(button_frame, text='Delete', command=lambda: self.delete_treeview_item(
             self.to_save.port_tv))
-        delete_button.pack()
+        delete_button.pack(side=tkinter.TOP)
+
+        up_button = ttk.Button(button_frame, text='\u25B2', command=lambda: self.move_item(self.to_save.port_tv, -1))
+        up_button.pack(side=tkinter.TOP, pady=(20, 0))
+        down_button = ttk.Button(button_frame, text='\u25BC', command=lambda: self.move_item(self.to_save.port_tv, 1))
+        down_button.pack(side=tkinter.TOP)
 
     def quick_access_setup(self):  # Quick Access
         quick_access_frame = ttk.Frame(self.configuration_notebook)
@@ -813,10 +861,13 @@ class ConfigurationSettings(ttk.Frame):
         self.to_save.quick_tv.column('detail', width=200)
         # Populate quick_tv here
         for key, setting_list in self.to_save.quick_access.items():
-            _iid = self.to_save.quick_tv.insert('', tkinter.END, text=key, tag=('top', ), open=True)
-            for (machine, mode, detail) in setting_list:
+            iid = self.to_save.quick_tv.insert('', tkinter.END, text=key, tag=('top', 'move'), open=True)
+            for graph, (machine_list, mode, detail) in setting_list.items():
                 details = ' \u27A1 '.join(detail)
-                self.to_save.quick_tv.insert(_iid, tkinter.END, text=machine, values=(mode, details))
+                _iid = self.to_save.quick_tv.insert(iid, tkinter.END, text=graph, values=(mode, details),
+                                                    tag=('move', ))
+                for machine in machine_list:
+                    self.to_save.quick_tv.insert(_iid, tkinter.END, text=machine)
 
         self.to_save.quick_tv.tag_configure('top', font=('Helvetica', 15, 'bold'))
         # Add & Delete buttons
@@ -827,6 +878,11 @@ class ConfigurationSettings(ttk.Frame):
         delete_button = ttk.Button(button_frame, text='Delete', command=lambda: self.delete_treeview_item(
             self.to_save.quick_tv))
         delete_button.pack()
+
+        up_button = ttk.Button(button_frame, text='\u25B2', command=lambda: self.move_item(self.to_save.quick_tv, -1))
+        up_button.pack(side=tkinter.TOP, pady=(20, 0))
+        down_button = ttk.Button(button_frame, text='\u25BC', command=lambda: self.move_item(self.to_save.quick_tv, 1))
+        down_button.pack(side=tkinter.TOP)
 
     def shift_setup(self):  # Shift settings
         shift_frame = ttk.Frame(self.configuration_notebook)
@@ -858,7 +914,7 @@ class ConfigurationSettings(ttk.Frame):
             start_date = datetime.datetime.strptime(start, '%H:%M')
             end_date = self.save.get_end_time(start_date, duration)
             end = end_date.strftime('%H:%M')
-            self.to_save.shift_tv.insert('', tkinter.END, values=(name, start, end))
+            self.to_save.shift_tv.insert('', tkinter.END, values=(name, start, end), tag=('move', ))
 
         # Add/Delete Button Frame
         button_frame = ttk.Frame(shift_frame)
@@ -868,6 +924,11 @@ class ConfigurationSettings(ttk.Frame):
         del_button = ttk.Button(button_frame, text='Delete', command=lambda: self.delete_treeview_item(
             self.to_save.shift_tv))
         del_button.pack()
+
+        up_button = ttk.Button(button_frame, text='\u25B2', command=lambda: self.move_item(self.to_save.shift_tv, -1))
+        up_button.pack(side=tkinter.TOP, pady=(20, 0))
+        down_button = ttk.Button(button_frame, text='\u25BC', command=lambda: self.move_item(self.to_save.shift_tv, 1))
+        down_button.pack(side=tkinter.TOP)
 
     def miscellaneous_setup(self):  # Miscellaneous
         # Create Frame
@@ -906,7 +967,7 @@ class ConfigurationSettings(ttk.Frame):
         network_port_window.grab_set()
 
     def add_shift(self):
-        if len(self.to_save.shift_tv.get_children()) > ShiftSettings.MAX:
+        if len(self.to_save.shift_tv.get_children()) >= ShiftSettings.MAX:
             messagebox.showinfo(title='Max', message='Maximum number of shifts is {}'.format(ShiftSettings.MAX))
             return
         shift_window = tkinter.Toplevel(self)
@@ -926,6 +987,13 @@ class ConfigurationSettings(ttk.Frame):
         detail_frame.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
         detail_frame.grab_set()
 
+    @staticmethod
+    def move_item(treeview: ttk.Treeview, direction):
+        item = treeview.focus()
+        if item != '' and treeview.tag_has('move', item):
+            index = treeview.index(item) + direction
+            treeview.move(item, treeview.parent(item), index)
+
     def save_configuration_settings(self):
         self.to_save.machine_ports.clear()
         for iid in self.to_save.port_tv.get_children():
@@ -934,15 +1002,20 @@ class ConfigurationSettings(ttk.Frame):
 
         self.to_save.quick_access.clear()
         for iid in self.to_save.quick_tv.get_children():
-            key = self.to_save.quick_tv.item(iid)['values'][0]
-            settings_list = []
-            for _iid in self.to_save.quick_tv.get_children(iid):
-                machine, mode, detail = self.to_save.quick_tv.item(_iid)['values']
-                detail = detail.split(' - ')
+            button_name = self.to_save.quick_tv.item(iid)['text']
+            graphs_list = {}
+            for graph_iid in self.to_save.quick_tv.get_children(iid):
+                graph = self.to_save.quick_tv.item(graph_iid)['text']
+                mode, detail = self.to_save.quick_tv.item(graph_iid)['values']
+                detail = detail.split(' \u27A1 ')
                 detail1 = detail[0]
                 detail2 = detail[1]
-                settings_list.append((machine, mode, (detail1, detail2)))
-            self.to_save.quick_access[key] = settings_list
+                machine_list = []
+                for _iid in self.to_save.quick_tv.get_children(graph_iid):
+                    machine_list.append(self.to_save.quick_tv.item(_iid)['text'])
+
+                graphs_list[graph] = (machine_list, mode, (detail1, detail2))
+            self.to_save.quick_access[button_name] = graphs_list
 
         self.to_save.shift_settings.clear()
         for iid in self.to_save.shift_tv.get_children():
@@ -965,6 +1038,8 @@ class ConfigurationSettings(ttk.Frame):
 
     def quit_parent(self):
         self.master.destroy()
+        if self.being:
+            self.being = None
 
     @staticmethod
     def validate_time(values, new):
@@ -975,14 +1050,15 @@ class ConfigurationSettings(ttk.Frame):
 
     @staticmethod
     def delete_treeview_item(treeview: ttk.Treeview):
-        iid = treeview.selection()
-        if len(iid) > 0:
-            iid = iid[0]
-        else:
+        iid = treeview.focus()
+        if iid == '':
             return
-
-        if treeview.parent(iid) == '':
+        elif treeview.parent(iid) == '':
             treeview.delete(iid)
+        elif len(treeview.get_children(treeview.parent(iid))) > 1:
+            treeview.delete(iid)
+        else:
+            messagebox.showerror(title='Unable to delete', message='Minimum 1 plot/graph required')
 
 
 class ShiftSettings(ttk.Frame):
