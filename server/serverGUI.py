@@ -582,10 +582,12 @@ class VerticalScrollFrame(ttk.Frame):
 
     def __init__(self, parent, **kwargs):
         ttk.Frame.__init__(self, parent, **kwargs)
+        self.rowconfigure(0, weight=1)
+        self.columnconfigure(0, weight=1)
         self.canvas = tkinter.Canvas(self)
-        self.canvas.pack(side=tkinter.LEFT, fill=tkinter.BOTH, expand=tkinter.TRUE)
+        self.canvas.grid(row=0, column=0, sticky='nsew')
         v_scrollbar = ttk.Scrollbar(self, orient='vertical', command=self.canvas.yview)
-        v_scrollbar.pack(side=tkinter.RIGHT, fill=tkinter.Y, expand=tkinter.FALSE)
+        v_scrollbar.grid(row=0, column=1, sticky='nsw')
         self.canvas.config(yscrollcommand=v_scrollbar.set, scrollregion=self.canvas.bbox('all'))
 
         self.interior_frame = ttk.Frame(self.canvas)
