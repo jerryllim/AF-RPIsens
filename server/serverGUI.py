@@ -26,6 +26,7 @@ class MainWindow(ttk.Frame):
         self.columnconfigure(0, weight=1)
         self.database = serverDB.DatabaseManager(save)
         self.configuration_settings = None
+        self.launched_settings = False
 
         # MenuBar
         self.menu_bar = tkinter.Menu(self.master)
@@ -140,14 +141,16 @@ class MainWindow(ttk.Frame):
         return date_time.strftime('Hour %H:00'), start_date, end_date
 
     def launch_settings(self):
-        if self.configuration_settings is not None:
+        print(self.launched_settings)
+        if self.launched_settings:
             self.configuration_settings.lift()
             return
+        self.launched_settings = True
         self.configuration_settings = tkinter.Toplevel(self)
         self.configuration_settings.title('Configuration & Settings')
         self.configuration_settings.geometry('-200-200')
         configuration_settings_frame = ConfigurationSettings(self.configuration_settings, self.save, self.database,
-                                                             self.request_interval)
+                                                             self.request_interval, self.launched_settings)
         configuration_settings_frame.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
         configuration_settings_frame.grab_set()
 
@@ -1055,7 +1058,7 @@ class ConfigurationSettings(ttk.Frame):
             self.file_path.set(misc_settings[save.FILE_PATH])
 
     def __init__(self, parent, save: serverDB.ServerSettings, database: serverDB.DatabaseManager, request_interval,
-                 being=None, **kwargs):
+                 being=False, **kwargs):
         ttk.Frame.__init__(self, parent, **kwargs)
         self.being = being
         self.master.protocol('WM_DELETE_WINDOW', self.quit_parent)
@@ -1076,6 +1079,7 @@ class ConfigurationSettings(ttk.Frame):
         self.port_network_setup()
         self.quick_access_setup()
         self.shift_setup()
+        self.machine_target_setup()
         self.miscellaneous_setup()
 
         self.grab_set()
@@ -1223,12 +1227,17 @@ class ConfigurationSettings(ttk.Frame):
         # Create Frame
         target_frame = ttk.Frame(self.configuration_notebook)
         self.configuration_notebook.add(target_frame, text='Machine Target')
+        target_frame.columnconfigure(0, weight=1)
         # Target colour frame
         comparator_list = ['Not set', 'Greater than', 'Equal to', 'Less than']
         number_validation = self.register(ConfigurationSettings.validate_digit)
         target_colour_frame = ttk.Frame(target_frame)
+        target_colour_frame.columnconfigure(0, weight=1)
+        target_colour_frame.columnconfigure(1, weight=1)
+        target_colour_frame.columnconfigure(2, weight=1)
+        target_colour_frame.columnconfigure(3, weight=1)
         target_colour_frame.grid(row=0, column=0, sticky='nsew')
-        label = ttk.Label(target_colour_frame, text='Targeted Minute 1: ', width=4)
+        label = ttk.Label(target_colour_frame, text='Targeted Minute 1: ')
         label.grid(row=0, column=0, sticky='w')
         comparator_option1 = ttk.OptionMenu(target_colour_frame, self.to_save.comparator1,
                                             self.to_save.comparator1.get(), *comparator_list)
@@ -1236,10 +1245,11 @@ class ConfigurationSettings(ttk.Frame):
         targeted_minute1 = ttk.Entry(target_colour_frame, textvariable=self.to_save.minute_var1, width=4,
                                      validate='key', validatecommand=(number_validation, '%P', '%S', 'minute'))
         targeted_minute1.grid(row=0, column=2, sticky='w')
-        self.to_save.colour_label1 = ttk.Label(target_colour_frame, width=2, bg=self.to_save.colour1)
+        self.to_save.colour_label1 = tkinter.Label(target_colour_frame, width=2, bg=self.to_save.colour1, bd=1,
+                                                   relief='solid')
         self.to_save.colour_label1.grid(row=0, column=3, sticky='w')
         self.to_save.colour_label1.bind('<Button-1>', self.pick_colour)
-        label = ttk.Label(target_colour_frame, text='Targeted Minute 2: ', width=4)
+        label = ttk.Label(target_colour_frame, text='Targeted Minute 2: ')
         label.grid(row=1, column=0, sticky='w')
         comparator_option2 = ttk.OptionMenu(target_colour_frame, self.to_save.comparator2,
                                             self.to_save.comparator2.get(), *comparator_list)
@@ -1247,27 +1257,53 @@ class ConfigurationSettings(ttk.Frame):
         targeted_minute1 = ttk.Entry(target_colour_frame, textvariable=self.to_save.minute_var2, width=4,
                                      validate='key', validatecommand=(number_validation, '%P', '%S', 'minute'))
         targeted_minute1.grid(row=1, column=2, sticky='w')
-        self.to_save.colour_label2 = ttk.Label(target_colour_frame, width=2, bg=self.to_save.colour2)
+        self.to_save.colour_label2 = tkinter.Label(target_colour_frame, width=2, bg=self.to_save.colour2, bd=1,
+                                                   relief='solid')
         self.to_save.colour_label2.grid(row=1, column=3, sticky='w')
         self.to_save.colour_label2.bind('<Button-1>', self.pick_colour)
-        # TODO set target
+        # Set target
         target_set_frame = ttk.Frame(target_frame)
+        target_set_frame.columnconfigure(0, weight=1)
+        target_set_frame.columnconfigure(1, weight=1)
+        target_set_frame.columnconfigure(2, weight=1)
+        target_set_frame.columnconfigure(3, weight=1)
         target_set_frame.grid(row=1, column=0, sticky='nsew')
         label = ttk.Label(target_set_frame, text='Machine: ')
-        label.grid(row=0, column=0, sticky='e')
-        machine_label = ttk.Label(target_set_frame, textvariable=self.to_save.machine_var)
+        label.grid(row=0, column=0, sticky='w')
+        machine_label = ttk.Label(target_set_frame, textvariable=self.to_save.machine_var, width=20)
         machine_label.grid(row=0, column=1, sticky='w')
         label = ttk.Label(target_set_frame, text='Hourly target: ')
         label.grid(row=0, column=2, sticky='e')
         target_entry = ttk.Entry(target_set_frame, textvariable=self.to_save.target_var, validate='key',
                                  validatecommand=(number_validation, '%P', '%S', 'target'))
         target_entry.grid(row=0, column=3, sticky='w')
-        set_button = ttk.Button(target_set_frame, text='Set')  # TODO add command
+        set_button = ttk.Button(target_set_frame, text='Set', command=self.set_target)  # TODO add command
         set_button.grid(row=1, column=3, sticky='e')
-        # TODO machine target
+        # Machine target Treeview
         target_tv_frame = ttk.Frame(target_frame)
         target_tv_frame.grid(row=2, column=0, sticky='nsew')
-        self.to_save.target_tv =
+        target_tv_frame.rowconfigure(0, weight=1)
+        target_tv_frame.columnconfigure(0, weight=1)
+        self.to_save.target_tv = ttk.Treeview(target_tv_frame)
+        self.to_save.target_tv.grid(row=0, column=0, sticky='nsew')
+        self.to_save.target_tv['column'] = ('target', )
+        self.to_save.target_tv.heading('#0', text='Machine')
+        self.to_save.target_tv.heading('target', text='Target')
+        self.to_save.target_tv.column('#0', width=200)
+        self.to_save.target_tv.column('target', width=30)
+        # Scroll for Treeview
+        target_tv_v_scroll = ttk.Scrollbar(target_tv_frame, orient='vertical', command=self.to_save.target_tv.yview)
+        target_tv_v_scroll.grid(row=0, column=1, sticky='nsw')
+        self.to_save.target_tv.configure(yscrollcommand=target_tv_v_scroll.set)
+        # Populate treeview
+        machines_saved = self.to_save.target_settings[self.save.MACHINE_TARGETS]
+        for (machine, target) in machines_saved:
+            self.to_save.target_tv.insert('', tkinter.END, text=machine, values=(target, ))
+        machines_current = self.database.get_table_names(datetime.datetime.now().strftime('%m_%B_%Y.sqlite'))
+        machines_new = list(set(machines_current) - set(machines_saved))
+        for machine in machines_new:
+            self.to_save.target_tv.insert('', tkinter.END, text=machine, values=(0, ))
+        self.to_save.target_tv.bind('<<TreeviewSelect>>', self.target_tv_selected)
 
     def miscellaneous_setup(self):  # Miscellaneous
         # Create Frame
@@ -1326,6 +1362,19 @@ class ConfigurationSettings(ttk.Frame):
         detail_frame.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
         detail_frame.grab_set()
 
+    def target_tv_selected(self, _event):
+        iid = self.to_save.target_tv.focus()
+        if iid != '':
+            machine = self.to_save.target_tv.item(iid)['text']
+            target = self.to_save.target_tv.item(iid)['values']
+            self.to_save.machine_var.set(machine)
+            self.to_save.target_var.set(target)
+
+    def set_target(self):
+        target = self.to_save.target_var.get()
+        iid = self.to_save.target_tv.focus()
+        self.to_save.target_tv.item(iid, values=(target, ))
+
     @staticmethod
     def move_item(treeview: ttk.Treeview, direction):
         item = treeview.focus()
@@ -1362,12 +1411,27 @@ class ConfigurationSettings(ttk.Frame):
             duration = self.save.convert_to_duration(start, end)
             self.to_save.shift_settings[name] = (start, duration.total_seconds())
 
+        self.to_save.target_settings.clear()
+        target_minute1 = (self.to_save.comparator1.get(), self.to_save.minute_var1.get(),
+                          self.to_save.colour_label1['background'])
+        target_minute2 = (self.to_save.comparator2.get(), self.to_save.minute_var2.get(),
+                          self.to_save.colour_label2['background'])
+        self.to_save.target_settings[self.save.TARGET_MINUTES_1] = target_minute1
+        self.to_save.target_settings[self.save.TARGET_MINUTES_2] = target_minute2
+        machine_target_list = []
+        for iid in self.to_save.target_tv.get_children():
+            machine = self.to_save.target_tv.get_children(iid)['text']
+            target = self.to_save.target_tv.get_children(iid)['values']
+            machine_target_list.append((machine, target))
+        self.to_save.target_settings[self.save.MACHINE_TARGETS] = machine_target_list
+
         misc_temp = {self.save.REQUEST_TIME: self.to_save.request_time.get(),
                      self.save.FILE_PATH: self.to_save.file_path.get()}
 
         self.save.machine_ports = self.to_save.machine_ports
         self.save.quick_access = self.to_save.quick_access
         self.save.shift_settings = self.to_save.shift_settings
+        self.save.target_settings = self.to_save.target_settings
         self.save.misc_settings = misc_temp
         self.save.save_settings()
         self.quit_parent()
@@ -1378,7 +1442,7 @@ class ConfigurationSettings(ttk.Frame):
     def quit_parent(self):
         self.master.destroy()
         if self.being:
-            self.being = None
+            self.master.master.launched_settings = False
 
     @staticmethod
     def pick_colour(event):

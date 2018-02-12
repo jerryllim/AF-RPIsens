@@ -4,7 +4,6 @@
     <list default="true" id="8c4eab11-9431-48ea-8992-fef6a6e722be" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/server/serverDB.py" afterPath="$PROJECT_DIR$/server/serverDB.py" />
       <change beforePath="$PROJECT_DIR$/server/serverGUI.py" afterPath="$PROJECT_DIR$/server/serverGUI.py" />
-      <change beforePath="$PROJECT_DIR$/test_matplotlib.py" afterPath="$PROJECT_DIR$/test_matplotlib.py" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -18,16 +17,6 @@
     <splitter split-orientation="horizontal" split-proportion="0.49858958">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file leaf-file-name="serverMain.py" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/serverMain.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="0">
-                  <caret line="0" column="34" lean-forward="false" selection-start-line="0" selection-start-column="34" selection-end-line="0" selection-end-column="34" />
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
           <file leaf-file-name="reqrep_server.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/Communication/ServerView/reqrep_server.py">
               <provider selected="true" editor-type-id="text-editor">
@@ -43,8 +32,8 @@
           <file leaf-file-name="serverDB.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/server/serverDB.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="812">
-                  <caret line="61" column="25" lean-forward="false" selection-start-line="61" selection-start-column="25" selection-end-line="61" selection-end-column="25" />
+                <state relative-caret-position="190">
+                  <caret line="29" column="56" lean-forward="false" selection-start-line="29" selection-start-column="56" selection-end-line="29" selection-end-column="56" />
                   <folding>
                     <element signature="e#0#11#0" expanded="true" />
                   </folding>
@@ -55,7 +44,7 @@
           <file leaf-file-name="serverCommunication.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/server/serverCommunication.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="210">
+                <state relative-caret-position="-244">
                   <caret line="19" column="23" lean-forward="false" selection-start-line="19" selection-start-column="23" selection-end-line="19" selection-end-column="23" />
                   <folding>
                     <element signature="e#0#14#0" expanded="true" />
@@ -77,8 +66,8 @@
           <file leaf-file-name="serverGUI.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="357">
-                  <caret line="1261" column="31" lean-forward="true" selection-start-line="1261" selection-start-column="31" selection-end-line="1261" selection-end-column="31" />
+                <state relative-caret-position="379">
+                  <caret line="1432" column="62" lean-forward="true" selection-start-line="1432" selection-start-column="62" selection-end-line="1432" selection-end-column="62" />
                   <folding>
                     <element signature="e#0#14#0" expanded="true" />
                   </folding>
@@ -109,7 +98,7 @@
           <file leaf-file-name="test_matplotlib.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/test_matplotlib.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="497">
+                <state relative-caret-position="1170">
                   <caret line="78" column="0" lean-forward="false" selection-start-line="78" selection-start-column="0" selection-end-line="78" selection-end-column="0" />
                   <folding />
                 </state>
@@ -119,8 +108,8 @@
           <file leaf-file-name="test_matplotlib_server.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/test_matplotlib_server.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="-1584">
-                  <caret line="289" column="56" lean-forward="true" selection-start-line="289" selection-start-column="56" selection-end-line="289" selection-end-column="56" />
+                <state relative-caret-position="161">
+                  <caret line="775" column="49" lean-forward="false" selection-start-line="775" selection-start-column="34" selection-end-line="775" selection-end-column="49" />
                   <folding />
                 </state>
               </provider>
@@ -133,8 +122,8 @@
           <file leaf-file-name="serverGUI.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="3216">
-                  <caret line="1397" column="24" lean-forward="false" selection-start-line="1397" selection-start-column="24" selection-end-line="1397" selection-end-column="24" />
+                <state relative-caret-position="1501">
+                  <caret line="1375" column="59" lean-forward="false" selection-start-line="1375" selection-start-column="59" selection-end-line="1375" selection-end-column="59" />
                   <folding>
                     <element signature="e#0#14#0" expanded="true" />
                   </folding>
@@ -158,8 +147,8 @@
           <file leaf-file-name="test_matplotlib_server.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/test_matplotlib_server.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="331">
-                  <caret line="491" column="25" lean-forward="true" selection-start-line="491" selection-start-column="25" selection-end-line="491" selection-end-column="25" />
+                <state relative-caret-position="321">
+                  <caret line="487" column="0" lean-forward="false" selection-start-line="487" selection-start-column="0" selection-end-line="487" selection-end-column="0" />
                   <folding />
                 </state>
               </provider>
@@ -168,8 +157,8 @@
           <file leaf-file-name="sensorGUI.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/sensor/sensorGUI.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="277">
-                  <caret line="220" column="16" lean-forward="false" selection-start-line="220" selection-start-column="16" selection-end-line="220" selection-end-column="16" />
+                <state relative-caret-position="148">
+                  <caret line="282" column="58" lean-forward="false" selection-start-line="282" selection-start-column="58" selection-end-line="282" selection-end-column="58" />
                   <folding />
                 </state>
               </provider>
@@ -188,11 +177,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>show</find>
-      <find>NotebookView</find>
-      <find>verticalscroll</find>
-      <find>get_shi</find>
-      <find>100, 500, 20</find>
       <find>random</find>
       <find>Vertical</find>
       <find>print</find>
@@ -213,11 +197,16 @@
       <find>configuration</find>
       <find>optionm</find>
       <find>border</find>
-      <find>while</find>
       <find>validate_time</find>
       <find>self.register</find>
       <find>to_save</find>
       <find>ttk.Entry</find>
+      <find>selecti</find>
+      <find>select</find>
+      <find>iid</find>
+      <find>being</find>
+      <find>save_con</find>
+      <find>while</find>
     </findStrings>
     <replaceStrings>
       <replace>TMessage</replace>
@@ -382,7 +371,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.test_db">
+  <component name="RunManager" selected="Python.matplotlib_server">
     <configuration default="true" type="Applet" factoryName="Applet">
       <option name="HTML_USED" value="false" />
       <option name="WIDTH" value="400" />
@@ -698,8 +687,8 @@
     </list>
     <recent_temporary>
       <list size="5">
-        <item index="0" class="java.lang.String" itemvalue="Python.test_db" />
-        <item index="1" class="java.lang.String" itemvalue="Python.matplotlib_server" />
+        <item index="0" class="java.lang.String" itemvalue="Python.matplotlib_server" />
+        <item index="1" class="java.lang.String" itemvalue="Python.test_db" />
         <item index="2" class="java.lang.String" itemvalue="Python.test_matplotlib_server" />
         <item index="3" class="java.lang.String" itemvalue="Python.test_treeview" />
         <item index="4" class="java.lang.String" itemvalue="Python.macRunScript" />
@@ -744,12 +733,12 @@
       <window_info id="Capture Analysis" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32847533" sideWeight="0.5053918" order="8" side_tool="true" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33744395" sideWeight="0.4946082" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.33744395" sideWeight="0.4946082" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3295964" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32847533" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25599435" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.255931" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.30044842" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24946082" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -894,16 +883,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/server/serverCommunication.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="210">
-          <caret line="19" column="23" lean-forward="false" selection-start-line="19" selection-start-column="23" selection-end-line="19" selection-end-column="23" />
-          <folding>
-            <element signature="e#0#14#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/Communication/ServerView/reqrep_server.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2580">
@@ -991,37 +970,13 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sensor/sensorGUI.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="277">
-          <caret line="220" column="16" lean-forward="false" selection-start-line="220" selection-start-column="16" selection-end-line="220" selection-end-column="16" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/test_treeview.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="167">
           <caret line="60" column="41" lean-forward="true" selection-start-line="60" selection-start-column="41" selection-end-line="60" selection-end-column="41" />
           <folding>
-            <element signature="e#0#23#0" expanded="true" />
+            <element signature="e#0#23#0" expanded="false" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file:///Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/tkinter/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="184">
-          <caret line="2292" column="0" lean-forward="false" selection-start-line="2292" selection-start-column="0" selection-end-line="2292" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sensor/sensorReading.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="179">
-          <caret line="62" column="46" lean-forward="false" selection-start-line="62" selection-start-column="46" selection-end-line="62" selection-end-column="46" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1029,22 +984,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="186">
           <caret line="243" column="46" lean-forward="false" selection-start-line="243" selection-start-column="46" selection-end-line="243" selection-end-column="46" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test_matplotlib.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="497">
-          <caret line="78" column="0" lean-forward="false" selection-start-line="78" selection-start-column="0" selection-end-line="78" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test_matplotlib_server.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1584">
-          <caret line="289" column="56" lean-forward="true" selection-start-line="289" selection-start-column="56" selection-end-line="289" selection-end-column="56" />
           <folding />
         </state>
       </provider>
@@ -1068,10 +1007,60 @@
         </state>
       </provider>
     </entry>
+    <entry file="file:///Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/tkinter/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="184">
+          <caret line="1199" column="0" lean-forward="false" selection-start-line="1199" selection-start-column="0" selection-end-line="1199" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/serverCommunication.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-244">
+          <caret line="19" column="23" lean-forward="false" selection-start-line="19" selection-start-column="23" selection-end-line="19" selection-end-column="23" />
+          <folding>
+            <element signature="e#0#14#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test_matplotlib.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1170">
+          <caret line="78" column="0" lean-forward="false" selection-start-line="78" selection-start-column="0" selection-end-line="78" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sensor/sensorReading.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="179">
+          <caret line="62" column="46" lean-forward="false" selection-start-line="62" selection-start-column="46" selection-end-line="62" selection-end-column="46" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test_matplotlib_server.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="161">
+          <caret line="775" column="49" lean-forward="false" selection-start-line="775" selection-start-column="34" selection-end-line="775" selection-end-column="49" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sensor/sensorGUI.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="148">
+          <caret line="282" column="58" lean-forward="false" selection-start-line="282" selection-start-column="58" selection-end-line="282" selection-end-column="58" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/server/serverDB.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="812">
-          <caret line="61" column="25" lean-forward="false" selection-start-line="61" selection-start-column="25" selection-end-line="61" selection-end-column="25" />
+        <state relative-caret-position="190">
+          <caret line="29" column="56" lean-forward="false" selection-start-line="29" selection-start-column="56" selection-end-line="29" selection-end-column="56" />
           <folding>
             <element signature="e#0#11#0" expanded="true" />
           </folding>
@@ -1080,8 +1069,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="357">
-          <caret line="1261" column="31" lean-forward="true" selection-start-line="1261" selection-start-column="31" selection-end-line="1261" selection-end-column="31" />
+        <state relative-caret-position="379">
+          <caret line="1432" column="62" lean-forward="true" selection-start-line="1432" selection-start-column="62" selection-end-line="1432" selection-end-column="62" />
           <folding>
             <element signature="e#0#14#0" expanded="true" />
           </folding>
