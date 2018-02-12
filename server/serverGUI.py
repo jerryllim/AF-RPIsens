@@ -794,10 +794,11 @@ class ReadingTable(ttk.Frame):
         # Total
         total_cell = tkinter.Label(self.left_frame, bd=1, relief='solid')
         row_cells.append(total_cell)
+        target = 0
         if mode == 'Hourly':
             total_cell.grid(row=row, column=0, sticky='nsew')
             # Target output
-            target = self.get_target_output()
+            target = self.get_target_output(machine)
             target_cell = tkinter.Label(self.left_frame, text=target, bd=1, relief='solid')
             target_cell.grid(row=row, column=1, sticky='nsew')
             row_cells.append(target_cell)
@@ -817,7 +818,10 @@ class ReadingTable(ttk.Frame):
             row_cells.append(out_cell)
             if mode == 'Hourly':
                 out_cell.grid(row=row, column=column, sticky='nsew')
-                minutes = int((count/target) * 60)
+                if target == 0:
+                    minutes = 0
+                else:
+                    minutes = int((count/target) * 60)
                 min_cell = tkinter.Label(self.right_frame, text=minutes, anchor=tkinter.E, bd=1, relief='solid')
                 min_cell.grid(row=row, column=(column + 1), sticky='nsew')
                 if minutes < 45:
@@ -829,8 +833,9 @@ class ReadingTable(ttk.Frame):
         total_cell.configure(text=sum(count_list))
         self.table_cells.append(row_cells)
 
-    def get_target_output(self):  # TODO get target output from settings
-        return 5000
+    def get_target_output(self, machine):  # TODO get target output from settings
+        machine_targets = self.save.target_settings[self.save.MACHINE_TARGETS]
+        return machine_targets.get(machine, 0)
 
     def _on_vertical_canvas_configure(self, event):
         canvas_width = event.width
@@ -1297,7 +1302,7 @@ class ConfigurationSettings(ttk.Frame):
         self.to_save.target_tv.configure(yscrollcommand=target_tv_v_scroll.set)
         # Populate treeview
         machines_saved = self.to_save.target_settings[self.save.MACHINE_TARGETS]
-        for (machine, target) in machines_saved:
+        for machine, target in machines_saved.items:
             self.to_save.target_tv.insert('', tkinter.END, text=machine, values=(target, ))
         machines_current = self.database.get_table_names(datetime.datetime.now().strftime('%m_%B_%Y.sqlite'))
         machines_new = list(set(machines_current) - set(machines_saved))
@@ -1418,12 +1423,12 @@ class ConfigurationSettings(ttk.Frame):
                           self.to_save.colour_label2['background'])
         self.to_save.target_settings[self.save.TARGET_MINUTES_1] = target_minute1
         self.to_save.target_settings[self.save.TARGET_MINUTES_2] = target_minute2
-        machine_target_list = []
+        machine_targets = {}
         for iid in self.to_save.target_tv.get_children():
             machine = self.to_save.target_tv.get_children(iid)['text']
             target = self.to_save.target_tv.get_children(iid)['values']
-            machine_target_list.append((machine, target))
-        self.to_save.target_settings[self.save.MACHINE_TARGETS] = machine_target_list
+            machine_targets[machine] = target
+        self.to_save.target_settings[self.save.MACHINE_TARGETS] = machine_targets
 
         misc_temp = {self.save.REQUEST_TIME: self.to_save.request_time.get(),
                      self.save.FILE_PATH: self.to_save.file_path.get()}
