@@ -10,6 +10,10 @@ class ServerSettings:
     MACHINE_PORTS = 'machine_ports'
     QUICK_ACCESS = 'quick_access'
     SHIFT_SETTINGS = 'shift_settings'
+    TARGET_SETTINGS = 'target_settings'
+    TARGET_MINUTES_1 = 'target_1'
+    TARGET_MINUTES_2 = 'target_2'
+    MACHINE_TARGETS = 'machine_targets'
     MISC_SETTINGS = 'misc_settings'
     REQUEST_TIME = 'request_time'
     FILE_PATH = 'file_path'
@@ -21,6 +25,9 @@ class ServerSettings:
         self.quick_access = OrderedDict()
         # 43200 is 12 hours in seconds
         self.shift_settings = {'Morning': ('08:00', 43200), 'Night': ('20:00', 43200)}
+        self.target_settings = {self.TARGET_MINUTES_1: ('Not set', '', '#FFFF00'),
+                                self.TARGET_MINUTES_2: ('Not set', '', '#FFFF00'),
+                                self.MACHINE_TARGETS: {}}
         self.misc_settings = {self.REQUEST_TIME: 15, self.FILE_PATH: os.path.expanduser('~/Documents')}
         self.load_settings()
         self.logger.debug('Completed setup')
@@ -30,6 +37,7 @@ class ServerSettings:
         settings_dict = {ServerSettings.MACHINE_PORTS: self.machine_ports,
                          ServerSettings.QUICK_ACCESS: self.quick_access,
                          ServerSettings.SHIFT_SETTINGS: self.shift_settings,
+                         ServerSettings.TARGET_SETTINGS: self.target_settings,
                          ServerSettings.MISC_SETTINGS: self.misc_settings}
         with open(self.filename, 'w') as outfile:
             json.dump(settings_dict, outfile)
@@ -43,12 +51,20 @@ class ServerSettings:
                 self.machine_ports = settings_dict.get(ServerSettings.MACHINE_PORTS, self.machine_ports)
                 self.quick_access = settings_dict.get(ServerSettings.QUICK_ACCESS, self.quick_access)
                 self.shift_settings = settings_dict.get(ServerSettings.SHIFT_SETTINGS, self.shift_settings)
-                temp_misc = self.misc_settings
+                temp_dict = self.target_settings
+                self.target_settings = settings_dict.get(ServerSettings.TARGET_SETTINGS, temp_dict)
+                self.target_settings[self.TARGET_MINUTES_1] = self.target_settings.get(self.TARGET_MINUTES_1,
+                                                                                       temp_dict[self.TARGET_MINUTES_1])
+                self.target_settings[self.TARGET_MINUTES_2] = self.target_settings.get(self.TARGET_MINUTES_2,
+                                                                                       temp_dict[self.TARGET_MINUTES_2])
+                self.target_settings[self.MACHINE_TARGETS] = self.target_settings.get(self.MACHINE_TARGETS,
+                                                                                      temp_dict[self.MACHINE_TARGETS])
+                temp_dict = self.misc_settings
                 self.misc_settings = settings_dict.get(ServerSettings.MISC_SETTINGS, self.misc_settings)
                 self.misc_settings[self.REQUEST_TIME] = self.misc_settings.get(self.REQUEST_TIME,
-                                                                               temp_misc[self.REQUEST_TIME])
+                                                                               temp_dict[self.REQUEST_TIME])
                 self.misc_settings[self.FILE_PATH] = self.misc_settings.get(self.FILE_PATH,
-                                                                            temp_misc[self.FILE_PATH])
+                                                                            temp_dict[self.FILE_PATH])
         except FileNotFoundError:
             pass
         self.logger.debug('Loaded settings')

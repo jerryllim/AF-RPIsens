@@ -1,7 +1,6 @@
 import tkinter
 from tkinter import ttk
-from tkinter import messagebox
-from tkinter import filedialog
+from tkinter import messagebox, filedialog, colorchooser
 import calendar
 import datetime
 from collections import namedtuple
@@ -55,11 +54,16 @@ class MainWindow(ttk.Frame):
         self.quick_frame = None
         self.quick_access_setup()
 
-        # Notebook setup
-        self.view_notebook = NotebookView(self, save)
-        self.view_notebook.grid(row=1, column=0, sticky='nsew')
-        self.populate_graph_treeview()
-        self.plot_graph_add_treeview()
+        # LiveTable setup
+        now = datetime.datetime.now()
+        database_name = now.strftime('%m_%B_%Y.sqlite')
+        self.live_table = ReadingTable(self, save, self.database, self.database.get_table_names(database_name))
+        self.live_table.grid(row=1, column=0, sticky='nsew', padx=5, pady=5)
+        # # Notebook setup
+        # self.view_notebook = NotebookView(self, save)
+        # self.view_notebook.grid(row=1, column=0, sticky='nsew')
+        # self.populate_graph_treeview()
+        # self.plot_graph_add_treeview()
         # TODO apschduler to refresh/animate the live graphs
         # TODO setup save_settings to change apscheduler in communication
 
@@ -578,6 +582,268 @@ class GraphDetailSettingsPage(ttk.Frame):
             return True
 
 
+class ReadingTable(ttk.Frame):
+    HEADER_COLOR = '#F5A898'
+
+    def __init__(self, parent, save, database, machine_list, **kwargs):
+        ttk.Frame.__init__(self, parent, **kwargs)
+        self.rowconfigure(0, weight=1)
+        self.columnconfigure(0, weight=1)
+        self.vertical_canvas = tkinter.Canvas(self)
+        self.vertical_canvas.grid(row=0, column=0, sticky='nsew')
+        v_scrollbar = ttk.Scrollbar(self, orient='vertical', command=self.vertical_canvas.yview)
+        v_scrollbar.grid(row=0, column=1, sticky='nsw')
+        self.vertical_canvas.config(yscrollcommand=v_scrollbar.set, scrollregion=self.vertical_canvas.bbox('all'))
+        self.interior_frame = ttk.Frame(self.vertical_canvas)
+        self.interior_frame_id = self.vertical_canvas.create_window((0, 0), window=self.interior_frame,
+                                                                    anchor=tkinter.NW)
+        self.interior_frame.columnconfigure(1, weight=1)
+        self.interior_frame.rowconfigure(0, weight=1)
+        self.left_frame = ttk.Frame(self.interior_frame)
+        self.left_frame.grid(row=0, column=0, sticky='nsew')
+        self.horizontal_frame = ttk.Frame(self.interior_frame)
+        self.horizontal_frame.grid(row=0, column=1, sticky='nsew')
+        self.horizontal_canvas = tkinter.Canvas(self.horizontal_frame)
+        self.horizontal_canvas.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
+        h_scrollbar = ttk.Scrollbar(self, orient='horizontal', command=self.horizontal_canvas.xview)
+        h_scrollbar.grid(row=1, column=0, sticky='new')
+        self.horizontal_canvas.config(xscrollcommand=h_scrollbar.set,
+                                      scrollregion=self.horizontal_canvas.bbox('all'))
+        self.right_frame = ttk.Frame(self.horizontal_canvas)
+        self.right_frame_id = self.horizontal_canvas.create_window((0, 0), window=self.right_frame,
+                                                                   anchor=tkinter.NW)
+        self.horizontal_canvas.config(height=self.left_frame.winfo_height())
+
+        self.save = save
+        self.database = database
+        self.table_cells = []
+        # Population of the table
+        now = datetime.datetime.now()  # TODO ammend here
+        shift_name, start_date, end_date = self.get_shift(now)
+        # self.header_setup('Hourly', now.strftime('%Y-%m-%d'), shift_name)
+        data = {'live': (machine_list, 'Hourly', (now.strftime('%Y-%m-%d'), shift_name)),
+                'test2': (machine_list[0:4], 'Daily', ('7 days ago', 'Current day'))}
+        self.populate_table(data)
+        # self.machine_reading_setup(machine_list)
+
+        self.horizontal_frame.bind('<Configure>', self._on_vertical_frame_configure)
+        self.vertical_canvas.bind('<Configure>', self._on_vertical_canvas_configure)
+        self.right_frame.bind('<Configure>', self._on_horizontal_frame_configure)
+        self.horizontal_canvas.bind('<Configure>', self._on_horizontal_canvas_configure)
+
+    def header_setup(self, mode, detail1, detail2, start_date, end_date, date_format):
+        row = len(self.table_cells)
+        # First Row of Headers
+        header1 = []
+        today_string = '{} \u27A1 {}'.format(detail1, detail2)
+        today_cell = tkinter.Label(self.left_frame, text=today_string, font=('Helvetica', '16', 'bold'), bd=1,
+                                   relief='solid')
+        today_cell.grid(row=row, column=0, columnspan=3, sticky='nsew')
+        header1.append(today_cell)
+        header1.append(None)  # Append none for column span
+        header1.append(None)
+
+        if mode == 'Daily':
+            time_diff = datetime.timedelta(days=1)
+            next_date = start_date.replace(minute=0, second=0, microsecond=0) + time_diff
+            end_date = end_date + time_diff  # So that the end date is inclusive
+        elif mode == 'Hourly':
+            time_diff = datetime.timedelta(hours=1)
+            next_date = start_date.replace(minute=0, second=0, microsecond=0) + time_diff
+        else:
+            time_diff = datetime.timedelta(minutes=5)
+            next_date = start_date + time_diff
+        check_date = start_date
+        position = 0
+        while next_date < end_date:
+            header_string = check_date.strftime(date_format)
+            header_label = tkinter.Label(self.right_frame, text=header_string, font=('Helvetica', '16', 'bold'),
+                                         bd=1, relief='solid', bg=self.HEADER_COLOR)
+            header_label.grid(row=row, column=position, columnspan=2, sticky='nsew')
+            header1.append(header_label)
+            header1.append(None)  # Append none for column span
+
+            check_date = next_date
+            next_date = next_date + time_diff
+            position = position + 2
+
+        header_string = check_date.strftime(date_format)
+        header_label = tkinter.Label(self.right_frame, text=header_string, font=('Helvetica', '16', 'bold'), bd=1,
+                                     relief='solid', bg=self.HEADER_COLOR)
+        header_label.grid(row=row, column=position, columnspan=2, sticky='nsew')
+        header1.append(header_label)
+        header1.append(None)  # Append none for column span
+
+        self.table_cells.append(header1)
+
+        row = row + 1
+        # Second Row of Headers
+        header2 = []
+        total_cell = tkinter.Label(self.left_frame, text='Total', font=('Helvetica', '14', 'bold'), width=9, bd=1,
+                                   relief='solid')
+        header2.append(total_cell)
+        if mode == 'Hourly':
+            total_cell.grid(row=row, column=0, sticky='nsew')
+            target_cell = tkinter.Label(self.left_frame, text='Out/hr', font=('Helvetica', '14', 'bold'), width=6, bd=1,
+                                        relief='solid')
+            target_cell.grid(row=row, column=1, sticky='nsew')
+            header2.append(target_cell)
+        else:
+            total_cell.grid(row=row, column=0, columnspan=2, sticky='nsew')
+
+        machine_cell = tkinter.Label(self.left_frame, text='Machine', font=('Helvetica', '14', 'bold'), width=15, bd=1,
+                                     relief='solid')
+        machine_cell.grid(row=row, column=2, sticky='nsew')
+        header2.append(machine_cell)
+
+        for column in range(3, len(header1), 2):
+            col = column - 3
+            out_cell = tkinter.Label(self.right_frame, text='Out', width=6, bd=1, relief='solid')
+            out_cell.grid(row=row, column=col, sticky='nsew')
+            header2.append(out_cell)
+            if mode == 'Hourly':
+                out_cell.grid(row=row, column=col, sticky='nsew')
+                min_cell = tkinter.Label(self.right_frame, text='Min', width=3, bd=1, relief='solid')
+                min_cell.grid(row=row, column=(col+1), sticky='nsew')
+                header2.append(min_cell)
+            else:
+                out_cell.grid(row=row, column=col, columnspan=2, sticky='nsew')
+
+        self.table_cells.append(header2)
+
+    def get_shift(self, date_time):
+        date = date_time.strftime('%Y-%m-%d')
+        for name, (start, duration) in self.save.shift_settings.items():
+            start_date = datetime.datetime.strptime(' '.join([date, start]), '%Y-%m-%d %H:%M')
+            end_date = start_date + datetime.timedelta(seconds=duration)
+            if start_date <= date_time < end_date:
+                return name, start_date, end_date
+
+        start_date = date_time.replace(minute=0, second=0, microsecond=0)
+        end_date = start_date + datetime.timedelta(hours=1)
+        return date_time.strftime('Hour %H:00'), start_date, end_date
+
+    def populate_table(self, data):
+        data_keys = list(data.keys())
+        for index in range(len(data)):
+            key = data_keys[index]
+            machine_list, mode, (detail1, detail2) = data[key]
+            self.add_blank_row()
+            start_date, end_date, date_format = self.get_data_details(mode=mode, detail1=detail1, detail2=detail2,
+                                                                      save=self.save)
+            self.header_setup(mode=mode, detail1=detail1, detail2=detail2, start_date=start_date, end_date=end_date,
+                              date_format=date_format)
+
+            for position in range(len(machine_list)):
+                self.add_machine_row(machine=machine_list[position], start=start_date, end=end_date, mode=mode)
+
+    @staticmethod
+    def get_data_details(mode, detail1, detail2, save):
+        if detail2 == 'Current day':
+            detail2 = datetime.datetime.now()
+            detail1 = detail2 - datetime.timedelta(days=6)
+            detail2 = detail2.strftime('%Y-%m-%d')
+            detail1 = detail1.strftime('%Y-%m-%d')
+        elif detail2 == 'Previous day':
+            detail2 = datetime.datetime.now() - datetime.timedelta(days=1)
+            detail1 = detail2 - datetime.timedelta(days=6)
+            detail2 = detail2.strftime('%Y-%m-%d')
+            detail1 = detail1.strftime('%Y-%m-%d')
+        elif detail1 == 'Current day':
+            detail1 = datetime.datetime.now().strftime('%Y-%m-%d')
+        elif detail1 == 'Previous day':
+            detail1 = (datetime.datetime.now() - datetime.timedelta(days=1)).strftime('%Y-%m-%d')
+
+        date_format = '%H:%M'
+        if mode == 'Daily':
+            start_date = datetime.datetime.strptime(detail1, '%Y-%m-%d')
+            end_date = datetime.datetime.strptime(detail2, '%Y-%m-%d')
+            date_format = '%d'
+        elif mode == 'Hourly':
+            start_time, duration = save.shift_settings[detail2]
+            start_date = datetime.datetime.strptime(' '.join([detail1, start_time]), '%Y-%m-%d %H:%M')
+            end_date = start_date + datetime.timedelta(seconds=duration)
+        else:
+            start_date = datetime.datetime.strptime(' '.join([detail1, detail2]), '%Y-%m-%d %H:%M')
+            end_date = start_date + datetime.timedelta(hours=1)
+
+        return start_date, end_date, date_format
+
+    def add_blank_row(self):
+        row_cells = []
+        row = len(self.table_cells)
+        frame_left = ttk.Frame(self.left_frame, height=5)
+        frame_left.grid(row=row, column=0, sticky='nsew')
+        row_cells.append(frame_left)
+        frame_right = ttk.Frame(self.right_frame, height=5)
+        frame_right.grid(row=row, column=0, sticky='nsew')
+        row_cells.append(frame_right)
+        self.table_cells.append(row_cells)
+
+    def clear_machine_rows(self):
+        for row in range(len(self.table_cells)):
+            for cell in self.table_cells[row]:
+                cell.destroy()
+
+    def add_machine_row(self, machine, start, end, mode):
+        row_cells = []
+        row = len(self.table_cells)
+        # Total
+        total_cell = tkinter.Label(self.left_frame, bd=1, relief='solid')
+        row_cells.append(total_cell)
+        if mode == 'Hourly':
+            total_cell.grid(row=row, column=0, sticky='nsew')
+            # Target output
+            target = self.get_target_output()
+            target_cell = tkinter.Label(self.left_frame, text=target, bd=1, relief='solid')
+            target_cell.grid(row=row, column=1, sticky='nsew')
+            row_cells.append(target_cell)
+        else:
+            total_cell.grid(row=row, column=0, columnspan=2, sticky='nsew')
+        # Machine
+        machine_cell = tkinter.Label(self.left_frame, text=machine, bd=1, relief='solid')
+        machine_cell.grid(row=row, column=2, sticky='nsew')
+        row_cells.append(machine_cell)
+
+        # Loop through
+        time_list, count_list = self.database.get_sums(machine=machine, start=start, end=end, mode=mode)
+        for position in range(len(count_list)):
+            column = position*2
+            count = count_list[position]
+            out_cell = tkinter.Label(self.right_frame, text=count, anchor=tkinter.E, bd=1, relief='solid')
+            row_cells.append(out_cell)
+            if mode == 'Hourly':
+                out_cell.grid(row=row, column=column, sticky='nsew')
+                minutes = int((count/target) * 60)
+                min_cell = tkinter.Label(self.right_frame, text=minutes, anchor=tkinter.E, bd=1, relief='solid')
+                min_cell.grid(row=row, column=(column + 1), sticky='nsew')
+                if minutes < 45:
+                    min_cell.configure(bg='Yellow', fg='red')
+                row_cells.append(min_cell)
+            else:
+                out_cell.grid(row=row, column=column, columnspan=2, sticky='nsew')
+
+        total_cell.configure(text=sum(count_list))
+        self.table_cells.append(row_cells)
+
+    def get_target_output(self):  # TODO get target output from settings
+        return 5000
+
+    def _on_vertical_canvas_configure(self, event):
+        canvas_width = event.width
+        self.vertical_canvas.itemconfig(self.interior_frame_id, width=canvas_width)
+
+    def _on_vertical_frame_configure(self, _event):
+        self.vertical_canvas.configure(scrollregion=self.vertical_canvas.bbox("all"))
+
+    def _on_horizontal_canvas_configure(self, event):
+        canvas_height = event.height
+        self.horizontal_canvas.itemconfig(self.right_frame_id, height=canvas_height)
+
+    def _on_horizontal_frame_configure(self, _event):
+        self.horizontal_canvas.configure(scrollregion=self.horizontal_canvas.bbox("all"))
+
+
 class VerticalScrollFrame(ttk.Frame):
 
     def __init__(self, parent, **kwargs):
@@ -752,17 +1018,38 @@ class ConfigurationSettings(ttk.Frame):
             self.port_tv = None
             self.quick_tv = None
             self.shift_tv = None
+            self.target_tv = None
             self.machine_ports = None
             self.quick_access = None
             self.shift_settings = None
+            self.target_settings = None
             self.request_time = tkinter.IntVar()
             self.file_path = tkinter.StringVar()
+            self.comparator1 = tkinter.StringVar()
+            self.minute_var1 = tkinter.IntVar()
+            self.colour_label1 = None
+            self.colour1 = None
+            self.comparator2 = tkinter.StringVar()
+            self.minute_var2 = tkinter.IntVar()
+            self.colour_label2 = None
+            self.colour2 = None
+            self.machine_var = tkinter.StringVar()
+            self.target_var = tkinter.StringVar()
             self.get_copies(save)
 
         def get_copies(self, save: serverDB.ServerSettings):
             self.machine_ports = save.machine_ports.copy()
             self.quick_access = save.quick_access.copy()
             self.shift_settings = save.shift_settings.copy()
+            self.target_settings = save.target_settings.copy()
+            target_minute1 = self.target_settings[save.TARGET_MINUTES_1]
+            self.comparator1.set(target_minute1[0])
+            self.minute_var1.set(target_minute1[1])
+            self.colour1 = target_minute1[2]
+            target_minute2 = self.target_settings[save.TARGET_MINUTES_2]
+            self.comparator2.set(target_minute2[0])
+            self.minute_var2.set(target_minute2[1])
+            self.colour2 = target_minute2[2]
             misc_settings = save.misc_settings.copy()
             self.request_time.set(misc_settings[save.REQUEST_TIME])
             self.file_path.set(misc_settings[save.FILE_PATH])
@@ -932,6 +1219,56 @@ class ConfigurationSettings(ttk.Frame):
         down_button = ttk.Button(button_frame, text='\u25BC', command=lambda: self.move_item(self.to_save.shift_tv, 1))
         down_button.pack(side=tkinter.TOP)
 
+    def machine_target_setup(self):  # Setup individual machine target
+        # Create Frame
+        target_frame = ttk.Frame(self.configuration_notebook)
+        self.configuration_notebook.add(target_frame, text='Machine Target')
+        # Target colour frame
+        comparator_list = ['Not set', 'Greater than', 'Equal to', 'Less than']
+        number_validation = self.register(ConfigurationSettings.validate_digit)
+        target_colour_frame = ttk.Frame(target_frame)
+        target_colour_frame.grid(row=0, column=0, sticky='nsew')
+        label = ttk.Label(target_colour_frame, text='Targeted Minute 1: ', width=4)
+        label.grid(row=0, column=0, sticky='w')
+        comparator_option1 = ttk.OptionMenu(target_colour_frame, self.to_save.comparator1,
+                                            self.to_save.comparator1.get(), *comparator_list)
+        comparator_option1.grid(row=0, column=1)
+        targeted_minute1 = ttk.Entry(target_colour_frame, textvariable=self.to_save.minute_var1, width=4,
+                                     validate='key', validatecommand=(number_validation, '%P', '%S', 'minute'))
+        targeted_minute1.grid(row=0, column=2, sticky='w')
+        self.to_save.colour_label1 = ttk.Label(target_colour_frame, width=2, bg=self.to_save.colour1)
+        self.to_save.colour_label1.grid(row=0, column=3, sticky='w')
+        self.to_save.colour_label1.bind('<Button-1>', self.pick_colour)
+        label = ttk.Label(target_colour_frame, text='Targeted Minute 2: ', width=4)
+        label.grid(row=1, column=0, sticky='w')
+        comparator_option2 = ttk.OptionMenu(target_colour_frame, self.to_save.comparator2,
+                                            self.to_save.comparator2.get(), *comparator_list)
+        comparator_option2.grid(row=1, column=1)
+        targeted_minute1 = ttk.Entry(target_colour_frame, textvariable=self.to_save.minute_var2, width=4,
+                                     validate='key', validatecommand=(number_validation, '%P', '%S', 'minute'))
+        targeted_minute1.grid(row=1, column=2, sticky='w')
+        self.to_save.colour_label2 = ttk.Label(target_colour_frame, width=2, bg=self.to_save.colour2)
+        self.to_save.colour_label2.grid(row=1, column=3, sticky='w')
+        self.to_save.colour_label2.bind('<Button-1>', self.pick_colour)
+        # TODO set target
+        target_set_frame = ttk.Frame(target_frame)
+        target_set_frame.grid(row=1, column=0, sticky='nsew')
+        label = ttk.Label(target_set_frame, text='Machine: ')
+        label.grid(row=0, column=0, sticky='e')
+        machine_label = ttk.Label(target_set_frame, textvariable=self.to_save.machine_var)
+        machine_label.grid(row=0, column=1, sticky='w')
+        label = ttk.Label(target_set_frame, text='Hourly target: ')
+        label.grid(row=0, column=2, sticky='e')
+        target_entry = ttk.Entry(target_set_frame, textvariable=self.to_save.target_var, validate='key',
+                                 validatecommand=(number_validation, '%P', '%S', 'target'))
+        target_entry.grid(row=0, column=3, sticky='w')
+        set_button = ttk.Button(target_set_frame, text='Set')  # TODO add command
+        set_button.grid(row=1, column=3, sticky='e')
+        # TODO machine target
+        target_tv_frame = ttk.Frame(target_frame)
+        target_tv_frame.grid(row=2, column=0, sticky='nsew')
+        self.to_save.target_tv =
+
     def miscellaneous_setup(self):  # Miscellaneous
         # Create Frame
         misc_frame = ttk.Frame(self.configuration_notebook)
@@ -1044,9 +1381,19 @@ class ConfigurationSettings(ttk.Frame):
             self.being = None
 
     @staticmethod
-    def validate_time(values, new):
-        if len(values) < 6:
-            return new.isdigit() or (new == ':')
+    def pick_colour(event):
+        colour = colorchooser.askcolor(event.widget['background'])
+        event.widget.config(bg=colour[1])
+
+    @staticmethod
+    def validate_digit(values, new, widget):
+        if new.isdigit():
+            if widget == 'target':
+                return True
+            elif widget == 'minute' and len(values) < 3:
+                return True
+            else:
+                return False
         else:
             return False
 
