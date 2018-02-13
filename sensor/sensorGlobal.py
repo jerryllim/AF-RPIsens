@@ -6,6 +6,7 @@ from collections import Counter
 from collections import namedtuple
 import threading
 from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
 import logging
 
 
@@ -74,8 +75,8 @@ class NetworkDataManager:
     def add_jobs(self):
         if not self.scheduler.get_jobs():  # To prevent duplicating jobs
             hour, minute = NetworkDataManager.get_cron_hour_minute(self.removed_minutes)
-            self.scheduler.add_job(self.clear_removed_count, 'cron', hour=hour, minute=minute, second=1,
-                                   id=NetworkDataManager.REMOVED_ID)
+            trigger = CronTrigger(hour=hour, minute=minute, second=1)
+            self.scheduler.add_job(self.clear_removed_count, trigger, id=NetworkDataManager.REMOVED_ID)
 
     def set_removed_time(self, temp):
         if temp is None:
@@ -83,7 +84,8 @@ class NetworkDataManager:
         else:
             self.removed_minutes = temp
         hour, minute = NetworkDataManager.get_cron_hour_minute(temp)
-        self.scheduler.reschedule_job(NetworkDataManager.REMOVED_ID, trigger='cron', hour=hour, minute=minute, second=1)
+        trigger_reschedule = CronTrigger(hour=hour, minute=minute, second=1)
+        self.scheduler.reschedule_job(NetworkDataManager.REMOVED_ID, trigger_reschedule)
 
     def set_port_number(self, number):
         self.port_number = number
