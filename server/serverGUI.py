@@ -590,23 +590,6 @@ class ReadingTable(ttk.Frame):
         v_scrollbar = ttk.Scrollbar(self, orient='vertical', command=self.vertical_canvas.yview)
         v_scrollbar.grid(row=0, column=1, sticky='nsw')
         self.vertical_canvas.config(yscrollcommand=v_scrollbar.set, scrollregion=self.vertical_canvas.bbox('all'))
-        self.interior_frame = None
-        self.interior_frame_id = None
-        self.left_frame = None
-        self.horizontal_frame = None
-        self.horizontal_canvas = None
-        self.right_frame = None
-        self.right_frame_id = None
-        self.frame_setup()
-
-        self.save = save
-        self.database = database
-        self.table_cells = []
-        # Population of the table
-        if data is not None:
-            self.populate_table(data)
-
-    def frame_setup(self):
         self.interior_frame = ttk.Frame(self.vertical_canvas)
         self.interior_frame_id = self.vertical_canvas.create_window((0, 0), window=self.interior_frame,
                                                                     anchor=tkinter.NW)
@@ -626,18 +609,38 @@ class ReadingTable(ttk.Frame):
         self.right_frame_id = self.horizontal_canvas.create_window((0, 0), window=self.right_frame,
                                                                    anchor=tkinter.NW)
         self.horizontal_canvas.config(height=self.left_frame.winfo_height())
+        self.secondary_left_frame = None
+        self.secondary_right_frame = None
+        self.secondary_frames_setup()
+
+        self.save = save
+        self.database = database
+        self.table_cells = []
+        # Population of the table
+        if data is not None:
+            self.populate_table(data)
 
         self.horizontal_frame.bind('<Configure>', self._on_vertical_frame_configure)
         self.vertical_canvas.bind('<Configure>', self._on_vertical_canvas_configure)
         self.right_frame.bind('<Configure>', self._on_horizontal_frame_configure)
         self.horizontal_canvas.bind('<Configure>', self._on_horizontal_canvas_configure)
 
+    def secondary_frames_setup(self):
+        if self.secondary_left_frame is not None:
+            self.secondary_left_frame.destroy()
+        if self.secondary_right_frame is not None:
+            self.secondary_right_frame.destroy()
+        self.secondary_left_frame = ttk.Frame(self.left_frame)
+        self.secondary_left_frame.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
+        self.secondary_right_frame = ttk.Frame(self.right_frame)
+        self.secondary_right_frame.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
+
     def header_setup(self, mode, detail1, detail2, start_date, end_date, date_format):
         row = len(self.table_cells)
         # First Row of Headers
         header1 = []
         today_string = '{} \u27A1 {}'.format(detail1, detail2)
-        today_cell = tkinter.Label(self.left_frame, text=today_string, font=('Helvetica', '16', 'bold'), bd=1,
+        today_cell = tkinter.Label(self.secondary_left_frame, text=today_string, font=('Helvetica', '16', 'bold'), bd=1,
                                    relief='solid')
         today_cell.grid(row=row, column=0, columnspan=3, sticky='nsew')
         header1.append(today_cell)
@@ -656,7 +659,7 @@ class ReadingTable(ttk.Frame):
         position = 0
         while next_date < end_date:
             header_string = check_date.strftime(date_format)
-            header_label = tkinter.Label(self.right_frame, text=header_string, font=('Helvetica', '16', 'bold'),
+            header_label = tkinter.Label(self.secondary_right_frame, text=header_string, font=('Helvetica', '16', 'bold'),
                                          bd=1, relief='solid', bg=self.HEADER_COLOR)
             header_label.grid(row=row, column=position, columnspan=2, sticky='nsew')
             header1.append(header_label)
@@ -666,7 +669,7 @@ class ReadingTable(ttk.Frame):
             position = position + 2
 
         header_string = check_date.strftime(date_format)
-        header_label = tkinter.Label(self.right_frame, text=header_string, font=('Helvetica', '16', 'bold'), bd=1,
+        header_label = tkinter.Label(self.secondary_right_frame, text=header_string, font=('Helvetica', '16', 'bold'), bd=1,
                                      relief='solid', bg=self.HEADER_COLOR)
         header_label.grid(row=row, column=position, columnspan=2, sticky='nsew')
         header1.append(header_label)
@@ -676,31 +679,31 @@ class ReadingTable(ttk.Frame):
         row = row + 1
         # Second Row of Headers
         header2 = []
-        total_cell = tkinter.Label(self.left_frame, text='Total', font=('Helvetica', '14', 'bold'), width=9, bd=1,
+        total_cell = tkinter.Label(self.secondary_left_frame, text='Total', font=('Helvetica', '14', 'bold'), width=9, bd=1,
                                    relief='solid')
         header2.append(total_cell)
         if mode == 'Hourly':
             total_cell.grid(row=row, column=0, sticky='nsew')
-            target_cell = tkinter.Label(self.left_frame, text='Out/hr', font=('Helvetica', '14', 'bold'), width=6, bd=1,
+            target_cell = tkinter.Label(self.secondary_left_frame, text='Out/hr', font=('Helvetica', '14', 'bold'), width=6, bd=1,
                                         relief='solid')
             target_cell.grid(row=row, column=1, sticky='nsew')
             header2.append(target_cell)
         else:
             total_cell.grid(row=row, column=0, columnspan=2, sticky='nsew')
 
-        machine_cell = tkinter.Label(self.left_frame, text='Machine', font=('Helvetica', '14', 'bold'), width=15, bd=1,
+        machine_cell = tkinter.Label(self.secondary_left_frame, text='Machine', font=('Helvetica', '14', 'bold'), width=15, bd=1,
                                      relief='solid')
         machine_cell.grid(row=row, column=2, sticky='nsew')
         header2.append(machine_cell)
 
         for column in range(1, len(header1)):
             col = column*2 - 2
-            out_cell = tkinter.Label(self.right_frame, text='Out', width=6, bd=1, relief='solid')
+            out_cell = tkinter.Label(self.secondary_right_frame, text='Out', width=6, bd=1, relief='solid')
             out_cell.grid(row=row, column=col, sticky='nsew')
             header2.append(out_cell)
             if mode == 'Hourly':
                 out_cell.grid(row=row, column=col, sticky='nsew')
-                min_cell = tkinter.Label(self.right_frame, text='Min', width=3, bd=1, relief='solid')
+                min_cell = tkinter.Label(self.secondary_right_frame, text='Min', width=3, bd=1, relief='solid')
                 min_cell.grid(row=row, column=(col+1), sticky='nsew')
                 header2.append(min_cell)
             else:
@@ -769,40 +772,36 @@ class ReadingTable(ttk.Frame):
     def add_blank_row(self):
         row_cells = []
         row = len(self.table_cells)
-        frame_left = ttk.Frame(self.left_frame, height=5)
+        frame_left = ttk.Frame(self.secondary_left_frame, height=5)
         frame_left.grid(row=row, column=0, sticky='nsew')
         row_cells.append(frame_left)
-        frame_right = ttk.Frame(self.right_frame, height=5)
+        frame_right = ttk.Frame(self.secondary_right_frame, height=5)
         frame_right.grid(row=row, column=0, sticky='nsew')
         row_cells.append(frame_right)
         self.table_cells.append(row_cells)
 
     def clear_machine_rows(self):
-        self.interior_frame.destroy()
-        self.frame_setup()
-        for row in range(len(self.table_cells)):
-            for cell in self.table_cells[row]:
-                cell.destroy()
+        self.secondary_frames_setup()
         self.table_cells = []
 
     def add_machine_row(self, machine, start, end, mode):
         row_cells = []
         row = len(self.table_cells)
         # Total
-        total_cell = tkinter.Label(self.left_frame, bd=1, relief='solid')
+        total_cell = tkinter.Label(self.secondary_left_frame, bd=1, relief='solid')
         row_cells.append(total_cell)
         target = 0
         if mode == 'Hourly':
             total_cell.grid(row=row, column=0, sticky='nsew')
             # Target output
             target = self.get_target_output(machine)
-            target_cell = tkinter.Label(self.left_frame, text=target, bd=1, relief='solid')
+            target_cell = tkinter.Label(self.secondary_left_frame, text=target, bd=1, relief='solid')
             target_cell.grid(row=row, column=1, sticky='nsew')
             row_cells.append(target_cell)
         else:
             total_cell.grid(row=row, column=0, columnspan=2, sticky='nsew')
         # Machine
-        machine_cell = tkinter.Label(self.left_frame, text=machine, bd=1, relief='solid')
+        machine_cell = tkinter.Label(self.secondary_left_frame, text=machine, bd=1, relief='solid')
         machine_cell.grid(row=row, column=2, sticky='nsew')
         row_cells.append(machine_cell)
 
@@ -811,11 +810,11 @@ class ReadingTable(ttk.Frame):
         for position in range(len(count_list)):
             column = position*2
             count = count_list[position]
-            out_cell = tkinter.Label(self.right_frame, text=count, anchor=tkinter.E, bd=1, relief='solid')
+            out_cell = tkinter.Label(self.secondary_right_frame, text=count, anchor=tkinter.E, bd=1, relief='solid')
             row_cells.append(out_cell)
             if mode == 'Hourly':
                 out_cell.grid(row=row, column=column, sticky='nsew')
-                min_cell = tkinter.Label(self.right_frame, anchor=tkinter.E, bd=1, relief='solid')
+                min_cell = tkinter.Label(self.secondary_right_frame, anchor=tkinter.E, bd=1, relief='solid')
                 min_cell.grid(row=row, column=(column + 1), sticky='nsew')
                 if target == 0:
                     minutes = 0
