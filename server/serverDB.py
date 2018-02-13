@@ -25,8 +25,8 @@ class ServerSettings:
         self.quick_access = OrderedDict()
         # 43200 is 12 hours in seconds
         self.shift_settings = {'Morning': ('08:00', 43200), 'Night': ('20:00', 43200)}
-        self.target_settings = {self.TARGET_MINUTES_1: ('Not set', '', '#FFFF00'),
-                                self.TARGET_MINUTES_2: ('Not set', '', '#FFFF00'),
+        self.target_settings = {self.TARGET_MINUTES_1: ('Not set', 0, '#FFFF00'),
+                                self.TARGET_MINUTES_2: ('Not set', 0, '#FFFF00'),
                                 self.MACHINE_TARGETS: {}}
         self.misc_settings = {self.REQUEST_TIME: 15, self.FILE_PATH: os.path.expanduser('~/Documents')}
         self.load_settings()

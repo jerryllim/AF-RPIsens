@@ -5,6 +5,8 @@ import calendar
 import datetime
 from collections import namedtuple
 import server.serverDB as serverDB
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
 import matplotlib
 
 matplotlib.use('TkAgg')
@@ -17,14 +19,16 @@ plotSetting = namedtuple('plotSetting', ['machine', 'mode', 'details'])
 
 class MainWindow(ttk.Frame):
     NUM_COL = 2
+    REFRESH_LIVE_TABLE_ID = 'refresh_live_table'
 
-    def __init__(self, parent, save: serverDB.ServerSettings, **kwargs):
+    def __init__(self, parent, save: serverDB.ServerSettings, server_run, **kwargs):
         self.save = save
         ttk.Frame.__init__(self, parent, **kwargs)
         self.rowconfigure(0, weight=1)
         self.rowconfigure(1, weight=100)
         self.columnconfigure(0, weight=1)
         self.database = serverDB.DatabaseManager(save)
+        self.server_run = server_run
         self.configuration_settings = None
         self.launched_settings = False
 
@@ -48,7 +52,8 @@ class MainWindow(ttk.Frame):
             self.save.misc_settings[self.save.REQUEST_TIME]))
         request_label = ttk.Label(self.top_frame, textvariable=self.request_interval)
         request_label.grid(row=0, column=0, sticky='w')
-        request_button = ttk.Button(self.top_frame, text='Request now')  # TODO add command
+        request_button = ttk.Button(self.top_frame, text='Request now', command=server_run.request_from_communication)
+        # TODO add command ^
         request_button.grid(row=0, column=1)
         plot_button = ttk.Button(self.top_frame, text='Plot new', command=self.launch_plot_new)
         plot_button.grid(row=0, column=2)
@@ -56,17 +61,13 @@ class MainWindow(ttk.Frame):
         self.quick_access_setup()
 
         # LiveTable setup
-        now = datetime.datetime.now()
-        database_name = now.strftime('%m_%B_%Y.sqlite')
-        self.live_table = ReadingTable(self, save, self.database, self.database.get_table_names(database_name))
+        self.live_table = ReadingTable(self, save, self.database)
         self.live_table.grid(row=1, column=0, sticky='nsew', padx=5, pady=5)
-        # # Notebook setup
-        # self.view_notebook = NotebookView(self, save)
-        # self.view_notebook.grid(row=1, column=0, sticky='nsew')
-        # self.populate_graph_treeview()
-        # self.plot_graph_add_treeview()
-        # TODO apschduler to refresh/animate the live graphs
-        # TODO setup save_settings to change apscheduler in communication
+        self.populate_live_table()
+
+        # Refresh live table
+        self.scheduler = BackgroundScheduler()
+        self.schedule_refresh_table()
 
     def quick_access_setup(self):
         if self.quick_frame is not None:
@@ -104,29 +105,14 @@ class MainWindow(ttk.Frame):
         plot_settings_frame.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
         plot_settings.grab_set()
 
-    def populate_graph_treeview(self):
-        # Draw Graph Canvas
-        database_name = datetime.datetime.today().strftime('%m_%B_%Y.sqlite')
-        tables = self.database.get_table_names(database_name)
-        self.view_notebook.graph_canvas.set_total_plots(len(tables))
-
-    def plot_graph_add_treeview(self):
+    def populate_live_table(self):  # TODO should be done
         now = datetime.datetime.now()
+        shift_name, start_date, end_date = self.get_shift(now)
         database_name = now.strftime('%m_%B_%Y.sqlite')
-        # Get current shift
-        shift_name, shift_start, shift_end = self.get_shift(now)
-        tables = self.database.get_table_names(database_name)
-        if len(tables) != self.view_notebook.graph_canvas.total_plots:
-            self.populate_graph_treeview()
-            return
-        self.view_notebook.treeview.delete(*self.view_notebook.treeview.get_children())
-        for index in range(self.view_notebook.graph_canvas.total_plots):
-            table = tables[index]
-            title = '{}\n{}   {}'.format(table, shift_name, now.strftime('%Y-%m-%d'))
-            time_list, count_list = self.database.get_sums(table, shift_start, shift_end, 'Hourly')
-            self.view_notebook.graph_canvas.plot(index, x=time_list, y=count_list, x_format='%H:%M', title=table)
-            for pos in range(len(time_list)):
-                self.view_notebook.treeview.insert('', tkinter.END, values=(table, count_list[pos], time_list[pos]))
+        machine_list = self.database.get_table_names(database_name)
+        data = {'live': (machine_list, 'Hourly', (now.strftime('%Y-%m-%d'), shift_name))}
+        self.live_table.clear_machine_rows()
+        self.live_table.populate_table(data)
 
     def get_shift(self, date_time):
         date = date_time.strftime('%Y-%m-%d')
@@ -141,7 +127,6 @@ class MainWindow(ttk.Frame):
         return date_time.strftime('Hour %H:00'), start_date, end_date
 
     def launch_settings(self):
-        print(self.launched_settings)
         if self.launched_settings:
             self.configuration_settings.lift()
             return
@@ -150,9 +135,14 @@ class MainWindow(ttk.Frame):
         self.configuration_settings.title('Configuration & Settings')
         self.configuration_settings.geometry('-200-200')
         configuration_settings_frame = ConfigurationSettings(self.configuration_settings, self.save, self.database,
-                                                             self.request_interval, self.launched_settings)
+                                                             self.request_interval, self.server_run)
         configuration_settings_frame.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
         configuration_settings_frame.grab_set()
+
+    def schedule_refresh_table(self):
+        self.scheduler.remove_all_jobs()
+        cron_trigger = CronTrigger(hour='*', minute='5-59/{}'.format(self.save.misc_settings[self.save.REQUEST_TIME]))
+        self.scheduler.add_job(self.populate_live_table, cron_trigger, id=self.REFRESH_LIVE_TABLE_ID)
 
 
 class NotebookView(ttk.Notebook):
@@ -587,8 +577,9 @@ class GraphDetailSettingsPage(ttk.Frame):
 
 class ReadingTable(ttk.Frame):
     HEADER_COLOR = '#F5A898'
+    COMPARATOR_DICT = {'Greater than': '>', 'Equal to': '==', 'Less than': '<'}
 
-    def __init__(self, parent, save, database, machine_list, **kwargs):
+    def __init__(self, parent, save, database, data=None, **kwargs):
         ttk.Frame.__init__(self, parent, **kwargs)
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
@@ -621,13 +612,8 @@ class ReadingTable(ttk.Frame):
         self.database = database
         self.table_cells = []
         # Population of the table
-        now = datetime.datetime.now()  # TODO ammend here
-        shift_name, start_date, end_date = self.get_shift(now)
-        # self.header_setup('Hourly', now.strftime('%Y-%m-%d'), shift_name)
-        data = {'live': (machine_list, 'Hourly', (now.strftime('%Y-%m-%d'), shift_name)),
-                'test2': (machine_list[0:4], 'Daily', ('7 days ago', 'Current day'))}
-        self.populate_table(data)
-        # self.machine_reading_setup(machine_list)
+        if data is not None:
+            self.populate_table(data)
 
         self.horizontal_frame.bind('<Configure>', self._on_vertical_frame_configure)
         self.vertical_canvas.bind('<Configure>', self._on_vertical_canvas_configure)
@@ -740,6 +726,26 @@ class ReadingTable(ttk.Frame):
             for position in range(len(machine_list)):
                 self.add_machine_row(machine=machine_list[position], start=start_date, end=end_date, mode=mode)
 
+    def populate_live_table(self, data):
+        data_keys = list(data.keys())
+        for index in range(len(data)):
+            key = data_keys[index]
+            machine_list, mode, (detail1, detail2) = data[key]
+            self.add_blank_row()
+            start_date, end_date, date_format = self.get_data_details(mode=mode, detail1=detail1, detail2=detail2,
+                                                                      save=self.save)
+            self.header_setup(mode=mode, detail1=detail1, detail2=detail2, start_date=start_date, end_date=end_date,
+                              date_format=date_format)
+
+            prev_machine = ''
+            for position in range(len(machine_list)):
+                machine = machine_list[position]
+                if prev_machine != '' and machine.split(':')[0] != prev_machine:
+                    self.add_blank_row()
+
+                self.add_machine_row(machine=machine, start=start_date, end=end_date, mode=mode)
+                prev_machine = machine.split(':')[0]
+
     @staticmethod
     def get_data_details(mode, detail1, detail2, save):
         if detail2 == 'Current day':
@@ -818,14 +824,19 @@ class ReadingTable(ttk.Frame):
             row_cells.append(out_cell)
             if mode == 'Hourly':
                 out_cell.grid(row=row, column=column, sticky='nsew')
+                min_cell = tkinter.Label(self.right_frame, anchor=tkinter.E, bd=1, relief='solid')
+                min_cell.grid(row=row, column=(column + 1), sticky='nsew')
                 if target == 0:
                     minutes = 0
                 else:
                     minutes = int((count/target) * 60)
-                min_cell = tkinter.Label(self.right_frame, text=minutes, anchor=tkinter.E, bd=1, relief='solid')
-                min_cell.grid(row=row, column=(column + 1), sticky='nsew')
-                if minutes < 45:
-                    min_cell.configure(bg='Yellow', fg='red')
+                    for target_min in [self.save.TARGET_MINUTES_1, self.save.TARGET_MINUTES_2]:
+                        comparator, time, colour = self.save.target_settings[target_min]
+                        if comparator != 'Not set':
+                            eval_string = '{} {} {}'.format(minutes, self.COMPARATOR_DICT[comparator], time)
+                            if eval(eval_string):
+                                min_cell.configure(bg=colour, fg='red')
+                min_cell.configure(text=minutes)
                 row_cells.append(min_cell)
             else:
                 out_cell.grid(row=row, column=column, columnspan=2, sticky='nsew')
@@ -1063,9 +1074,8 @@ class ConfigurationSettings(ttk.Frame):
             self.file_path.set(misc_settings[save.FILE_PATH])
 
     def __init__(self, parent, save: serverDB.ServerSettings, database: serverDB.DatabaseManager, request_interval,
-                 being=False, **kwargs):
+                 server_run, **kwargs):
         ttk.Frame.__init__(self, parent, **kwargs)
-        self.being = being
         self.master.protocol('WM_DELETE_WINDOW', self.quit_parent)
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
@@ -1080,6 +1090,7 @@ class ConfigurationSettings(ttk.Frame):
         self.to_save = ConfigurationSettings.SaveSettings(save)
         self.save = save
         self.database = database
+        self.server_run = server_run
         self.request_interval = request_interval
         self.port_network_setup()
         self.quick_access_setup()
@@ -1302,7 +1313,7 @@ class ConfigurationSettings(ttk.Frame):
         self.to_save.target_tv.configure(yscrollcommand=target_tv_v_scroll.set)
         # Populate treeview
         machines_saved = self.to_save.target_settings[self.save.MACHINE_TARGETS]
-        for machine, target in machines_saved.items:
+        for machine, target in machines_saved.items():
             self.to_save.target_tv.insert('', tkinter.END, text=machine, values=(target, ))
         machines_current = self.database.get_table_names(datetime.datetime.now().strftime('%m_%B_%Y.sqlite'))
         machines_new = list(set(machines_current) - set(machines_saved))
@@ -1425,8 +1436,8 @@ class ConfigurationSettings(ttk.Frame):
         self.to_save.target_settings[self.save.TARGET_MINUTES_2] = target_minute2
         machine_targets = {}
         for iid in self.to_save.target_tv.get_children():
-            machine = self.to_save.target_tv.get_children(iid)['text']
-            target = self.to_save.target_tv.get_children(iid)['values']
+            machine = self.to_save.target_tv.item(iid)['text']
+            target = self.to_save.target_tv.item(iid)['values']
             machine_targets[machine] = target
         self.to_save.target_settings[self.save.MACHINE_TARGETS] = machine_targets
 
@@ -1441,13 +1452,13 @@ class ConfigurationSettings(ttk.Frame):
         self.save.save_settings()
         self.quit_parent()
         self.request_interval.set('Requesting every {} minutes'.format(self.to_save.request_time.get()))
-        # TODO reset apscheduler for job
+        self.server_run.reset_request_interval()
+        # TODO call refresh method
         self.master.master.quick_access_setup()
 
     def quit_parent(self):
         self.master.destroy()
-        if self.being:
-            self.master.master.launched_settings = False
+        self.master.master.launched_settings = False
 
     @staticmethod
     def pick_colour(event):
@@ -1680,8 +1691,7 @@ class AddNetworkPort(ttk.Frame):
 if __name__ == '__main__':
     root = tkinter.Tk()
     root.title('afRPIsens Server')
-    root.minsize(width=1000, height=400)
-    main_frame = MainWindow(root, serverDB.ServerSettings())
+    main_frame = MainWindow(root, serverDB.ServerSettings(), serverRun.ServerRun())
     main_frame.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
     # root.mainloop()
     while True:
