@@ -14,7 +14,7 @@ class CommunicationManager:
         self.server_settings = server_settings
         self.database = database
         self.scheduler = BackgroundScheduler()
-        self.ports = []
+        self.address_ports = []
         self.context = None
         self.socket = None
         self.set_jobs()
@@ -22,17 +22,17 @@ class CommunicationManager:
 
     def req_client(self):
 
-        self.ports = list(self.server_settings.machine_ports.values())
+        self.address_ports = list(self.server_settings.machine_ports.items())
 
         self.context = zmq.Context()
         self.logger.debug("Connecting to the ports")
         self.socket = self.context.socket(zmq.DEALER)
         self.socket.setsockopt(zmq.LINGER, 0)
-        for port in self.ports:
-            self.socket.connect("tcp://{}".format(port))
-            self.logger.debug("Successfully connected to machine at {}".format(port))
+        for (name, (address, port)) in self.address_ports:
+            self.socket.connect("tcp://{}:{}".format(address, port))
+            self.logger.debug("Successfully connected to machine at {}:{}".format(address, port))
 
-        for index in range(len(self.ports)):
+        for index in range(len(self.address_ports)):
             print("Sending request ", index, "...")
             self.socket.send_string("", zmq.SNDMORE)  # delimiter
             self.socket.send_string("Sensor Data")  # actual message
@@ -42,7 +42,7 @@ class CommunicationManager:
             poller.register(self.socket, zmq.POLLIN)
 
             socks = dict(poller.poll(5 * 1000))
-            port = self.ports[index]
+            (name, (address, port)) = self.address_ports[index]
             # get machine name for port
             for machine, _port in self.server_settings.machine_ports.items():
                 if _port == port:
@@ -55,8 +55,10 @@ class CommunicationManager:
                     sens = json.loads(msg_json)
                     for uniq_id, values in sens.items():
                         for timestamp, count in values.items():
-                            table_name = ""'{}:{}'"".format(port, uniq_id)
+                            table_name = "'{}:{}'".format(name, uniq_id)
+                            print(table_name)
                             self.database.insert_to_database(table_name, timestamp, count)
+                            print(count)
                 except IOError:
                     self.logger.warning('Could not connect to machine {}, {}'.format(machine, port))
             else:

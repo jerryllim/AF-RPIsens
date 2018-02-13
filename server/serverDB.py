@@ -113,21 +113,25 @@ class DatabaseManager:
             db.close()
 
     def insert_into_table(self, table_name, timestamp, quantity, database):
+        print(quantity)
         full_path = os.path.join(self.path, database)
         # Establish connection and create table if not exists
         db = sqlite3.connect(full_path, detect_types=sqlite3.PARSE_DECLTYPES)
-        db.execute("CREATE TABLE IF NOT EXISTS {} (time TIMESTAMP PRIMARY KEY NOT NULL, quantity INTEGER NOT NULL)"
-                   .format(table_name))
+        db.execute("CREATE TABLE IF NOT EXISTS {} (time TIMESTAMP PRIMARY KEY NOT NULL, quantity INTEGER NOT NULL)".format(table_name))
         # Check if exist same timestamp for machine
         cursor = db.cursor()
-        cursor.execute("SELECT * from {} WHERE time=datetime(?)", (timestamp,))
+        cursor.execute("SELECT * from {} WHERE time=datetime(?)".format(table_name), (timestamp,))
         query = cursor.fetchone()
+        print(query)
+        print(table_name)
         if query:
             _timestamp, count = query
+            print('Original: \t', count, '\t', quantity)
             quantity = quantity + count
-            cursor.execute("UPDATE {} SET quantity = ? WHERE time = ?", (quantity, timestamp))
+            print(quantity)
+            cursor.execute("UPDATE {} SET quantity = ? WHERE time = ?".format(table_name), (quantity, timestamp))
         else:
-            cursor.execute("INSERT INTO {} VALUES(datetime(?), ?".format(table_name), (timestamp, quantity))
+            cursor.execute("INSERT INTO {} VALUES(datetime(?), ?)".format(table_name), (timestamp, quantity))
         db.commit()
         db.close()
 
@@ -149,6 +153,8 @@ class DatabaseManager:
                                "datetime(?)".format(table_name), (from_timestamp, to_timestamp))
             summation = cursor.fetchone()[0]
         except sqlite3.OperationalError:
+            summation = 0
+        if summation is None:
             summation = 0
 
         return summation
