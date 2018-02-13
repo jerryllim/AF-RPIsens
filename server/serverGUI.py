@@ -52,7 +52,8 @@ class MainWindow(ttk.Frame):
             self.save.misc_settings[self.save.REQUEST_TIME]))
         request_label = ttk.Label(self.top_frame, textvariable=self.request_interval)
         request_label.grid(row=0, column=0, sticky='w')
-        request_button = ttk.Button(self.top_frame, text='Request now', command=server_run.request_from_communication)
+        request_button = ttk.Button(self.top_frame, text='Request now',
+                                    command=self.server_run.request_from_communication)
         # TODO add command ^
         request_button.grid(row=0, column=1)
         plot_button = ttk.Button(self.top_frame, text='Plot new', command=self.launch_plot_new)
@@ -68,6 +69,7 @@ class MainWindow(ttk.Frame):
         # Refresh live table
         self.scheduler = BackgroundScheduler()
         self.schedule_refresh_table()
+        self.scheduler.start()
 
     def quick_access_setup(self):
         if self.quick_frame is not None:
@@ -141,7 +143,7 @@ class MainWindow(ttk.Frame):
 
     def schedule_refresh_table(self):
         self.scheduler.remove_all_jobs()
-        cron_trigger = CronTrigger(hour='*', minute='5-59/{}'.format(self.save.misc_settings[self.save.REQUEST_TIME]))
+        cron_trigger = CronTrigger(hour='*', minute='4-58/{}'.format(self.save.misc_settings[self.save.REQUEST_TIME]))
         self.scheduler.add_job(self.populate_live_table, cron_trigger, id=self.REFRESH_LIVE_TABLE_ID)
 
 
@@ -588,6 +590,23 @@ class ReadingTable(ttk.Frame):
         v_scrollbar = ttk.Scrollbar(self, orient='vertical', command=self.vertical_canvas.yview)
         v_scrollbar.grid(row=0, column=1, sticky='nsw')
         self.vertical_canvas.config(yscrollcommand=v_scrollbar.set, scrollregion=self.vertical_canvas.bbox('all'))
+        self.interior_frame = None
+        self.interior_frame_id = None
+        self.left_frame = None
+        self.horizontal_frame = None
+        self.horizontal_canvas = None
+        self.right_frame = None
+        self.right_frame_id = None
+        self.frame_setup()
+
+        self.save = save
+        self.database = database
+        self.table_cells = []
+        # Population of the table
+        if data is not None:
+            self.populate_table(data)
+
+    def frame_setup(self):
         self.interior_frame = ttk.Frame(self.vertical_canvas)
         self.interior_frame_id = self.vertical_canvas.create_window((0, 0), window=self.interior_frame,
                                                                     anchor=tkinter.NW)
@@ -608,13 +627,6 @@ class ReadingTable(ttk.Frame):
                                                                    anchor=tkinter.NW)
         self.horizontal_canvas.config(height=self.left_frame.winfo_height())
 
-        self.save = save
-        self.database = database
-        self.table_cells = []
-        # Population of the table
-        if data is not None:
-            self.populate_table(data)
-
         self.horizontal_frame.bind('<Configure>', self._on_vertical_frame_configure)
         self.vertical_canvas.bind('<Configure>', self._on_vertical_canvas_configure)
         self.right_frame.bind('<Configure>', self._on_horizontal_frame_configure)
@@ -629,8 +641,6 @@ class ReadingTable(ttk.Frame):
                                    relief='solid')
         today_cell.grid(row=row, column=0, columnspan=3, sticky='nsew')
         header1.append(today_cell)
-        header1.append(None)  # Append none for column span
-        header1.append(None)
 
         if mode == 'Daily':
             time_diff = datetime.timedelta(days=1)
@@ -650,7 +660,6 @@ class ReadingTable(ttk.Frame):
                                          bd=1, relief='solid', bg=self.HEADER_COLOR)
             header_label.grid(row=row, column=position, columnspan=2, sticky='nsew')
             header1.append(header_label)
-            header1.append(None)  # Append none for column span
 
             check_date = next_date
             next_date = next_date + time_diff
@@ -661,7 +670,6 @@ class ReadingTable(ttk.Frame):
                                      relief='solid', bg=self.HEADER_COLOR)
         header_label.grid(row=row, column=position, columnspan=2, sticky='nsew')
         header1.append(header_label)
-        header1.append(None)  # Append none for column span
 
         self.table_cells.append(header1)
 
@@ -685,8 +693,8 @@ class ReadingTable(ttk.Frame):
         machine_cell.grid(row=row, column=2, sticky='nsew')
         header2.append(machine_cell)
 
-        for column in range(3, len(header1), 2):
-            col = column - 3
+        for column in range(1, len(header1)):
+            col = column*2 - 2
             out_cell = tkinter.Label(self.right_frame, text='Out', width=6, bd=1, relief='solid')
             out_cell.grid(row=row, column=col, sticky='nsew')
             header2.append(out_cell)
@@ -725,26 +733,6 @@ class ReadingTable(ttk.Frame):
 
             for position in range(len(machine_list)):
                 self.add_machine_row(machine=machine_list[position], start=start_date, end=end_date, mode=mode)
-
-    def populate_live_table(self, data):
-        data_keys = list(data.keys())
-        for index in range(len(data)):
-            key = data_keys[index]
-            machine_list, mode, (detail1, detail2) = data[key]
-            self.add_blank_row()
-            start_date, end_date, date_format = self.get_data_details(mode=mode, detail1=detail1, detail2=detail2,
-                                                                      save=self.save)
-            self.header_setup(mode=mode, detail1=detail1, detail2=detail2, start_date=start_date, end_date=end_date,
-                              date_format=date_format)
-
-            prev_machine = ''
-            for position in range(len(machine_list)):
-                machine = machine_list[position]
-                if prev_machine != '' and machine.split(':')[0] != prev_machine:
-                    self.add_blank_row()
-
-                self.add_machine_row(machine=machine, start=start_date, end=end_date, mode=mode)
-                prev_machine = machine.split(':')[0]
 
     @staticmethod
     def get_data_details(mode, detail1, detail2, save):
@@ -790,9 +778,12 @@ class ReadingTable(ttk.Frame):
         self.table_cells.append(row_cells)
 
     def clear_machine_rows(self):
+        self.interior_frame.destroy()
+        self.frame_setup()
         for row in range(len(self.table_cells)):
             for cell in self.table_cells[row]:
                 cell.destroy()
+        self.table_cells = []
 
     def add_machine_row(self, machine, start, end, mode):
         row_cells = []
@@ -1438,7 +1429,7 @@ class ConfigurationSettings(ttk.Frame):
         for iid in self.to_save.target_tv.get_children():
             machine = self.to_save.target_tv.item(iid)['text']
             target = self.to_save.target_tv.item(iid)['values']
-            machine_targets[machine] = target
+            machine_targets[machine] = target[0]
         self.to_save.target_settings[self.save.MACHINE_TARGETS] = machine_targets
 
         misc_temp = {self.save.REQUEST_TIME: self.to_save.request_time.get(),
@@ -1453,7 +1444,6 @@ class ConfigurationSettings(ttk.Frame):
         self.quit_parent()
         self.request_interval.set('Requesting every {} minutes'.format(self.to_save.request_time.get()))
         self.server_run.reset_request_interval()
-        # TODO call refresh method
         self.master.master.quick_access_setup()
 
     def quit_parent(self):
@@ -1688,10 +1678,21 @@ class AddNetworkPort(ttk.Frame):
             return False
 
 
+class TempRun:
+    def __init__(self):
+        pass
+
+    def request_from_communication(self):
+        pass
+
+    def reset_request_interval(self):
+        pass
+
+
 if __name__ == '__main__':
     root = tkinter.Tk()
     root.title('afRPIsens Server')
-    main_frame = MainWindow(root, serverDB.ServerSettings(), serverRun.ServerRun())
+    main_frame = MainWindow(root, serverDB.ServerSettings(), TempRun())
     main_frame.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
     # root.mainloop()
     while True:

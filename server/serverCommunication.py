@@ -18,6 +18,7 @@ class CommunicationManager:
         self.context = None
         self.socket = None
         self.set_jobs()
+        self.scheduler.start()
 
     def req_client(self):
 
