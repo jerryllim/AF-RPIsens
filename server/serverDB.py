@@ -113,7 +113,6 @@ class DatabaseManager:
             db.close()
 
     def insert_into_table(self, table_name, timestamp, quantity, database):
-        print(quantity)
         full_path = os.path.join(self.path, database)
         # Establish connection and create table if not exists
         db = sqlite3.connect(full_path, detect_types=sqlite3.PARSE_DECLTYPES)
@@ -122,14 +121,10 @@ class DatabaseManager:
         cursor = db.cursor()
         cursor.execute("SELECT * from {} WHERE time=datetime(?)".format(table_name), (timestamp,))
         query = cursor.fetchone()
-        print(query)
-        print(table_name)
         if query:
             _timestamp, count = query
-            print('Original: \t', count, '\t', quantity)
             quantity = quantity + count
-            print(quantity)
-            cursor.execute("UPDATE {} SET quantity = ? WHERE time = ?".format(table_name), (quantity, timestamp))
+            cursor.execute("UPDATE {} SET quantity = ? WHERE time = datetime(?)".format(table_name), (quantity, timestamp))
         else:
             cursor.execute("INSERT INTO {} VALUES(datetime(?), ?)".format(table_name), (timestamp, quantity))
         db.commit()
@@ -144,6 +139,7 @@ class DatabaseManager:
         full_path = os.path.join(self.path, database)
         db = sqlite3.connect(full_path, detect_types=sqlite3.PARSE_DECLTYPES)
         cursor = db.cursor()
+
         try:
             if option == 'exclude':
                 cursor.execute("SELECT SUM(quantity) from '{}' WHERE time >= datetime(?) AND time < "

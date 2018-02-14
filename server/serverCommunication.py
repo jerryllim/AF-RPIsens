@@ -21,7 +21,6 @@ class CommunicationManager:
         self.scheduler.start()
 
     def req_client(self):
-
         self.address_ports = list(self.server_settings.machine_ports.items())
 
         self.context = zmq.Context()
@@ -33,7 +32,7 @@ class CommunicationManager:
             self.logger.debug("Successfully connected to machine at {}:{}".format(address, port))
 
         for index in range(len(self.address_ports)):
-            print("Sending request ", index, "...")
+            # print("Sending request ", index, "...")
             self.socket.send_string("", zmq.SNDMORE)  # delimiter
             self.socket.send_string("Sensor Data")  # actual message
 
