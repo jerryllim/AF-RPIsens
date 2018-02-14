@@ -25,6 +25,9 @@ class ServerRun:
 
     def request_from_communication(self):
         self.communication.req_client()
+        self.update_live_table()
+
+    def update_live_table(self):
         self.main.populate_live_table()
 
     def reset_request_interval(self):

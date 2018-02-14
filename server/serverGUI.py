@@ -54,7 +54,6 @@ class MainWindow(ttk.Frame):
         request_label.grid(row=0, column=0, sticky='w')
         request_button = ttk.Button(self.top_frame, text='Request now',
                                     command=self.server_run.request_from_communication)
-        # TODO add command ^
         request_button.grid(row=0, column=1)
         plot_button = ttk.Button(self.top_frame, text='Plot new', command=self.launch_plot_new)
         plot_button.grid(row=0, column=2)
@@ -107,7 +106,7 @@ class MainWindow(ttk.Frame):
         plot_settings_frame.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
         plot_settings.grab_set()
 
-    def populate_live_table(self):  # TODO should be done
+    def populate_live_table(self):
         now = datetime.datetime.now()
         shift_name, start_date, end_date = self.get_shift(now)
         database_name = now.strftime('%m_%B_%Y.sqlite')
@@ -834,7 +833,7 @@ class ReadingTable(ttk.Frame):
         total_cell.configure(text=sum(count_list))
         self.table_cells.append(row_cells)
 
-    def get_target_output(self, machine):  # TODO get target output from settings
+    def get_target_output(self, machine):
         machine_targets = self.save.target_settings[self.save.MACHINE_TARGETS]
         return machine_targets.get(machine, 0)
 
@@ -1283,7 +1282,7 @@ class ConfigurationSettings(ttk.Frame):
         target_entry = ttk.Entry(target_set_frame, textvariable=self.to_save.target_var, validate='key',
                                  validatecommand=(number_validation, '%P', '%S', 'target'))
         target_entry.grid(row=0, column=3, sticky='w')
-        set_button = ttk.Button(target_set_frame, text='Set', command=self.set_target)  # TODO add command
+        set_button = ttk.Button(target_set_frame, text='Set', command=self.set_target)
         set_button.grid(row=1, column=3, sticky='e')
         # Machine target Treeview
         target_tv_frame = ttk.Frame(target_frame)
@@ -1677,7 +1676,7 @@ class AddNetworkPort(ttk.Frame):
             return False
 
 
-class TempRun:
+class TempRun:  # TODO to remove once not needed
     def __init__(self):
         pass
 
