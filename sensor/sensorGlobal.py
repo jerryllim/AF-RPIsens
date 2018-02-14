@@ -73,19 +73,17 @@ class NetworkDataManager:
         self.port_number = temp_dict.get(NetworkDataManager.PORT_NUMBER, self.port_number)
 
     def add_jobs(self):
-        if not self.scheduler.get_jobs():  # To prevent duplicating jobs
-            hour, minute = NetworkDataManager.get_cron_hour_minute(self.removed_minutes)
-            trigger = CronTrigger(hour=hour, minute=minute, second=1)
-            self.scheduler.add_job(self.clear_removed_count, trigger, id=NetworkDataManager.REMOVED_ID)
+        self.set_removed_time(self.removed_minutes)
 
     def set_removed_time(self, temp):
+        self.scheduler.remove_all_jobs()
         if temp is None:
             temp = self.removed_minutes
         else:
             self.removed_minutes = temp
         hour, minute = NetworkDataManager.get_cron_hour_minute(temp)
-        trigger_reschedule = CronTrigger(hour=hour, minute=minute, second=1)
-        self.scheduler.reschedule_job(NetworkDataManager.REMOVED_ID, trigger_reschedule)
+        trigger = CronTrigger(hour=hour, minute=minute, second=1)
+        self.scheduler.add_job(self.clear_removed_count, trigger, id=NetworkDataManager.REMOVED_ID)
 
     def set_port_number(self, number):
         self.port_number = number
@@ -181,11 +179,10 @@ class PinDataManager:
     def get_sensorDict_item(self, _id):
         return self.sensorDict[_id]
 
-    def set_countDict_item(self, _id, count):
+    def set_countDict_item(self, _id, _count):
         with self.countDictLock:
             if self.countDict.get(_id, None) is None:
                 self.countDict[_id] = Counter()
-            self.countDict[_id] = count
 
     def increase_countDict(self, _id, datetime_stamp):
         with self.countDictLock:

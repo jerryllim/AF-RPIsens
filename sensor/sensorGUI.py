@@ -139,6 +139,7 @@ class MainGUI:
                                         message='Network configuration changes require application restart')
                 self.networkDataManager.set_port_number(save_class.port_entry.get())
                 removed_time = save_class.removed_option.get().rsplit(sep=' ', maxsplit=1)[0]
+                self.networkDataManager.set_removed_time(removed_time)
 
                 # Save Pin Configurations
                 _temp_dict = OrderedDict()

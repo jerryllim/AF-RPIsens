@@ -161,28 +161,14 @@ class NotebookView(ttk.Notebook):
         self.graph_canvas = GraphCanvas(self.graph_frame.get_interior_frame())
         self.graph_canvas.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
         self.add(self.graph_frame, text='Graph')
-        # TreeView Frame
-        treeview_frame = ttk.Frame(self)
-        treeview_frame.grid(sticky='nsew', padx=5, pady=5)
-        self.add(treeview_frame, text='Details')
-        treeview_frame.rowconfigure(0, weight=1)
-        treeview_frame.columnconfigure(0, weight=1)
-        treeview_frame.columnconfigure(1, weight=0)
-        # TreeView
-        self.treeview = ttk.Treeview(treeview_frame)
-        self.treeview.grid(row=0, column=0, sticky='nsew')
-        self.treeview['show'] = 'headings'
-        self.treeview['column'] = ('machine', 'count', 'timestamp')
-        self.treeview.heading('machine', text='Machine', command=lambda: self.sort_tree_view('machine', False))
-        self.treeview.heading('count', text='Count', command=lambda: self.sort_tree_view('count', False))
-        self.treeview.heading('timestamp', text='Timestamp', command=lambda: self.sort_tree_view('timestamp', False))
-        self.treeview.column('machine', width=100)
-        self.treeview.column('count', width=60, anchor=tkinter.E)
-        self.treeview.column('timestamp', width=70)
-        # Scroll for Treeview
-        treeview_v_scroll = ttk.Scrollbar(treeview_frame, orient='vertical', command=self.treeview.yview)
-        treeview_v_scroll.grid(row=0, column=1, sticky='nsw')
-        self.treeview.configure(yscrollcommand=treeview_v_scroll.set)
+        # Reading Table
+        table_frame = ttk.Frame(self)
+        table_frame.grid(sticky='nsew', padx=5, pady=5)
+        table_frame.columnconfigure(0, weight=1)
+        table_frame.rowconfigure(0, weight=1)
+        self.add(table_frame, text='Table')
+        self.reading_table = ReadingTable(table_frame, self.save, self.database, data)
+        self.reading_table.grid(sticky='nsew')
 
         if self.data is not None and self.save is not None:
             if len(self.data) < self.num_col:
@@ -205,9 +191,6 @@ class NotebookView(ttk.Notebook):
                 machine, title, date_list, date_format, count_list = _temp_out
                 self.graph_canvas.plot(index, date_list, count_list)
                 legend_list.append('{} - {}'.format(machine, sum(count_list)))
-                # Treeview
-                for pos in range(len(date_list)):
-                    self.treeview.insert('', tkinter.END, values=(machine, count_list[pos], date_list[pos]))
 
             x_label = '{} \u27A1 {}'.format(detail1, detail2)
             if mode == 'Daily':
@@ -577,6 +560,7 @@ class GraphDetailSettingsPage(ttk.Frame):
 
 
 class ReadingTable(ttk.Frame):
+    BACKGROUND_COLOR = '#FFFFFF'
     HEADER_COLOR = '#F5A898'
     COMPARATOR_DICT = {'Greater than': '>', 'Equal to': '==', 'Less than': '<'}
 
@@ -584,27 +568,27 @@ class ReadingTable(ttk.Frame):
         ttk.Frame.__init__(self, parent, **kwargs)
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
-        self.vertical_canvas = tkinter.Canvas(self)
+        self.vertical_canvas = tkinter.Canvas(self, bg=self.BACKGROUND_COLOR)
         self.vertical_canvas.grid(row=0, column=0, sticky='nsew')
         v_scrollbar = ttk.Scrollbar(self, orient='vertical', command=self.vertical_canvas.yview)
         v_scrollbar.grid(row=0, column=1, sticky='nsw')
         self.vertical_canvas.config(yscrollcommand=v_scrollbar.set, scrollregion=self.vertical_canvas.bbox('all'))
-        self.interior_frame = ttk.Frame(self.vertical_canvas)
+        self.interior_frame = tkinter.Frame(self.vertical_canvas, bg=self.BACKGROUND_COLOR)
         self.interior_frame_id = self.vertical_canvas.create_window((0, 0), window=self.interior_frame,
                                                                     anchor=tkinter.NW)
         self.interior_frame.columnconfigure(1, weight=1)
         self.interior_frame.rowconfigure(0, weight=1)
-        self.left_frame = ttk.Frame(self.interior_frame)
+        self.left_frame = tkinter.Frame(self.interior_frame, bg=self.BACKGROUND_COLOR)
         self.left_frame.grid(row=0, column=0, sticky='nsew')
-        self.horizontal_frame = ttk.Frame(self.interior_frame)
+        self.horizontal_frame = tkinter.Frame(self.interior_frame, bg=self.BACKGROUND_COLOR)
         self.horizontal_frame.grid(row=0, column=1, sticky='nsew')
-        self.horizontal_canvas = tkinter.Canvas(self.horizontal_frame)
+        self.horizontal_canvas = tkinter.Canvas(self.horizontal_frame, bg=self.BACKGROUND_COLOR)
         self.horizontal_canvas.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
         h_scrollbar = ttk.Scrollbar(self, orient='horizontal', command=self.horizontal_canvas.xview)
         h_scrollbar.grid(row=1, column=0, sticky='new')
         self.horizontal_canvas.config(xscrollcommand=h_scrollbar.set,
                                       scrollregion=self.horizontal_canvas.bbox('all'))
-        self.right_frame = ttk.Frame(self.horizontal_canvas)
+        self.right_frame = tkinter.Frame(self.horizontal_canvas, bg=self.BACKGROUND_COLOR)
         self.right_frame_id = self.horizontal_canvas.create_window((0, 0), window=self.right_frame,
                                                                    anchor=tkinter.NW)
         self.horizontal_canvas.config(height=self.left_frame.winfo_height())
@@ -629,9 +613,9 @@ class ReadingTable(ttk.Frame):
             self.secondary_left_frame.destroy()
         if self.secondary_right_frame is not None:
             self.secondary_right_frame.destroy()
-        self.secondary_left_frame = ttk.Frame(self.left_frame)
+        self.secondary_left_frame = tkinter.Frame(self.left_frame, bg=self.BACKGROUND_COLOR)
         self.secondary_left_frame.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
-        self.secondary_right_frame = ttk.Frame(self.right_frame)
+        self.secondary_right_frame = tkinter.Frame(self.right_frame, bg=self.BACKGROUND_COLOR)
         self.secondary_right_frame.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
 
     def header_setup(self, mode, detail1, detail2, start_date, end_date, date_format):
@@ -1441,6 +1425,7 @@ class ConfigurationSettings(ttk.Frame):
         self.quit_parent()
         self.request_interval.set('Requesting every {} minutes'.format(self.to_save.request_time.get()))
         self.server_run.reset_request_interval()
+        self.master.master.populate_live_table()
         self.master.master.quick_access_setup()
 
     def quit_parent(self):
