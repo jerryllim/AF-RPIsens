@@ -8,7 +8,7 @@ class ServerRun:
     def __init__(self):
         self.settings = serverDB.ServerSettings()
         self.database = serverDB.DatabaseManager(self.settings)
-        self.communication = serverCommunication.CommunicationManager(self.settings, self.database)
+        self.communication = serverCommunication.CommunicationManager(self.settings, self.database, self)
         self.root = tkinter.Tk()
         self.root.title('afRPIsens Server')
         self.main = serverGUI.MainWindow(self.root, self.settings, self)

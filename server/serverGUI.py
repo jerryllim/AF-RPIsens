@@ -829,7 +829,6 @@ class ReadingTable(ttk.Frame):
                 row_cells.append(min_cell)
             else:
                 out_cell.grid(row=row, column=column, columnspan=2, sticky='nsew')
-        print(count_list)
         total_cell.configure(text=sum(count_list))
         self.table_cells.append(row_cells)
 

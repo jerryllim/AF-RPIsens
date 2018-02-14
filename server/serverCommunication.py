@@ -9,10 +9,11 @@ import server.serverDB as serverDB
 class CommunicationManager:
     REQUEST_ID = 'request'
 
-    def __init__(self, server_settings: serverDB.ServerSettings, database: serverDB.DatabaseManager):
+    def __init__(self, server_settings: serverDB.ServerSettings, database: serverDB.DatabaseManager, server_run):
         self.logger = logging.getLogger('afRPIsens_server')
         self.server_settings = server_settings
         self.database = database
+        self.server_run = server_run
         self.scheduler = BackgroundScheduler()
         self.address_ports = []
         self.context = None
@@ -55,13 +56,13 @@ class CommunicationManager:
                     for uniq_id, values in sens.items():
                         for timestamp, count in values.items():
                             table_name = "'{}:{}'".format(name, uniq_id)
-                            print(table_name)
                             self.database.insert_to_database(table_name, timestamp, count)
-                            print(count)
                 except IOError:
                     self.logger.warning('Could not connect to machine {}, {}'.format(machine, port))
             else:
                 self.logger.warning('Machine did not respond, ({}:{})'.format(machine, port))
+
+            self.server_run.update_live_table()
 
     def set_jobs(self):
         self.scheduler.remove_all_jobs()
