@@ -42,3 +42,4 @@
 
 ## Both
 - [ ] Add UTC time for both RPi and Server? Database
+- [ ] Create setup guide
