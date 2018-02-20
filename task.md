@@ -16,6 +16,7 @@
 - [x] auto resize font -> **Fullscreen + one font change**
 - [x] set to clear IntVar once an hour (new list?) -> **Added new Counter**
 - [x] launch pigpiod at startup -> **added to runScript**
+- [ ] disable screen sleep
 - [ ] force to sync time at boot
 - [ ] auto launch app after boot
 - [ ] create executable file
