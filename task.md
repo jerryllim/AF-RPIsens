@@ -17,7 +17,6 @@
 - [x] set to clear IntVar once an hour (new list?) -> **Added new Counter**
 - [x] launch pigpiod at startup -> **added to runScript**
 - [ ] create executable file
-- [ ] Remove UTC and change to localise
 
 ## Server
 - [x] add log.txt for log purposes
@@ -27,7 +26,6 @@
 - [x] add timestamps in view
 - [x] change listbox to treeview
 - [x] change client side message format to match machine
-- [ ] parsing json -> csv -> excel log
 - [x] handling multiple clients
 - [x] introducing timeout with polling for server request
 
@@ -35,6 +33,10 @@
 - [ ] move file location -> shutil.move - https://docs.python.org/3/library/shutil.html
 - [x] Add Misc Settings
 - [x] Directory chooser - http://effbot.org/zone/tkinter-directory-chooser.htm
-- [ ] Today/Current for quick access
-- [ ] Connect communication component
+- [x] Today/Current for quick access
+- [x] Connect communication component
 - [ ] create executable file
+- [ ] update database for past data
+
+## Both
+- [ ] Add UTC time for both RPi and Server? Database
