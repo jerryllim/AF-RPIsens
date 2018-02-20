@@ -234,15 +234,6 @@ class NotebookView(ttk.Notebook):
         title = '{}\n{} - {}'.format(machine, detail1, detail2)
         return machine, title, date_list, date_format, count_list
 
-    def sort_tree_view(self, column, reverse):
-        item_list = [(self.treeview.set(_iid, column=column), _iid) for _iid in self.treeview.get_children()]
-        item_list.sort(reverse=reverse)
-        # Arrange the tree_view based on item_list
-        for index, (value, _iid) in enumerate(item_list):
-            self.treeview.move(_iid, '', index)
-
-        self.treeview.heading(column, command=lambda col=column: self.sort_tree_view(col, not reverse))
-
 
 class GraphDetailView(ttk.Frame):
 
@@ -642,7 +633,8 @@ class ReadingTable(ttk.Frame):
         position = 0
         while next_date < end_date:
             header_string = check_date.strftime(date_format)
-            header_label = tkinter.Label(self.secondary_right_frame, text=header_string, font=('Helvetica', '16', 'bold'),
+            header_label = tkinter.Label(self.secondary_right_frame, text=header_string, font=('Helvetica', '16',
+                                                                                               'bold'),
                                          bd=1, relief='solid', bg=self.HEADER_COLOR)
             header_label.grid(row=row, column=position, columnspan=2, sticky='nsew')
             header1.append(header_label)
@@ -652,8 +644,8 @@ class ReadingTable(ttk.Frame):
             position = position + 2
 
         header_string = check_date.strftime(date_format)
-        header_label = tkinter.Label(self.secondary_right_frame, text=header_string, font=('Helvetica', '16', 'bold'), bd=1,
-                                     relief='solid', bg=self.HEADER_COLOR)
+        header_label = tkinter.Label(self.secondary_right_frame, text=header_string, font=('Helvetica', '16', 'bold'),
+                                     bd=1, relief='solid', bg=self.HEADER_COLOR)
         header_label.grid(row=row, column=position, columnspan=2, sticky='nsew')
         header1.append(header_label)
 
@@ -662,20 +654,20 @@ class ReadingTable(ttk.Frame):
         row = row + 1
         # Second Row of Headers
         header2 = []
-        total_cell = tkinter.Label(self.secondary_left_frame, text='Total', font=('Helvetica', '14', 'bold'), width=9, bd=1,
-                                   relief='solid')
+        total_cell = tkinter.Label(self.secondary_left_frame, text='Total', font=('Helvetica', '14', 'bold'), width=9,
+                                   bd=1, relief='solid')
         header2.append(total_cell)
         if mode == 'Hourly':
             total_cell.grid(row=row, column=0, sticky='nsew')
-            target_cell = tkinter.Label(self.secondary_left_frame, text='Out/hr', font=('Helvetica', '14', 'bold'), width=6, bd=1,
-                                        relief='solid')
+            target_cell = tkinter.Label(self.secondary_left_frame, text='Out/hr', font=('Helvetica', '14', 'bold'),
+                                        width=6, bd=1, relief='solid')
             target_cell.grid(row=row, column=1, sticky='nsew')
             header2.append(target_cell)
         else:
             total_cell.grid(row=row, column=0, columnspan=2, sticky='nsew')
 
-        machine_cell = tkinter.Label(self.secondary_left_frame, text='Machine', font=('Helvetica', '14', 'bold'), width=15, bd=1,
-                                     relief='solid')
+        machine_cell = tkinter.Label(self.secondary_left_frame, text='Machine', font=('Helvetica', '14', 'bold'),
+                                     width=15, bd=1, relief='solid')
         machine_cell.grid(row=row, column=2, sticky='nsew')
         header2.append(machine_cell)
 
