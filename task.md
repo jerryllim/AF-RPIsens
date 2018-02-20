@@ -16,10 +16,11 @@
 - [x] auto resize font -> **Fullscreen + one font change**
 - [x] set to clear IntVar once an hour (new list?) -> **Added new Counter**
 - [x] launch pigpiod at startup -> **added to runScript**
+- [ ] database management, convert past data to reduce storage
 - [ ] disable screen sleep
 - [ ] force to sync time at boot
 - [ ] auto launch app after boot
-- [ ] create executable file
+- [x] create executable file
 
 ## Server
 - [x] add log.txt for log purposes
@@ -38,7 +39,7 @@
 - [x] Directory chooser - http://effbot.org/zone/tkinter-directory-chooser.htm
 - [x] Today/Current for quick access
 - [x] Connect communication component
-- [ ] create executable file
+- [x] create executable file
 - [ ] update database for past data
 
 ## Both
