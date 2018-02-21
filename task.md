@@ -19,6 +19,7 @@
 - [ ] disable screen sleep
 - [ ] force to sync time at boot
 - [ ] auto launch app after boot
+- [ ] create desktop launcher
 - [x] create executable file
 
 ## Server
