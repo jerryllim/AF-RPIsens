@@ -614,7 +614,7 @@ class ReadingTable(ttk.Frame):
         # First Row of Headers
         header1 = []
         today_string = '{} \u27A1 {}'.format(detail1, detail2)
-        today_cell = tkinter.Label(self.secondary_left_frame, text=today_string, font=('Helvetica', '16', 'bold'), bd=1,
+        today_cell = tkinter.Label(self.secondary_left_frame, text=today_string, font=('TkHeadingFont', '16', 'bold'), bd=1,
                                    relief='solid')
         today_cell.grid(row=row, column=0, columnspan=3, sticky='nsew')
         header1.append(today_cell)
@@ -633,7 +633,7 @@ class ReadingTable(ttk.Frame):
         position = 0
         while next_date < end_date:
             header_string = check_date.strftime(date_format)
-            header_label = tkinter.Label(self.secondary_right_frame, text=header_string, font=('Helvetica', '16',
+            header_label = tkinter.Label(self.secondary_right_frame, text=header_string, font=('TkHeadingFont', '16',
                                                                                                'bold'),
                                          bd=1, relief='solid', bg=self.HEADER_COLOR)
             header_label.grid(row=row, column=position, columnspan=2, sticky='nsew')
@@ -644,7 +644,7 @@ class ReadingTable(ttk.Frame):
             position = position + 2
 
         header_string = check_date.strftime(date_format)
-        header_label = tkinter.Label(self.secondary_right_frame, text=header_string, font=('Helvetica', '16', 'bold'),
+        header_label = tkinter.Label(self.secondary_right_frame, text=header_string, font=('TkHeadingFont', '16', 'bold'),
                                      bd=1, relief='solid', bg=self.HEADER_COLOR)
         header_label.grid(row=row, column=position, columnspan=2, sticky='nsew')
         header1.append(header_label)
@@ -654,31 +654,33 @@ class ReadingTable(ttk.Frame):
         row = row + 1
         # Second Row of Headers
         header2 = []
-        total_cell = tkinter.Label(self.secondary_left_frame, text='Total', font=('Helvetica', '14', 'bold'), width=9,
-                                   bd=1, relief='solid')
+        total_cell = tkinter.Label(self.secondary_left_frame, text='Total', font=('TkHeadingFont', '14', 'bold'),
+                                   width=9, bd=1, relief='solid')
         header2.append(total_cell)
         if mode == 'Hourly':
             total_cell.grid(row=row, column=0, sticky='nsew')
-            target_cell = tkinter.Label(self.secondary_left_frame, text='Out/hr', font=('Helvetica', '14', 'bold'),
+            target_cell = tkinter.Label(self.secondary_left_frame, text='Out/hr', font=('TkHeadingFont', '14', 'bold'),
                                         width=6, bd=1, relief='solid')
             target_cell.grid(row=row, column=1, sticky='nsew')
             header2.append(target_cell)
         else:
             total_cell.grid(row=row, column=0, columnspan=2, sticky='nsew')
 
-        machine_cell = tkinter.Label(self.secondary_left_frame, text='Machine', font=('Helvetica', '14', 'bold'),
+        machine_cell = tkinter.Label(self.secondary_left_frame, text='Machine', font=('TkHeadingFont', '14', 'bold'),
                                      width=15, bd=1, relief='solid')
         machine_cell.grid(row=row, column=2, sticky='nsew')
         header2.append(machine_cell)
 
         for column in range(1, len(header1)):
             col = column*2 - 2
-            out_cell = tkinter.Label(self.secondary_right_frame, text='Out', width=6, bd=1, relief='solid')
+            out_cell = tkinter.Label(self.secondary_right_frame, text='Out', font=('TkHeadingFont', '14', 'bold'),
+                                     width=6, bd=1, relief='solid')
             out_cell.grid(row=row, column=col, sticky='nsew')
             header2.append(out_cell)
             if mode == 'Hourly':
                 out_cell.grid(row=row, column=col, sticky='nsew')
-                min_cell = tkinter.Label(self.secondary_right_frame, text='Min', width=3, bd=1, relief='solid')
+                min_cell = tkinter.Label(self.secondary_right_frame, text='Min', font=('TkHeadingFont', '14', 'bold'),
+                                         width=3, bd=1, relief='solid')
                 min_cell.grid(row=row, column=(col+1), sticky='nsew')
                 header2.append(min_cell)
             else:
@@ -1142,7 +1144,7 @@ class ConfigurationSettings(ttk.Frame):
                 for machine in machine_list:
                     self.to_save.quick_tv.insert(_iid, tkinter.END, text=machine)
 
-        self.to_save.quick_tv.tag_configure('top', font=('Helvetica', 15, 'bold'))
+        self.to_save.quick_tv.tag_configure('top', font=('TkFixedFont', 15, 'bold'))
         # Add & Delete buttons
         button_frame = ttk.Frame(quick_access_frame)
         button_frame.grid(row=0, column=1, padx=5, pady=5)

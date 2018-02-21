@@ -195,3 +195,13 @@ class DatabaseManager:
         count_list.append(summation)
 
         return date_list, count_list
+    #
+    # def migrate_past_data(self, database):
+    #     tables = self.get_table_names(database=database)
+    #     shift_list = []
+    #     for shift_name, (start_time, duration) in self.save.shift_settings.items():
+    #         (shift_name, start_time, end)
+    #     for table in tables:
+    #         start = None
+    #         end = None
+    #         self.get_sums(table, start, end, 'Hourly')
