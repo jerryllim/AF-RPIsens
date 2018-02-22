@@ -17,8 +17,8 @@
 - [x] launch pigpiod at startup -> **added to runScript**
 - [ ] Remodel GUI to more OO
 - [ ] disable screen sleep
-- [ ] force to sync time at boot
-- [ ] auto launch app after boot
+- [x] force to sync time at boot
+- [x] auto launch app after boot
 - [ ] create desktop launcher
 - [x] create executable file
 
@@ -44,3 +44,5 @@
 ## Both
 - [ ] Add UTC time for both RPi and Server? Database
 - [ ] Create setup guide
+- [ ] Create container
+- [ ] Write up the cost
