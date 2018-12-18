@@ -12,14 +12,14 @@
 - [x] change count dict to collection.Counter
 - [x] add log
 - [x] change RPi.GPIO to pigpio
-- [ ] Remodel GUI to more OO
 - [x] auto resize font -> **Fullscreen + one font change**
 - [x] set to clear IntVar once an hour (new list?) -> **Added new Counter**
 - [x] launch pigpiod at startup -> **added to runScript**
-- [ ] database management, convert past data to reduce storage
+- [ ] Remodel GUI to more OO
 - [ ] disable screen sleep
-- [ ] force to sync time at boot
-- [ ] auto launch app after boot
+- [x] force to sync time at boot
+- [x] auto launch app after boot
+- [ ] create desktop launcher
 - [x] create executable file
 
 ## Server
@@ -32,16 +32,17 @@
 - [x] change client side message format to match machine
 - [x] handling multiple clients
 - [x] introducing timeout with polling for server request
-
 - [x] embed updatable graphs - https://pythonprogramming.net/plotting-live-bitcoin-price-data-tkinter-matplotlib/
-- [ ] move file location -> shutil.move - https://docs.python.org/3/library/shutil.html
 - [x] Add Misc Settings
 - [x] Directory chooser - http://effbot.org/zone/tkinter-directory-chooser.htm
 - [x] Today/Current for quick access
 - [x] Connect communication component
 - [x] create executable file
-- [ ] update database for past data
+- [ ] database management, convert past data to reduce storage
+- [ ] move file location -> shutil.move - https://docs.python.org/3/library/shutil.ht
 
 ## Both
 - [ ] Add UTC time for both RPi and Server? Database
 - [ ] Create setup guide
+- [ ] Create container
+- [ ] Write up the cost
