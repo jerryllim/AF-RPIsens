@@ -41,6 +41,7 @@ while not found:
         found = True
         csv.write("{},{}\n".format(datetime.datetime.now(),
                                    barcodeData))
+        print("{}".format(barcodeData))
         csv.flush()
 
     # show the output frame
