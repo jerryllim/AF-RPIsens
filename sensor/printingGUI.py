@@ -3,6 +3,7 @@ from tkinter import ttk
 from tkinter import messagebox
 from collections import OrderedDict
 import cv2
+import time
 from pyzbar import pyzbar
 
 
@@ -24,7 +25,7 @@ class NewJobPage(ttk.Frame):
         job_label = ttk.Label(self, text='Job number:')
         job_label.grid(row=0, column=0, sticky='sw')
         self.job_var = tkinter.StringVar()
-        job_entry = ttk.Entry(self, textvariable=job_var, state=tkinter.DISABLED)
+        job_entry = ttk.Entry(self, textvariable=self.job_var, state="readonly")
         job_entry.grid(row=1, column=0, stick='ew')
         scan_button = ttk.Button(self, text='Scan', command=self.scan_barcode)
         scan_button.grid(row=1, column=1, sticky='w')
@@ -36,6 +37,7 @@ class NewJobPage(ttk.Frame):
     def scan_barcode(self):
         cam = cv2.VideoCapture(0)
         found = False
+        timeout = time.time() + 10
 
         while not found:
             _, frame = cam.read()
@@ -47,7 +49,7 @@ class NewJobPage(ttk.Frame):
                 barcodeData = barcode.data.decode("utf-8")
                 found = True
                 self.job_var.set(barcodeData)
-            elif cam.get(cv2.CAP_PROP_POS_FRAMES) > cam.get(cv2.CV_CAP_PROP_FPS):
+            elif time.time() > timeout:
                 break
 
         cam.release()
