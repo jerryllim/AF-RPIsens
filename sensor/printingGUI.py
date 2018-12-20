@@ -13,8 +13,10 @@ class PrintingGUI(tkinter.Tk):
         self.title('Printing GUI')
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
-        self.mainWindow_frame = ttk.Frame(self)
         self.current_job = None
+
+        self.select_page = SelectJobPage(self)
+        self.select_page.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
 
     def open_job_page(self, job_dict):
         job_page = JobPage(self.master, job_dict)
@@ -337,10 +339,14 @@ class FramedFrame(tkinter.Frame):
 
 
 if __name__ == '__main__':
-    with open('Z000461580003.json', 'r') as infile:
-        job_dict = json.load(infile)
+    if False:
+        with open('Z000461580003.json', 'r') as infile:
+            job_dict = json.load(infile)
 
-    root = tkinter.Tk()
-    app = JobPage(root, job_dict)
-    app.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
+        root = tkinter.Tk()
+        app = JobPage(root, job_dict)
+        app.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
+        root.mainloop()
+
+    root = PrintingGUI()
     root.mainloop()
