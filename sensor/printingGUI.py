@@ -36,10 +36,9 @@ class NewJobPage(ttk.Frame):
 
     def scan_barcode(self):
         cam = cv2.VideoCapture(0)
-        found = False
         timeout = time.time() + 10
 
-        while not found:
+        while True:
             _, frame = cam.read()
 
             barcodes = pyzbar.decode(frame)
@@ -47,8 +46,8 @@ class NewJobPage(ttk.Frame):
             if barcodes:
                 barcode = barcodes[0]
                 barcodeData = barcode.data.decode("utf-8")
-                found = True
                 self.job_var.set(barcodeData)
+                break
             elif time.time() > timeout:
                 break
 
