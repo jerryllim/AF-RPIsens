@@ -1,0 +1,226 @@
+
+<SelectPage>:
+    id: selectpage
+    GridLayout:
+        rows: 5
+        padding: sp(10)
+        spacing: sp(10)
+
+        BoxLayout:
+            padding: [sp(10), 0]
+
+            Label:
+                text: "JO No. :"
+                font_size: '32sp'
+                text_size: self.size
+                halign: 'left'
+                valign: 'bottom'
+
+        BoxLayout:
+            padding: sp(10)
+            spacing: sp(10)
+
+            TextInput:
+                id: job_entry
+                font_size: '32sp'
+                multiline: False
+                keyboard_mode: 'managed'
+
+            Button:
+                text: "Scan"
+                size_hint: (0.2, 1)
+                on_release: selectpage.scan_barcode()
+
+        BoxLayout:
+            padding: sp(10)
+
+            Button:
+                text: "Start"
+                size_hint: (0.2, 1)
+                on_release: selectpage.start_job()
+
+        BoxLayout:
+            size_hint: [1, 3]
+
+            Image:
+                id: camera_viewer
+
+
+
+<RunPage>:
+
+<RunPageLayout>:
+    padding: sp(10)
+    spacing: sp(10)
+    orientation: 'vertical'
+
+    BoxLayout:
+        size_hint_y: None
+        height: sp(150)
+        padding: sp(10)
+        spacing: sp(10)
+        orientation: 'horizontal'
+
+        BoxLayout:
+            padding: sp(10)
+            spacing: sp(10)
+            orientation: 'vertical'
+
+            BoxLayout:
+                padding: sp(10)
+                spacing: sp(10)
+                size_hint: (1, None)
+                height: self.minimum_height
+                orientation: 'horizontal'
+
+                Label:
+                    text: 'JO No. : '
+                    text_size: self.size
+                    halign: 'left'
+
+                Label:
+                    id: jo_no
+
+            BoxLayout:
+                padding: sp(10)
+                spacing: sp(10)
+                orientation: 'horizontal'
+
+                Label:
+                    text: "To Do:"
+                    text_size: self.size
+                    halign: 'left'
+
+                Label:
+                    id: to_do
+
+                Label:
+                    text: "Counter:"
+                    text_size: self.size
+                    halign: 'left'
+
+                Label:
+                    id: counter
+
+            BoxLayout:
+                padding: sp(10)
+                spacing: sp(10)
+                orientation: 'horizontal'
+
+                Label:
+                    text: 'Item Code:'
+                    text_size: self.size
+                    halign: 'left'
+
+                Label:
+                    id: item_code
+
+            BoxLayout:
+                padding: sp(10)
+                spacing: sp(10)
+                orientation: 'horizontal'
+
+                Label:
+                    text: 'Description: '
+                    text_size: self.size
+                    halign: 'left'
+
+                Label:
+                    id: item_desc
+
+
+        Button:
+            text: "[b]Stop[/b]"
+            markup: True
+            font_size: '32sp'
+            background_normal: ''
+            background_color: 1,0,0,1
+            on_release: app.root.current = "select_page"
+
+    TabbedPanel:
+        do_default_tab: False
+
+        TabbedPanelItem:
+            text: 'Adjustments'
+            AdjustmentTab:
+
+        TabbedPanelItem:
+            text: 'Ink Key'
+            Button:
+                text: "Useless button"
+
+
+<AdjustmentTab>:
+    BoxLayout:
+        id: adjustment_box
+        orientation: 'vertical'
+        size_hint: (1, None)
+        height: self.minimum_height
+
+        GridLayout:
+            id: adjustment_grid
+            cols: 2
+            padding: sp(10)
+            spacing: sp(10)
+            orientation: 'vertical'
+            size_hint: (1, None)
+            height: self.minimum_height
+
+            AdjustmentLabel:
+                size_hint_y: None
+                text: 'Size: '
+
+            AdjustmentTextInput:
+                id: size_entry
+
+            AdjustmentLabel:
+                size_hint_y: None
+                text: 'Ink: '
+
+            AdjustmentTextInput:
+                id: ink_entry
+
+            AdjustmentLabel:
+                size_hint_y: None
+                text: 'Plate: '
+
+            AdjustmentTextInput:
+                id: plate_entry
+
+            AdjustmentLabel:
+                text: 'Load: '
+                size_hint_y: None
+
+            AdjustmentTextInput:
+                id: load_entry
+
+            AdjustmentLabel:
+                text: 'Unload: '
+                size_hint_y: None
+
+            AdjustmentTextInput:
+                id: unload_entry
+
+            AdjustmentLabel:
+                text: 'Blanket/Packing: '
+                size_hint_y: None
+
+            AdjustmentTextInput:
+                id: blanket_entry
+
+        BoxLayout:
+            size_hint: (1, None)
+            height: sp(250)
+
+
+<AdjustmentTextInput>:
+    multiline: False
+    size_hint: (1, None)
+    height: sp(50)
+    input_filter: 'int'
+
+<AdjustmentLabel@Label>:
+    size_hint_y: None
+    height: sp(50)
+
+

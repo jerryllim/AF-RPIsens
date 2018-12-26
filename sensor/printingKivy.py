@@ -1,3 +1,5 @@
+import os
+os.environ['KIVY_GL_BACKEND'] = 'gl'
 import cv2
 import time
 from kivy.app import App
@@ -10,7 +12,8 @@ from kivy.uix.image import Image
 from kivy.uix.popup import Popup
 from kivy.uix.label import Label
 from kivy.uix.button import Button
-from kivy.core.window import Window
+from kivy.lang.builder import Builder
+# Builder.load_file('printinggui.kv')
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.textinput import TextInput
 from kivy.graphics.texture import Texture
@@ -100,9 +103,9 @@ class RunPage(Screen):
         self.add_widget(Factory.RunPageLayout(job_dict))
 
 
-class RunPageLayout(ScrollView):
+class RunPageLayout(BoxLayout):
     def __init__(self, job_dict, **kwargs):
-        ScrollView.__init__(self, **kwargs)
+        BoxLayout.__init__(self, **kwargs)
         self.job_dict = job_dict
         self.ids.jo_no.text = self.job_dict['JO No.']
 
@@ -121,18 +124,18 @@ class AdjustmentTextInput(TextInput):
         self.bind(focus=self.on_focus)
 
     def on_focus(self, _instance, _value):
-        pos = self.pos[1] + 75
-        # self.parent.parent.parent.parent.scroll_y = pos/1160
-        print(self.parent.parent.parent.parent.scroll_y)
+        pos = self.pos[1] - 210
+        self.parent.parent.parent.scroll_y = pos/300
 
 
 class PrintingGUIApp(App):
+    screen_manager = ScreenManager()
+
     def build(self):
         Factory.register('RunPageLayout', cls=RunPageLayout)
-        screen_manager = ScreenManager()
-        screen_manager.add_widget(SelectPage(name='select_page'))
-        screen_manager.add_widget(RunPage(name='run_page'))
-        return screen_manager
+        self.screen_manager.add_widget(SelectPage(name='select_page'))
+        self.screen_manager.add_widget(RunPage(name='run_page'))
+        return self.screen_manager
 
 
 if __name__ == '__main__':
