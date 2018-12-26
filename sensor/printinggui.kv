@@ -50,6 +50,7 @@
 <RunPage>:
 
 <RunPageLayout>:
+    id: runpage_layout
     padding: sp(10)
     spacing: sp(10)
     orientation: 'vertical'
@@ -135,7 +136,7 @@
             font_size: '32sp'
             background_normal: ''
             background_color: 1,0,0,1
-            on_release: app.root.current = "select_page"
+            on_release: runpage_layout.parent.reject_popup()
 
     TabbedPanel:
         do_default_tab: False
@@ -210,7 +211,7 @@
 
         BoxLayout:
             size_hint: (1, None)
-            height: sp(250)
+            height: sp(200)
 
 
 <AdjustmentTextInput>:
