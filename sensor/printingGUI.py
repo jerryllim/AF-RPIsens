@@ -20,7 +20,7 @@ class PrintingGUI(tkinter.Tk):
 
     def open_job_page(self, job_dict):
         job_page = JobPage(self.master, job_dict)
-        job_page.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
+        job_page.pack(gridfill=tkinter.BOTH, expand=tkinter.TRUE)
         job_page.tkraise()
 
 
@@ -65,7 +65,8 @@ class SelectJobPage(ttk.Frame):
 
         cam.release()
 
-    def start_job(self, job_num):
+    def start_job(self):
+        job_num = self.job_var.get()
         try:
             with open('{}.json'.format(job_num), 'r') as infile:
                 job_dict = json.load(infile)
