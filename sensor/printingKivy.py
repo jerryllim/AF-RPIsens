@@ -77,25 +77,6 @@ class SelectPage(Screen):
             popup.open()
 
 
-class CameraViewer(Image):
-    def __init__(self, cam, **kwargs):
-        Image.__init__(self, **kwargs)
-        self.cam = cam
-
-    def update(self):
-        print("update called")
-        ret, frame = self.cam.read()
-
-        if ret:
-            buf1 = cv2.flip(frame, 0)
-            buf = buf1.tostring()
-            image_texture = Texture.create(
-                size=(frame.shape[1], frame.shape[0]), colorfmt='bgr')
-            image_texture.blit_buffer(buf, colorfmt='bgr', bufferfmt='ubyte')
-            # display image from the texture
-            self.texture = image_texture
-
-
 class RunPage(Screen):
     rejectPopup = None
 
