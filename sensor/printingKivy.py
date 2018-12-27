@@ -9,7 +9,6 @@ from kivy.config import Config
 Config.set('kivy', 'keyboard_mode', 'systemanddock')
 Config.set('kivy', 'keyboard_layout', 'numeric_keypad.json')
 from kivy.factory import Factory
-from kivy.uix.image import Image
 from kivy.uix.popup import Popup
 from kivy.uix.label import Label
 from kivy.uix.button import Button
@@ -18,6 +17,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.textinput import TextInput
 from kivy.graphics.texture import Texture
 from kivy.uix.scrollview import ScrollView
+from kivy.properties import NumericProperty
 from kivy.uix.screenmanager import ScreenManager, Screen
 
 
@@ -105,17 +105,23 @@ class RunPage(Screen):
 
 
 class RunPageLayout(BoxLayout):
+    counter_number = NumericProperty(0)
+
     def __init__(self, job_dict, **kwargs):
         BoxLayout.__init__(self, **kwargs)
+        self.ids['test_button'].state = 'down'
+
         self.job_dict = job_dict
-        self.ids.jo_no.text = self.job_dict['JO No.']
+        self.ids['jo_no'].text = 'JO No.: {}'.format(self.job_dict['JO No.'])
+        self.ids['to_do'].text = 'To do: {}'.format(self.job_dict['To do'])
+        self.ids['item_code'].text = 'Code: {}'.format(self.job_dict['Code'])
+        description = 'Description: {}'.format(self.job_dict['Desc'])
+        label_length = 40
+        self.ids['item_desc'].text = description[0:label_length]
+        self.ids['item_desc2'].text = description[label_length:]
 
 
 class AdjustmentTab(ScrollView):
-    pass
-
-
-class PageManager(ScreenManager):
     pass
 
 

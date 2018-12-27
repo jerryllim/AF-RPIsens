@@ -1,4 +1,3 @@
-
 <SelectPage>:
     id: selectpage
     GridLayout:
@@ -46,9 +45,6 @@
                 id: camera_viewer
 
 
-
-<RunPage>:
-
 <RunPageLayout>:
     id: runpage_layout
     padding: sp(10)
@@ -78,8 +74,6 @@
                     text: 'JO No. : '
                     text_size: self.size
                     halign: 'left'
-
-                Label:
                     id: jo_no
 
             BoxLayout:
@@ -91,17 +85,21 @@
                     text: "To Do:"
                     text_size: self.size
                     halign: 'left'
-
-                Label:
                     id: to_do
 
                 Label:
                     text: "Counter:"
                     text_size: self.size
                     halign: 'left'
+                    size_hint: (0.5, 1)
 
                 Label:
                     id: counter
+                    text: '{}'.format(runpage_layout.counter_number)
+                    halign: 'left'
+                    text_size: self.size
+                    font_size: '30sp'
+                    size_hint: (0.5, 1)
 
             BoxLayout:
                 padding: sp(10)
@@ -112,8 +110,6 @@
                     text: 'Item Code:'
                     text_size: self.size
                     halign: 'left'
-
-                Label:
                     id: item_code
 
             BoxLayout:
@@ -122,16 +118,30 @@
                 orientation: 'horizontal'
 
                 Label:
-                    text: 'Description: '
-                    text_size: self.size
                     halign: 'left'
-
-                Label:
+                    text_size: self.size
                     id: item_desc
 
+            BoxLayout:
+                padding: sp(10)
+                spacing: sp(10)
+                orientation: 'horizontal'
+
+                Label:
+                    halign: 'left'
+                    text_size: self.size
+                    id: item_desc2
+
+        ToggleButton:
+            id: test_button
+            size_hint: [0.5, 1]
+            text: "[b]Testing[/b]"
+            markup: True
+            font_size: '32sp'
 
         Button:
             text: "[b]Stop[/b]"
+            size_hint: [0.5, 1]
             markup: True
             font_size: '32sp'
             background_normal: ''
@@ -223,5 +233,8 @@
 <AdjustmentLabel@Label>:
     size_hint_y: None
     height: sp(50)
+
+<InkKeyTab>:
+
 
 
