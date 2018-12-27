@@ -87,8 +87,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/sensor/printingKivy.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="171">
-                  <caret line="116" column="32" selection-start-line="116" selection-start-column="32" selection-end-line="116" selection-end-column="32" />
+                <state relative-caret-position="219">
+                  <caret line="21" column="56" selection-start-line="21" selection-start-column="56" selection-end-line="21" selection-end-column="56" />
                 </state>
               </provider>
             </entry>
@@ -96,11 +96,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/sensor/printinggui.kv">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="400">
-                  <caret line="244" column="29" lean-forward="true" selection-start-line="244" selection-start-column="29" selection-end-line="244" selection-end-column="29" />
-                  <folding>
-                    <marker date="1545886663820" expanded="true" signature="4709:4744" ph="..." />
-                  </folding>
+                <state relative-caret-position="3555">
+                  <caret line="237" column="29" lean-forward="true" selection-start-line="237" selection-start-column="29" selection-end-line="237" selection-end-column="29" />
                 </state>
               </provider>
             </entry>
@@ -109,7 +106,7 @@
             <entry file="file://$PROJECT_DIR$/sensor/Z000461580003.json">
               <provider selected="true" editor-type-id="text-editor">
                 <state>
-                  <caret column="839" lean-forward="true" selection-start-column="828" selection-end-column="839" />
+                  <caret column="846" lean-forward="true" selection-start-column="846" selection-end-column="846" />
                 </state>
               </provider>
             </entry>
@@ -154,9 +151,9 @@
       <find>impress</find>
       <find>json</find>
       <find>print</find>
-      <find>dismiss</find>
       <find>sorted</find>
       <find>item</find>
+      <find>dismiss</find>
     </findStrings>
     <replaceStrings>
       <replace>TMessage</replace>
@@ -265,7 +262,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="SearchEverywhereHistoryKey" value="&#9;FILE&#9;file:///Users/justynlgh/Documents/repo/afRPIsens/sensor/sensorGlobal.py" />
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1545886893982" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1545899218463" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/server" />
     <property name="project.structure.last.edited" value="Modules" />
     <property name="project.structure.proportion" value="0.0" />
@@ -929,13 +926,6 @@
     <entry file="file://$PROJECT_DIR$/sensor/WDF_TU24253Z_P.json">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/sensor/Z000461580003.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret column="839" lean-forward="true" selection-start-column="828" selection-end-column="839" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/sensor/sensorGlobal.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="332">
@@ -946,20 +936,24 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/sensor/Z000461580003.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret column="846" lean-forward="true" selection-start-column="846" selection-end-column="846" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/sensor/printinggui.kv">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="400">
-          <caret line="244" column="29" lean-forward="true" selection-start-line="244" selection-start-column="29" selection-end-line="244" selection-end-column="29" />
-          <folding>
-            <marker date="1545886663820" expanded="true" signature="4709:4744" ph="..." />
-          </folding>
+        <state relative-caret-position="3555">
+          <caret line="237" column="29" lean-forward="true" selection-start-line="237" selection-start-column="29" selection-end-line="237" selection-end-column="29" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/sensor/printingKivy.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="171">
-          <caret line="116" column="32" selection-start-line="116" selection-start-column="32" selection-end-line="116" selection-end-column="32" />
+        <state relative-caret-position="219">
+          <caret line="21" column="56" selection-start-line="21" selection-start-column="56" selection-end-line="21" selection-end-column="56" />
         </state>
       </provider>
     </entry>

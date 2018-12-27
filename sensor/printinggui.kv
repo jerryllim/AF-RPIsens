@@ -178,21 +178,18 @@
             height: self.minimum_height
 
             AdjustmentLabel:
-                size_hint_y: None
                 text: 'Size: '
 
             AdjustmentTextInput:
                 id: size_entry
 
             AdjustmentLabel:
-                size_hint_y: None
                 text: 'Ink: '
 
             AdjustmentTextInput:
                 id: ink_entry
 
             AdjustmentLabel:
-                size_hint_y: None
                 text: 'Plate: '
 
             AdjustmentTextInput:
@@ -200,21 +197,18 @@
 
             AdjustmentLabel:
                 text: 'Load: '
-                size_hint_y: None
 
             AdjustmentTextInput:
                 id: load_entry
 
             AdjustmentLabel:
                 text: 'Unload: '
-                size_hint_y: None
 
             AdjustmentTextInput:
                 id: unload_entry
 
             AdjustmentLabel:
                 text: 'Blanket/Packing: '
-                size_hint_y: None
 
             AdjustmentTextInput:
                 id: blanket_entry
@@ -230,13 +224,12 @@
     height: sp(50)
     input_filter: 'int'
     font_size: sp(25)
-    valign: 'middle'
 
 <AdjustmentLabel@Label>:
-    size_hint_y: None
+    size_hint: (1, None)
     height: sp(50)
     font_size: sp(25)
-    valign: 'middle'
+    valign: 'top'
 
 
 <InkKeyBoxLayout>:

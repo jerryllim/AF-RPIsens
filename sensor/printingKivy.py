@@ -20,7 +20,6 @@ from kivy.graphics.texture import Texture
 from kivy.uix.scrollview import ScrollView
 from kivy.properties import NumericProperty
 from kivy.uix.screenmanager import ScreenManager, Screen
-from kivy.graphics import Color, Rectangle
 
 
 class SelectPage(Screen):
@@ -48,16 +47,18 @@ class SelectPage(Screen):
                 break
 
         # image_event.cancel()
-        if ret:
-            frame2 = cv2.cvtColor(frame, cv2.COLOR_BGRA2RGB)
-            buf1 = cv2.flip(frame2, 0)
-            buf = buf1.tostring()
-            image_texture = Texture.create(
-                size=(frame.shape[1], frame.shape[0]), colorfmt='rgb')
-            image_texture.blit_buffer(buf, colorfmt='rgb', bufferfmt='ubyte')
-            self.ids['camera_viewer'].texture = image_texture
 
+        self.show_image(frame)
         cam.release()
+
+    def show_image(self, frame):
+        frame2 = cv2.cvtColor(frame, cv2.COLOR_BGRA2RGB)
+        buf1 = cv2.flip(frame2, 0)
+        buf = buf1.tostring()
+        image_texture = Texture.create(
+            size=(frame.shape[1], frame.shape[0]), colorfmt='rgb')
+        image_texture.blit_buffer(buf, colorfmt='rgb', bufferfmt='ubyte')
+        self.ids['camera_viewer'].texture = image_texture
 
     def start_job(self):
         job_num = self.ids.job_entry.text
@@ -184,8 +185,6 @@ class InkZoneLayout(BoxLayout):
         def dismiss_popup(_button):
             if value_textinput.text:
                 self.ink_dict[key] = int(value_textinput.text)
-            else:
-                self.ink_dict[key] = 0
 
             edit_popup.dismiss()
             self.load_widgets()
@@ -208,7 +207,7 @@ class AdjustmentTextInput(TextInput):
         self.bind(focus=self.on_focus)
 
     def on_focus(self, _instance, _value):
-        pos = self.pos[1] - 210
+        pos = self.pos[1] - 230
         self.parent.parent.parent.scroll_y = pos/300
 
 
