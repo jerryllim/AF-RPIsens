@@ -157,8 +157,8 @@
 
         TabbedPanelItem:
             text: 'Ink Key'
-            Button:
-                text: "Useless button"
+            InkKeyTab:
+                id: ink_key_tab
 
 
 <AdjustmentTab>:
@@ -229,12 +229,73 @@
     size_hint: (1, None)
     height: sp(50)
     input_filter: 'int'
+    font_size: sp(25)
+    valign: 'middle'
 
 <AdjustmentLabel@Label>:
     size_hint_y: None
     height: sp(50)
+    font_size: sp(25)
+    valign: 'middle'
 
-<InkKeyTab>:
+
+<InkKeyBoxLayout>:
+    orientation: 'vertical'
+    size_hint: (None, None)
+    width: self.minimum_width
+    height: self.minimum_height
+    spacing: 10
+    padding: 10
+
+    BoxLayout:
+        orientation: 'horizontal'
+        size_hint: (None, None)
+        width: self.minimum_width
+        height: self.minimum_height
+
+        Label:
+            text: 'Impression'
+            size_hint: (None, None)
+            width: sp(300)
+            height: sp(50)
+            font_size: sp(25)
+
+        TextInput:
+            id: impression
+            multiline: False
+            input_filter: 'int'
+            size_hint: (None, None)
+            font_size: sp(25)
+            valign: 'middle'
+            width: sp(300)
+            height: sp(50)
+
+
+<InkZoneLayout>:
+    id: ink_zone
+    orientation: 'vertical'
+    size_hint: (None, None)
+    width: self.minimum_width
+    height: self.minimum_height
+
+    Label:
+        id: plate_code
+        size_hint: (None, None)
+        height: sp(50)
+        width: sp(300)
+        font_size: sp(25)
+        text_size: self.size
+        halign: 'left'
+
+    BoxLayout:
+        id: ink_zones
+        orientation: 'horizontal'
+        size_hint: (None, None)
+        width: self.minimum_width
+        height: sp(80)
+
+
+
 
 
 
