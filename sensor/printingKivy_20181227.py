@@ -211,7 +211,7 @@ class AdjustmentTextInput(TextInput):
         self.parent.parent.parent.scroll_y = pos/300
 
 
-class PrintingGUIApp(App):
+class PrintingGUI_20181227App(App):
     screen_manager = ScreenManager()
 
     def build(self):
