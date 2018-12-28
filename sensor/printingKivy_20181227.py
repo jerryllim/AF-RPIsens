@@ -243,5 +243,5 @@ def alphanum_key(s):
 
 
 if __name__ == '__main__':
-    printingApp = PrintingGUIApp()
+    printingApp = PrintingGUI_20181227App()
     printingApp.run()

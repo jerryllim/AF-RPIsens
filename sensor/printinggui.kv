@@ -36,7 +36,7 @@
             Button:
                 text: "Start"
                 size_hint: (0.2, 1)
-                on_release: selectpage.start_job()
+                on_release: root.start_job()
 
         BoxLayout:
             size_hint: [1, 3]
@@ -44,35 +44,43 @@
             Image:
                 id: camera_viewer
 
-<AdjustmentPageLayout>:
-    id: adjustmentpage_layout
-    padding: sp(10)
-    spacing: sp(10)
-    orientation: 'vertical'
 
-    StackLayout:
+<AdjustmentPage>:
+    BoxLayout:
+        id: box_layout
         padding: sp(10)
         spacing: sp(10)
-        orientation: 'rl-tb'
-        size_hint_y: None
-        height: sp(50)
+        orientation: 'vertical'
 
-        Button:
-            text: 'Next'
+        StackLayout:
+            padding: sp(10)
+            spacing: sp(10)
+            orientation: 'rl-tb'
+            size_hint_y: None
+            height: sp(75)
 
-    TabbedPanel:
-        do_default_tab: False
+            Button:
+                text: 'Next'
+                size_hint_x: None
+                width: sp(200)
+                on_press: root.manager.current = 'run_page'
 
-        TabbedPanelItem:
-            text: 'Adjustments'
 
-        TabbedPanelItem:
-            text: 'Ink Key'
-            InkKeyTab:
-                id: ink_key_tab
+<AdjustmentTabbedPanel>:
+    do_default_tab: False
+
+    TabbedPanelItem:
+        text: 'Adjustments'
+        AdjustmentTab:
+            id: adjustment_tab
+
+    TabbedPanelItem:
+        text: 'Ink Key'
 
 <AdjustmentTab>:
-    ScrollLayout:
+    orientation: 'horizontal'
+
+    ScrollView:
         GridLayout:
             id: adjustment_grid
             cols: 2
@@ -82,44 +90,8 @@
             size_hint: (1, None)
             height: self.minimum_height
 
-            AdjustmentLabel:
-                text: 'Size: '
-
-            AdjustmentTextInput:
-                id: size_entry
-
-            AdjustmentLabel:
-                text: 'Ink: '
-
-            AdjustmentTextInput:
-                id: ink_entry
-
-            AdjustmentLabel:
-                text: 'Plate: '
-
-            AdjustmentTextInput:
-                id: plate_entry
-
-            AdjustmentLabel:
-                text: 'Load: '
-
-            AdjustmentTextInput:
-                id: load_entry
-
-            AdjustmentLabel:
-                text: 'Unload: '
-
-            AdjustmentTextInput:
-                id: unload_entry
-
-            AdjustmentLabel:
-                text: 'Blanket/Packing: '
-
-            AdjustmentTextInput:
-                id: blanket_entry
-
-    BoxLayout:
-        id: numpad_box
+    NumPadGrid:
+        id: numpad
 
 
 <AdjustmentTextInput>:
@@ -129,7 +101,7 @@
     input_filter: 'int'
     font_size: sp(25)
 
-<AdjustmentLabel@Label>:
+<AdjustmentLabel>:
     size_hint: (1, None)
     height: sp(50)
     font_size: sp(25)
@@ -139,9 +111,120 @@
     cols: 3
     padding: sp(10)
     spacing: sp(10)
+    canvas.before:
+        Color:
+            rgba: 1, 1, 1, 0.8
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+<NumPadButton>:
+    font_size: sp(25)
+    font_name: 'FreeSerif.ttf'
+    bold: True
 
 
+<RunPageLayout>:
+    padding: sp(10)
+    spacing: sp(10)
+    orientation: 'vertical'
 
+    BoxLayout:
+        spacing: sp(10)
+        orientation: 'horizontal'
+        size_hint_y: None
+        height: sp(150)
 
+        BoxLayout:
+            padding: sp(10)
+            spacing: sp(10)
+            orientation: 'vertical'
 
+            Label:
+                id: jo_no
+                text_size: self.size
+                halign: 'left'
+                font_size: sp(30)
+
+            Label:
+                id: code
+                text_size: self.size
+                halign: 'left'
+                size_hint_y: 0.5
+
+            Label:
+                id: desc
+                text_size: self.size
+                halign: 'left'
+                size_hint_y: 0.5
+
+        Button:
+            text: "[b]Stop[/b]"
+            size_hint: [0.3, 1]
+            markup: True
+            font_size: '32sp'
+            background_normal: ''
+            background_color: 1,0,0,1
+            on_press: app.screen_manager.current = 'select_page'
+
+    Label:
+        id: to_do
+        size_hint_y: None
+        height: sp(50)
+        text_size: self.size
+        halign: 'left'
+        font_size: sp(40)
+
+    BoxLayout:
+        spacing: sp(10)
+        orientation: 'horizontal'
+        size_hint_y: None
+        height: sp(50)
+
+        Label:
+            text: 'Counter: '
+            text_size: self.size
+            size_hint_x: None
+            width: sp(180)
+            halign: 'left'
+            font_size: sp(40)
+
+        Label:
+            text: '{}'.format(root.counter)
+            id: counter
+            text_size: self.size
+            halign: 'left'
+            font_size: sp(40)
+
+    Label:
+        id: qc
+        size_hint_y: None
+        height: sp(20)
+        text_size: self.size
+        halign: 'left'
+
+    BoxLayout:
+
+    BoxLayout:
+        orientation: 'horizontal'
+        padding: sp(10)
+        spacing: sp(10)
+        canvas.before:
+            Color:
+                rgba: 0.25, 0.25, 0.25, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        Button:
+            text: 'Maintenance'
+
+        Button:
+            text: 'QC'
+
+        Button:
+            text: 'Wastage'
+
+        Button:
+            text: 'Log out'
 
