@@ -4,7 +4,6 @@
     <list default="true" id="8c4eab11-9431-48ea-8992-fef6a6e722be" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/sensor/printinggui.kv" beforeDir="false" afterPath="$PROJECT_DIR$/sensor/printinggui.kv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sensor/printingkivy.py" beforeDir="false" afterPath="$PROJECT_DIR$/sensor/printingkivy.py" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -84,8 +83,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/sensor/printingkivy.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="111">
-                  <caret line="270" column="20" selection-start-line="270" selection-start-column="8" selection-end-line="270" selection-end-column="20" />
+                <state relative-caret-position="-466">
+                  <caret line="300" column="58" lean-forward="true" selection-start-line="300" selection-start-column="58" selection-end-line="300" selection-end-column="58" />
                 </state>
               </provider>
             </entry>
@@ -93,8 +92,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/sensor/printinggui.kv">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="342">
-                  <caret line="337" column="47" selection-start-line="337" selection-start-column="47" selection-end-line="337" selection-end-column="47" />
+                <state relative-caret-position="339">
+                  <caret line="327" selection-start-line="327" selection-end-line="327" />
                 </state>
               </provider>
             </entry>
@@ -253,7 +252,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="SearchEverywhereHistoryKey" value="&#9;FILE&#9;file:///Users/justynlgh/Documents/repo/afRPIsens/sensor/sensorGlobal.py" />
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1546245437850" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1546245955588" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/server" />
     <property name="project.structure.last.edited" value="Modules" />
     <property name="project.structure.proportion" value="0.0" />
@@ -595,6 +594,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1680" height="1027" extended-state="0" />
+    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" weight="0.23443224" />
       <window_info id="Structure" order="1" weight="0.24946082" />
@@ -980,15 +980,15 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/sensor/printingkivy.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="111">
-          <caret line="270" column="20" selection-start-line="270" selection-start-column="8" selection-end-line="270" selection-end-column="20" />
+        <state relative-caret-position="-466">
+          <caret line="300" column="58" lean-forward="true" selection-start-line="300" selection-start-column="58" selection-end-line="300" selection-end-column="58" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/sensor/printinggui.kv">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="342">
-          <caret line="337" column="47" selection-start-line="337" selection-start-column="47" selection-end-line="337" selection-end-column="47" />
+        <state relative-caret-position="339">
+          <caret line="327" selection-start-line="327" selection-end-line="327" />
         </state>
       </provider>
     </entry>
