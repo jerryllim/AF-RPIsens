@@ -69,7 +69,7 @@
                 text: 'Next'
                 size_hint_x: None
                 width: sp(200)
-                on_press: root.proceed_next()
+                on_release: root.proceed_next()
 
 
 <AdjustmentTabbedPanel>:
@@ -142,7 +142,6 @@
         height: sp(150)
 
         BoxLayout:
-            padding: sp(10)
             spacing: sp(10)
             orientation: 'vertical'
 
@@ -171,7 +170,7 @@
             font_size: '32sp'
             background_normal: ''
             background_color: 1,0,0,1
-            on_press: app.screen_manager.current = 'select_page'
+            on_release: root.parent.wastage_popup(finish=True)
 
     Label:
         id: to_do
@@ -230,7 +229,72 @@
 
         Button:
             text: 'Wastage'
+            on_release: root.parent.wastage_popup()
 
         Button:
             text: 'Log out'
+
+
+<WastagePopUp>:
+    title: 'Wastage'
+    size_hint: (0.75, 0.75)
+    current_label: current_label
+    unit_spinner: unit_spinner
+    add_label: add_label
+    numpad: numpad
+
+    BoxLayout:
+        orientation: 'vertical'
+        padding: sp(10)
+        spacing: sp(10)
+
+        BoxLayout:
+            orientation: 'horizontal'
+            spacing: sp(5)
+            size_hint: (1, 0.2)
+
+            Label:
+                id: current_label
+                padding_x: 5
+                text_size: self.size
+                halign: 'right'
+                valign: 'middle'
+                color: (0, 0, 0, 1)
+                canvas.before:
+                    Color:
+                        rgb: (1, 1, 1)
+                    Rectangle:
+                        size: self.size
+                        pos: self.pos
+            Spinner:
+                id: unit_spinner
+                size_hint: (0.2, 1)
+
+        Label:
+            id: add_label
+            padding_x: 5
+            text_size: self.size
+            halign: 'right'
+            valign: 'middle'
+            size_hint: (1, 0.2)
+            color: (0, 0, 0, 1)
+            canvas.before:
+                Color:
+                    rgb: (1, 1, 1)
+                Rectangle:
+                    size: self.size
+                    pos: self.pos
+
+        NumPadGrid:
+            id: numpad
+
+        BoxLayout:
+            id: button_box
+            orientation: 'horizontal'
+            spacing: sp(10)
+            size_hint: (1, 0.2)
+
+            Button:
+                text: 'Dismiss'
+                on_release: root.dismiss()
 

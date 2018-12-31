@@ -24,7 +24,7 @@ from kivy.uix.screenmanager import ScreenManager, Screen
 
 
 class JobClass:
-    def __init__(self, info_dict, ink_key, employee='ABC123', wastage=0):
+    def __init__(self, info_dict, ink_key, employee='ABC123', wastage=(0, 'kg')):
         # TODO remove employee placeholder
         self.info_dict = info_dict
         self.wastage = wastage
@@ -186,11 +186,28 @@ class AdjustmentTab(BoxLayout):
 
 
 class RunPage(Screen):
+    runPage = None
     wastagePopup = None
 
     def generate_screen(self):
         self.clear_widgets()
-        self.add_widget(Factory.RunPageLayout())
+        self.runPage = Factory.RunPageLayout()
+        self.add_widget(self.runPage)
+
+    def wastage_popup(self, finish=False):
+        self.wastagePopup = WastagePopUp()
+        if finish:
+            button = Button(text='Confirm')
+            button.bind(on_release=self.stop_job)
+            self.wastagePopup.ids['button_box'].add_widget(button)
+
+        self.wastagePopup.open()
+
+    def stop_job(self, _instance):
+        self.wastagePopup.dismiss()
+        # TODO add code to save job information
+        self.parent.transition.direction = 'right'
+        self.parent.current = 'select_page'
 
 
 class RunPageLayout(BoxLayout):
@@ -211,8 +228,45 @@ class RunPageLayout(BoxLayout):
             self.ids['qc'].text = 'QC check: {}'.format(current_job.qc)
 
 
+class WastagePopUp(Popup):
+    def __init__(self, **kwargs):
+        Popup.__init__(self, **kwargs)
+        self.ids['numpad'].set_target(self.add_label)
+        self.current_job = App.get_running_app().current_job
+
+        self.numpad.enter_button.text = u'\u2795'
+        self.numpad.set_enter_function(self.add_wastage)
+
+        if self.current_job.wastage[0] != 0:
+            self.unit_spinner.text = self.current_job.wastage[1]
+            self.unit_spinner.disabled = True
+            self.current_label.text = '{}'.format(self.current_job.wastage[0])
+        else:
+            self.unit_spinner.text = 'kg'
+            self.unit_spinner.values = ('kg', 'pieces')
+            self.current_label.text = '0'
+
+    def add_wastage(self):
+        new_sum = int(self.current_label.text) + self.int_text_input(self.add_label.text)
+        self.current_label.text = '{}'.format(new_sum)
+        self.add_label.text = ''
+
+    def save_dismiss(self):
+        self.current_job.wastage = (int(self.current_label.text), self.unit_spinner.text)
+        self.dismiss()
+
+    @staticmethod
+    def int_text_input(value):
+        return int(value) if value else 0
+
+
+class EmployeeScan:
+    pass
+
+
 class NumPadGrid(GridLayout):
     target = None
+    enter_function = None
 
     def __init__(self, **kwargs):
         GridLayout.__init__(self, **kwargs)
@@ -223,32 +277,41 @@ class NumPadGrid(GridLayout):
             self.add_widget(button)
             self.buttons.append(button)
 
-        button = NumPadButton(text=u'\u2713', color=(0, 1, 0, 1))
-        button.bind(on_press=self.button_pressed)
-        self.add_widget(button)
-        self.buttons.append(button)
+        self.enter_button = NumPadButton(text=u'\u2713', color=(0, 1, 0, 1))
+        self.enter_button.bind(on_press=self.button_pressed)
+        self.add_widget(self.enter_button)
 
         button = NumPadButton(text='0')
         button.bind(on_press=self.button_pressed)
         self.add_widget(button)
         self.buttons.append(button)
 
-        button = NumPadButton(text=u'\u232b', color=(1, 0, 0, 1))
-        button.bind(on_press=self.button_pressed)
-        self.add_widget(button)
-        self.buttons.append(button)
+        self.backspace_button = NumPadButton(text=u'\u232b', color=(1, 0, 0, 1))
+        self.backspace_button.bind(on_press=self.button_pressed)
+        self.add_widget(self.backspace_button)
 
     def set_target(self, target):
         self.target = target
 
+    def set_enter_function(self, function):
+        self.enter_function = function
+
     def button_pressed(self, instance):
         if isinstance(self.target, TextInput):
-            if instance.text == u'\u232b':
+            if instance is self.backspace_button:
                 self.target.do_backspace()
-            elif instance.text == u'\u2713':
+            elif instance is self.enter_button:
                 self.target = None
             else:
                 self.target.insert_text(instance.text)
+
+        elif isinstance(self.target, Label):
+            if instance is self.backspace_button:
+                self.target.text = self.target.text[:-1]
+            elif instance is not self.enter_button:
+                self.target.text = (self.target.text + instance.text).lstrip("0")
+            elif self.enter_function is not None:
+                self.enter_function()
 
 
 class NumPadButton(Button):
@@ -279,7 +342,7 @@ class ToggleBox(BoxLayout):
     def create_buttons(self, button_names):
         for name in button_names:
             button = ToggleButton(group=self.group_name, allow_no_selection=False, text=name)
-            button.bind(on_press=self.set_value)
+            button.bind(on_release=self.set_value)
             self.buttons.append(button)
             self.add_widget(button)
 
@@ -304,7 +367,7 @@ class YesNoToggleBox(ToggleBox):
     def create_buttons(self, button_names):
         for name in button_names:
             button = ToggleButton(group=self.group_name, allow_no_selection=False, text=name)
-            button.bind(on_press=self.set_value)
+            button.bind(on_release=self.set_value)
             self.buttons = [button] + self.buttons
             self.add_widget(button)
 
@@ -313,7 +376,6 @@ class YesNoToggleBox(ToggleBox):
 
         if self.parent_method is not None:
             self.parent_method()
-
 
 
 class PrintingGUIApp(App):
