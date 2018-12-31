@@ -52,18 +52,24 @@
         spacing: sp(10)
         orientation: 'vertical'
 
-        StackLayout:
+        BoxLayout:
             padding: sp(10)
             spacing: sp(10)
-            orientation: 'rl-tb'
+            orientation: 'horizontal'
             size_hint_y: None
             height: sp(75)
+
+            Label:
+                id: jo_no
+                text_size: self.size
+                halign: 'left'
+                font_size: sp(30)
 
             Button:
                 text: 'Next'
                 size_hint_x: None
                 width: sp(200)
-                on_press: root.manager.current = 'run_page'
+                on_press: root.proceed_next()
 
 
 <AdjustmentTabbedPanel>:

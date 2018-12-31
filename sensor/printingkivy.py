@@ -108,11 +108,30 @@ class AdjustmentPage(Screen):
     adjustment_tabbedpanel = None
 
     def generate_tabs(self):
+        current_job = App.get_running_app().current_job
+        self.ids['jo_no'].text = 'JO No.: {}'.format(current_job.info_dict['JO No.'])
+
         if self.adjustment_tabbedpanel is not None:
-            self.ids['box_layout'].clear_widgets(self.adjustment_tabbedpanel)
+            self.ids['box_layout'].remove_widget(self.adjustment_tabbedpanel)
 
         self.adjustment_tabbedpanel = AdjustmentTabbedPanel()
         self.ids['box_layout'].add_widget(self.adjustment_tabbedpanel)
+
+    def proceed_next(self):
+        current_job = App.get_running_app().current_job
+
+        current_job.adjustments['size'] = self.adjustment_tabbedpanel.ids['adjustment_tab'].size_togglebox.current_value
+        current_job.adjustments['ink'] = self.int_text_input(self.adjustment_tabbedpanel.ids['adjustment_tab'].ink_text.text)
+        current_job.adjustments['plate'] = self.int_text_input(self.adjustment_tabbedpanel.ids['adjustment_tab'].plate_text.text)
+        self.parent.transition.direction = 'left'
+        self.parent.current = 'run_page'
+
+        # TODO to remove
+        print(current_job.adjustments)
+
+    @staticmethod
+    def int_text_input(value):
+        return int(value) if value else 0
 
 
 class AdjustmentTabbedPanel(TabbedPanel):
@@ -133,7 +152,7 @@ class AdjustmentTab(BoxLayout):
 
         # Size
         self.ids['adjustment_grid'].add_widget(AdjustmentLabel(text='Size: '))
-        self.size_togglebox = YesNoToggleBox('size', self.set_size_change)
+        self.size_togglebox = YesNoToggleBox(group_name='size')
         self.ids['adjustment_grid'].add_widget(self.size_togglebox)
         self.size_togglebox.set_selection(current_job.adjustments['size'])
 
@@ -141,6 +160,9 @@ class AdjustmentTab(BoxLayout):
         self.ids['adjustment_grid'].add_widget(AdjustmentLabel(text='Ink: '))
         self.ink_text = AdjustmentTextInput()
         self.ink_text.bind(focus=self.set_text_input_target)
+        self.ink_text.bind(text=self.check_text)
+        self.ink_text.hint_text = '0'
+        self.ink_text.hint_text_color = (0, 0, 0, 1)
         self.ids['adjustment_grid'].add_widget(self.ink_text)
         self.ink_text.text = '{}'.format(current_job.adjustments['ink'])
 
@@ -148,26 +170,19 @@ class AdjustmentTab(BoxLayout):
         self.ids['adjustment_grid'].add_widget(AdjustmentLabel(text='Plate: '))
         self.plate_text = AdjustmentTextInput()
         self.plate_text.bind(focus=self.set_text_input_target)
+        self.plate_text.bind(text=self.check_text)
+        self.plate_text.hint_text = '0'
+        self.plate_text.hint_text_color = (0, 0, 0, 1)
         self.ids['adjustment_grid'].add_widget(self.plate_text)
         self.plate_text.text = '{}'.format(current_job.adjustments['plate'])
 
     def set_text_input_target(self, text_input, focus):
         if focus:
             self.ids['numpad'].set_target(text_input)
-        else:
-            current_job = App.get_running_app().current_job
-            if text_input == self.ink_text:
-                current_job.adjustments['ink'] = int(text_input.text)
-            elif text_input == self.plate_text:
-                current_job.adjustments['plate'] = int(text_input.text)
 
-            print(current_job.adjustments)
-
-    def set_size_change(self):
-        current_job = App.get_running_app().current_job
-
-        if self.size_togglebox is not None:
-            current_job.adjustments['size'] = self.size_togglebox.current_value
+    def check_text(self, text_input, value):
+        if value.lstrip("0") == '':
+            text_input.text = ''
 
 
 class RunPage(Screen):
