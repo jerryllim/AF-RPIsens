@@ -233,6 +233,7 @@
 
         Button:
             text: 'Log out'
+            on_release: root.parent.scan_employee()
 
 
 <WastagePopUp>:
@@ -296,10 +297,12 @@
 
             Button:
                 text: 'Dismiss'
-                on_release: root.dismiss()
+                on_release: root.save_dismiss()
 
 
 <EmployeeScanPage>:
+    title: "Scan Employee Number"
+    size_hint: (0.9, 0.9)
     title_label: title_label
     employee_num: employee_num
     cancel_button: cancel_button
@@ -333,6 +336,7 @@
             Button:
                 text: "Scan"
                 size_hint: (0.2, 1)
+                on_release: root.scan_barcode()
 
         BoxLayout:
             spacing: sp(10)
@@ -341,6 +345,7 @@
             Button:
                 id: cancel_button
                 text: "Cancel"
+                on_release: root.dismiss()
 
             Button:
                 id: confirm_button

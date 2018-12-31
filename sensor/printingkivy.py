@@ -45,25 +45,6 @@ class SelectPage(Screen):
         # Timeout
         Clock.schedule_once(self.stop_checking, 10)
 
-        # while True:
-        #     ret, frame = self.cam.read()
-        #
-        #     if ret:
-        #         barcodes = pyzbar.decode(frame)
-        #
-        #         if barcodes:
-        #             barcode = barcodes[0]
-        #             barcode_data = barcode.data.decode("utf-8")
-        #             self.ids.job_entry.text = barcode_data
-        #             break
-        #
-        #     if time.time() > timeout:
-        #         self.ids.job_entry.text = ''
-        #         break
-        #
-        # self.show_image(frame)
-        # self.cam.release()
-
     def check_camera(self, _dt):
         ret, frame = self.cam.read()
 
@@ -212,6 +193,11 @@ class RunPage(Screen):
         self.runPage = Factory.RunPageLayout()
         self.add_widget(self.runPage)
 
+    def scan_employee(self):
+        temp_employee = EmployeeScanPage()
+        temp_employee.title_label.text = 'Employee No.: '
+        temp_employee.open()
+
     def wastage_popup(self, finish=False):
         self.wastagePopup = WastagePopUp()
         if finish:
@@ -222,8 +208,8 @@ class RunPage(Screen):
         self.wastagePopup.open()
 
     def stop_job(self, _instance):
-        self.wastagePopup.dismiss()
-        # TODO add code to save job information
+        self.wastagePopup.save_dismiss()
+        # TODO add code to save job class
         self.parent.transition.direction = 'right'
         self.parent.current = 'select_page'
 
@@ -278,8 +264,42 @@ class WastagePopUp(Popup):
         return int(value) if value else 0
 
 
-class EmployeeScanWindow(Popup):
-    pass
+class EmployeeScanPage(Popup):
+    cam = None
+    camera_event = None
+
+    def scan_barcode(self):
+        self.cam = cv2.VideoCapture(0)
+        self.camera_event = Clock.schedule_interval(self.check_camera, 1.0/60)
+        # Timeout
+        Clock.schedule_once(self.stop_checking, 10)
+
+    def check_camera(self, _dt):
+        ret, frame = self.cam.read()
+
+        if ret:
+            barcodes = pyzbar.decode(frame)
+
+            if barcodes:
+                barcode = barcodes[0]
+                barcode_data = barcode.data.decode("utf-8")
+                self.employee_num.text = barcode_data
+                self.stop_checking(0)
+
+            self.show_image(frame)
+
+    def stop_checking(self, _dt):
+        self.camera_event.cancel()
+        self.cam.release()
+
+    def show_image(self, frame):
+        frame2 = cv2.cvtColor(frame, cv2.COLOR_BGRA2RGB)
+        buf1 = cv2.flip(frame2, 0)
+        buf = buf1.tostring()
+        image_texture = Texture.create(
+            size=(frame.shape[1], frame.shape[0]), colorfmt='rgb')
+        image_texture.blit_buffer(buf, colorfmt='rgb', bufferfmt='ubyte')
+        self.ids['camera_viewer'].texture = image_texture
 
 
 class NumPadGrid(GridLayout):
