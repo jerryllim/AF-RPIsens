@@ -298,3 +298,55 @@
                 text: 'Dismiss'
                 on_release: root.dismiss()
 
+
+<EmployeeScanPage>:
+    title_label: title_label
+    employee_num: employee_num
+    cancel_button: cancel_button
+    confirm_button: confirm_button
+    camera_viewer: camera_viewer
+
+    GridLayout:
+        cols: 1
+        padding: sp(10)
+        spacing: sp(10)
+
+        BoxLayout:
+            padding: [sp(10), 0]
+
+            Label:
+                id: title_label
+                font_size: '32sp'
+                text_size: self.size
+                halign: 'left'
+                valign: 'bottom'
+
+        BoxLayout:
+            padding: sp(10)
+            spacing: sp(10)
+
+            TextInput:
+                id: employee_num
+                font_size: '32sp'
+                multiline: False
+
+            Button:
+                text: "Scan"
+                size_hint: (0.2, 1)
+
+        BoxLayout:
+            spacing: sp(10)
+            size_hint: (0.2, 1)
+
+            Button:
+                id: cancel_button
+                text: "Cancel"
+
+            Button:
+                id: confirm_button
+                text: "Confirm"
+
+        Image:
+            id: camera_viewer
+            size_hint: [1, 3]
+

@@ -36,33 +36,51 @@ class JobClass:
 
 
 class SelectPage(Screen):
+    cam = None
+    camera_event = None
 
     def scan_barcode(self):
-        cam = cv2.VideoCapture(0)
-        timeout = time.time() + 10
+        self.cam = cv2.VideoCapture(0)
+        self.camera_event = Clock.schedule_interval(self.check_camera, 1.0/60)
+        # Timeout
+        Clock.schedule_once(self.stop_checking, 10)
 
-        # image_event = Clock.schedule_interval(self.show_image, 1.0 / 30)
+        # while True:
+        #     ret, frame = self.cam.read()
+        #
+        #     if ret:
+        #         barcodes = pyzbar.decode(frame)
+        #
+        #         if barcodes:
+        #             barcode = barcodes[0]
+        #             barcode_data = barcode.data.decode("utf-8")
+        #             self.ids.job_entry.text = barcode_data
+        #             break
+        #
+        #     if time.time() > timeout:
+        #         self.ids.job_entry.text = ''
+        #         break
+        #
+        # self.show_image(frame)
+        # self.cam.release()
 
-        while True:
-            ret, frame = cam.read()
+    def check_camera(self, _dt):
+        ret, frame = self.cam.read()
 
-            if ret:
-                barcodes = pyzbar.decode(frame)
+        if ret:
+            barcodes = pyzbar.decode(frame)
 
-                if barcodes:
-                    barcode = barcodes[0]
-                    barcode_data = barcode.data.decode("utf-8")
-                    self.ids.job_entry.text = barcode_data
-                    break
+            if barcodes:
+                barcode = barcodes[0]
+                barcode_data = barcode.data.decode("utf-8")
+                self.ids.job_entry.text = barcode_data
+                self.stop_checking(0)
 
-            if time.time() > timeout:
-                self.ids.job_entry.text = ''
-                break
+            self.show_image(frame)
 
-        # image_event.cancel()
-
-        self.show_image(frame)
-        cam.release()
+    def stop_checking(self, _dt):
+        self.camera_event.cancel()
+        self.cam.release()
 
     def show_image(self, frame):
         frame2 = cv2.cvtColor(frame, cv2.COLOR_BGRA2RGB)
@@ -260,7 +278,7 @@ class WastagePopUp(Popup):
         return int(value) if value else 0
 
 
-class EmployeeScan:
+class EmployeeScanWindow(Popup):
     pass
 
 
