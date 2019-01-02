@@ -1,7 +1,7 @@
 <SelectPage>:
     id: selectpage
     GridLayout:
-        rows: 5
+        cols: 1
         padding: sp(10)
         spacing: sp(10)
 
@@ -16,7 +16,6 @@
                 valign: 'bottom'
 
         BoxLayout:
-            padding: sp(10)
             spacing: sp(10)
 
             TextInput:
@@ -31,8 +30,6 @@
                 on_release: selectpage.scan_barcode()
 
         BoxLayout:
-            padding: sp(10)
-
             Button:
                 text: "Start"
                 size_hint: (0.2, 1)
@@ -149,18 +146,21 @@
                 id: jo_no
                 text_size: self.size
                 halign: 'left'
+                valign: 'top'
                 font_size: sp(30)
 
             Label:
                 id: code
                 text_size: self.size
                 halign: 'left'
+                valign: 'top'
                 size_hint_y: 0.5
 
             Label:
                 id: desc
                 text_size: self.size
                 halign: 'left'
+                valign: 'top'
                 size_hint_y: 0.5
 
         Button:
@@ -230,10 +230,6 @@
         Button:
             text: 'Wastage'
             on_release: root.parent.wastage_popup()
-
-        Button:
-            text: 'Log out'
-            on_release: root.parent.scan_employee()
 
 
 <WastagePopUp>:
@@ -349,8 +345,32 @@
             Button:
                 id: confirm_button
                 text: "Confirm"
+                on_release: root.confirm()
 
         Image:
             id: camera_viewer
             size_hint: [1, 3]
 
+
+<SimpleActionBar>:
+    clock_label: clock_label
+    employee_button: employee_button
+    size_hint_y: None
+    height: 50
+    spacing: sp(10)
+    padding: [sp(10), 0]
+    orientation: 'horizontal'
+
+    Button:
+        id: employee_button
+        text: 'Employee no.: 12345'
+        text_size: None, self.size[1]
+        size_hint_x: None
+        width: self.texture_size[0] + sp(20)
+        on_release: root.log_in()
+
+    Label:
+        id: clock_label
+        text_size: self.size
+        halign: 'right'
+        text: root.time

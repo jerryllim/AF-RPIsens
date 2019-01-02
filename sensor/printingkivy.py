@@ -17,10 +17,10 @@ from kivy.uix.textinput import TextInput
 from kivy.graphics.texture import Texture
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.scrollview import ScrollView
-from kivy.properties import NumericProperty
 from kivy.uix.tabbedpanel import TabbedPanel
 from kivy.uix.togglebutton import ToggleButton
 from kivy.uix.screenmanager import ScreenManager, Screen
+from kivy.properties import NumericProperty, StringProperty
 
 
 class JobClass:
@@ -247,7 +247,7 @@ class WastagePopUp(Popup):
             self.current_label.text = '{}'.format(self.current_job.wastage[0])
         else:
             self.unit_spinner.text = 'kg'
-            self.unit_spinner.values = ('kg', 'pieces')
+            self.unit_spinner.values = ('kg', 'pcs')
             self.current_label.text = '0'
 
     def add_wastage(self):
@@ -267,6 +267,7 @@ class WastagePopUp(Popup):
 class EmployeeScanPage(Popup):
     cam = None
     camera_event = None
+    parent_method = None
 
     def scan_barcode(self):
         self.cam = cv2.VideoCapture(0)
@@ -296,10 +297,35 @@ class EmployeeScanPage(Popup):
         frame2 = cv2.cvtColor(frame, cv2.COLOR_BGRA2RGB)
         buf1 = cv2.flip(frame2, 0)
         buf = buf1.tostring()
-        image_texture = Texture.create(
-            size=(frame.shape[1], frame.shape[0]), colorfmt='rgb')
+        image_texture = Texture.create(size=(frame.shape[1], frame.shape[0]), colorfmt='rgb')
         image_texture.blit_buffer(buf, colorfmt='rgb', bufferfmt='ubyte')
         self.ids['camera_viewer'].texture = image_texture
+
+    def confirm(self):
+        if self.parent_method is not None:
+            self.parent_method(self.employee_num.text)
+        self.dismiss()
+
+
+class SimpleActionBar(BoxLayout):
+    time = StringProperty()
+    emp_popup = None
+
+    def __init__(self, **kwargs):
+        BoxLayout.__init__(self, **kwargs)
+        Clock.schedule_interval(self.update_time, 1)
+
+    def update_time(self, _dt):
+        self.time = time.strftime('%x %H:%M')
+
+    def log_in(self):
+        self.emp_popup = EmployeeScanPage()
+        self.emp_popup.title_label.text = 'Employee No.: '
+        self.emp_popup.parent_method = self.get_employee_num
+        self.emp_popup.open()
+
+    def get_employee_num(self, employee_num):
+        self.employee_button.text = 'Employee No.: {}'.format(employee_num)
 
 
 class NumPadGrid(GridLayout):
@@ -429,7 +455,11 @@ class PrintingGUIApp(App):
         self.screen_manager.add_widget(SelectPage(name='select_page'))
         self.screen_manager.add_widget(AdjustmentPage(name='adjustment_page'))
         self.screen_manager.add_widget(RunPage(name='run_page'))
-        return self.screen_manager
+
+        blayout = BoxLayout(orientation='vertical')
+        blayout.add_widget(SimpleActionBar())
+        blayout.add_widget(self.screen_manager)
+        return blayout
 
     def on_keyboard(self, _window, _key, _scan_code, code_point, _modifier):
         if code_point == 'Q':
