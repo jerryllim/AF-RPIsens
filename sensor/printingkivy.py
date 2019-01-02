@@ -217,7 +217,7 @@ class RunPage(Screen):
     def start_maintenance(self, employee_num):
         sm = App.get_running_app().screen_manager
         sm.get_screen('maintenance_page').setup_maintenance(employee_num)
-        sm.transition = RiseInTransition()
+        self.parent.transition.direction = 'up'
         sm.current = 'maintenance_page'
 
     def qc_check(self):
@@ -258,9 +258,8 @@ class MaintenancePage(Screen):
 
     def complete(self):
         screen_manager = App.get_running_app().screen_manager
-        screen_manager.transition = FallOutTransition()
+        self.parent.transition.direction = 'down'
         screen_manager.current = screen_manager.previous()
-        screen_manager.transition = SlideTransition()
 
 
 class MaintenancePageLayout(BoxLayout):
