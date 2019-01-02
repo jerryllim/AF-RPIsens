@@ -131,6 +131,7 @@
     padding: sp(10)
     spacing: sp(10)
     orientation: 'vertical'
+    qc_label: qc_label
 
     BoxLayout:
         spacing: sp(10)
@@ -202,7 +203,7 @@
             font_size: sp(40)
 
     Label:
-        id: qc
+        id: qc_label
         size_hint_y: None
         height: sp(20)
         text_size: self.size
@@ -223,9 +224,11 @@
 
         Button:
             text: 'Maintenance'
+            on_release: root.parent.maintenance_scan()
 
         Button:
             text: 'QC'
+            on_release: root.parent.qc_check()
 
         Button:
             text: 'Wastage'
@@ -374,3 +377,53 @@
         text_size: self.size
         halign: 'right'
         text: root.time
+
+
+<MaintenancePage>:
+    technician_label: technician_label
+    date_label: date_label
+    time_label: time_label
+    BoxLayout:
+        padding: sp(10)
+        spacing: sp(10)
+        orientation: 'vertical'
+
+        Label:
+            text: 'Maintenance'
+            font_size: '32sp'
+            text_size: self.size
+            halign: 'left'
+            size_hint_y: None
+            height: sp(60)
+
+        Label:
+            id: technician_label
+            font_size: '20sp'
+            text_size: self.size
+            halign: 'left'
+            size_hint_y: None
+            height: sp(60)
+
+        Label:
+            id: date_label
+            font_size: '20sp'
+            text_size: self.size
+            halign: 'left'
+            size_hint_y: None
+            height: sp(60)
+
+        Label:
+            id: time_label
+            font_size: '20sp'
+            text_size: self.size
+            halign: 'left'
+            size_hint_y: None
+            height: sp(60)
+
+        Button:
+            text: 'Complete'
+            size_hint_y: None
+            height: sp(60)
+            on_release: root.complete()
+
+        BoxLayout:

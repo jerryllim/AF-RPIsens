@@ -19,8 +19,8 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.tabbedpanel import TabbedPanel
 from kivy.uix.togglebutton import ToggleButton
-from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.properties import NumericProperty, StringProperty
+from kivy.uix.screenmanager import ScreenManager, Screen, RiseInTransition, FallOutTransition, SlideTransition
 
 
 class JobClass:
@@ -193,10 +193,11 @@ class RunPage(Screen):
         self.runPage = Factory.RunPageLayout()
         self.add_widget(self.runPage)
 
-    def scan_employee(self):
-        temp_employee = EmployeeScanPage()
-        temp_employee.title_label.text = 'Employee No.: '
-        temp_employee.open()
+    def maintenance_scan(self):
+        maintenance_popup = EmployeeScanPage()
+        maintenance_popup.title_label.text = 'Technician No.: '
+        maintenance_popup.parent_method = self.start_maintenance
+        maintenance_popup.open()
 
     def wastage_popup(self, finish=False):
         self.wastagePopup = WastagePopUp()
@@ -213,6 +214,21 @@ class RunPage(Screen):
         self.parent.transition.direction = 'right'
         self.parent.current = 'select_page'
 
+    def start_maintenance(self, employee_num):
+        sm = App.get_running_app().screen_manager
+        sm.add_widget(MaintenancePage(employee_num, name='maintenance_page'))
+        sm.transition = RiseInTransition()
+        sm.current = 'maintenance_page'
+
+    def qc_check(self):
+        qc_popup = EmployeeScanPage()
+        qc_popup.title_label.text = 'QC No.: '
+        qc_popup.parent_method = self.update_qc
+        qc_popup.open()
+
+    def update_qc(self, employee_num):
+        self.runPage.qc_label.text = 'QC Check: {} at {}'.format(employee_num, time.strftime('%x %H:%M'))
+
 
 class RunPageLayout(BoxLayout):
     counter = NumericProperty(0)
@@ -227,9 +243,23 @@ class RunPageLayout(BoxLayout):
         self.ids['code'].text = 'Code: {}'.format(self.job_dict['Code'])
         self.ids['desc'].text = 'Description: {}'.format(self.job_dict['Desc'])
         if current_job.qc is None:
-            self.ids['qc'].text = 'QC check: Not complete'
+            self.qc_label.text = 'QC check: Not complete'
         else:
-            self.ids['qc'].text = 'QC check: {}'.format(current_job.qc)
+            self.qc_label.text = 'QC check: {}'.format(current_job.qc)
+
+
+class MaintenancePage(Screen):
+    def __init__(self, employee_num, **kwargs):
+        Screen.__init__(self, **kwargs)
+        self.technician_label.text = 'Technician no.: {}'.format(employee_num)
+        self.date_label.text = 'Start date: {}'.format(time.strftime('%x'))
+        self.time_label.text = 'Start time: {}'.format(time.strftime('%H:%M'))
+
+    def complete(self):
+        screen_manager = App.get_running_app().screen_manager
+        screen_manager.transition = FallOutTransition()
+        screen_manager.current = screen_manager.previous()
+        screen_manager.transition = SlideTransition()
 
 
 class WastagePopUp(Popup):

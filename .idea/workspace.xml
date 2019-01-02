@@ -84,8 +84,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/sensor/printingkivy.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="223">
-                  <caret line="321" column="43" lean-forward="true" selection-start-line="321" selection-start-column="43" selection-end-line="321" selection-end-column="43" />
+                <state relative-caret-position="362">
+                  <caret line="230" lean-forward="true" selection-start-line="230" selection-end-line="230" />
                 </state>
               </provider>
             </entry>
@@ -93,8 +93,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/sensor/printinggui.kv">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="422">
-                  <caret line="351" column="42" selection-start-line="351" selection-start-column="42" selection-end-line="351" selection-end-column="42" />
+                <state relative-caret-position="142">
+                  <caret line="133" column="22" selection-start-line="133" selection-start-column="22" selection-end-line="133" selection-end-column="22" />
                 </state>
               </provider>
             </entry>
@@ -112,13 +112,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>Stop</find>
-      <find>View</find>
-      <find>self.m</find>
-      <find>impress</find>
-      <find>json</find>
-      <find>sorted</find>
-      <find>item</find>
       <find>scan</find>
       <find>0</find>
       <find>delete</find>
@@ -142,6 +135,13 @@
       <find>dismiss()</find>
       <find>piece</find>
       <find>runpage</find>
+      <find>Log</find>
+      <find>Maintenance</find>
+      <find>Mainten</find>
+      <find>main</find>
+      <find>fal</find>
+      <find>slider</find>
+      <find>qc</find>
     </findStrings>
     <replaceStrings>
       <replace>TMessage</replace>
@@ -980,15 +980,15 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/sensor/printinggui.kv">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="422">
-          <caret line="351" column="42" selection-start-line="351" selection-start-column="42" selection-end-line="351" selection-end-column="42" />
+        <state relative-caret-position="142">
+          <caret line="133" column="22" selection-start-line="133" selection-start-column="22" selection-end-line="133" selection-end-column="22" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/sensor/printingkivy.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="223">
-          <caret line="321" column="43" lean-forward="true" selection-start-line="321" selection-start-column="43" selection-end-line="321" selection-end-column="43" />
+        <state relative-caret-position="362">
+          <caret line="230" lean-forward="true" selection-start-line="230" selection-end-line="230" />
         </state>
       </provider>
     </entry>
