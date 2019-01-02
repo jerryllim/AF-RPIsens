@@ -113,7 +113,7 @@ class AdjustmentPage(Screen):
         if self.adjustment_tabbedpanel is not None:
             self.ids['box_layout'].remove_widget(self.adjustment_tabbedpanel)
 
-        self.adjustment_tabbedpanel = AdjustmentTabbedPanel()
+        self.adjustment_tabbedpanel = Factory.AdjustmentTabbedPanel()
         self.ids['box_layout'].add_widget(self.adjustment_tabbedpanel)
 
     def proceed_next(self):
@@ -216,7 +216,7 @@ class RunPage(Screen):
 
     def start_maintenance(self, employee_num):
         sm = App.get_running_app().screen_manager
-        sm.add_widget(MaintenancePage(employee_num, name='maintenance_page'))
+        sm.get_screen('maintenance_page').setup_maintenance(employee_num)
         sm.transition = RiseInTransition()
         sm.current = 'maintenance_page'
 
@@ -249,17 +249,26 @@ class RunPageLayout(BoxLayout):
 
 
 class MaintenancePage(Screen):
-    def __init__(self, employee_num, **kwargs):
-        Screen.__init__(self, **kwargs)
-        self.technician_label.text = 'Technician no.: {}'.format(employee_num)
-        self.date_label.text = 'Start date: {}'.format(time.strftime('%x'))
-        self.time_label.text = 'Start time: {}'.format(time.strftime('%H:%M'))
+    maintenance_layout = None
+
+    def setup_maintenance(self, employee_num):
+        self.clear_widgets()
+        self.maintenance_layout = Factory.MaintenancePageLayout(employee_num)
+        self.add_widget(self.maintenance_layout)
 
     def complete(self):
         screen_manager = App.get_running_app().screen_manager
         screen_manager.transition = FallOutTransition()
         screen_manager.current = screen_manager.previous()
         screen_manager.transition = SlideTransition()
+
+
+class MaintenancePageLayout(BoxLayout):
+    def __init__(self, employee_num, **kwargs):
+        BoxLayout.__init__(self, **kwargs)
+        self.technician_label.text = 'Technician no.: {}'.format(employee_num)
+        self.date_label.text = 'Start date: {}'.format(time.strftime('%x'))
+        self.time_label.text = 'Start time: {}'.format(time.strftime('%H:%M'))
 
 
 class WastagePopUp(Popup):
@@ -481,10 +490,12 @@ class PrintingGUIApp(App):
         Window.bind(on_keyboard=self.on_keyboard)
         Factory.register('AdjustmentTabbedPanel', cls=AdjustmentTabbedPanel)
         Factory.register('RunPageLayout', cls=RunPageLayout)
+        Factory.register('MaintenancePageLayout', cls=MaintenancePageLayout)
 
         self.screen_manager.add_widget(SelectPage(name='select_page'))
         self.screen_manager.add_widget(AdjustmentPage(name='adjustment_page'))
         self.screen_manager.add_widget(RunPage(name='run_page'))
+        self.screen_manager.add_widget(MaintenancePage(name='maintenance_page'))
 
         blayout = BoxLayout(orientation='vertical')
         blayout.add_widget(SimpleActionBar())

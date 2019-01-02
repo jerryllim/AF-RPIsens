@@ -379,51 +379,50 @@
         text: root.time
 
 
-<MaintenancePage>:
+<MaintenancePageLayout>:
     technician_label: technician_label
     date_label: date_label
     time_label: time_label
+    padding: sp(10)
+    spacing: sp(10)
+    orientation: 'vertical'
+
+    Label:
+        text: 'Maintenance'
+        font_size: '32sp'
+        text_size: self.size
+        halign: 'left'
+        size_hint_y: None
+        height: sp(60)
+
+    Label:
+        id: technician_label
+        font_size: '20sp'
+        text_size: self.size
+        halign: 'left'
+        size_hint_y: None
+        height: sp(60)
+
+    Label:
+        id: date_label
+        font_size: '20sp'
+        text_size: self.size
+        halign: 'left'
+        size_hint_y: None
+        height: sp(60)
+
+    Label:
+        id: time_label
+        font_size: '20sp'
+        text_size: self.size
+        halign: 'left'
+        size_hint_y: None
+        height: sp(60)
+
+    Button:
+        text: 'Complete'
+        size_hint_y: None
+        height: sp(60)
+        on_release: root.parent.complete()
+
     BoxLayout:
-        padding: sp(10)
-        spacing: sp(10)
-        orientation: 'vertical'
-
-        Label:
-            text: 'Maintenance'
-            font_size: '32sp'
-            text_size: self.size
-            halign: 'left'
-            size_hint_y: None
-            height: sp(60)
-
-        Label:
-            id: technician_label
-            font_size: '20sp'
-            text_size: self.size
-            halign: 'left'
-            size_hint_y: None
-            height: sp(60)
-
-        Label:
-            id: date_label
-            font_size: '20sp'
-            text_size: self.size
-            halign: 'left'
-            size_hint_y: None
-            height: sp(60)
-
-        Label:
-            id: time_label
-            font_size: '20sp'
-            text_size: self.size
-            halign: 'left'
-            size_hint_y: None
-            height: sp(60)
-
-        Button:
-            text: 'Complete'
-            size_hint_y: None
-            height: sp(60)
-            on_release: root.complete()
-
-        BoxLayout:
