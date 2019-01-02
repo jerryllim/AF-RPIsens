@@ -345,6 +345,69 @@ class EmployeeScanPage(Popup):
         self.dismiss()
 
 
+class InkKeyTab(ScrollView):
+    def __init__(self, **kwargs):
+        ScrollView.__init__(self, **kwargs)
+        self.clear_widgets()
+        ink_key_dict = App.get_running_app().current_job.ink_key
+        self.add_widget(Factory.InkKeyBoxLayout(ink_key_dict))
+
+
+class InkKeyBoxLayout(BoxLayout):
+    def __init__(self, ink_key_dict, **kwargs):
+        BoxLayout.__init__(self, **kwargs)
+        self.ink_key_dict = ink_key_dict
+        self.ids['impression'].text = '{}'.format(self.ink_key_dict.get('impression', ''))
+        keys = list(self.ink_key_dict.keys())
+        try:
+            keys.remove('impression')
+        except ValueError:
+            pass
+        for key in keys:
+            layout = InkZoneLayout(key, self.ink_key_dict.get(key, ''))
+            self.add_widget(layout)
+
+
+class InkZoneLayout(BoxLayout):
+    def __init__(self, plate, ink_dict, **kwargs):
+        BoxLayout.__init__(self, **kwargs)
+        self.ink_dict = ink_dict
+        self.buttons = []
+        self.ids['plate_code'].text = plate
+        self.load_widgets()
+
+    def load_widgets(self):
+        self.buttons.clear()
+        self.ids['ink_zones'].clear_widgets()
+
+        zones = sorted(self.ink_dict.keys(), key=alphanum_key)
+        for zone in zones:
+            button = Button(text="{}\n[b][size=20sp]{}[/size][/b]".format(zone, self.ink_dict.get(zone, '')),
+                            size_hint=(None, 1), halign='center', markup=True)
+            button.bind(on_press=self.edit_ink_key)
+            self.buttons.append(button)
+            self.ids['ink_zones'].add_widget(button)
+
+    def edit_ink_key(self, instance):
+        def dismiss_popup(_button):
+            if value_textinput.text:
+                self.ink_dict[key] = int(value_textinput.text)
+
+            edit_popup.dismiss()
+            self.load_widgets()
+
+        text = instance.text
+        key, value = text.split('\n', 2)
+        content_boxlayout = BoxLayout(orientation='vertical', spacing=10, padding=10)
+        value_textinput = TextInput()
+        content_boxlayout.add_widget(value_textinput)
+        dismiss_button = Button(text='Dismiss')
+        content_boxlayout.add_widget(dismiss_button)
+        edit_popup = Popup(title='Edit ink key {}'.format(key), content=content_boxlayout, auto_dismiss=False, size_hint=(0.5, 0.5))
+        dismiss_button.bind(on_press=dismiss_popup)
+        edit_popup.open()
+
+
 class SimpleActionBar(BoxLayout):
     time = StringProperty()
     emp_popup = None
@@ -504,6 +567,20 @@ class PrintingGUIApp(App):
     def on_keyboard(self, _window, _key, _scan_code, code_point, _modifier):
         if code_point == 'Q':
             self.stop()
+
+
+def try_int(s):
+    try:
+        return int(s)
+    except ValueError:
+        return s
+
+
+def alphanum_key(s):
+    """ Turn a string into a list of string and number chunks.
+        "z23a" -> ["z", 23, "a"]
+    """
+    return [try_int(c) for c in re.split('([0-9]+)', s)]
 
 
 if __name__ == '__main__':
