@@ -19,8 +19,8 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.tabbedpanel import TabbedPanel
 from kivy.uix.togglebutton import ToggleButton
+from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.properties import NumericProperty, StringProperty
-from kivy.uix.screenmanager import ScreenManager, Screen, RiseInTransition, FallOutTransition, SlideTransition
 
 
 class JobClass:
@@ -59,7 +59,10 @@ class SelectPage(Screen):
 
             self.show_image(frame)
 
-    def stop_checking(self, _dt):
+    def stop_checking(self, dt):
+        if dt != 0:
+            self.ids.job_entry.text = ''
+
         self.camera_event.cancel()
         self.cam.release()
 
@@ -383,7 +386,7 @@ class InkZoneLayout(BoxLayout):
         zones = sorted(self.ink_dict.keys(), key=alphanum_key)
         for zone in zones:
             button = Button(text="{}\n[b][size=20sp]{}[/size][/b]".format(zone, self.ink_dict.get(zone, '')),
-                            size_hint=(None, 1), halign='center', markup=True)
+                            size_hint=(1, None), halign='center', markup=True)
             button.bind(on_press=self.edit_ink_key)
             self.buttons.append(button)
             self.ids['ink_zones'].add_widget(button)

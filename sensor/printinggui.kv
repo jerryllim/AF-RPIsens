@@ -437,22 +437,19 @@
 
 <InkKeyBoxLayout>:
     orientation: 'vertical'
-    size_hint: (None, None)
-    width: self.minimum_width
+    size_hint: (1, None)
     height: self.minimum_height
     spacing: 10
     padding: 10
 
     BoxLayout:
         orientation: 'horizontal'
-        size_hint: (None, None)
-        width: self.minimum_width
+        size_hint: (1, None)
         height: self.minimum_height
 
         Label:
             text: 'Impression'
-            size_hint: (None, None)
-            width: sp(300)
+            size_hint: (1, None)
             height: sp(50)
             font_size: sp(25)
 
@@ -460,32 +457,29 @@
             id: impression
             multiline: False
             input_filter: 'int'
-            size_hint: (None, None)
+            size_hint: (1, None)
             font_size: sp(25)
             valign: 'middle'
-            width: sp(300)
             height: sp(50)
 
 
 <InkZoneLayout>:
     id: ink_zone
     orientation: 'vertical'
-    size_hint: (None, None)
-    width: self.minimum_width
+    size_hint: (1, None)
     height: self.minimum_height
 
     Label:
         id: plate_code
-        size_hint: (None, None)
+        size_hint: (1, None)
         height: sp(50)
-        width: sp(300)
         font_size: sp(25)
         text_size: self.size
         halign: 'left'
 
-    BoxLayout:
+    GridLayout:
         id: ink_zones
+        cols: 8
         orientation: 'horizontal'
-        size_hint: (None, None)
-        width: self.minimum_width
-        height: sp(80)
+        size_hint: (1, None)
+        height: self.minimum_height
