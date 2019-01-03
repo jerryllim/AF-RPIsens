@@ -12,6 +12,7 @@ from kivy.uix.popup import Popup
 from kivy.uix.label import Label
 from kivy.uix.button import Button
 from kivy.core.window import Window
+from settings_json import settings_json
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.textinput import TextInput
 from kivy.graphics.texture import Texture
@@ -24,10 +25,11 @@ from kivy.properties import NumericProperty, StringProperty
 
 
 class JobClass:
-    def __init__(self, info_dict, ink_key, employee='ABC123', wastage=(0, 'kg')):
+    def __init__(self, info_dict, ink_key, employee='ABC123', waste1=(0, 'kg'), waste2=(0, 'kg')):
         # TODO remove employee placeholder
         self.info_dict = info_dict
-        self.wastage = wastage
+        self.waste1 = waste1
+        self.waste2 = waste2
         self.employees = []
         self.employees.append(employee)
         self.qc = None
@@ -128,9 +130,6 @@ class AdjustmentPage(Screen):
         self.parent.transition.direction = 'left'
         self.parent.current = 'run_page'
 
-        # TODO to remove
-        print(current_job.adjustments)
-
     @staticmethod
     def int_text_input(value):
         return int(value) if value else 0
@@ -224,13 +223,13 @@ class RunPage(Screen):
         sm.current = 'maintenance_page'
 
     def qc_check(self):
-        qc_popup = EmployeeScanPage()
+        qc_popup = EmployeeScanPage(qc=self.update_qc)
         qc_popup.title_label.text = 'QC No.: '
         qc_popup.parent_method = self.update_qc
         qc_popup.open()
 
-    def update_qc(self, employee_num):
-        self.runPage.qc_label.text = 'QC Check: {} at {}'.format(employee_num, time.strftime('%x %H:%M'))
+    def update_qc(self, employee_num, grade='Pass'):
+        self.runPage.qc_label.text = 'QC Check: {} at {}, {}'.format(employee_num, time.strftime('%x %H:%M'), grade)
 
 
 class RunPageLayout(BoxLayout):
@@ -274,19 +273,21 @@ class MaintenancePageLayout(BoxLayout):
 
 
 class WastagePopUp(Popup):
-    def __init__(self, **kwargs):
+    def __init__(self, text, **kwargs):
         Popup.__init__(self, **kwargs)
         self.ids['numpad'].set_target(self.add_label)
         self.current_job = App.get_running_app().current_job
+        key, _ = text.split('\n', 2)
+        self.wastage = eval('self.current_job.{}'.format(key))
 
         self.numpad.enter_button.text = u'\u2795'
         self.numpad.set_enter_function(self.add_wastage)
-
-        if self.current_job.wastage[0] != 0:
-            self.unit_spinner.text = self.current_job.wastage[1]
+        if self.wastage[0] != 0:
+            self.unit_spinner.text = self.wastage[1]
             self.unit_spinner.disabled = True
-            self.current_label.text = '{}'.format(self.current_job.wastage[0])
+            self.current_label.text = '{}'.format(self.wastage[0])
         else:
+            # TODO add settings panel to set units & default
             self.unit_spinner.text = 'kg'
             self.unit_spinner.values = ('kg', 'pcs')
             self.current_label.text = '0'
@@ -309,6 +310,15 @@ class EmployeeScanPage(Popup):
     cam = None
     camera_event = None
     parent_method = None
+
+    def __init__(self, **kwargs):
+        self.fail_method = kwargs.pop('qc', None)
+        Popup.__init__(self, **kwargs)
+        if self.fail_method:
+            self.confirm_button.text = 'Pass'
+            self.fail_button = Button(text='Fail')
+            self.fail_button.bind(on_release=self.failed_qc)
+            self.button_box.add_widget(self.fail_button)
 
     def scan_barcode(self):
         self.cam = cv2.VideoCapture(0)
@@ -343,8 +353,13 @@ class EmployeeScanPage(Popup):
         self.ids['camera_viewer'].texture = image_texture
 
     def confirm(self):
-        if self.parent_method is not None:
+        if callable(self.parent_method):
             self.parent_method(self.employee_num.text)
+        self.dismiss()
+
+    def failed_qc(self, _button):
+        if callable(self.fail_method):
+            self.fail_method(self.employee_num.text, grade='Fail')
         self.dismiss()
 
 
@@ -360,7 +375,8 @@ class InkKeyBoxLayout(BoxLayout):
     def __init__(self, ink_key_dict, **kwargs):
         BoxLayout.__init__(self, **kwargs)
         self.ink_key_dict = ink_key_dict
-        self.ids['impression'].text = '{}'.format(self.ink_key_dict.get('impression', ''))
+        self.impression_text.text = '{}'.format(self.ink_key_dict.get('impression', ''))
+        self.impression_text.bind(focus=self.edit_impression)
         keys = list(self.ink_key_dict.keys())
         try:
             keys.remove('impression')
@@ -370,13 +386,36 @@ class InkKeyBoxLayout(BoxLayout):
             layout = InkZoneLayout(key, self.ink_key_dict.get(key, ''))
             self.add_widget(layout)
 
+    def edit_impression(self, _instance, focus):
+        def dismiss_popup(_button):
+            if value_textinput.text:
+                self.ink_key_dict['impression'] = int(value_textinput.text)
+                self.impression_text.text = '{}'.format(self.ink_key_dict['impression'])
+
+            edit_popup.dismiss()
+
+        if focus is True:
+            content_boxlayout = BoxLayout(orientation='vertical', spacing=10, padding=10)
+            value_textinput = TextInput()
+            value_textinput.bind(focus=lambda inst, _focus: numpad.set_target(inst))
+            content_boxlayout.add_widget(value_textinput)
+            numpad = NumPadGrid()
+            numpad.size_hint = (1, 4)
+            numpad.set_target(value_textinput)
+            content_boxlayout.add_widget(numpad)
+            dismiss_button = Button(text='Dismiss')
+            content_boxlayout.add_widget(dismiss_button)
+            edit_popup = Popup(title='Edit impression', content=content_boxlayout, auto_dismiss=False, size_hint=(0.5, 0.7))
+            dismiss_button.bind(on_press=dismiss_popup)
+            edit_popup.open()
+
 
 class InkZoneLayout(BoxLayout):
     def __init__(self, plate, ink_dict, **kwargs):
         BoxLayout.__init__(self, **kwargs)
         self.ink_dict = ink_dict
         self.buttons = []
-        self.ids['plate_code'].text = plate
+        self.ids['plate_code'].text = 'Plate: {}'.format(plate)
         self.load_widgets()
 
     def load_widgets(self):
@@ -481,7 +520,7 @@ class NumPadGrid(GridLayout):
         elif isinstance(self.target, Label):
             if instance is self.backspace_button:
                 self.target.text = self.target.text[:-1]
-            elif instance is not self.enter_button:
+            elif instance.text.isdigit():
                 self.target.text = (self.target.text + instance.text).lstrip("0")
             elif self.enter_function is not None:
                 self.enter_function()
@@ -557,6 +596,8 @@ class PrintingGUIApp(App):
     user = None
 
     def build(self):
+        self.use_kivy_settings = False
+        # TODO add config get to use settings to populate stuff (number of operators)
         Window.bind(on_keyboard=self.on_keyboard)
         Factory.register('AdjustmentTabbedPanel', cls=AdjustmentTabbedPanel)
         Factory.register('RunPageLayout', cls=RunPageLayout)
@@ -575,6 +616,22 @@ class PrintingGUIApp(App):
     def on_keyboard(self, _window, _key, _scan_code, code_point, _modifier):
         if code_point == 'Q':
             self.stop()
+
+    def build_config(self, config):
+        config.setdefaults('General', {
+            'num_operators': '1',
+            'waste1_units': 'kg',
+            'waste2_units': 'kg,pcs'})
+        config.setdefaults('Network', {
+            'ip_add': '192.168.1.1',
+            'port': 9999})
+
+    def build_settings(self, settings):
+        settings.add_json_panel('Raspberry JAM', self.config, data=settings_json)
+
+    def on_config_change(self, config, section, key, value):
+        # TODO to change number of operators and maybe network stuff
+        pass
 
 
 def try_int(s):

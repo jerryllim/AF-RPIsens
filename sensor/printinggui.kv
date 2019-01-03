@@ -229,6 +229,12 @@
                 size: self.size
 
         Button:
+            text: 'Back'
+            on_release:
+                app.screen_manager.transition.direction = 'right'
+                app.screen_manager.current = 'adjustment_page'
+
+        Button:
             text: 'Maintenance'
             on_release: root.parent.maintenance_scan()
 
@@ -237,7 +243,17 @@
             on_release: root.parent.qc_check()
 
         Button:
-            text: 'Wastage'
+            text: 'Waste1 \n {}'.format(1)
+            text_size: self.size
+            halign: 'center'
+            valign: 'middle'
+            on_release: root.parent.wastage_popup()
+
+        Button:
+            text: 'Waste2 \n {}'.format(1)
+            text_size: self.size
+            halign: 'center'
+            valign: 'middle'
             on_release: root.parent.wastage_popup()
 
 
@@ -313,6 +329,7 @@
     cancel_button: cancel_button
     confirm_button: confirm_button
     camera_viewer: camera_viewer
+    button_box: button_box
 
     GridLayout:
         cols: 1
@@ -345,6 +362,7 @@
         BoxLayout:
             spacing: sp(10)
             size_hint: (0.2, 1)
+            id: button_box
 
             Button:
                 id: cancel_button
@@ -364,6 +382,7 @@
 <SimpleActionBar>:
     clock_label: clock_label
     employee_button: employee_button
+    setting_button: setting_button
     size_hint_y: None
     height: 50
     spacing: sp(10)
@@ -372,16 +391,29 @@
 
     Button:
         id: employee_button
-        text: 'Employee no.: 12345'
+        text: 'Employee 1 no.:'
         text_size: None, self.size[1]
         size_hint_x: None
         valign: 'middle'
         width: self.texture_size[0] + sp(20)
         on_release: root.log_in()
 
+    Widget:
+
+    Button:
+        id: setting_button
+        text: 'Settings'
+        text_size: None, self.size[1]
+        size_hint_x: None
+        valign: 'middle'
+        width: self.texture_size[0] + sp(20)
+        on_release: app.open_settings()
+
     Label:
         id: clock_label
-        text_size: self.size
+        text_size: None, self.size[1]
+        size_hint_x: None
+        width: self.texture_size[0] + sp(20)
         halign: 'right'
         valign: 'middle'
         text: root.time
@@ -441,6 +473,7 @@
     height: self.minimum_height
     spacing: 10
     padding: 10
+    impression_text: impression_text
 
     BoxLayout:
         orientation: 'horizontal'
@@ -454,7 +487,7 @@
             font_size: sp(25)
 
         TextInput:
-            id: impression
+            id: impression_text
             multiline: False
             input_filter: 'int'
             size_hint: (1, None)
