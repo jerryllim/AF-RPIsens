@@ -174,7 +174,7 @@
             font_size: '32sp'
             background_normal: ''
             background_color: 1,0,0,1
-            on_release: root.parent.wastage_popup(finish=True)
+            on_release: root.parent.wastage_popup('waste1', finish=True)
 
     Label:
         id: to_do
@@ -243,18 +243,18 @@
             on_release: root.parent.qc_check()
 
         Button:
-            text: 'Waste1 \n {}'.format(1)
+            text: 'Waste1 \n {}'.format(root.waste1)
             text_size: self.size
             halign: 'center'
             valign: 'middle'
-            on_release: root.parent.wastage_popup()
+            on_release: root.parent.wastage_popup('waste1')
 
         Button:
-            text: 'Waste2 \n {}'.format(1)
+            text: 'Waste2 \n {}'.format(root.waste2)
             text_size: self.size
             halign: 'center'
             valign: 'middle'
-            on_release: root.parent.wastage_popup()
+            on_release: root.parent.wastage_popup('waste2')
 
 
 <WastagePopUp>:

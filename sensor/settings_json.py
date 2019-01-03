@@ -25,7 +25,7 @@ settings_json = json.dumps([
      'title': 'IP Address',
      'desc': 'Server IP Address',
      'key': 'ip_add',
-     'section': "Network"}
+     'section': "Network"},
     {'type': 'numeric',
      'title': 'Port',
      'desc': 'Server Port',

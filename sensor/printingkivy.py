@@ -25,14 +25,15 @@ from kivy.properties import NumericProperty, StringProperty
 
 
 class JobClass:
-    def __init__(self, info_dict, ink_key, employee='ABC123', waste1=(0, 'kg'), waste2=(0, 'kg')):
+    def __init__(self, info_dict, ink_key, employee='ABC123', wastage=None):
         # TODO remove employee placeholder
         self.info_dict = info_dict
-        self.waste1 = waste1
-        self.waste2 = waste2
+        if wastage is None:
+            wastage = {'waste1': (0, 'kg'), 'waste2': (0, 'kg')}
+        self.wastage = wastage
         self.employees = []
         self.employees.append(employee)
-        self.qc = None
+        self.qc = []
         self.ink_key = ink_key
         self.adjustments = {'size': 0, 'ink': 0, 'plate': 0}
 
@@ -201,8 +202,8 @@ class RunPage(Screen):
         maintenance_popup.parent_method = self.start_maintenance
         maintenance_popup.open()
 
-    def wastage_popup(self, finish=False):
-        self.wastagePopup = WastagePopUp()
+    def wastage_popup(self, key, finish=False):
+        self.wastagePopup = WastagePopUp(key, self.runPage.update_waste)
         if finish:
             button = Button(text='Confirm')
             button.bind(on_release=self.stop_job)
@@ -234,12 +235,13 @@ class RunPage(Screen):
 
 class RunPageLayout(BoxLayout):
     counter = NumericProperty(0)
+    waste1 = NumericProperty(0)
+    waste2 = NumericProperty(0)
 
     def __init__(self, **kwargs):
         BoxLayout.__init__(self, **kwargs)
         current_job = App.get_running_app().current_job
         self.job_dict = current_job.info_dict
-
         self.ids['jo_no'].text = 'JO No.: {}'.format(self.job_dict['JO No.'])
         self.ids['to_do'].text = 'To do: {}'.format(self.job_dict['To do'])
         self.ids['code'].text = 'Code: {}'.format(self.job_dict['Code'])
@@ -248,6 +250,9 @@ class RunPageLayout(BoxLayout):
             self.qc_label.text = 'QC check: Not complete'
         else:
             self.qc_label.text = 'QC check: {}'.format(current_job.qc)
+
+    def update_waste(self, var, val):
+        exec('self.{0} = {1}'.format(var, val))
 
 
 class MaintenancePage(Screen):
@@ -273,13 +278,13 @@ class MaintenancePageLayout(BoxLayout):
 
 
 class WastagePopUp(Popup):
-    def __init__(self, text, **kwargs):
+    def __init__(self, key, update_func, **kwargs):
         Popup.__init__(self, **kwargs)
+        self.update_func = update_func
         self.ids['numpad'].set_target(self.add_label)
         self.current_job = App.get_running_app().current_job
-        key, _ = text.split('\n', 2)
-        self.wastage = eval('self.current_job.{}'.format(key))
-
+        self.key = key
+        self.wastage = self.current_job.wastage[self.key]
         self.numpad.enter_button.text = u'\u2795'
         self.numpad.set_enter_function(self.add_wastage)
         if self.wastage[0] != 0:
@@ -298,7 +303,8 @@ class WastagePopUp(Popup):
         self.add_label.text = ''
 
     def save_dismiss(self):
-        self.current_job.wastage = (int(self.current_label.text), self.unit_spinner.text)
+        self.current_job.wastage[self.key] = (int(self.current_label.text), self.unit_spinner.text)
+        self.update_func(self.key, self.current_job.wastage[self.key][0])
         self.dismiss()
 
     @staticmethod
