@@ -21,18 +21,16 @@ from kivy.uix.scrollview import ScrollView
 from kivy.uix.tabbedpanel import TabbedPanel
 from kivy.uix.togglebutton import ToggleButton
 from kivy.uix.screenmanager import ScreenManager, Screen
-from kivy.properties import NumericProperty, StringProperty
+from kivy.properties import NumericProperty, StringProperty, DictProperty
 
 
 class JobClass:
-    def __init__(self, info_dict, ink_key, employee='ABC123', wastage=None):
-        # TODO remove employee placeholder
+    def __init__(self, info_dict, ink_key, employee, wastage=None):
         self.info_dict = info_dict
         if wastage is None:
             wastage = {'waste1': (0, 'kg'), 'waste2': (0, 'kg')}
         self.wastage = wastage
-        self.employees = []
-        self.employees.append(employee)
+        self.employees = employee
         self.qc = []
         self.ink_key = ink_key
         self.adjustments = {'size': 0, 'ink': 0, 'plate': 0}
@@ -80,6 +78,7 @@ class SelectPage(Screen):
 
     def start_job(self):
         job_num = self.ids.job_entry.text
+
         try:
             with open('{}.json'.format(job_num), 'r') as infile:
                 job_dict = json.load(infile)
@@ -466,18 +465,24 @@ class InkZoneLayout(BoxLayout):
 class SimpleActionBar(BoxLayout):
     time = StringProperty()
     emp_popup = None
+    employee_buttons = []
+    employees = DictProperty()
 
     def __init__(self, **kwargs):
         num_operators = int(kwargs.pop('num_operators', 1))
         BoxLayout.__init__(self, **kwargs)
         Clock.schedule_interval(self.update_time, 1)
-        self.employee_buttons = []
+
         for i in range(1, num_operators+1):
-            button = EmployeeButton(text='Employee {} No.: '.format(i))
-            button.number = i
-            button.bind(on_release=self.log_in)
+            button = EmployeeButton(i)
+            self.employees[i] = ''
             self.employee_buttons.append(button)
+            button.bind(on_release=self.log_in)
             self.add_widget(button, 3)
+
+    def on_employees(self, _instance, _value):
+        for button in self.employee_buttons:
+            button.text = 'Employee {} No.: {}'.format(button.number, self.employees[button.number])
 
     def update_time(self, _dt):
         self.time = time.strftime('%x %H:%M')
@@ -490,12 +495,15 @@ class SimpleActionBar(BoxLayout):
         self.emp_popup.open()
 
     def get_employee_num(self, button, employee_num):
-        button.text = 'Employee {} No.: {}'.format(button.number, employee_num)
+        self.employees[button.number] = employee_num
 
 
 class EmployeeButton(Button):
-    number = 0
-    pass
+
+    def __init__(self, number, **kwargs):
+        Button.__init__(self, **kwargs)
+        self.number = number
+        self.text = 'Employee {} No.: '.format(self.number)
 
 
 class NumPadGrid(GridLayout):
@@ -619,7 +627,6 @@ class PrintingGUIApp(App):
 
     def build(self):
         self.use_kivy_settings = False
-        # TODO add config get to use settings to populate stuff (number of operators)
         num_operators = self.config.get('General', 'num_operators')
         Window.bind(on_keyboard=self.on_keyboard)
         Factory.register('AdjustmentTabbedPanel', cls=AdjustmentTabbedPanel)
