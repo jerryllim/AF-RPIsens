@@ -92,7 +92,10 @@ class SelectPage(Screen):
                 item_ink_key_dict = {}
 
             # TODO add employee check code
-            App.get_running_app().current_job = JobClass(job_dict, item_ink_key_dict, '')
+            employees = App.get_running_app().action_bar.employees.copy()
+            if len(employees) < len(App.get_running_app().action_bar.employee_buttons):
+                raise ValueError('Please log in')
+            App.get_running_app().current_job = JobClass(job_dict, item_ink_key_dict, employees)
             self.parent.get_screen('adjustment_page').generate_tabs()
             self.parent.get_screen('run_page').generate_screen()
             self.parent.transition.direction = 'left'
@@ -102,6 +105,15 @@ class SelectPage(Screen):
             popup_boxlayout = BoxLayout(orientation='vertical')
             popup_boxlayout.add_widget(Label(text='JO number ("{}") was not found, please try again.'.
                                              format(job_num)))
+            dismiss_button = Button(text='Dismiss', size_hint=(1, None))
+            popup_boxlayout.add_widget(dismiss_button)
+            popup = Popup(title='No job found', content=popup_boxlayout, auto_dismiss=False, size_hint=(0.5, 0.5))
+            dismiss_button.bind(on_press=popup.dismiss)
+            popup.open()
+
+        except ValueError as e:
+            popup_boxlayout = BoxLayout(orientation='vertical')
+            popup_boxlayout.add_widget(Label(text=e.args[0]))
             dismiss_button = Button(text='Dismiss', size_hint=(1, None))
             popup_boxlayout.add_widget(dismiss_button)
             popup = Popup(title='No job found', content=popup_boxlayout, auto_dismiss=False, size_hint=(0.5, 0.5))
@@ -626,6 +638,7 @@ class PrintingGUIApp(App):
     screen_manager = ScreenManager()
     current_job = None
     user = None
+    action_bar = None
 
     def build(self):
         self.use_kivy_settings = False
@@ -641,7 +654,8 @@ class PrintingGUIApp(App):
         self.screen_manager.add_widget(MaintenancePage(name='maintenance_page'))
 
         blayout = BoxLayout(orientation='vertical')
-        blayout.add_widget(SimpleActionBar(num_operators=num_operators))
+        self.action_bar = SimpleActionBar(num_operators=int(num_operators))
+        blayout.add_widget(self.action_bar)
         blayout.add_widget(self.screen_manager)
         return blayout
 
