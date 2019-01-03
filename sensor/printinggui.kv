@@ -381,22 +381,12 @@
 
 <SimpleActionBar>:
     clock_label: clock_label
-    employee_button: employee_button
     setting_button: setting_button
     size_hint_y: None
     height: 50
     spacing: sp(10)
     padding: [sp(10), 0]
     orientation: 'horizontal'
-
-    Button:
-        id: employee_button
-        text: 'Employee 1 no.:'
-        text_size: None, self.size[1]
-        size_hint_x: None
-        valign: 'middle'
-        width: self.texture_size[0] + sp(20)
-        on_release: root.log_in()
 
     Widget:
 
@@ -417,6 +407,13 @@
         halign: 'right'
         valign: 'middle'
         text: root.time
+
+
+<EmployeeButton>:
+    text_size: None, self.size[1]
+    size_hint_x: None
+    valign: 'middle'
+    width: self.texture_size[0] + sp(20)
 
 
 <MaintenancePageLayout>:

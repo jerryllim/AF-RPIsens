@@ -468,20 +468,34 @@ class SimpleActionBar(BoxLayout):
     emp_popup = None
 
     def __init__(self, **kwargs):
+        num_operators = int(kwargs.pop('num_operators', 1))
         BoxLayout.__init__(self, **kwargs)
         Clock.schedule_interval(self.update_time, 1)
+        self.employee_buttons = []
+        for i in range(1, num_operators+1):
+            button = EmployeeButton(text='Employee {} No.: '.format(i))
+            button.number = i
+            button.bind(on_release=self.log_in)
+            self.employee_buttons.append(button)
+            self.add_widget(button, 3)
 
     def update_time(self, _dt):
         self.time = time.strftime('%x %H:%M')
 
-    def log_in(self):
+    def log_in(self, button):
         self.emp_popup = EmployeeScanPage()
-        self.emp_popup.title_label.text = 'Employee No.: '
-        self.emp_popup.parent_method = self.get_employee_num
+        index = button.number
+        self.emp_popup.title_label.text = 'Employee {} No.: '.format(index)
+        self.emp_popup.parent_method = lambda num: self.get_employee_num(button, num)
         self.emp_popup.open()
 
-    def get_employee_num(self, employee_num):
-        self.employee_button.text = 'Employee No.: {}'.format(employee_num)
+    def get_employee_num(self, button, employee_num):
+        button.text = 'Employee {} No.: {}'.format(button.number, employee_num)
+
+
+class EmployeeButton(Button):
+    number = 0
+    pass
 
 
 class NumPadGrid(GridLayout):
@@ -606,6 +620,7 @@ class PrintingGUIApp(App):
     def build(self):
         self.use_kivy_settings = False
         # TODO add config get to use settings to populate stuff (number of operators)
+        num_operators = self.config.get('General', 'num_operators')
         Window.bind(on_keyboard=self.on_keyboard)
         Factory.register('AdjustmentTabbedPanel', cls=AdjustmentTabbedPanel)
         Factory.register('RunPageLayout', cls=RunPageLayout)
@@ -617,7 +632,7 @@ class PrintingGUIApp(App):
         self.screen_manager.add_widget(MaintenancePage(name='maintenance_page'))
 
         blayout = BoxLayout(orientation='vertical')
-        blayout.add_widget(SimpleActionBar())
+        blayout.add_widget(SimpleActionBar(num_operators=num_operators))
         blayout.add_widget(self.screen_manager)
         return blayout
 
