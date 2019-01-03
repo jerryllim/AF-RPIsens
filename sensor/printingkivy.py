@@ -230,7 +230,9 @@ class RunPage(Screen):
         qc_popup.open()
 
     def update_qc(self, employee_num, grade='Pass'):
-        self.runPage.qc_label.text = 'QC Check: {} at {}, {}'.format(employee_num, time.strftime('%x %H:%M'), grade)
+        c_time = time.strftime('%x %H:%M')
+        App.get_running_app().current_job.qc.append((employee_num, c_time, grade))
+        self.runPage.qc_label.text = 'QC Check: {} at {}, {}'.format(employee_num, c_time, grade)
 
 
 class RunPageLayout(BoxLayout):
@@ -246,10 +248,10 @@ class RunPageLayout(BoxLayout):
         self.ids['to_do'].text = 'To do: {}'.format(self.job_dict['To do'])
         self.ids['code'].text = 'Code: {}'.format(self.job_dict['Code'])
         self.ids['desc'].text = 'Description: {}'.format(self.job_dict['Desc'])
-        if current_job.qc is None:
+        if not current_job.qc:
             self.qc_label.text = 'QC check: Not complete'
         else:
-            self.qc_label.text = 'QC check: {}'.format(current_job.qc)
+            self.qc_label.text = 'QC check: {}'.format(current_job.qc[-1])
 
     def update_waste(self, var, val):
         exec('self.{0} = {1}'.format(var, val))
