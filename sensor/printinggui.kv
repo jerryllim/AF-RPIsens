@@ -328,6 +328,7 @@
     employee_num: employee_num
     cancel_button: cancel_button
     confirm_button: confirm_button
+    alternate_button: alternate_button
     camera_viewer: camera_viewer
     button_box: button_box
 
@@ -373,6 +374,10 @@
                 id: confirm_button
                 text: "Confirm"
                 on_release: root.confirm()
+
+            Button:
+                id: alternate_button
+                on_release: root.confirm(alternate=True)
 
         Image:
             id: camera_viewer

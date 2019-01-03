@@ -91,7 +91,8 @@ class SelectPage(Screen):
             except FileNotFoundError:
                 item_ink_key_dict = {}
 
-            App.get_running_app().current_job = JobClass(job_dict, item_ink_key_dict)
+            # TODO add employee check code
+            App.get_running_app().current_job = JobClass(job_dict, item_ink_key_dict, '')
             self.parent.get_screen('adjustment_page').generate_tabs()
             self.parent.get_screen('run_page').generate_screen()
             self.parent.transition.direction = 'left'
@@ -228,8 +229,9 @@ class RunPage(Screen):
         qc_popup.parent_method = self.update_qc
         qc_popup.open()
 
-    def update_qc(self, employee_num, grade='Pass'):
+    def update_qc(self, employee_num, fail=False):
         c_time = time.strftime('%x %H:%M')
+        grade = 'Fail' if fail else 'Pass'
         App.get_running_app().current_job.qc.append((employee_num, c_time, grade))
         self.runPage.qc_label.text = 'QC Check: {} at {}, {}'.format(employee_num, c_time, grade)
 
@@ -319,13 +321,16 @@ class EmployeeScanPage(Popup):
     parent_method = None
 
     def __init__(self, **kwargs):
-        self.fail_method = kwargs.pop('qc', None)
+        self.qc = kwargs.pop('qc', False)
+        self.login = kwargs.pop('login', False)
         Popup.__init__(self, **kwargs)
-        if self.fail_method:
+        if self.qc:
             self.confirm_button.text = 'Pass'
-            self.fail_button = Button(text='Fail')
-            self.fail_button.bind(on_release=self.failed_qc)
-            self.button_box.add_widget(self.fail_button)
+            self.alternate_button.text = 'Fail'
+        elif self.login:
+            self.alternate_button.text = 'Log out'
+        else:
+            self.button_box.remove_widget(self.alternate_button)
 
     def scan_barcode(self):
         self.cam = cv2.VideoCapture(0)
@@ -359,14 +364,9 @@ class EmployeeScanPage(Popup):
         image_texture.blit_buffer(buf, colorfmt='rgb', bufferfmt='ubyte')
         self.ids['camera_viewer'].texture = image_texture
 
-    def confirm(self):
+    def confirm(self, alternate=False):
         if callable(self.parent_method):
-            self.parent_method(self.employee_num.text)
-        self.dismiss()
-
-    def failed_qc(self, _button):
-        if callable(self.fail_method):
-            self.fail_method(self.employee_num.text, grade='Fail')
+            self.parent_method(self.employee_num.text, alternate)
         self.dismiss()
 
 
@@ -475,27 +475,29 @@ class SimpleActionBar(BoxLayout):
 
         for i in range(1, num_operators+1):
             button = EmployeeButton(i)
-            self.employees[i] = ''
             self.employee_buttons.append(button)
             button.bind(on_release=self.log_in)
             self.add_widget(button, 3)
 
     def on_employees(self, _instance, _value):
         for button in self.employee_buttons:
-            button.text = 'Employee {} No.: {}'.format(button.number, self.employees[button.number])
+            button.text = 'Employee {} No.: {}'.format(button.number, self.employees.get(button.number, ''))
 
     def update_time(self, _dt):
         self.time = time.strftime('%x %H:%M')
 
     def log_in(self, button):
-        self.emp_popup = EmployeeScanPage()
+        self.emp_popup = EmployeeScanPage(login=True)
         index = button.number
         self.emp_popup.title_label.text = 'Employee {} No.: '.format(index)
-        self.emp_popup.parent_method = lambda num: self.get_employee_num(button, num)
+        self.emp_popup.parent_method = lambda num, alternate: self.get_employee_num(button, num, alternate)
         self.emp_popup.open()
 
-    def get_employee_num(self, button, employee_num):
-        self.employees[button.number] = employee_num
+    def get_employee_num(self, button, employee_num, alternate):
+        if alternate or employee_num == '':
+            self.employees.pop(button.number)
+        else:
+            self.employees[button.number] = employee_num
 
 
 class EmployeeButton(Button):
