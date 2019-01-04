@@ -15,13 +15,20 @@ from kivy.core.window import Window
 from settings_json import settings_json
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.textinput import TextInput
+from kivy.uix.settings import SettingItem
 from kivy.graphics.texture import Texture
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.scrollview import ScrollView
+from kivy.uix.recycleview import RecycleView
+from kivy.uix.behaviors import FocusBehavior
 from kivy.uix.tabbedpanel import TabbedPanel
 from kivy.uix.togglebutton import ToggleButton
+from kivy.uix.recycleboxlayout import RecycleBoxLayout
 from kivy.uix.screenmanager import ScreenManager, Screen
-from kivy.properties import NumericProperty, StringProperty, DictProperty
+from kivy.uix.recycleview.views import RecycleDataViewBehavior
+from kivy.uix.recycleview.layout import LayoutSelectionBehavior
+from kivy.graphics import Color
+from kivy.properties import NumericProperty, StringProperty, DictProperty, ObjectProperty, BooleanProperty
 
 
 class JobClass:
@@ -586,6 +593,105 @@ class AdjustmentTextInput(TextInput):
     pass
 
 
+class SettingButton(SettingItem):
+    popup = ObjectProperty(None, allownone=True)
+
+    def on_panel(self, instance, value):
+        if value is None:
+            return
+        self.fbind('on_release', self._create_popup)
+
+    def _dismiss(self, *largs):
+        if self.popup:
+            self.popup.dismiss()
+        self.popup = None
+
+    def _create_popup(self, instance):
+        content = BoxLayout(orientation='vertical', spacing='5dp')
+        self.popup = popup = Popup(title=self.title, content=content)
+
+        pin_layout = PinLayout()
+        content.add_widget(pin_layout)
+
+        btnlayout = BoxLayout(orientation='horizontal', spacing='5dp', size_hint_y=None)
+        btn = Button(text='Ok')
+        # btn.bind(on_release=self._validate)
+        btnlayout.add_widget(btn)
+        btn = Button(text='Cancel')
+        btn.bind(on_release=self._dismiss)
+        btnlayout.add_widget(btn)
+        content.add_widget(btnlayout)
+
+        popup.open()
+
+    def _validate(self, *largs):
+        pass
+
+
+class PinLayout(BoxLayout):
+    def delete_selected(self):
+        if self.recycle_view.selected_index is not None:
+            self.recycle_view.data.pop(self.recycle_view.selected_index)
+
+        self.recycle_view.selected_index = None
+        self.recycle_view.layout_manager.clear_selection()
+
+    def add_new(self):
+        pass
+
+    def edit_selected(self):
+        pass
+
+
+class RV(RecycleView):
+    selected_index = None
+
+    def __init__(self, **kwargs):
+        RecycleView.__init__(self, **kwargs)
+        # TODO populate from somewhere and update there
+
+
+class SelectableRecycleBoxLayout(FocusBehavior, RecycleBoxLayout, LayoutSelectionBehavior):
+    pass
+
+
+class SelectableLabel(RecycleDataViewBehavior, GridLayout):
+    index = None
+    selected = BooleanProperty(False)
+    selectable = BooleanProperty(True)
+    value = StringProperty('')
+
+    def refresh_view_attrs(self, rv, index, data):
+        self.index = index
+        with self.canvas.before:
+            if self.selected:
+                Color(0, 1, 1, 1)
+            else:
+                Color(0, 0, 0, 1)
+        return super(SelectableLabel, self).refresh_view_attrs(
+            rv, index, data)
+
+    def on_value(self, _instance, _value):
+        texts = self.value.split()
+        self.first.text = texts[0]
+        self.second.text = texts[1]
+        self.third.text = texts[2]
+
+    def on_touch_down(self, touch):
+        if super(SelectableLabel, self).on_touch_down(touch):
+            return True
+        if self.collide_point(*touch.pos) and self.selectable:
+            return self.parent.select_with_touch(self.index, touch)
+
+    def apply_selection(self, rv, index, is_selected):
+        self.selected = is_selected
+        rv.selected_index = index
+        if is_selected:
+            print("selection changed to {0}".format(rv.data[index]))
+        else:
+            print("selection removed for {0}".format(rv.data[index]))
+
+
 class ToggleBox(BoxLayout):
     current_value = None
 
@@ -645,6 +751,7 @@ class PrintingGUIApp(App):
     action_bar = None
 
     def build(self):
+
         # TODO add check for settings
         self.use_kivy_settings = False
         num_operators = self.config.get('General', 'num_operators')
@@ -672,12 +779,14 @@ class PrintingGUIApp(App):
         config.setdefaults('General', {
             'num_operators': '1',
             'waste1_units': 'kg',
-            'waste2_units': 'kg,pcs'})
+            'waste2_units': 'kg,pcs',
+            'pin_config': ''})
         config.setdefaults('Network', {
             'ip_add': '192.168.1.1',
             'port': 9999})
 
     def build_settings(self, settings):
+        settings.register_type('button', SettingButton)
         settings.add_json_panel('Raspberry JAM', self.config, data=settings_json)
 
     def on_config_change(self, config, section, key, value):
