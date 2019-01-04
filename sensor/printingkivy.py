@@ -71,8 +71,7 @@ class SelectPage(Screen):
         frame2 = cv2.cvtColor(frame, cv2.COLOR_BGRA2RGB)
         buf1 = cv2.flip(frame2, 0)
         buf = buf1.tostring()
-        image_texture = Texture.create(
-            size=(frame.shape[1], frame.shape[0]), colorfmt='rgb')
+        image_texture = Texture.create(Texture(), size=(frame.shape[1], frame.shape[0]), colorfmt='rgb')
         image_texture.blit_buffer(buf, colorfmt='rgb', bufferfmt='ubyte')
         self.ids['camera_viewer'].texture = image_texture
 
@@ -84,8 +83,8 @@ class SelectPage(Screen):
                 job_dict = json.load(infile)
 
             try:
-                fileName = job_dict.get('Code', '').replace('/', '_')
-                with open('{}.json'.format(fileName)) as inkfile:
+                file_name = job_dict.get('Code', '').replace('/', '_')
+                with open('{}.json'.format(file_name)) as inkfile:
                     item_ink_key_dict = json.load(inkfile)
 
             except FileNotFoundError:
@@ -137,8 +136,10 @@ class AdjustmentPage(Screen):
         current_job = App.get_running_app().current_job
 
         current_job.adjustments['size'] = self.adjustment_tabbedpanel.ids['adjustment_tab'].size_togglebox.current_value
-        current_job.adjustments['ink'] = self.int_text_input(self.adjustment_tabbedpanel.ids['adjustment_tab'].ink_text.text)
-        current_job.adjustments['plate'] = self.int_text_input(self.adjustment_tabbedpanel.ids['adjustment_tab'].plate_text.text)
+        current_job.adjustments['ink'] = self.int_text_input(self.adjustment_tabbedpanel.ids['adjustment_tab'].ink_text.
+                                                             text)
+        current_job.adjustments['plate'] = self.int_text_input(self.adjustment_tabbedpanel.ids['adjustment_tab'].
+                                                               plate_text.text)
         self.parent.transition.direction = 'left'
         self.parent.current = 'run_page'
 
@@ -193,7 +194,8 @@ class AdjustmentTab(BoxLayout):
         if focus:
             self.ids['numpad'].set_target(text_input)
 
-    def check_text(self, text_input, value):
+    @staticmethod
+    def check_text(text_input, value):
         if value.lstrip("0") == '':
             text_input.text = ''
 
@@ -373,7 +375,7 @@ class EmployeeScanPage(Popup):
         frame2 = cv2.cvtColor(frame, cv2.COLOR_BGRA2RGB)
         buf1 = cv2.flip(frame2, 0)
         buf = buf1.tostring()
-        image_texture = Texture.create(size=(frame.shape[1], frame.shape[0]), colorfmt='rgb')
+        image_texture = Texture.create(Texture(), size=(frame.shape[1], frame.shape[0]), colorfmt='rgb')
         image_texture.blit_buffer(buf, colorfmt='rgb', bufferfmt='ubyte')
         self.ids['camera_viewer'].texture = image_texture
 
@@ -425,7 +427,8 @@ class InkKeyBoxLayout(BoxLayout):
             content_boxlayout.add_widget(numpad)
             dismiss_button = Button(text='Dismiss')
             content_boxlayout.add_widget(dismiss_button)
-            edit_popup = Popup(title='Edit impression', content=content_boxlayout, auto_dismiss=False, size_hint=(0.5, 0.7))
+            edit_popup = Popup(title='Edit impression', content=content_boxlayout, auto_dismiss=False, size_hint=(0.5,
+                                                                                                                  0.7))
             dismiss_button.bind(on_press=dismiss_popup)
             edit_popup.open()
 
