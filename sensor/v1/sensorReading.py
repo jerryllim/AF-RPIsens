@@ -1,5 +1,5 @@
-import sensor.sensorGUI as sensorGUI
-import sensor.sensorGlobal as sensorGlobal
+import sensor.v1.sensorGUI as sensorGUI
+import sensor.v2.sensorGlobal as sensorGlobal
 import pigpio
 import datetime
 from collections import Counter
