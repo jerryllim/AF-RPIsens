@@ -645,6 +645,7 @@ class PrintingGUIApp(App):
     action_bar = None
 
     def build(self):
+        # TODO add check for settings
         self.use_kivy_settings = False
         num_operators = self.config.get('General', 'num_operators')
         Window.bind(on_keyboard=self.on_keyboard)
