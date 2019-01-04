@@ -91,7 +91,6 @@ class SelectPage(Screen):
             except FileNotFoundError:
                 item_ink_key_dict = {}
 
-            # TODO add employee check code
             employees = App.get_running_app().action_bar.employees.copy()
             if len(employees) < len(App.get_running_app().action_bar.employee_buttons):
                 raise ValueError('Please log in')
@@ -229,7 +228,7 @@ class RunPage(Screen):
         self.parent.transition.direction = 'right'
         self.parent.current = 'select_page'
 
-    def start_maintenance(self, employee_num):
+    def start_maintenance(self, employee_num, _alternate):
         sm = App.get_running_app().screen_manager
         sm.get_screen('maintenance_page').setup_maintenance(employee_num)
         self.parent.transition.direction = 'up'
@@ -295,6 +294,7 @@ class MaintenancePageLayout(BoxLayout):
 class WastagePopUp(Popup):
     def __init__(self, key, update_func, **kwargs):
         Popup.__init__(self, **kwargs)
+        self.title = key.capitalize()
         self.update_func = update_func
         self.ids['numpad'].set_target(self.add_label)
         self.current_job = App.get_running_app().current_job
@@ -307,9 +307,10 @@ class WastagePopUp(Popup):
             self.unit_spinner.disabled = True
             self.current_label.text = '{}'.format(self.wastage[0])
         else:
-            # TODO add settings panel to set units & default
-            self.unit_spinner.text = 'kg'
-            self.unit_spinner.values = ('kg', 'pcs')
+            units = App.get_running_app().config.get('General', '{}_units'.format(self.key))
+            units = units.split(',')
+            self.unit_spinner.text = units[0]
+            self.unit_spinner.values = units
             self.current_label.text = '0'
 
     def add_wastage(self):
