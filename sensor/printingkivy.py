@@ -4,10 +4,12 @@ import re
 import cv2
 import time
 import json
+import datetime
 from kivy.app import App
 from pyzbar import pyzbar
 from kivy.clock import Clock
 from kivy.graphics import Color
+from sensor import printingMain
 from kivy.factory import Factory
 from kivy.uix.popup import Popup
 from kivy.uix.label import Label
@@ -35,16 +37,22 @@ from kivy.properties import NumericProperty, StringProperty, DictProperty, Objec
 class JobClass(Widget):
     output = NumericProperty(0)
 
-    def __init__(self, info_dict, ink_key, employee, wastage=None):
+    def __init__(self, info_dict, ink_key, employees, wastage=None):
         Widget.__init__(self)
         self.info_dict = info_dict
         if wastage is None:
             wastage = {'waste1': (0, 'kg'), 'waste2': (0, 'kg')}
         self.wastage = wastage
-        self.employees = employee
+        self.employees = employees
         self.qc = []
         self.ink_key = ink_key
-        self.adjustments = {'size': 0, 'ink': 0, 'plate': 0}
+        self.adjustments = {'E01': 0, 'E02': 0, 'E03': 0}
+
+    def get_employee(self):
+        return self.employees[0]
+
+    def get_adjustments(self):
+        return self.adjustments
 
 
 class SelectPage(Screen):
@@ -149,11 +157,11 @@ class AdjustmentPage(Screen):
     def proceed_next(self):
         current_job = App.get_running_app().current_job
 
-        current_job.adjustments['size'] = self.adjustment_tabbedpanel.ids['adjustment_tab'].size_togglebox.current_value
-        current_job.adjustments['ink'] = self.int_text_input(self.adjustment_tabbedpanel.ids['adjustment_tab'].ink_text.
+        current_job.adjustments['E01'] = self.adjustment_tabbedpanel.ids['adjustment_tab'].size_togglebox.current_value
+        current_job.adjustments['E02'] = self.int_text_input(self.adjustment_tabbedpanel.ids['adjustment_tab'].ink_text.
                                                              text)
-        current_job.adjustments['plate'] = self.int_text_input(self.adjustment_tabbedpanel.ids['adjustment_tab'].
-                                                               plate_text.text)
+        current_job.adjustments['E03'] = self.int_text_input(self.adjustment_tabbedpanel.ids['adjustment_tab'].
+                                                             plate_text.text)
         self.parent.transition.direction = 'left'
         self.parent.current = 'run_page'
 
@@ -241,7 +249,8 @@ class RunPage(Screen):
 
     def stop_job(self, _instance):
         self.wastagePopup.save_dismiss()
-        # TODO add code to save job class
+        # TODO publish job
+        App.get_running_app().publish_job()
         self.parent.transition.direction = 'right'
         self.parent.current = 'select_page'
 
@@ -281,12 +290,6 @@ class RunPageLayout(BoxLayout):
             self.qc_label.text = 'QC check: Not complete'
         else:
             self.qc_label.text = 'QC check: {}'.format(current_job.qc[-1])
-
-        # TODO to remove
-        Clock.schedule_interval(self.update_counter, 1)
-
-    def update_counter(self, _dt):
-        App.get_running_app().current_job.output += 1
 
     def update_waste(self, var, val):
         exec('self.{0} = {1}'.format(var, val))
@@ -345,9 +348,6 @@ class WastagePopUp(Popup):
         self.current_job.wastage[self.key] = (int(self.current_label.text), self.unit_spinner.text)
         self.update_func(self.key, self.current_job.wastage[self.key][0])
         self.dismiss()
-
-        # TODO to remove
-        print(App.get_running_app().current_job.output)
 
     @staticmethod
     def int_text_input(value):
@@ -767,6 +767,10 @@ class PrintingGUIApp(App):
     user = None
     action_bar = None
 
+    def __init__(self, controller: printingMain.RaspberryPiController):
+        App.__init__(self)
+        self.controller = controller
+
     def build(self):
 
         # TODO add check for settings
@@ -815,6 +819,17 @@ class PrintingGUIApp(App):
         if self.current_job is None:
             return
         self.current_job.output += 1
+
+    def publish_job(self):
+        now = datetime.datetime.now()
+        emp = self.current_job.get_employee()
+        jo_no = self.current_job.info_dict["JO No."]
+        i_key = '{0}_{1}_{2}'.format(emp, jo_no, now.strftime('%Y%m%d%H%M'))
+        adjustments = self.current_job.get_adjustments()
+
+        with self.controller.counts_lock:
+            for key in adjustments.keys():
+                self.controller.counts[key] = {i_key: adjustments[key]}
 
 
 def try_int(s):

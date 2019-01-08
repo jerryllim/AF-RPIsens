@@ -23,8 +23,8 @@ class RaspberryPiController:
         for name, (pin, output) in self.sensor_dict.items():
             self.pin_setup(pin, output)
 
-        self.gui = sensor.printingkivy.PrintingGUIApp()
-        self.gui.run()  # TODO uncomment
+        self.gui = sensor.printingkivy.PrintingGUIApp(self)
+        # self.gui.run()  # TODO uncomment
 
     def load_pin_dict(self):
         try:
@@ -59,8 +59,11 @@ class RaspberryPiController:
         now = datetime.datetime.now()
         # Floor to the nearest 5 minutes
         now = now - datetime.timedelta(minutes=now.minute % 5)
-        emp = self.gui.action_bar.employees[1]
-        jo_no = self.gui.current_job.info_dict["JO No."]
+        emp = self.gui.current_job.get_employee()
+        if self.gui.current_job is not None:
+            jo_no = self.gui.current_job.info_dict["JO No."]
+        else:
+            jo_no = 'None'
         key = '{0}_{1}_{2}'.format(emp, jo_no, now.strftime('%Y%m%d%H%M'))
         self.update_count(name, key)
 
@@ -83,3 +86,10 @@ class RaspberryPiController:
             if self.counts.get(name) is None:
                 self.counts[name] = Counter()
             self.counts[name].update(datetime_stamp)
+
+    def get_counts(self):
+        with self.counts_lock:
+            temp = self.counts.copy()
+            self.counts.clear()
+
+        return json.dumps(temp)
