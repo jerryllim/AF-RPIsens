@@ -2,7 +2,7 @@ import tkinter
 from tkinter import ttk
 from tkinter import messagebox
 from collections import OrderedDict
-from sensor import sensorGlobal
+from sensor.v1 import sensorGlobal
 import logging
 
 
