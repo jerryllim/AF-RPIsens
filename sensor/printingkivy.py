@@ -7,9 +7,9 @@ import json
 import datetime
 from kivy.app import App
 from pyzbar import pyzbar
+from kivy.metrics import dp
 from kivy.clock import Clock
 from kivy.graphics import Color
-from sensor import printingMain
 from kivy.factory import Factory
 from kivy.uix.popup import Popup
 from kivy.uix.label import Label
@@ -19,11 +19,11 @@ from kivy.core.window import Window
 from settings_json import settings_json
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.textinput import TextInput
-from kivy.uix.settings import SettingItem
 from kivy.graphics.texture import Texture
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.recycleview import RecycleView
+from kivy.uix.settings import SettingOptions
 from kivy.uix.behaviors import FocusBehavior
 from kivy.uix.tabbedpanel import TabbedPanel
 from kivy.uix.togglebutton import ToggleButton
@@ -31,7 +31,7 @@ from kivy.uix.recycleboxlayout import RecycleBoxLayout
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.recycleview.views import RecycleDataViewBehavior
 from kivy.uix.recycleview.layout import LayoutSelectionBehavior
-from kivy.properties import NumericProperty, StringProperty, DictProperty, ObjectProperty, BooleanProperty
+from kivy.properties import NumericProperty, StringProperty, DictProperty, BooleanProperty
 
 
 class JobClass(Widget):
@@ -612,39 +612,36 @@ class AdjustmentTextInput(TextInput):
     pass
 
 
-class SettingButton(SettingItem):
-    popup = ObjectProperty(None, allownone=True)
+class SettingScrollableOptions(SettingOptions):
 
-    def on_panel(self, instance, value):
-        if value is None:
-            return
-        self.fbind('on_release', self._create_popup)
+    def _create_popup(self, _instance):
+        # create the popup
+        content = BoxLayout(orientation='vertical', spacing='5dp', size_hint=(1, None))
+        scroll_content = ScrollView()
+        scroll_content.add_widget(content)
+        popup_width = min(0.95 * Window.width, dp(500))
+        self.popup = popup = Popup(
+            content=scroll_content, title=self.title, size_hint=(None, 1),
+            size=(popup_width, '400dp'))
+        content.height = len(self.options) * dp(55) + dp(150)
 
-    def _dismiss(self, *largs):
-        if self.popup:
-            self.popup.dismiss()
-        self.popup = None
+        # add all the options
+        content.add_widget(Widget(size_hint_y=None, height=1))
+        uid = str(self.uid)
+        for option in self.options:
+            state = 'down' if option == self.value else 'normal'
+            btn = ToggleButton(text=option, state=state, group=uid)
+            btn.bind(on_release=self._set_option)
+            content.add_widget(btn)
 
-    def _create_popup(self, instance):
-        content = BoxLayout(orientation='vertical', spacing='5dp')
-        self.popup = popup = Popup(title=self.title, content=content)
+        # finally, add a cancel button to return on the previous panel
+        content.add_widget(Widget())
+        btn = Button(text='Cancel', size_hint_y=None, height=dp(50))
+        btn.bind(on_release=popup.dismiss)
+        content.add_widget(btn)
 
-        pin_layout = PinLayout()
-        content.add_widget(pin_layout)
-
-        btnlayout = BoxLayout(orientation='horizontal', spacing='5dp', size_hint_y=None)
-        btn = Button(text='Ok')
-        # btn.bind(on_release=self._validate)
-        btnlayout.add_widget(btn)
-        btn = Button(text='Cancel')
-        btn.bind(on_release=self._dismiss)
-        btnlayout.add_widget(btn)
-        content.add_widget(btnlayout)
-
+        # and open the popup !
         popup.open()
-
-    def _validate(self, *largs):
-        pass
 
 
 class PinLayout(BoxLayout):
@@ -709,40 +706,6 @@ class SelectableLabel(RecycleDataViewBehavior, GridLayout):
             print("selection changed to {0}".format(rv.data[index]))
         else:
             print("selection removed for {0}".format(rv.data[index]))
-
-
-# class ToggleBox(BoxLayout):
-#     current_value = None
-#
-#     def __init__(self, group_name, button_names, on_change_method=None, **kwargs):
-#         BoxLayout.__init__(self, **kwargs)
-#         self.group_name = group_name
-#         self.buttons = []
-#         self.parent_method = on_change_method
-#
-#         self.create_buttons(button_names)
-#
-#         self.set_selection(0)
-#
-#     def create_buttons(self, button_names):
-#         for name in button_names:
-#             button = ToggleButton(group=self.group_name, allow_no_selection=False, text=name)
-#             button.bind(on_release=self.set_value)
-#             self.buttons.append(button)
-#             self.add_widget(button)
-#
-#     def set_value(self, button):
-#         self.current_value = button.text
-#         if self.parent_method is not None:
-#             self.parent_method()
-#
-#     def set_selection(self, index):
-#         self.buttons[index].state = 'down'
-#         other_buttons = (button for button in self.buttons if button is not self.buttons[index])
-#         for button in other_buttons:
-#             button.state = 'normal'
-#
-#         self.set_value(self.buttons[index])
 
 
 class YesNoToggleBox(BoxLayout):
@@ -820,13 +783,13 @@ class PrintingGUIApp(App):
             'num_operators': '1',
             'waste1_units': 'kg',
             'waste2_units': 'kg,pcs',
-            'pin_config': ''})
+            'output_pin': '1'})
         config.setdefaults('Network', {
             'ip_add': '192.168.1.1',
             'port': 9999})
 
     def build_settings(self, settings):
-        settings.register_type('button', SettingButton)
+        settings.register_type('scroll_options', SettingScrollableOptions)
         settings.add_json_panel('Raspberry JAM', self.config, data=settings_json)
 
     def on_config_change(self, config, section, key, value):
