@@ -64,7 +64,7 @@ class RaspberryPiController:
             jo_no = self.gui.current_job.info_dict["JO No."]
         else:
             jo_no = 'None'
-        key = '{0}_{1}_{2}'.format(emp, jo_no, now.strftime('%Y%m%d%H%M'))
+        key = '{0}_{1}_{2}'.format(emp, jo_no, now.strftime('%y%m%d%H%M'))
         self.update_count(name, key)
 
         # TODO store output here? and to FeRAM?

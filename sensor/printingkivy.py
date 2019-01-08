@@ -824,7 +824,7 @@ class PrintingGUIApp(App):
         now = datetime.datetime.now()
         emp = self.current_job.get_employee()
         jo_no = self.current_job.info_dict["JO No."]
-        i_key = '{0}_{1}_{2}'.format(emp, jo_no, now.strftime('%Y%m%d%H%M'))
+        i_key = '{0}_{1}_{2}'.format(emp, jo_no, now.strftime('%y%m%d%H%M'))
         adjustments = self.current_job.get_adjustments()
 
         with self.controller.counts_lock:
