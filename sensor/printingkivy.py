@@ -49,7 +49,7 @@ class JobClass(Widget):
         self.adjustments = {'E01': 0, 'E02': 0, 'E03': 0}
 
     def get_employee(self):
-        return self.employees[0]
+        return self.employees[1]
 
     def get_adjustments(self):
         return self.adjustments
@@ -190,7 +190,7 @@ class AdjustmentTab(BoxLayout):
         self.ids['adjustment_grid'].add_widget(AdjustmentLabel(text='Size: '))
         self.size_togglebox = YesNoToggleBox(group_name='size')
         self.ids['adjustment_grid'].add_widget(self.size_togglebox)
-        self.size_togglebox.set_selection(current_job.adjustments['size'])
+        self.size_togglebox.set_selection(0)
 
         # Ink
         self.ids['adjustment_grid'].add_widget(AdjustmentLabel(text='Ink: '))
@@ -200,7 +200,7 @@ class AdjustmentTab(BoxLayout):
         self.ink_text.hint_text = '0'
         self.ink_text.hint_text_color = (0, 0, 0, 1)
         self.ids['adjustment_grid'].add_widget(self.ink_text)
-        self.ink_text.text = '{}'.format(current_job.adjustments['ink'])
+        self.ink_text.text = '{}'.format(0)
 
         # Plate
         self.ids['adjustment_grid'].add_widget(AdjustmentLabel(text='Plate: '))
@@ -210,7 +210,7 @@ class AdjustmentTab(BoxLayout):
         self.plate_text.hint_text = '0'
         self.plate_text.hint_text_color = (0, 0, 0, 1)
         self.ids['adjustment_grid'].add_widget(self.plate_text)
-        self.plate_text.text = '{}'.format(current_job.adjustments['plate'])
+        self.plate_text.text = '{}'.format(0)
 
     def set_text_input_target(self, text_input, focus):
         if focus:
@@ -259,6 +259,7 @@ class RunPage(Screen):
         sm.get_screen('maintenance_page').setup_maintenance(employee_num)
         self.parent.transition.direction = 'up'
         sm.current = 'maintenance_page'
+        # TODO update dictionary for Maintenance
 
     def qc_check(self):
         qc_popup = EmployeeScanPage(qc=self.update_qc)
@@ -270,6 +271,7 @@ class RunPage(Screen):
         c_time = time.strftime('%x %H:%M')
         grade = 'Fail' if fail else 'Pass'
         App.get_running_app().current_job.qc.append((employee_num, c_time, grade))
+        # TODO update dictionary for QC
         self.runPage.qc_label.text = 'QC Check: {} at {}, {}'.format(employee_num, c_time, grade)
 
 
@@ -709,43 +711,52 @@ class SelectableLabel(RecycleDataViewBehavior, GridLayout):
             print("selection removed for {0}".format(rv.data[index]))
 
 
-class ToggleBox(BoxLayout):
+# class ToggleBox(BoxLayout):
+#     current_value = None
+#
+#     def __init__(self, group_name, button_names, on_change_method=None, **kwargs):
+#         BoxLayout.__init__(self, **kwargs)
+#         self.group_name = group_name
+#         self.buttons = []
+#         self.parent_method = on_change_method
+#
+#         self.create_buttons(button_names)
+#
+#         self.set_selection(0)
+#
+#     def create_buttons(self, button_names):
+#         for name in button_names:
+#             button = ToggleButton(group=self.group_name, allow_no_selection=False, text=name)
+#             button.bind(on_release=self.set_value)
+#             self.buttons.append(button)
+#             self.add_widget(button)
+#
+#     def set_value(self, button):
+#         self.current_value = button.text
+#         if self.parent_method is not None:
+#             self.parent_method()
+#
+#     def set_selection(self, index):
+#         self.buttons[index].state = 'down'
+#         other_buttons = (button for button in self.buttons if button is not self.buttons[index])
+#         for button in other_buttons:
+#             button.state = 'normal'
+#
+#         self.set_value(self.buttons[index])
+
+
+class YesNoToggleBox(BoxLayout):
     current_value = None
 
-    def __init__(self, group_name, button_names, on_change_method=None, **kwargs):
+    def __init__(self, group_name, on_change_method=None, **kwargs):
         BoxLayout.__init__(self, **kwargs)
         self.group_name = group_name
         self.buttons = []
         self.parent_method = on_change_method
 
-        self.create_buttons(button_names)
+        self.create_buttons(['Yes', 'No'])
 
         self.set_selection(0)
-
-    def create_buttons(self, button_names):
-        for name in button_names:
-            button = ToggleButton(group=self.group_name, allow_no_selection=False, text=name)
-            button.bind(on_release=self.set_value)
-            self.buttons.append(button)
-            self.add_widget(button)
-
-    def set_value(self, button):
-        self.current_value = button.text
-        if self.parent_method is not None:
-            self.parent_method()
-
-    def set_selection(self, index):
-        self.buttons[index].state = 'down'
-        other_buttons = (button for button in self.buttons if button is not self.buttons[index])
-        for button in other_buttons:
-            button.state = 'normal'
-
-        self.set_value(self.buttons[index])
-
-
-class YesNoToggleBox(ToggleBox):
-    def __init__(self, group_name, on_change_method=None, **kwargs):
-        ToggleBox.__init__(self, group_name, ['Yes', 'No'], on_change_method, **kwargs)
 
     def create_buttons(self, button_names):
         for name in button_names:
@@ -760,6 +771,14 @@ class YesNoToggleBox(ToggleBox):
         if self.parent_method is not None:
             self.parent_method()
 
+    def set_selection(self, index):
+        self.buttons[index].state = 'down'
+        other_buttons = (button for button in self.buttons if button is not self.buttons[index])
+        for button in other_buttons:
+            button.state = 'normal'
+
+        self.set_value(self.buttons[index])
+
 
 class PrintingGUIApp(App):
     screen_manager = ScreenManager()
@@ -767,7 +786,7 @@ class PrintingGUIApp(App):
     user = None
     action_bar = None
 
-    def __init__(self, controller: printingMain.RaspberryPiController):
+    def __init__(self, controller=None):
         App.__init__(self)
         self.controller = controller
 
@@ -846,6 +865,12 @@ def alphanum_key(s):
     return [try_int(c) for c in re.split('([0-9]+)', s)]
 
 
+class FakeClass():
+    counts = {}
+    import threading
+    counts_lock = threading.Lock()
+
+
 if __name__ == '__main__':
-    printApp = PrintingGUIApp()
+    printApp = PrintingGUIApp(FakeClass())
     printApp.run()
