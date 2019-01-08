@@ -7,9 +7,11 @@ import json
 from kivy.app import App
 from pyzbar import pyzbar
 from kivy.clock import Clock
+from kivy.graphics import Color
 from kivy.factory import Factory
 from kivy.uix.popup import Popup
 from kivy.uix.label import Label
+from kivy.uix.widget import Widget
 from kivy.uix.button import Button
 from kivy.core.window import Window
 from settings_json import settings_json
@@ -27,12 +29,14 @@ from kivy.uix.recycleboxlayout import RecycleBoxLayout
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.recycleview.views import RecycleDataViewBehavior
 from kivy.uix.recycleview.layout import LayoutSelectionBehavior
-from kivy.graphics import Color
 from kivy.properties import NumericProperty, StringProperty, DictProperty, ObjectProperty, BooleanProperty
 
 
-class JobClass:
+class JobClass(Widget):
+    output = NumericProperty(0)
+
     def __init__(self, info_dict, ink_key, employee, wastage=None):
+        Widget.__init__(self)
         self.info_dict = info_dict
         if wastage is None:
             wastage = {'waste1': (0, 'kg'), 'waste2': (0, 'kg')}
@@ -46,12 +50,13 @@ class JobClass:
 class SelectPage(Screen):
     cam = None
     camera_event = None
+    timeout = None
 
     def scan_barcode(self):
         self.cam = cv2.VideoCapture(0)
         self.camera_event = Clock.schedule_interval(self.check_camera, 1.0/60)
         # Timeout
-        Clock.schedule_once(self.stop_checking, 10)
+        self.timeout = Clock.schedule_once(self.stop_checking, 10)
 
     def check_camera(self, _dt):
         ret, frame = self.cam.read()
@@ -63,14 +68,16 @@ class SelectPage(Screen):
                 barcode = barcodes[0]
                 barcode_data = barcode.data.decode("utf-8")
                 self.ids.job_entry.text = barcode_data
-                self.stop_checking(0)
 
+                self.stop_checking(0)
             self.show_image(frame)
 
     def stop_checking(self, dt):
         if dt != 0:
             self.ids.job_entry.text = ''
 
+        print(dt)
+        self.timeout.cancel()
         self.camera_event.cancel()
         self.cam.release()
 
@@ -78,7 +85,7 @@ class SelectPage(Screen):
         frame2 = cv2.cvtColor(frame, cv2.COLOR_BGRA2RGB)
         buf1 = cv2.flip(frame2, 0)
         buf = buf1.tostring()
-        image_texture = Texture.create(Texture(), size=(frame.shape[1], frame.shape[0]), colorfmt='rgb')
+        image_texture = Texture.create(size=(frame.shape[1], frame.shape[0]), colorfmt='rgb')
         image_texture.blit_buffer(buf, colorfmt='rgb', bufferfmt='ubyte')
         self.ids['camera_viewer'].texture = image_texture
 
@@ -215,6 +222,7 @@ class RunPage(Screen):
         self.clear_widgets()
         self.runPage = Factory.RunPageLayout()
         self.add_widget(self.runPage)
+        App.get_running_app().current_job.bind(output=self.runPage.setter('counter'))
 
     def maintenance_scan(self):
         maintenance_popup = EmployeeScanPage()
@@ -274,6 +282,12 @@ class RunPageLayout(BoxLayout):
         else:
             self.qc_label.text = 'QC check: {}'.format(current_job.qc[-1])
 
+        # TODO to remove
+        Clock.schedule_interval(self.update_counter, 1)
+
+    def update_counter(self, _dt):
+        App.get_running_app().current_job.output += 1
+
     def update_waste(self, var, val):
         exec('self.{0} = {1}'.format(var, val))
 
@@ -332,6 +346,9 @@ class WastagePopUp(Popup):
         self.update_func(self.key, self.current_job.wastage[self.key][0])
         self.dismiss()
 
+        # TODO to remove
+        print(App.get_running_app().current_job.output)
+
     @staticmethod
     def int_text_input(value):
         return int(value) if value else 0
@@ -382,7 +399,7 @@ class EmployeeScanPage(Popup):
         frame2 = cv2.cvtColor(frame, cv2.COLOR_BGRA2RGB)
         buf1 = cv2.flip(frame2, 0)
         buf = buf1.tostring()
-        image_texture = Texture.create(Texture(), size=(frame.shape[1], frame.shape[0]), colorfmt='rgb')
+        image_texture = Texture.create(size=(frame.shape[1], frame.shape[0]), colorfmt='rgb')
         image_texture.blit_buffer(buf, colorfmt='rgb', bufferfmt='ubyte')
         self.ids['camera_viewer'].texture = image_texture
 
@@ -746,7 +763,7 @@ class YesNoToggleBox(ToggleBox):
 
 class PrintingGUIApp(App):
     screen_manager = ScreenManager()
-    current_job = None
+    current_job: JobClass = None
     user = None
     action_bar = None
 
@@ -792,6 +809,12 @@ class PrintingGUIApp(App):
     def on_config_change(self, config, section, key, value):
         # TODO to change number of operators and maybe network stuff
         pass
+
+    def update_output(self):
+        # TODO add checks for maintenance or ...
+        if self.current_job is None:
+            return
+        self.current_job.output += 1
 
 
 def try_int(s):
