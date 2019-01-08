@@ -9,7 +9,6 @@ from kivy.app import App
 from pyzbar import pyzbar
 from kivy.metrics import dp
 from kivy.clock import Clock
-from kivy.graphics import Color
 from kivy.factory import Factory
 from kivy.uix.popup import Popup
 from kivy.uix.label import Label
@@ -22,16 +21,11 @@ from kivy.uix.textinput import TextInput
 from kivy.graphics.texture import Texture
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.scrollview import ScrollView
-from kivy.uix.recycleview import RecycleView
 from kivy.uix.settings import SettingOptions
-from kivy.uix.behaviors import FocusBehavior
 from kivy.uix.tabbedpanel import TabbedPanel
 from kivy.uix.togglebutton import ToggleButton
-from kivy.uix.recycleboxlayout import RecycleBoxLayout
 from kivy.uix.screenmanager import ScreenManager, Screen
-from kivy.uix.recycleview.views import RecycleDataViewBehavior
-from kivy.uix.recycleview.layout import LayoutSelectionBehavior
-from kivy.properties import NumericProperty, StringProperty, DictProperty, BooleanProperty
+from kivy.properties import NumericProperty, StringProperty, DictProperty
 
 
 class JobClass(Widget):
@@ -621,18 +615,21 @@ class SettingScrollableOptions(SettingOptions):
         scroll_content.add_widget(content)
         popup_width = min(0.95 * Window.width, dp(500))
         self.popup = popup = Popup(
-            content=scroll_content, title=self.title, size_hint=(None, 1),
-            size=(popup_width, '400dp'))
-        content.height = len(self.options) * dp(55) + dp(150)
+            content=scroll_content, title=self.title, size_hint=(None, 0.75),
+            width=popup_width)
+        content.height = len(self.options)/3 * dp(55) + dp(100)
 
         # add all the options
         content.add_widget(Widget(size_hint_y=None, height=1))
+        grid_content = GridLayout(cols=3, spacing='5dp', size_hint=(1, None))
+        grid_content.height = len(self.options)/3 * dp(55)
+        content.add_widget(grid_content)
         uid = str(self.uid)
         for option in self.options:
             state = 'down' if option == self.value else 'normal'
-            btn = ToggleButton(text=option, state=state, group=uid)
+            btn = ToggleButton(text=option, state=state, group=uid, size_hint_y=None, height=dp(50))
             btn.bind(on_release=self._set_option)
-            content.add_widget(btn)
+            grid_content.add_widget(btn)
 
         # finally, add a cancel button to return on the previous panel
         content.add_widget(Widget())
@@ -642,70 +639,6 @@ class SettingScrollableOptions(SettingOptions):
 
         # and open the popup !
         popup.open()
-
-
-class PinLayout(BoxLayout):
-    def delete_selected(self):
-        if self.recycle_view.selected_index is not None:
-            self.recycle_view.data.pop(self.recycle_view.selected_index)
-
-        self.recycle_view.selected_index = None
-        self.recycle_view.layout_manager.clear_selection()
-
-    def add_new(self):
-        pass
-
-    def edit_selected(self):
-        pass
-
-
-class RV(RecycleView):
-    selected_index = None
-
-    def __init__(self, **kwargs):
-        RecycleView.__init__(self, **kwargs)
-        # TODO populate from somewhere and update there
-
-
-class SelectableRecycleBoxLayout(FocusBehavior, RecycleBoxLayout, LayoutSelectionBehavior):
-    pass
-
-
-class SelectableLabel(RecycleDataViewBehavior, GridLayout):
-    index = None
-    selected = BooleanProperty(False)
-    selectable = BooleanProperty(True)
-    value = StringProperty('')
-
-    def refresh_view_attrs(self, rv, index, data):
-        self.index = index
-        with self.canvas.before:
-            if self.selected:
-                Color(0, 1, 1, 1)
-            else:
-                Color(0, 0, 0, 1)
-        return super(SelectableLabel, self).refresh_view_attrs(
-            rv, index, data)
-
-    def on_value(self, _instance, _value):
-        texts = self.value.split()
-        self.first.text = texts[0]
-        self.second.text = texts[1]
-        self.third.text = texts[2]
-
-    def on_touch_down(self, touch):
-        if super(SelectableLabel, self).on_touch_down(touch):
-            return True
-        if self.collide_point(*touch.pos) and self.selectable:
-            return self.parent.select_with_touch(self.index, touch)
-
-    def apply_selection(self, rv, index, is_selected):
-        self.selected = is_selected
-        rv.selected_index = index
-        if is_selected:
-            print("selection changed to {0}".format(rv.data[index]))
-        else:
-            print("selection removed for {0}".format(rv.data[index]))
 
 
 class YesNoToggleBox(BoxLayout):
@@ -783,7 +716,7 @@ class PrintingGUIApp(App):
             'num_operators': '1',
             'waste1_units': 'kg',
             'waste2_units': 'kg,pcs',
-            'output_pin': '1'})
+            'output_pin': 'Pin 21'})
         config.setdefaults('Network', {
             'ip_add': '192.168.1.1',
             'port': 9999})
