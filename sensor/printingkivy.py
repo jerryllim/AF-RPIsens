@@ -655,6 +655,15 @@ class SettingIPString(SettingString):
             return
 
 
+class SettingUnitsString(SettingString):
+
+    def _validate(self, instance):
+        self._dismiss()
+
+        if re.match("^([^,])([a-z,]*)([^,])$", self.textinput.text):
+            self.value = self.textinput.text
+
+
 class YesNoToggleBox(BoxLayout):
     current_value = None
 
@@ -737,6 +746,7 @@ class PrintingGUIApp(App):
     def build_settings(self, settings):
         settings.register_type('scroll_options', SettingScrollableOptions)
         settings.register_type('ip_string', SettingIPString)
+        settings.register_type('unit_string', SettingUnitsString)
         settings.add_json_panel('Raspberry JAM', self.config, data=settings_json)
 
     def on_config_change(self, config, section, key, value):
