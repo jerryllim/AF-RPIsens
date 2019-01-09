@@ -717,7 +717,7 @@ class PrintingGUIApp(App):
     user = None
     action_bar = None
 
-    def __init__(self, controller: printingMain.RaspberryPiController = None):
+    def __init__(self, controller=None):
         App.__init__(self)
         self.controller = controller
 
@@ -794,7 +794,7 @@ def alphanum_key(s):
     return [try_int(c) for c in re.split('([0-9]+)', s)]
 
 
-class FakeClass(printingMain.RaspberryPiController):
+class FakeClass:
     def __init__(self):
         pass
 

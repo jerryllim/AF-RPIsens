@@ -23,9 +23,10 @@ class RaspberryPiController:
         self.counts_lock = threading.Lock()
         self.gui = printingkivy.PrintingGUIApp(self)
 
-        # TODO add check to check if pin is output pin
+        output_string = self.gui.config.get('General', 'output_pin')
+        output_pin = int(output_string[-2:])
         for name, pin in self.pulse_pins.items():
-            self.pin_setup(pin, False)
+            self.pin_setup(pin, (pin == output_pin))
         for name, pin in self.steady_pins.items():
             self.pin_setup2(pin)
 
