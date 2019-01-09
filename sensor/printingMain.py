@@ -2,17 +2,18 @@ import json
 import pigpio
 import datetime
 import threading
+import printingkivy
 from collections import Counter
-import sensor.printingkivy
 
 
 class RaspberryPiController:
     bounce = 30
-    sensor_dict = {}
+    pulse_pins = {}
+    steady_pins = {}
     pin_to_name = {}
     counts = {}
     _output = 0
-    states = {}
+    # states = {}
 
     def __init__(self, filename='pin_dict.json'):
         self.filename = filename
@@ -22,24 +23,32 @@ class RaspberryPiController:
         self.counts_lock = threading.Lock()
 
         # TODO add check to check if pin is output pin
-        for name, pin in self.sensor_dict.items():
+        for name, pin in self.pulse_pins.items():
             self.pin_setup(pin, False)
+        for name, pin in self.steady_pins.items():
+            self.pin_setup2(pin)
 
-        self.gui = sensor.printingkivy.PrintingGUIApp(self)
+        self.gui = printingkivy.PrintingGUIApp(self)
         # self.gui.run()  # TODO uncomment
 
     def load_pin_dict(self):
         try:
             with open(self.filename, 'r') as infile:
-                self.sensor_dict = json.load(infile)
+                temp = json.load(infile)
+                self.pulse_pins = temp["pulse"]
+                self.steady_pins = temp["steady"]
                 self.pin_to_name = self.lookup_pin_name()
         except FileNotFoundError:
             # TODO either log or stop program since not recording pins
-            pass
+            print("File not found, ", self.filename)
+            raise SystemExit
 
     def lookup_pin_name(self):
         temp = {}
-        for name, pin in self.sensor_dict.items():
+        for name, pin in self.pulse_pins.items():
+            temp[pin] = name
+
+        for name, pin in self.steady_pins.items():
             temp[pin] = name
 
         return temp
@@ -81,11 +90,18 @@ class RaspberryPiController:
         else:
             self.callbacks.append(self.pi.callback(pin, pigpio.RISING_EDGE, self.pin_triggered))
 
-    def update_count(self, name, datetime_stamp):
+    def pin_setup2(self, pin, bounce=30):
+        self.pi.set_mode(pin, pigpio.INPUT)
+        self.pi.set_pull_up_down(pin, pigpio.PUD_DOWN)
+        self.pi.set_glitch_filter(pin, (bounce * 1000))
+        self.callbacks.append(self.pi.callback(pin, pigpio.EITHER_EDGE, self.pin_triggered2))
+        # self.states[pin] = 0
+
+    def update_count(self, name, key):
         with self.counts_lock:
             if self.counts.get(name) is None:
                 self.counts[name] = Counter()
-            self.counts[name].update(datetime_stamp)
+            self.counts[name].update(key)
 
     def get_counts(self):
         with self.counts_lock:
@@ -96,9 +112,18 @@ class RaspberryPiController:
 
     def pin_triggered2(self, pin, level, _tick):
         name = self.pin_to_name[pin]
-        self.states[name] = level
+        # self.states[name] = level
 
-        key = 0
+        key = self.get_key(interval=1)
 
         if level and not self.counts[name][key]:
-            pass
+            self.update_count(name, key)
+
+    # TODO for apscheduler to call once a minute
+    def check_pin_states(self):
+        for pin in self.steady_pins:
+            state = self.pi.read(pin)
+            if state:
+                name = self.pin_to_name[pin]
+                key = self.get_key(interval=1)
+                self.update_count(name, key)

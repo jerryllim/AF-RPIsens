@@ -4,8 +4,8 @@ import re
 import cv2
 import time
 import json
-import datetime
 import ipaddress
+import printingMain
 from kivy.app import App
 from pyzbar import pyzbar
 from kivy.metrics import dp
@@ -26,7 +26,7 @@ from kivy.uix.tabbedpanel import TabbedPanel
 from kivy.uix.togglebutton import ToggleButton
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.settings import SettingOptions, SettingString
-from kivy.properties import NumericProperty, StringProperty, DictProperty
+from kivy.properties import NumericProperty, StringProperty
 
 
 class JobClass(Widget):
@@ -717,7 +717,7 @@ class PrintingGUIApp(App):
     user = None
     action_bar = None
 
-    def __init__(self, controller=None):
+    def __init__(self, controller: printingMain.RaspberryPiController = None):
         App.__init__(self)
         self.controller = controller
 
@@ -772,10 +772,7 @@ class PrintingGUIApp(App):
         self.current_job.output += 1
 
     def publish_job(self):
-        now = datetime.datetime.now()
-        emp = self.action_bar.get_employee()
-        jo_no = self.current_job.info_dict["JO No."]
-        i_key = '{0}_{1}_{2}'.format(emp, jo_no, now.strftime('%y%m%d%H%M'))
+        i_key = self.controller.get_key(interval=1)
         adjustments = self.current_job.get_adjustments()
 
         with self.controller.counts_lock:
@@ -797,10 +794,9 @@ def alphanum_key(s):
     return [try_int(c) for c in re.split('([0-9]+)', s)]
 
 
-class FakeClass():
-    counts = {}
-    import threading
-    counts_lock = threading.Lock()
+class FakeClass(printingMain.RaspberryPiController):
+    def __init__(self):
+        pass
 
 
 if __name__ == '__main__':
