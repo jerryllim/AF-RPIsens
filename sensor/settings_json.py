@@ -1,5 +1,7 @@
 import json
 
+# TODO change output_pin, get them from printingMain?
+
 settings_json = json.dumps([
     {'type': 'title',
      'title': 'General'},
@@ -24,7 +26,7 @@ settings_json = json.dumps([
      'desc': 'Set output pin',
      'key': 'output_pin',
      'section': "General",
-     'options': ['Pin {:02}'.format(x) for x in [17, 27, 22, 23, 24, 25, 5, 6, 12, 13, 19, 16, 26, 20, 21]]},
+     'options': ['Pin {:02}'.format(x) for x in [25, 5, 6, 12, 13, 19, 16, 26, 20, 21]]},
     {'type': 'title',
      'title': 'Network'},
     {'type': 'ip_string',
