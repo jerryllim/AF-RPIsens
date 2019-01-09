@@ -21,6 +21,7 @@ class RaspberryPiController:
         self.pi = pigpio.pi()
         self.callbacks = []
         self.counts_lock = threading.Lock()
+        self.gui = printingkivy.PrintingGUIApp(self)
 
         # TODO add check to check if pin is output pin
         for name, pin in self.pulse_pins.items():
@@ -28,7 +29,6 @@ class RaspberryPiController:
         for name, pin in self.steady_pins.items():
             self.pin_setup2(pin)
 
-        self.gui = printingkivy.PrintingGUIApp(self)
         # self.gui.run()  # TODO uncomment
 
     def load_pin_dict(self):
@@ -101,7 +101,7 @@ class RaspberryPiController:
         with self.counts_lock:
             if self.counts.get(name) is None:
                 self.counts[name] = Counter()
-            self.counts[name].update(key)
+            self.counts[name].update([key])
 
     def get_counts(self):
         with self.counts_lock:
