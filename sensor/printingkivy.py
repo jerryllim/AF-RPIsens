@@ -35,6 +35,7 @@ class JobClass(Widget):
     def __init__(self, info_dict, ink_key, employees, wastage=None):
         Widget.__init__(self)
         self.info_dict = info_dict
+        # TODO get default unit
         if wastage is None:
             wastage = {'waste1': (0, 'kg'), 'waste2': (0, 'kg')}
         self.wastage = wastage
@@ -43,11 +44,14 @@ class JobClass(Widget):
         self.ink_key = ink_key
         self.adjustments = {'E01': 0, 'E02': 0, 'E03': 0}
 
-    def get_employee(self):
-        return self.employees[1]
+    # def get_employee(self):
+    #     return self.employees[1]
 
     def get_adjustments(self):
         return self.adjustments
+
+    def get_current_job(self):
+        return self.info_dict["JO No."]
 
 
 class SelectPage(Screen):
@@ -79,7 +83,6 @@ class SelectPage(Screen):
         if dt != 0:
             self.ids.job_entry.text = ''
 
-        print(dt)
         self.timeout.cancel()
         self.camera_event.cancel()
         self.cam.release()
@@ -503,7 +506,7 @@ class SimpleActionBar(BoxLayout):
     time = StringProperty()
     emp_popup = None
     employee_buttons = []
-    employees = DictProperty()
+    employees = {}
 
     def __init__(self, **kwargs):
         num_operators = int(kwargs.pop('num_operators', 1))
@@ -535,6 +538,15 @@ class SimpleActionBar(BoxLayout):
             self.employees.pop(button.number)
         else:
             self.employees[button.number] = employee_num
+
+    def get_employee(self):
+        employee = None
+        for num in sorted(self.employees.keys()):
+            if self.employees.get(num, None):
+                employee = self.employees.get(num, None)
+                break
+
+        return employee
 
 
 class EmployeeButton(Button):
@@ -761,7 +773,7 @@ class PrintingGUIApp(App):
 
     def publish_job(self):
         now = datetime.datetime.now()
-        emp = self.current_job.get_employee()
+        emp = self.action_bar.get_employee()
         jo_no = self.current_job.info_dict["JO No."]
         i_key = '{0}_{1}_{2}'.format(emp, jo_no, now.strftime('%y%m%d%H%M'))
         adjustments = self.current_job.get_adjustments()
