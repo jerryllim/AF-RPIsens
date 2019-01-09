@@ -5,6 +5,7 @@ import cv2
 import time
 import json
 import datetime
+import ipaddress
 from kivy.app import App
 from pyzbar import pyzbar
 from kivy.metrics import dp
@@ -21,10 +22,10 @@ from kivy.uix.textinput import TextInput
 from kivy.graphics.texture import Texture
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.scrollview import ScrollView
-from kivy.uix.settings import SettingOptions
 from kivy.uix.tabbedpanel import TabbedPanel
 from kivy.uix.togglebutton import ToggleButton
 from kivy.uix.screenmanager import ScreenManager, Screen
+from kivy.uix.settings import SettingOptions, SettingString
 from kivy.properties import NumericProperty, StringProperty, DictProperty
 
 
@@ -641,6 +642,19 @@ class SettingScrollableOptions(SettingOptions):
         popup.open()
 
 
+class SettingIPString(SettingString):
+
+    def _validate(self, instance):
+        self._dismiss()
+
+        try:
+            address = ipaddress.ip_address(self.textinput.text)
+            if isinstance(address, ipaddress.IPv4Address):
+                self.value = self.textinput.text
+        finally:
+            return
+
+
 class YesNoToggleBox(BoxLayout):
     current_value = None
 
@@ -687,7 +701,6 @@ class PrintingGUIApp(App):
         self.controller = controller
 
     def build(self):
-
         # TODO add check for settings
         self.use_kivy_settings = False
         num_operators = self.config.get('General', 'num_operators')
@@ -723,6 +736,7 @@ class PrintingGUIApp(App):
 
     def build_settings(self, settings):
         settings.register_type('scroll_options', SettingScrollableOptions)
+        settings.register_type('ip_string', SettingIPString)
         settings.add_json_panel('Raspberry JAM', self.config, data=settings_json)
 
     def on_config_change(self, config, section, key, value):

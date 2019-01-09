@@ -27,7 +27,7 @@ settings_json = json.dumps([
      'options': ['Pin {:02}'.format(x) for x in [17, 27, 22, 23, 24, 25, 5, 6, 12, 13, 19, 16, 26, 20, 21]]},
     {'type': 'title',
      'title': 'Network'},
-    {'type': 'string',
+    {'type': 'ip_string',
      'title': 'IP Address',
      'desc': 'Server IP Address',
      'key': 'ip_add',
