@@ -2,9 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="8c4eab11-9431-48ea-8992-fef6a6e722be" name="Default" comment="Reduced labels (populate in init) &amp; created NumericProperty for counter">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sensor/printingMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/sensor/printingMain.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sensor/printingkivy.py" beforeDir="false" afterPath="$PROJECT_DIR$/sensor/printingkivy.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sensor/settings_json.py" beforeDir="false" afterPath="$PROJECT_DIR$/sensor/settings_json.py" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -18,58 +16,10 @@
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
           <file pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/sensor/v1/sensorReading.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="203">
-                  <caret line="42" column="24" selection-start-line="42" selection-start-column="24" selection-end-line="42" selection-end-column="24" />
-                  <folding>
-                    <element signature="e#0#39#0" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/sensor/v1/sensorGUI.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="203">
-                  <caret line="81" column="74" selection-start-line="81" selection-start-column="74" selection-end-line="81" selection-end-column="74" />
-                  <folding>
-                    <element signature="e#0#14#0" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/sensor/v1/sensorGlobal.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="140">
-                  <caret line="225" column="21" selection-start-line="225" selection-start-column="17" selection-end-line="225" selection-end-column="21" />
-                  <folding>
-                    <element signature="e#0#11#0" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/test_counter_sqlite.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="417">
-                  <caret line="62" column="34" selection-start-line="62" selection-start-column="34" selection-end-line="62" selection-end-column="34" />
-                  <folding>
-                    <element signature="e#0#31#0" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/sensor/printingkivy.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="420">
-                  <caret line="30" column="63" selection-start-line="30" selection-start-column="63" selection-end-line="30" selection-end-column="63" />
+                <state relative-caret-position="34">
+                  <caret line="726" column="37" selection-start-line="726" selection-start-column="37" selection-end-line="726" selection-end-column="37" />
                 </state>
               </provider>
             </entry>
@@ -77,8 +27,20 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/sensor/printinggui.kv">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="243">
-                  <caret line="528" column="22" selection-start-line="528" selection-start-column="22" selection-end-line="528" selection-end-column="22" />
+                <state relative-caret-position="198">
+                  <caret line="252" column="52" lean-forward="true" selection-start-line="252" selection-start-column="52" selection-end-line="252" selection-end-column="52" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/sensor/printingMain.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="113">
+                  <caret line="77" column="55" selection-start-line="77" selection-start-column="55" selection-end-line="77" selection-end-column="55" />
+                  <folding>
+                    <element signature="e#0#11#0" expanded="true" />
+                  </folding>
                 </state>
               </provider>
             </entry>
@@ -90,8 +52,38 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/sensor/printingkivy.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="361">
-                  <caret line="814" column="36" lean-forward="true" selection-start-line="814" selection-start-column="36" selection-end-line="814" selection-end-column="36" />
+                <state relative-caret-position="198">
+                  <caret line="785" column="22" lean-forward="true" selection-start-line="785" selection-start-column="22" selection-end-line="785" selection-end-column="22" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/sensor/settings_json.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="390">
+                  <caret line="26" column="49" selection-start-line="26" selection-start-column="49" selection-end-line="26" selection-end-column="49" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/sensor/printingMain.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="360">
+                  <caret line="24" lean-forward="true" selection-start-line="24" selection-end-line="24" />
+                  <folding>
+                    <element signature="e#0#11#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/sensor/pin_dict.json">
+              <provider selected="true" editor-type-id="text-editor">
+                <state>
+                  <caret column="75" selection-start-column="75" selection-end-column="75" />
                 </state>
               </provider>
             </entry>
@@ -99,29 +91,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/sensor/printinggui.kv">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="547">
-                  <caret line="582" column="7" selection-start-line="582" selection-start-column="7" selection-end-line="582" selection-end-column="7" />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/sensor/settings_json.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="375">
-                  <caret line="25" column="27" lean-forward="true" selection-start-line="25" selection-start-column="27" selection-end-line="25" selection-end-column="27" />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/sensor/printingMain.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="552">
-                  <caret line="69" column="32" lean-forward="true" selection-start-line="69" selection-start-column="32" selection-end-line="69" selection-end-column="32" />
-                  <folding>
-                    <element signature="e#0#11#0" expanded="true" />
-                  </folding>
+                <state relative-caret-position="520">
+                  <caret line="520" selection-start-line="520" selection-end-line="520" />
                 </state>
               </provider>
             </entry>
@@ -139,17 +110,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>qc</find>
-      <find>qc_label</find>
-      <find>qc_check</find>
-      <find>recta</find>
-      <find>widge</find>
-      <find>TODO</find>
-      <find>emplo</find>
-      <find>employees</find>
-      <find>action</find>
-      <find>Scan</find>
-      <find>fail</find>
       <find>login</find>
       <find>log_in</find>
       <find>Simple</find>
@@ -161,14 +121,25 @@
       <find>Settin</find>
       <find>settingb</find>
       <find>test</find>
-      <find>panel</find>
       <find>setting</find>
       <find>save</find>
       <find>update</find>
       <find>dumps</find>
-      <find>dump</find>
       <find>update_coun</find>
       <find>employee</find>
+      <find>save_d</find>
+      <find>TODO</find>
+      <find>dump</find>
+      <find>qc</find>
+      <find>maintenance</find>
+      <find>panel</find>
+      <find>settingbutton</find>
+      <find>scrollab</find>
+      <find>spacer</find>
+      <find>get_employee</find>
+      <find>.count</find>
+      <find>BackgroundScheduler</find>
+      <find>scheduler</find>
     </findStrings>
     <replaceStrings>
       <replace>TMessage</replace>
@@ -184,15 +155,13 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="master" />
+        <entry key="$PROJECT_DIR$" value="network" />
       </map>
     </option>
   </component>
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/gui/sensorGUI.py" />
-        <option value="$PROJECT_DIR$/test.py" />
         <option value="$PROJECT_DIR$/sampleTest.py" />
         <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/task.md" />
@@ -236,12 +205,14 @@
         <option value="$PROJECT_DIR$/sensor/2017_2018/__init__.py" />
         <option value="$PROJECT_DIR$/sensor/2017_2018/sensorReading.py" />
         <option value="$PROJECT_DIR$/sensor/v1/sensorReading.py" />
-        <option value="$PROJECT_DIR$/sensor/settings_json.py" />
-        <option value="$PROJECT_DIR$/sensor/printinggui.kv" />
         <option value="$PROJECT_DIR$/sensor/v1/sensorGUI.py" />
+        <option value="$PROJECT_DIR$/sensor/printinggui.kv" />
+        <option value="$PROJECT_DIR$/sensor/printinggui.ini" />
         <option value="$PROJECT_DIR$/test_counter_sqlite.py" />
+        <option value="$PROJECT_DIR$/sensor/pin_dict.json" />
         <option value="$PROJECT_DIR$/sensor/printingkivy.py" />
         <option value="$PROJECT_DIR$/sensor/printingMain.py" />
+        <option value="$PROJECT_DIR$/sensor/settings_json.py" />
       </list>
     </option>
   </component>
@@ -277,7 +248,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="SearchEverywhereHistoryKey" value="&#9;FILE&#9;file:///Users/justynlgh/Documents/repo/afRPIsens/sensor/sensorGlobal.py" />
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1546925525406" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1547021820691" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/server" />
     <property name="project.structure.last.edited" value="Modules" />
     <property name="project.structure.proportion" value="0.0" />
@@ -621,6 +592,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1680" height="1027" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" weight="0.23443224" />
       <window_info id="Structure" order="1" weight="0.24908425" />
@@ -632,7 +604,7 @@
       <window_info anchor="bottom" id="Inspection Results" order="0" weight="0.32896176" />
       <window_info anchor="bottom" id="Message" order="1" />
       <window_info anchor="bottom" id="Find" order="2" weight="0.29839572" />
-      <window_info anchor="bottom" id="Run" order="3" sideWeight="0.493895" weight="0.3368984" />
+      <window_info active="true" anchor="bottom" id="Run" order="3" sideWeight="0.493895" visible="true" weight="0.3368984" />
       <window_info anchor="bottom" id="Debug" order="4" weight="0.3989305" />
       <window_info anchor="bottom" id="TODO" order="5" weight="0.32834226" />
       <window_info anchor="bottom" id="Cvs" order="6" weight="0.25" />
@@ -640,7 +612,7 @@
       <window_info anchor="bottom" id="Inspection" order="8" weight="0.4" />
       <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.50305253" side_tool="true" weight="0.3272727" />
       <window_info anchor="bottom" id="Version Control" order="10" weight="0.32834226" />
-      <window_info active="true" anchor="bottom" id="Terminal" order="11" sideWeight="0.4969475" visible="true" weight="0.3272727" />
+      <window_info anchor="bottom" id="Terminal" order="11" sideWeight="0.4969475" weight="0.3272727" />
       <window_info anchor="bottom" id="Dependency Viewer" order="12" weight="0.32896176" />
       <window_info anchor="bottom" id="Messages" order="13" weight="0.32941177" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
@@ -695,20 +667,6 @@
     <option name="LAST_COMMIT_MESSAGE" value="Reduced labels (populate in init) &amp; created NumericProperty for counter" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/test_apscheduler.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="195">
-          <caret line="16" column="8" selection-start-line="16" selection-start-column="8" selection-end-line="16" selection-end-column="8" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test_matplotlib.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="512">
-          <caret line="78" selection-start-line="78" selection-end-line="78" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/macRunScript.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="75">
@@ -898,13 +856,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sensor/printinggui.ini">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="135">
-          <caret line="9" lean-forward="true" selection-start-line="9" selection-end-line="9" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/test.sqlite">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
@@ -922,59 +873,12 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test_counter_sqlite.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="417">
-          <caret line="62" column="34" selection-start-line="62" selection-start-column="34" selection-end-line="62" selection-end-column="34" />
-          <folding>
-            <element signature="e#0#31#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sensor/pin_dict.json">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sensor/v1/sensorGlobal.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="140">
-          <caret line="225" column="21" selection-start-line="225" selection-start-column="17" selection-end-line="225" selection-end-column="21" />
-          <folding>
-            <element signature="e#0#11#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sensor/settings_json.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="375">
-          <caret line="25" column="27" lean-forward="true" selection-start-line="25" selection-start-column="27" selection-end-line="25" selection-end-column="27" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sensor/printinggui.kv">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="547">
-          <caret line="582" column="7" selection-start-line="582" selection-start-column="7" selection-end-line="582" selection-end-column="7" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/sensor/v1/sensorGUI.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="203">
           <caret line="81" column="74" selection-start-line="81" selection-start-column="74" selection-end-line="81" selection-end-column="74" />
           <folding>
             <element signature="e#0#14#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sensor/v1/sensorReading.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="203">
-          <caret line="42" column="24" selection-start-line="42" selection-start-column="24" selection-end-line="42" selection-end-column="24" />
-          <folding>
-            <element signature="e#0#39#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -1024,20 +928,92 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/sensor/v1/sensorReading.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="360">
+          <caret line="24" column="47" selection-start-line="24" selection-start-column="47" selection-end-line="24" selection-end-column="47" />
+          <folding>
+            <element signature="e#0#39#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/kivy/uix/settings.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="242">
+          <caret line="1005" selection-start-line="1005" selection-end-line="1005" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sensor/printinggui.ini">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="120">
+          <caret line="8" column="21" selection-start-line="8" selection-start-column="21" selection-end-line="8" selection-end-column="21" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test_counter_sqlite.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="477">
+          <caret line="57" column="30" lean-forward="true" selection-start-line="57" selection-start-column="30" selection-end-line="57" selection-end-column="30" />
+          <folding>
+            <element signature="e#0#31#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/pigpio.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-118">
+          <caret line="1382" column="7" selection-start-line="1382" selection-start-column="7" selection-end-line="1382" selection-end-column="7" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sensor/pin_dict.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret column="75" selection-start-column="75" selection-end-column="75" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sensor/v1/sensorGlobal.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="212">
+          <caret line="78" column="22" selection-start-line="78" selection-start-column="13" selection-end-line="78" selection-end-column="22" />
+          <folding>
+            <element signature="e#0#11#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sensor/printinggui.kv">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="520">
+          <caret line="520" selection-start-line="520" selection-end-line="520" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/sensor/printingkivy.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="361">
-          <caret line="814" column="36" lean-forward="true" selection-start-line="814" selection-start-column="36" selection-end-line="814" selection-end-column="36" />
+        <state relative-caret-position="198">
+          <caret line="785" column="22" lean-forward="true" selection-start-line="785" selection-start-column="22" selection-end-line="785" selection-end-column="22" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/sensor/printingMain.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="552">
-          <caret line="69" column="32" lean-forward="true" selection-start-line="69" selection-start-column="32" selection-end-line="69" selection-end-column="32" />
+        <state relative-caret-position="360">
+          <caret line="24" lean-forward="true" selection-start-line="24" selection-end-line="24" />
           <folding>
             <element signature="e#0#11#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sensor/settings_json.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="390">
+          <caret line="26" column="49" selection-start-line="26" selection-start-column="49" selection-end-line="26" selection-end-column="49" />
         </state>
       </provider>
     </entry>

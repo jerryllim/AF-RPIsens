@@ -4,10 +4,12 @@ import re
 import cv2
 import time
 import json
+import ipaddress
+import printingMain
 from kivy.app import App
 from pyzbar import pyzbar
+from kivy.metrics import dp
 from kivy.clock import Clock
-from kivy.graphics import Color
 from kivy.factory import Factory
 from kivy.uix.popup import Popup
 from kivy.uix.label import Label
@@ -17,34 +19,39 @@ from kivy.core.window import Window
 from settings_json import settings_json
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.textinput import TextInput
-from kivy.uix.settings import SettingItem
 from kivy.graphics.texture import Texture
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.scrollview import ScrollView
-from kivy.uix.recycleview import RecycleView
-from kivy.uix.behaviors import FocusBehavior
 from kivy.uix.tabbedpanel import TabbedPanel
 from kivy.uix.togglebutton import ToggleButton
-from kivy.uix.recycleboxlayout import RecycleBoxLayout
 from kivy.uix.screenmanager import ScreenManager, Screen
-from kivy.uix.recycleview.views import RecycleDataViewBehavior
-from kivy.uix.recycleview.layout import LayoutSelectionBehavior
-from kivy.properties import NumericProperty, StringProperty, DictProperty, ObjectProperty, BooleanProperty
+from kivy.uix.settings import SettingOptions, SettingString
+from kivy.properties import NumericProperty, StringProperty
 
 
 class JobClass(Widget):
     output = NumericProperty(0)
 
-    def __init__(self, info_dict, ink_key, employee, wastage=None):
+    def __init__(self, info_dict, ink_key, employees, wastage=None):
         Widget.__init__(self)
         self.info_dict = info_dict
+        # TODO get default unit
         if wastage is None:
             wastage = {'waste1': (0, 'kg'), 'waste2': (0, 'kg')}
         self.wastage = wastage
-        self.employees = employee
+        self.employees = employees
         self.qc = []
         self.ink_key = ink_key
-        self.adjustments = {'size': 0, 'ink': 0, 'plate': 0}
+        self.adjustments = {'E01': 0, 'E02': 0, 'E03': 0}
+
+    # def get_employee(self):
+    #     return self.employees[1]
+
+    def get_adjustments(self):
+        return self.adjustments
+
+    def get_current_job(self):
+        return self.info_dict["JO No."]
 
 
 class SelectPage(Screen):
@@ -76,7 +83,6 @@ class SelectPage(Screen):
         if dt != 0:
             self.ids.job_entry.text = ''
 
-        print(dt)
         self.timeout.cancel()
         self.camera_event.cancel()
         self.cam.release()
@@ -149,11 +155,11 @@ class AdjustmentPage(Screen):
     def proceed_next(self):
         current_job = App.get_running_app().current_job
 
-        current_job.adjustments['size'] = self.adjustment_tabbedpanel.ids['adjustment_tab'].size_togglebox.current_value
-        current_job.adjustments['ink'] = self.int_text_input(self.adjustment_tabbedpanel.ids['adjustment_tab'].ink_text.
+        current_job.adjustments['E01'] = self.adjustment_tabbedpanel.ids['adjustment_tab'].size_togglebox.current_value
+        current_job.adjustments['E02'] = self.int_text_input(self.adjustment_tabbedpanel.ids['adjustment_tab'].ink_text.
                                                              text)
-        current_job.adjustments['plate'] = self.int_text_input(self.adjustment_tabbedpanel.ids['adjustment_tab'].
-                                                               plate_text.text)
+        current_job.adjustments['E03'] = self.int_text_input(self.adjustment_tabbedpanel.ids['adjustment_tab'].
+                                                             plate_text.text)
         self.parent.transition.direction = 'left'
         self.parent.current = 'run_page'
 
@@ -182,7 +188,7 @@ class AdjustmentTab(BoxLayout):
         self.ids['adjustment_grid'].add_widget(AdjustmentLabel(text='Size: '))
         self.size_togglebox = YesNoToggleBox(group_name='size')
         self.ids['adjustment_grid'].add_widget(self.size_togglebox)
-        self.size_togglebox.set_selection(current_job.adjustments['size'])
+        self.size_togglebox.set_selection(0)
 
         # Ink
         self.ids['adjustment_grid'].add_widget(AdjustmentLabel(text='Ink: '))
@@ -192,7 +198,7 @@ class AdjustmentTab(BoxLayout):
         self.ink_text.hint_text = '0'
         self.ink_text.hint_text_color = (0, 0, 0, 1)
         self.ids['adjustment_grid'].add_widget(self.ink_text)
-        self.ink_text.text = '{}'.format(current_job.adjustments['ink'])
+        self.ink_text.text = '{}'.format(0)
 
         # Plate
         self.ids['adjustment_grid'].add_widget(AdjustmentLabel(text='Plate: '))
@@ -202,7 +208,7 @@ class AdjustmentTab(BoxLayout):
         self.plate_text.hint_text = '0'
         self.plate_text.hint_text_color = (0, 0, 0, 1)
         self.ids['adjustment_grid'].add_widget(self.plate_text)
-        self.plate_text.text = '{}'.format(current_job.adjustments['plate'])
+        self.plate_text.text = '{}'.format(0)
 
     def set_text_input_target(self, text_input, focus):
         if focus:
@@ -241,7 +247,8 @@ class RunPage(Screen):
 
     def stop_job(self, _instance):
         self.wastagePopup.save_dismiss()
-        # TODO add code to save job class
+        # TODO publish job
+        App.get_running_app().publish_job()
         self.parent.transition.direction = 'right'
         self.parent.current = 'select_page'
 
@@ -250,6 +257,7 @@ class RunPage(Screen):
         sm.get_screen('maintenance_page').setup_maintenance(employee_num)
         self.parent.transition.direction = 'up'
         sm.current = 'maintenance_page'
+        # TODO update dictionary for Maintenance
 
     def qc_check(self):
         qc_popup = EmployeeScanPage(qc=self.update_qc)
@@ -261,6 +269,7 @@ class RunPage(Screen):
         c_time = time.strftime('%x %H:%M')
         grade = 'Fail' if fail else 'Pass'
         App.get_running_app().current_job.qc.append((employee_num, c_time, grade))
+        # TODO update dictionary for QC
         self.runPage.qc_label.text = 'QC Check: {} at {}, {}'.format(employee_num, c_time, grade)
 
 
@@ -281,12 +290,6 @@ class RunPageLayout(BoxLayout):
             self.qc_label.text = 'QC check: Not complete'
         else:
             self.qc_label.text = 'QC check: {}'.format(current_job.qc[-1])
-
-        # TODO to remove
-        Clock.schedule_interval(self.update_counter, 1)
-
-    def update_counter(self, _dt):
-        App.get_running_app().current_job.output += 1
 
     def update_waste(self, var, val):
         exec('self.{0} = {1}'.format(var, val))
@@ -345,9 +348,6 @@ class WastagePopUp(Popup):
         self.current_job.wastage[self.key] = (int(self.current_label.text), self.unit_spinner.text)
         self.update_func(self.key, self.current_job.wastage[self.key][0])
         self.dismiss()
-
-        # TODO to remove
-        print(App.get_running_app().current_job.output)
 
     @staticmethod
     def int_text_input(value):
@@ -506,7 +506,7 @@ class SimpleActionBar(BoxLayout):
     time = StringProperty()
     emp_popup = None
     employee_buttons = []
-    employees = DictProperty()
+    employees = {}
 
     def __init__(self, **kwargs):
         num_operators = int(kwargs.pop('num_operators', 1))
@@ -538,6 +538,15 @@ class SimpleActionBar(BoxLayout):
             self.employees.pop(button.number)
         else:
             self.employees[button.number] = employee_num
+
+    def get_employee(self):
+        employee = None
+        for num in sorted(self.employees.keys()):
+            if self.employees.get(num, None):
+                employee = self.employees.get(num, None)
+                break
+
+        return employee
 
 
 class EmployeeButton(Button):
@@ -610,142 +619,75 @@ class AdjustmentTextInput(TextInput):
     pass
 
 
-class SettingButton(SettingItem):
-    popup = ObjectProperty(None, allownone=True)
+class SettingScrollableOptions(SettingOptions):
 
-    def on_panel(self, instance, value):
-        if value is None:
-            return
-        self.fbind('on_release', self._create_popup)
+    def _create_popup(self, _instance):
+        # create the popup
+        content = BoxLayout(orientation='vertical', spacing='5dp', size_hint=(1, None))
+        scroll_content = ScrollView()
+        scroll_content.add_widget(content)
+        popup_width = min(0.95 * Window.width, dp(500))
+        self.popup = popup = Popup(
+            content=scroll_content, title=self.title, size_hint=(None, 0.75),
+            width=popup_width)
+        content.height = len(self.options)/3 * dp(55) + dp(100)
 
-    def _dismiss(self, *largs):
-        if self.popup:
-            self.popup.dismiss()
-        self.popup = None
+        # add all the options
+        content.add_widget(Widget(size_hint_y=None, height=1))
+        grid_content = GridLayout(cols=3, spacing='5dp', size_hint=(1, None))
+        grid_content.height = len(self.options)/3 * dp(55)
+        content.add_widget(grid_content)
+        uid = str(self.uid)
+        for option in self.options:
+            state = 'down' if option == self.value else 'normal'
+            btn = ToggleButton(text=option, state=state, group=uid, size_hint_y=None, height=dp(50))
+            btn.bind(on_release=self._set_option)
+            grid_content.add_widget(btn)
 
-    def _create_popup(self, instance):
-        content = BoxLayout(orientation='vertical', spacing='5dp')
-        self.popup = popup = Popup(title=self.title, content=content)
+        # finally, add a cancel button to return on the previous panel
+        content.add_widget(Widget())
+        btn = Button(text='Cancel', size_hint_y=None, height=dp(50))
+        btn.bind(on_release=popup.dismiss)
+        content.add_widget(btn)
 
-        pin_layout = PinLayout()
-        content.add_widget(pin_layout)
-
-        btnlayout = BoxLayout(orientation='horizontal', spacing='5dp', size_hint_y=None)
-        btn = Button(text='Ok')
-        # btn.bind(on_release=self._validate)
-        btnlayout.add_widget(btn)
-        btn = Button(text='Cancel')
-        btn.bind(on_release=self._dismiss)
-        btnlayout.add_widget(btn)
-        content.add_widget(btnlayout)
-
+        # and open the popup !
         popup.open()
 
-    def _validate(self, *largs):
-        pass
+
+class SettingIPString(SettingString):
+
+    def _validate(self, instance):
+        self._dismiss()
+
+        try:
+            address = ipaddress.ip_address(self.textinput.text)
+            if isinstance(address, ipaddress.IPv4Address):
+                self.value = self.textinput.text
+        finally:
+            return
 
 
-class PinLayout(BoxLayout):
-    def delete_selected(self):
-        if self.recycle_view.selected_index is not None:
-            self.recycle_view.data.pop(self.recycle_view.selected_index)
+class SettingUnitsString(SettingString):
 
-        self.recycle_view.selected_index = None
-        self.recycle_view.layout_manager.clear_selection()
+    def _validate(self, instance):
+        self._dismiss()
 
-    def add_new(self):
-        pass
-
-    def edit_selected(self):
-        pass
+        if re.match("^([^,])([a-z,]*)([^,])$", self.textinput.text):
+            self.value = self.textinput.text
 
 
-class RV(RecycleView):
-    selected_index = None
-
-    def __init__(self, **kwargs):
-        RecycleView.__init__(self, **kwargs)
-        # TODO populate from somewhere and update there
-
-
-class SelectableRecycleBoxLayout(FocusBehavior, RecycleBoxLayout, LayoutSelectionBehavior):
-    pass
-
-
-class SelectableLabel(RecycleDataViewBehavior, GridLayout):
-    index = None
-    selected = BooleanProperty(False)
-    selectable = BooleanProperty(True)
-    value = StringProperty('')
-
-    def refresh_view_attrs(self, rv, index, data):
-        self.index = index
-        with self.canvas.before:
-            if self.selected:
-                Color(0, 1, 1, 1)
-            else:
-                Color(0, 0, 0, 1)
-        return super(SelectableLabel, self).refresh_view_attrs(
-            rv, index, data)
-
-    def on_value(self, _instance, _value):
-        texts = self.value.split()
-        self.first.text = texts[0]
-        self.second.text = texts[1]
-        self.third.text = texts[2]
-
-    def on_touch_down(self, touch):
-        if super(SelectableLabel, self).on_touch_down(touch):
-            return True
-        if self.collide_point(*touch.pos) and self.selectable:
-            return self.parent.select_with_touch(self.index, touch)
-
-    def apply_selection(self, rv, index, is_selected):
-        self.selected = is_selected
-        rv.selected_index = index
-        if is_selected:
-            print("selection changed to {0}".format(rv.data[index]))
-        else:
-            print("selection removed for {0}".format(rv.data[index]))
-
-
-class ToggleBox(BoxLayout):
+class YesNoToggleBox(BoxLayout):
     current_value = None
 
-    def __init__(self, group_name, button_names, on_change_method=None, **kwargs):
+    def __init__(self, group_name, on_change_method=None, **kwargs):
         BoxLayout.__init__(self, **kwargs)
         self.group_name = group_name
         self.buttons = []
         self.parent_method = on_change_method
 
-        self.create_buttons(button_names)
+        self.create_buttons(['Yes', 'No'])
 
         self.set_selection(0)
-
-    def create_buttons(self, button_names):
-        for name in button_names:
-            button = ToggleButton(group=self.group_name, allow_no_selection=False, text=name)
-            button.bind(on_release=self.set_value)
-            self.buttons.append(button)
-            self.add_widget(button)
-
-    def set_value(self, button):
-        self.current_value = button.text
-        if self.parent_method is not None:
-            self.parent_method()
-
-    def set_selection(self, index):
-        self.buttons[index].state = 'down'
-        other_buttons = (button for button in self.buttons if button is not self.buttons[index])
-        for button in other_buttons:
-            button.state = 'normal'
-
-        self.set_value(self.buttons[index])
-
-
-class YesNoToggleBox(ToggleBox):
-    def __init__(self, group_name, on_change_method=None, **kwargs):
-        ToggleBox.__init__(self, group_name, ['Yes', 'No'], on_change_method, **kwargs)
 
     def create_buttons(self, button_names):
         for name in button_names:
@@ -760,6 +702,14 @@ class YesNoToggleBox(ToggleBox):
         if self.parent_method is not None:
             self.parent_method()
 
+    def set_selection(self, index):
+        self.buttons[index].state = 'down'
+        other_buttons = (button for button in self.buttons if button is not self.buttons[index])
+        for button in other_buttons:
+            button.state = 'normal'
+
+        self.set_value(self.buttons[index])
+
 
 class PrintingGUIApp(App):
     screen_manager = ScreenManager()
@@ -767,8 +717,11 @@ class PrintingGUIApp(App):
     user = None
     action_bar = None
 
-    def build(self):
+    def __init__(self, controller=None):
+        App.__init__(self)
+        self.controller = controller
 
+    def build(self):
         # TODO add check for settings
         self.use_kivy_settings = False
         num_operators = self.config.get('General', 'num_operators')
@@ -797,13 +750,15 @@ class PrintingGUIApp(App):
             'num_operators': '1',
             'waste1_units': 'kg',
             'waste2_units': 'kg,pcs',
-            'pin_config': ''})
+            'output_pin': 'Pin 21'})
         config.setdefaults('Network', {
             'ip_add': '192.168.1.1',
             'port': 9999})
 
     def build_settings(self, settings):
-        settings.register_type('button', SettingButton)
+        settings.register_type('scroll_options', SettingScrollableOptions)
+        settings.register_type('ip_string', SettingIPString)
+        settings.register_type('unit_string', SettingUnitsString)
         settings.add_json_panel('Raspberry JAM', self.config, data=settings_json)
 
     def on_config_change(self, config, section, key, value):
@@ -815,6 +770,14 @@ class PrintingGUIApp(App):
         if self.current_job is None:
             return
         self.current_job.output += 1
+
+    def publish_job(self):
+        i_key = self.controller.get_key(interval=1)
+        adjustments = self.current_job.get_adjustments()
+
+        with self.controller.counts_lock:
+            for key in adjustments.keys():
+                self.controller.counts[key] = {i_key: adjustments[key]}
 
 
 def try_int(s):
@@ -831,6 +794,11 @@ def alphanum_key(s):
     return [try_int(c) for c in re.split('([0-9]+)', s)]
 
 
+class FakeClass:
+    def __init__(self):
+        pass
+
+
 if __name__ == '__main__':
-    printApp = PrintingGUIApp()
+    printApp = PrintingGUIApp(FakeClass())
     printApp.run()
