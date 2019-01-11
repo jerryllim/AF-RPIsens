@@ -120,8 +120,8 @@ class RaspberryPiController:
 
         # establishing context, publisher pattern and connection to server port
         context = zmq.Context()
-        publisher = context.socket(zmq.PUB)
-        publisher.connect("tcp://%s" % port)
+        self.publisher = context.socket(zmq.PUB)
+        self.publisher.connect("tcp://%s" % port)
         time.sleep(1)
         #print("Successfully connected to machine %s" % port)
 
