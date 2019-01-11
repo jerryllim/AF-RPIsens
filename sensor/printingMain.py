@@ -21,6 +21,7 @@ class RaspberryPiController:
         self.pi = pigpio.pi()
         self.callbacks = []
         self.counts_lock = threading.Lock()
+        self.publisher_routine()
         self.gui = printingkivy.PrintingGUIApp(self)
 
         output_string = self.gui.config.get('General', 'output_pin')
@@ -110,6 +111,25 @@ class RaspberryPiController:
             self.counts.clear()
 
         return json.dumps(temp)
+    
+    def publisher_routine(self):
+        # port connection sould be declared beforehand
+        port = "152.228.1.124:56789"
+
+        # establishing context, publisher pattern and connection to server port
+        context = zmq.Context()
+        publisher = context.socket(zmq.PUB)
+        publisher.connect("tcp://%s" % port)
+        time.sleep(1)
+        #print("Successfully connected to machine %s" % port)
+
+    def publish(self):
+        # routine function starts here
+        self.counts['test'] = Counter() # test
+        self.update_count('test', '123445') # test
+        msg_json = self.get_counts()
+        #print(msg_json)
+        publisher.send_string(msg_json)
 
     def pin_triggered2(self, pin, level, _tick):
         name = self.pin_to_name[pin]
