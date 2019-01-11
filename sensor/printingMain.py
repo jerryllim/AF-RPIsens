@@ -15,6 +15,7 @@ class RaspberryPiController:
     pin_to_name = {}
     counts = {}
     _output = 0
+    publisher = None
     # states = {}
 
     def __init__(self, filename='pin_dict.json'):
@@ -120,18 +121,18 @@ class RaspberryPiController:
 
         # establishing context, publisher pattern and connection to server port
         context = zmq.Context()
-        publisher = context.socket(zmq.PUB)
-        publisher.connect("tcp://%s" % port)
+        self.publisher = context.socket(zmq.PUB)
+        self.publisher.connect("tcp://%s" % port)
         time.sleep(1)
-        #print("Successfully connected to machine %s" % port)
+        # print("Successfully connected to machine %s" % port)
 
-    def publish(self):
+    def publish(self, msg):
         # routine function starts here
-        self.counts['test'] = Counter() # test
-        self.update_count('test', '123445') # test
-        msg_json = self.get_counts()
-        #print(msg_json)
-        self.publisher.send_string(msg_json)
+        msg_json = msg
+        if self.publisher is not None:
+            self.publisher.send_string(msg_json)
+        else:
+            self.publisher_routine()
 
     def pin_triggered2(self, pin, level, _tick):
         name = self.pin_to_name[pin]
