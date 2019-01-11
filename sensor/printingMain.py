@@ -1,3 +1,5 @@
+import zmq
+import time
 import json
 import pigpio
 import datetime
@@ -129,7 +131,7 @@ class RaspberryPiController:
         self.update_count('test', '123445') # test
         msg_json = self.get_counts()
         #print(msg_json)
-        publisher.send_string(msg_json)
+        self.publisher.send_string(msg_json)
 
     def pin_triggered2(self, pin, level, _tick):
         name = self.pin_to_name[pin]
