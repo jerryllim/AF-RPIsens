@@ -26,10 +26,11 @@ class RaspberryPiController:
         self.counts_lock = threading.Lock()
         self.publisher_routine()
         self.respondent_routine()
+        self.run_thread()
         self.gui = printingkivy.PrintingGUIApp(self)
 
-        output_string = self.gui.config.get('General', 'output_pin')
-        output_pin = int(output_string[-2:])
+        #output_string = self.gui.config.get('General', 'output_pin')
+        #output_pin = int(output_string[-2:])
         for name, pin in self.pulse_pins.items():
             self.pin_setup(pin)
         for name, pin in self.steady_pins.items():
@@ -115,7 +116,7 @@ class RaspberryPiController:
         return json.dumps(temp)
     
     def respondent_routine(self):
-        port_number = "152.228.1.124:9999"
+        self.port_number = "152.228.1.135:9999"
 
         self.context = zmq.Context()
         self.respondent = self.context.socket(zmq.REP)
@@ -174,3 +175,6 @@ class RaspberryPiController:
                 name = self.pin_to_name[pin]
                 key = self.get_key(interval=1)
                 self.update_count(name, key)
+                
+if __name__ == '__main__':
+    r = RaspberryPiController()
