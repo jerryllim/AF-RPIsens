@@ -778,6 +778,10 @@ class PrintingGUIApp(App):
             for key in adjustments.keys():
                 self.controller.counts[key] = {i_key: adjustments[key]}
 
+        # TODO publish to server data here
+        # msg = self.current_job.get_sfu()
+        # self.controller.publish(msg)
+
 
 def try_int(s):
     try:
