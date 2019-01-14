@@ -5,7 +5,7 @@ import pigpio
 import datetime
 import threading
 import apscheduler
-import printingkivy
+import printingGUI
 from collections import Counter
 
 
@@ -28,7 +28,7 @@ class RaspberryPiController:
         self.publisher_routine()
         self.respondent_routine()
         self.run_thread()
-        self.gui = printingkivy.PrintingGUIApp(self)
+        self.gui = printingGUI.PrintingGUIApp(self)
 
         for name, pin in self.pulse_pins.items():
             self.pin_setup(pin)
