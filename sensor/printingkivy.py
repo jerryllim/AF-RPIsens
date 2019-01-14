@@ -745,10 +745,6 @@ class PrintingGUIApp(App):
         blayout.add_widget(self.screen_manager)
         return blayout
 
-    def on_keyboard(self, _window, _key, _scan_code, code_point, _modifier):
-        if code_point == 'Q':
-            self.stop()
-
     def build_config(self, config):
         config.setdefaults('General', {
             'num_operators': '1',
@@ -800,6 +796,9 @@ def alphanum_key(s):
 
 class FakeClass:
     def __init__(self):
+        pass
+
+    def set_output_callback(self, pin):
         pass
 
 
