@@ -25,6 +25,7 @@ class RaspberryPiController:
         self.callbacks = []
         self.counts_lock = threading.Lock()
         self.publisher_routine()
+        self.respondent_routine()
         self.gui = printingkivy.PrintingGUIApp(self)
 
         output_string = self.gui.config.get('General', 'output_pin')
@@ -114,6 +115,30 @@ class RaspberryPiController:
             self.counts.clear()
 
         return json.dumps(temp)
+    
+        def respondent_routine(self):
+        port_number = "152.228.1.124:9999"
+
+        self.context = zmq.Context()
+        self.respondent = self.context.socket(zmq.REP)
+        self.respondent.setsockopt(zmq.LINGER, 0)
+        self.resondent.bind("tcp://%s" % self.port_number)
+        #print("Successfully binded to port %s for respondent" % self.port_number)
+
+    def respond(self, msg):
+        # routine functions begins here
+        while True:
+            # wait for next request from client
+            _message = str(self.respondent.recv(), "utf-8")
+            #print("Received request (%s)" % _message)
+            time.sleep(1)
+            res_json = msg
+            self.respondent.send_string(res_json)
+
+    def run_thread(self):
+        # spins a new thread for respond while loop
+        respondent_thread = threading.Thread(target=self.respond)
+        respondent_thread.start()
     
     def publisher_routine(self):
         # port connection sould be declared beforehand
