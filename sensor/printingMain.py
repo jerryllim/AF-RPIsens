@@ -116,13 +116,13 @@ class RaspberryPiController:
 
         return json.dumps(temp)
     
-        def respondent_routine(self):
+    def respondent_routine(self):
         port_number = "152.228.1.124:9999"
 
         self.context = zmq.Context()
         self.respondent = self.context.socket(zmq.REP)
         self.respondent.setsockopt(zmq.LINGER, 0)
-        self.resondent.bind("tcp://%s" % self.port_number)
+        self.respondent.bind("tcp://%s" % port_number)
         #print("Successfully binded to port %s for respondent" % self.port_number)
 
     def respond(self, msg):
