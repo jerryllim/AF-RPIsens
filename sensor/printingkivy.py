@@ -725,6 +725,10 @@ class PrintingGUIApp(App):
         # TODO add check for settings
         self.use_kivy_settings = False
         num_operators = self.config.get('General', 'num_operators')
+        output_string = self.config.get('General', 'output_pin')
+        output_pin = int(output_string[-2:])
+        self.controller.set_output_callback(output_pin)
+
         Window.bind(on_keyboard=self.on_keyboard)
         Factory.register('AdjustmentTabbedPanel', cls=AdjustmentTabbedPanel)
         Factory.register('RunPageLayout', cls=RunPageLayout)

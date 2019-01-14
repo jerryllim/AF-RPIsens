@@ -31,7 +31,7 @@ class RaspberryPiController:
         output_string = self.gui.config.get('General', 'output_pin')
         output_pin = int(output_string[-2:])
         for name, pin in self.pulse_pins.items():
-            self.pin_setup(pin, (pin == output_pin))
+            self.pin_setup(pin)
         for name, pin in self.steady_pins.items():
             self.pin_setup2(pin)
 
@@ -80,21 +80,19 @@ class RaspberryPiController:
         key = self.get_key()
         self.update_count(name, key)
 
-    def output_pin_triggered(self, pin, _level, _tick):
-        self.pin_triggered(pin, _level, _tick)
-
+    def output_pin_triggered(self, _pin, _level, _tick):
         # TODO store output here? and to FeRAM?
         self._output += 1
         self.gui.update_output()
 
-    def pin_setup(self, pin, is_output, bounce=30):
+    def set_output_callback(self, pin):
+        self.pi.callback(pin, pigpio.RISING_EDGE, self.output_pin_triggered)
+
+    def pin_setup(self, pin, bounce=30):
         self.pi.set_mode(pin, pigpio.INPUT)
         self.pi.set_pull_up_down(pin, pigpio.PUD_DOWN)
         self.pi.set_glitch_filter(pin, (bounce * 1000))
-        if is_output:
-            self.callbacks.append(self.pi.callback(pin, pigpio.RISING_EDGE, self.output_pin_triggered))
-        else:
-            self.callbacks.append(self.pi.callback(pin, pigpio.RISING_EDGE, self.pin_triggered))
+        self.callbacks.append(self.pi.callback(pin, pigpio.RISING_EDGE, self.pin_triggered))
 
     def pin_setup2(self, pin, bounce=30):
         self.pi.set_mode(pin, pigpio.INPUT)
