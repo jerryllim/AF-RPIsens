@@ -4,6 +4,7 @@ import json
 import pigpio
 import datetime
 import threading
+import apscheduler
 import printingkivy
 from collections import Counter
 
@@ -29,14 +30,15 @@ class RaspberryPiController:
         self.run_thread()
         self.gui = printingkivy.PrintingGUIApp(self)
 
-        #output_string = self.gui.config.get('General', 'output_pin')
-        #output_pin = int(output_string[-2:])
         for name, pin in self.pulse_pins.items():
             self.pin_setup(pin)
         for name, pin in self.steady_pins.items():
             self.pin_setup2(pin)
 
-        # self.gui.run()  # TODO uncomment
+        # TODO set apscheduler to check pin state
+
+    def start(self):
+        self.gui.run()
 
     def load_pin_dict(self):
         try:
@@ -104,9 +106,9 @@ class RaspberryPiController:
 
     def update_count(self, name, key):
         with self.counts_lock:
-            if self.counts.get(name) is None:
-                self.counts[name] = Counter()
-            self.counts[name].update([key])
+            if self.counts.get(key) is None:
+                self.counts[key] = Counter()
+            self.counts[key].update([name])
 
     def get_counts(self):
         with self.counts_lock:
@@ -121,7 +123,7 @@ class RaspberryPiController:
         self.context = zmq.Context()
         self.respondent = self.context.socket(zmq.REP)
         self.respondent.setsockopt(zmq.LINGER, 0)
-        self.respondent.bind("tcp://%s" % port_number)
+        self.respondent.bind("tcp://%s" % self.port_number)
         #print("Successfully binded to port %s for respondent" % self.port_number)
 
     def respond(self, msg):
@@ -164,17 +166,19 @@ class RaspberryPiController:
 
         key = self.get_key(interval=1)
 
-        if level and not self.counts[name][key]:
+        if level and not self.counts[key][name]:
             self.update_count(name, key)
 
     # TODO for apscheduler to call once a minute
     def check_pin_states(self):
         for pin in self.steady_pins:
             state = self.pi.read(pin)
+
             if state:
                 name = self.pin_to_name[pin]
                 key = self.get_key(interval=1)
                 self.update_count(name, key)
-                
+
+
 if __name__ == '__main__':
     r = RaspberryPiController()

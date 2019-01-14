@@ -775,8 +775,7 @@ class PrintingGUIApp(App):
         adjustments = self.current_job.get_adjustments()
 
         with self.controller.counts_lock:
-            for key in adjustments.keys():
-                self.controller.counts[key] = {i_key: adjustments[key]}
+            self.controller.counts[i_key].update(adjustments)
 
         # TODO publish to server data here
         # msg = self.current_job.get_sfu()
