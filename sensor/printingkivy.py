@@ -729,7 +729,6 @@ class PrintingGUIApp(App):
         output_pin = int(output_string[-2:])
         self.controller.set_output_callback(output_pin)
 
-        Window.bind(on_keyboard=self.on_keyboard)
         Factory.register('AdjustmentTabbedPanel', cls=AdjustmentTabbedPanel)
         Factory.register('RunPageLayout', cls=RunPageLayout)
         Factory.register('MaintenancePageLayout', cls=MaintenancePageLayout)
