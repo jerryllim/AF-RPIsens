@@ -42,6 +42,7 @@ class RaspberryPiController:
 
         self.server_add = self.gui.config.get('Network', 'ip_add')
         self.subscribe_port = self.gui.config.get('Network', 'port')
+        self.self_add = self.gui.config.get('Network', 'self_add')
 
         self.scheduler = BackgroundScheduler()
         self.set_check_steady_job()
@@ -131,7 +132,7 @@ class RaspberryPiController:
         return json.dumps(temp)
     
     def respondent_routine(self):
-        port_number = "152.228.1.135:9999"  # TODO get my ip_add from sys? & port from self.config
+        port_number = "{}:9999".format(self.self_add)
 
         context = zmq.Context()
         self.respondent = context.socket(zmq.REP)

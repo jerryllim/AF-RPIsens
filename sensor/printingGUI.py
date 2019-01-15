@@ -4,6 +4,7 @@ import re
 import cv2
 import time
 import json
+import socket
 import ipaddress
 import printingMain
 from kivy.app import App
@@ -677,6 +678,17 @@ class SettingUnitsString(SettingString):
             self.value = self.textinput.text
 
 
+class SettingSelfIP(SettingString):
+
+    def _create_popup(self, _instance):
+        hostname = socket.getfqdn()
+        if '.local' not in hostname:
+            hostname = '{}.local'.format(hostname)
+
+        ip_add = socket.gethostbyname(hostname)
+        self.value = ip_add
+
+
 class YesNoToggleBox(BoxLayout):
     current_value = None
 
@@ -721,7 +733,8 @@ class PrintingGUIApp(App):
 
     def build(self):
         self.controller = printingMain.RaspberryPiController(self)
-        # TODO add check for settings
+        # self.controller = FakeClass()  # TODO set if testing
+
         self.use_kivy_settings = False
         num_operators = self.config.get('General', 'num_operators')
 
@@ -747,6 +760,7 @@ class PrintingGUIApp(App):
             'waste2_units': 'kg,pcs',
             'output_pin': 'Pin 21'})
         config.setdefaults('Network', {
+            'self_add': '',
             'ip_add': '152.228.1.124',
             'port': 56789})
 
@@ -754,6 +768,7 @@ class PrintingGUIApp(App):
         settings.register_type('scroll_options', SettingScrollableOptions)
         settings.register_type('ip_string', SettingIPString)
         settings.register_type('unit_string', SettingUnitsString)
+        settings.register_type('self_ip', SettingSelfIP)
         settings.add_json_panel('Raspberry JAM', self.config, data=settings_json)
 
     def on_config_change(self, config, section, key, value):
