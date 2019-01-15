@@ -538,6 +538,7 @@ class SimpleActionBar(BoxLayout):
             self.employees.pop(button.number)
         else:
             self.employees[button.number] = employee_num
+            button.text = 'Employee {} No.: {}'.format(button.number, employee_num)
 
     def get_employee(self):
         employee = None
