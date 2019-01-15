@@ -681,11 +681,11 @@ class SettingUnitsString(SettingString):
 class SettingSelfIP(SettingString):
 
     def _create_popup(self, _instance):
-        hostname = socket.getfqdn()
-        if '.local' not in hostname:
-            hostname = '{}.local'.format(hostname)
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8",80))
+        ip_add = s.getsockname()[0]
+        s.close()
 
-        ip_add = socket.gethostbyname(hostname)
         self.value = ip_add
 
 
@@ -760,11 +760,10 @@ class PrintingGUIApp(App):
             'waste2_units': 'kg,pcs',
             'output_pin': 'Pin 21'})
 
-        hostname = socket.getfqdn()
-        if '.local' not in hostname:
-            hostname = '{}.local'.format(hostname)
-
-        ip_add = socket.gethostbyname(hostname)
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8",80))
+        ip_add = s.getsockname()[0]
+        s.close()
 
         config.setdefaults('Network', {
             'self_add': ip_add,
