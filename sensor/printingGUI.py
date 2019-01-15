@@ -793,10 +793,14 @@ def alphanum_key(s):
 
 
 class FakeClass:
+    import threading
+    counts_lock = threading.Lock()
+    counts = {}
+
     def __init__(self):
         pass
 
-    def set_output_callback(self, pin):
+    def get_key(self, interval=5):
         pass
 
 
