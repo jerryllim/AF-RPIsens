@@ -759,8 +759,15 @@ class PrintingGUIApp(App):
             'waste1_units': 'kg',
             'waste2_units': 'kg,pcs',
             'output_pin': 'Pin 21'})
+
+        hostname = socket.getfqdn()
+        if '.local' not in hostname:
+            hostname = '{}.local'.format(hostname)
+
+        ip_add = socket.gethostbyname(hostname)
+
         config.setdefaults('Network', {
-            'self_add': '',
+            'self_add': ip_add,
             'ip_add': '152.228.1.124',
             'port': 56789})
 
