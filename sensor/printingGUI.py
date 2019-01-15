@@ -716,18 +716,13 @@ class PrintingGUIApp(App):
     current_job: JobClass = None
     user = None
     action_bar = None
-
-    def __init__(self, controller=None):
-        App.__init__(self)
-        self.controller = controller
+    controller = None
 
     def build(self):
+        self.controller = printingMain.RaspberryPiController(self)
         # TODO add check for settings
         self.use_kivy_settings = False
         num_operators = self.config.get('General', 'num_operators')
-        output_string = self.config.get('General', 'output_pin')
-        output_pin = int(output_string[-2:])
-        self.controller.set_output_callback(output_pin)
 
         Factory.register('AdjustmentTabbedPanel', cls=AdjustmentTabbedPanel)
         Factory.register('RunPageLayout', cls=RunPageLayout)
@@ -751,8 +746,8 @@ class PrintingGUIApp(App):
             'waste2_units': 'kg,pcs',
             'output_pin': 'Pin 21'})
         config.setdefaults('Network', {
-            'ip_add': '192.168.1.1',
-            'port': 9999})
+            'ip_add': '152.228.1.124',
+            'port': 56789})
 
     def build_settings(self, settings):
         settings.register_type('scroll_options', SettingScrollableOptions)
@@ -805,5 +800,5 @@ class FakeClass:
 
 
 if __name__ == '__main__':
-    printApp = PrintingGUIApp(FakeClass())
+    printApp = PrintingGUIApp()
     printApp.run()
