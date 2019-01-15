@@ -169,14 +169,20 @@ class RaspberryPiController:
         if level and not self.counts[key][name]:
             self.update_count(name, key)
 
-    # TODO for apscheduler to call once a minute
+    def ap_checkPin(self):
+
+        self.scheduler = apscheduler.schedulers.background.BackgroundScheduler()
+
+        self.scheduler.add_job(self.check_pin_states, 'cron', minute=5, id='check_pin')
+        self.scheduler.start()
+        
     def check_pin_states(self):
         for pin in self.steady_pins:
             state = self.pi.read(pin)
 
             if state:
                 name = self.pin_to_name[pin]
-                key = self.get_key(interval=1)
+                key = self.get_key(interval=5)
                 self.update_count(name, key)
 
 
