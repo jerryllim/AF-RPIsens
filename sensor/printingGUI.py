@@ -736,6 +736,7 @@ class PrintingGUIApp(App):
         # self.controller = FakeClass()  # TODO set if testing
 
         self.use_kivy_settings = False
+        self.config.set('Network', 'self_add', self.get_ip_add())
         num_operators = self.config.get('General', 'num_operators')
 
         Factory.register('AdjustmentTabbedPanel', cls=AdjustmentTabbedPanel)
@@ -760,16 +761,11 @@ class PrintingGUIApp(App):
             'waste2_units': 'kg,pcs',
             'output_pin': 'Pin 21'})
 
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(("8.8.8.8",80))
-        ip_add = s.getsockname()[0]
-        s.close()
-
+        ip_add = self.get_ip_add()
         config.setdefaults('Network', {
             'self_add': ip_add,
             'ip_add': '152.228.1.124',
             'port': 56789})
-        config.set('Network', 'self_add', ip_add)
 
     def build_settings(self, settings):
         settings.register_type('scroll_options', SettingScrollableOptions)
@@ -777,6 +773,16 @@ class PrintingGUIApp(App):
         settings.register_type('unit_string', SettingUnitsString)
         settings.register_type('self_ip', SettingSelfIP)
         settings.add_json_panel('Raspberry JAM', self.config, data=settings_json)
+
+    @staticmethod
+    def get_ip_add(=):
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8",80))
+        ip_add = s.getsockname()[0]
+        s.close()
+
+        return ip_add
+
 
     def on_config_change(self, config, section, key, value):
         # TODO to change number of operators and maybe network stuff
