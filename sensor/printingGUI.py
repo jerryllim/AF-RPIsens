@@ -732,11 +732,11 @@ class PrintingGUIApp(App):
     controller = None
 
     def build(self):
+        self.config.set('Network', 'self_add', self.get_ip_add())
         self.controller = printingMain.RaspberryPiController(self)
         # self.controller = FakeClass()  # TODO set if testing
 
         self.use_kivy_settings = False
-        self.config.set('Network', 'self_add', self.get_ip_add())
         num_operators = self.config.get('General', 'num_operators')
 
         Factory.register('AdjustmentTabbedPanel', cls=AdjustmentTabbedPanel)
