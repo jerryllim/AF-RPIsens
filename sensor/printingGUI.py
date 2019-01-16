@@ -726,7 +726,7 @@ class YesNoToggleBox(BoxLayout):
 
 class PrintingGUIApp(App):
     screen_manager = ScreenManager()
-    current_job: JobClass = None
+    current_job = None
     user = None
     action_bar = None
     controller = None
