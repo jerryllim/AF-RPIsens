@@ -769,6 +769,7 @@ class PrintingGUIApp(App):
             'self_add': ip_add,
             'ip_add': '152.228.1.124',
             'port': 56789})
+        config.set('Network', 'self_add', ip_add)
 
     def build_settings(self, settings):
         settings.register_type('scroll_options', SettingScrollableOptions)
