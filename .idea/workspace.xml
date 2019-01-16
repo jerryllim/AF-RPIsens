@@ -19,8 +19,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/sensor/printingGUI.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="409">
-                  <caret line="771" column="48" selection-start-line="771" selection-start-column="48" selection-end-line="771" selection-end-column="48" />
+                <state relative-caret-position="198">
+                  <caret line="738" column="64" selection-start-line="738" selection-start-column="64" selection-end-line="738" selection-end-column="64" />
                 </state>
               </provider>
             </entry>
@@ -264,7 +264,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="SearchEverywhereHistoryKey" value="&#9;FILE&#9;file:///Users/justynlgh/Documents/repo/afRPIsens/sensor/sensorGlobal.py" />
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1547601210794" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1547602008587" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/server" />
     <property name="project.structure.last.edited" value="Modules" />
     <property name="project.structure.proportion" value="0.0" />
@@ -608,7 +608,6 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1680" height="1027" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" weight="0.23443224" />
       <window_info id="Structure" order="1" weight="0.24908425" />
@@ -962,8 +961,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/sensor/printingGUI.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="409">
-          <caret line="771" column="48" selection-start-line="771" selection-start-column="48" selection-end-line="771" selection-end-column="48" />
+        <state relative-caret-position="198">
+          <caret line="738" column="64" selection-start-line="738" selection-start-column="64" selection-end-line="738" selection-end-column="64" />
         </state>
       </provider>
     </entry>

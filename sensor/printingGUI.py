@@ -775,7 +775,7 @@ class PrintingGUIApp(App):
         settings.add_json_panel('Raspberry JAM', self.config, data=settings_json)
 
     @staticmethod
-    def get_ip_add(=):
+    def get_ip_add():
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect(("8.8.8.8",80))
         ip_add = s.getsockname()[0]
