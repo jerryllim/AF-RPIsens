@@ -137,14 +137,14 @@ class RaspberryPiController:
         self.respondent.bind("tcp://%s" % port_number)
         # print("Successfully binded to port %s for respondent" % self.port_number)
 
-    def respond(self, msg):
+    def respond(self):
         # routine functions begins here
         while True:
             # wait for next request from client
             _message = str(self.respondent.recv(), "utf-8")
             # print("Received request (%s)" % _message)
             time.sleep(1)
-            res_json = msg
+            res_json = self.get_counts()
             self.respondent.send_string(res_json)
     
     def publisher_routine(self):
