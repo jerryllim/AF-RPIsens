@@ -23,13 +23,12 @@ class RaspberryPiController:
 
     def __init__(self, gui, filename='pin_dict.json'):
         self.filename = filename
-        self.load_pin_dict()
-        self.pi = pigpio.pi()
         self.callbacks = []
         self.counts_lock = threading.Lock()
-        self.publisher_routine()
-        self.respondent_routine()
+        self.scheduler = BackgroundScheduler()
         self.gui = gui
+        self.load_pin_dict()
+        self.pi = pigpio.pi()
 
         for name, pin in self.pulse_pins.items():
             self.pin_setup(pin)
@@ -44,15 +43,13 @@ class RaspberryPiController:
         self.subscribe_port = self.gui.config.get('Network', 'port')
         self.self_add = self.gui.config.get('Network', 'self_add')
 
-        self.scheduler = BackgroundScheduler()
+        self.publisher_routine()
+        self.respondent_routine()
         self.set_check_steady_job()
         self.scheduler.start()
 
         self.respondent_thread = threading.Thread(target=self.respond)
         self.respondent_thread.start()
-
-    def start(self):
-        self.gui.run()
 
     def load_pin_dict(self):
         try:
