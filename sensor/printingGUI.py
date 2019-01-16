@@ -99,6 +99,7 @@ class SelectPage(Screen):
 
     def start_job(self):
         job_num = self.ids.job_entry.text
+        # TODO clear job_entry text
 
         try:
             with open('{}.json'.format(job_num), 'r') as infile:
@@ -184,8 +185,6 @@ class AdjustmentTab(BoxLayout):
         Clock.schedule_once(self.setup_adjustment_grid, 0)
 
     def setup_adjustment_grid(self, _dt):
-        current_job = App.get_running_app().current_job
-
         # Size
         self.ids['adjustment_grid'].add_widget(AdjustmentLabel(text='Size: '))
         self.size_togglebox = YesNoToggleBox(group_name='size')
@@ -360,6 +359,7 @@ class EmployeeScanPage(Popup):
     cam = None
     camera_event = None
     parent_method = None
+    timeout = None
 
     def __init__(self, **kwargs):
         self.qc = kwargs.pop('qc', False)
@@ -377,7 +377,7 @@ class EmployeeScanPage(Popup):
         self.cam = cv2.VideoCapture(0)
         self.camera_event = Clock.schedule_interval(self.check_camera, 1.0/60)
         # Timeout
-        Clock.schedule_once(self.stop_checking, 10)
+        self.timeout = Clock.schedule_once(self.stop_checking, 10)
 
     def check_camera(self, _dt):
         ret, frame = self.cam.read()
@@ -393,7 +393,11 @@ class EmployeeScanPage(Popup):
 
             self.show_image(frame)
 
-    def stop_checking(self, _dt):
+    def stop_checking(self, dt):
+        if dt != 0:
+            self.employee_num.text = ''
+
+        self.timeout.cancel()
         self.camera_event.cancel()
         self.cam.release()
 
@@ -406,6 +410,7 @@ class EmployeeScanPage(Popup):
         self.ids['camera_viewer'].texture = image_texture
 
     def confirm(self, alternate=False):
+        # TODO check that it is not empty
         if callable(self.parent_method):
             self.parent_method(self.employee_num.text, alternate)
         self.dismiss()
@@ -499,7 +504,8 @@ class InkZoneLayout(BoxLayout):
         content_boxlayout.add_widget(numpad)
         dismiss_button = Button(text='Dismiss')
         content_boxlayout.add_widget(dismiss_button)
-        edit_popup = Popup(title='Edit ink key {}'.format(key), content=content_boxlayout, auto_dismiss=False, size_hint=(0.5, 0.7))
+        edit_popup = Popup(title='Edit ink key {}'.format(key), content=content_boxlayout, auto_dismiss=False,
+                           size_hint=(0.5, 0.7))
         dismiss_button.bind(on_press=dismiss_popup)
         edit_popup.open()
 
@@ -683,7 +689,7 @@ class SettingSelfIP(SettingString):
 
     def _create_popup(self, _instance):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(("8.8.8.8",80))
+        s.connect(("8.8.8.8", 80))
         ip_add = s.getsockname()[0]
         s.close()
 
@@ -778,14 +784,14 @@ class PrintingGUIApp(App):
     @staticmethod
     def get_ip_add():
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(("8.8.8.8",80))
+        s.connect(("8.8.8.8", 80))
         ip_add = s.getsockname()[0]
         s.close()
 
         return ip_add
 
     def on_config_change(self, config, section, key, value):
-        # TODO to change number of operators and maybe network stuff
+        # TODO to change number of operators and self_add, server ip and port?
         pass
 
     def update_output(self):
