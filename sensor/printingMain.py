@@ -179,10 +179,10 @@ class RaspberryPiController:
         self.scheduler.add_job(self.check_pin_states, cron_trigger, id=self.STEADY_ID)
         
     def check_pin_states(self):
-        for pin in self.steady_pins:
+        for name, pin in self.steady_pin.items():
             state = self.pi.read(pin)
 
             if state:
-                name = self.pin_to_name[pin]
+                # name = self.pin_to_name[pin]
                 key = self.get_key()
                 self.update_count(name, key)
