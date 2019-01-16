@@ -2,6 +2,7 @@ import os
 os.environ['KIVY_GL_BACKEND'] = 'gl'
 import re
 import cv2
+import sys
 import time
 import json
 import socket
@@ -123,6 +124,7 @@ class SelectPage(Screen):
             self.parent.current = 'adjustment_page'
 
         except FileNotFoundError:
+            # TODO check/request server for job?
             popup_boxlayout = BoxLayout(orientation='vertical')
             popup_boxlayout.add_widget(Label(text='JO number ("{}") was not found, please try again.'.
                                              format(job_num)))
@@ -739,6 +741,8 @@ class PrintingGUIApp(App):
     controller = None
 
     def build(self):
+        self.check_camera()
+
         self.config.set('Network', 'self_add', self.get_ip_add())
         self.controller = printingMain.RaspberryPiController(self)
         # self.controller = FakeClass()  # TODO set if testing
@@ -789,6 +793,14 @@ class PrintingGUIApp(App):
         s.close()
 
         return ip_add
+
+    @staticmethod
+    def check_camera():
+        cam = cv2.VideoCapture(0)
+
+        if cam is None or not cam.isOpened():
+            print('No camera found', file=sys.stderr)
+            raise SystemExit
 
     def on_config_change(self, config, section, key, value):
         # TODO to change number of operators and self_add, server ip and port?
