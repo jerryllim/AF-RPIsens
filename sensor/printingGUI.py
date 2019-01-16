@@ -412,6 +412,11 @@ class EmployeeScanPage(Popup):
         self.ids['camera_viewer'].texture = image_texture
 
     def confirm(self, alternate=False):
+        if self.employee_num.text == '' and not (self.login and alternate):
+            popup = Popup(title='No id found', content=Label(text='Please scan your employee number.'), size_hint=(0.5, 0.5))
+            popup.open()
+            return
+
         # TODO check that it is not empty
         if callable(self.parent_method):
             self.parent_method(self.employee_num.text, alternate)
@@ -545,7 +550,8 @@ class SimpleActionBar(BoxLayout):
 
     def get_employee_num(self, button, employee_num, alternate):
         if alternate or employee_num == '':
-            self.employees.pop(button.number)
+            if self.employees.get(button.number) is not None:
+                self.employees.pop(button.number)
         else:
             self.employees[button.number] = employee_num
             button.text = 'Employee {} No.: {}'.format(button.number, employee_num)
@@ -741,11 +747,11 @@ class PrintingGUIApp(App):
     controller = None
 
     def build(self):
-        self.check_camera()
+        # self.check_camera  # TODO uncomment
 
         self.config.set('Network', 'self_add', self.get_ip_add())
-        self.controller = printingMain.RaspberryPiController(self)
-        # self.controller = FakeClass()  # TODO set if testing
+        # self.controller = printingMain.RaspberryPiController(self)
+        self.controller = FakeClass()  # TODO set if testing
 
         self.use_kivy_settings = False
         num_operators = self.config.get('General', 'num_operators')

@@ -19,8 +19,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/sensor/printingGUI.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="281">
-                  <caret line="798" column="18" selection-start-line="798" selection-start-column="18" selection-end-line="798" selection-end-column="18" />
+                <state relative-caret-position="209">
+                  <caret line="418" lean-forward="true" selection-start-line="418" selection-end-line="418" />
                 </state>
               </provider>
             </entry>
@@ -71,8 +71,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/sensor/printingGUI.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="60">
-                  <caret line="4" column="10" selection-start-line="4" selection-start-column="10" selection-end-line="4" selection-end-column="10" />
+                <state relative-caret-position="311">
+                  <caret line="560" column="48" selection-start-line="560" selection-start-column="48" selection-end-line="560" selection-end-column="48" />
                 </state>
               </provider>
             </entry>
@@ -120,7 +120,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>Settin</find>
       <find>settingb</find>
       <find>test</find>
       <find>setting</find>
@@ -147,9 +146,10 @@
       <find>employeeSca</find>
       <find>employee</find>
       <find>start</find>
-      <find>employeescan</find>
       <find>syste</find>
       <find>Syste</find>
+      <find>employeescan</find>
+      <find>No id</find>
     </findStrings>
     <replaceStrings>
       <replace>TMessage</replace>
@@ -258,7 +258,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="SearchEverywhereHistoryKey" value="&#9;FILE&#9;file:///Users/justynlgh/Documents/repo/afRPIsens/sensor/sensorGlobal.py" />
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1547616177657" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1547617671311" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/server" />
     <property name="project.structure.last.edited" value="Modules" />
     <property name="project.structure.proportion" value="0.0" />
@@ -614,7 +614,7 @@
       <window_info anchor="bottom" id="Inspection Results" order="0" weight="0.32896176" />
       <window_info anchor="bottom" id="Message" order="1" />
       <window_info anchor="bottom" id="Find" order="2" weight="0.29839572" />
-      <window_info anchor="bottom" id="Run" order="3" sideWeight="0.493895" weight="0.3368984" />
+      <window_info active="true" anchor="bottom" id="Run" order="3" sideWeight="0.493895" visible="true" weight="0.3368984" />
       <window_info anchor="bottom" id="Debug" order="4" weight="0.3989305" />
       <window_info anchor="bottom" id="TODO" order="5" weight="0.32834226" />
       <window_info anchor="bottom" id="Cvs" order="6" weight="0.25" />
@@ -622,7 +622,7 @@
       <window_info anchor="bottom" id="Inspection" order="8" weight="0.4" />
       <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.50305253" side_tool="true" weight="0.3272727" />
       <window_info anchor="bottom" id="Version Control" order="10" weight="0.32834226" />
-      <window_info active="true" anchor="bottom" id="Terminal" order="11" sideWeight="0.4969475" visible="true" weight="0.3272727" />
+      <window_info anchor="bottom" id="Terminal" order="11" sideWeight="0.4969475" weight="0.3272727" />
       <window_info anchor="bottom" id="Dependency Viewer" order="12" weight="0.32896176" />
       <window_info anchor="bottom" id="Messages" order="13" weight="0.32941177" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
@@ -952,8 +952,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/sensor/printingGUI.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="281">
-          <caret line="798" column="18" selection-start-line="798" selection-start-column="18" selection-end-line="798" selection-end-column="18" />
+        <state relative-caret-position="209">
+          <caret line="418" lean-forward="true" selection-start-line="418" selection-end-line="418" />
         </state>
       </provider>
     </entry>
