@@ -11,6 +11,7 @@ from kivy.app import App
 from pyzbar import pyzbar
 from kivy.metrics import dp
 from kivy.clock import Clock
+from collections import Counter
 from kivy.factory import Factory
 from kivy.uix.popup import Popup
 from kivy.uix.label import Label
@@ -783,7 +784,6 @@ class PrintingGUIApp(App):
 
         return ip_add
 
-
     def on_config_change(self, config, section, key, value):
         # TODO to change number of operators and maybe network stuff
         pass
@@ -799,6 +799,8 @@ class PrintingGUIApp(App):
         adjustments = self.current_job.get_adjustments()
 
         with self.controller.counts_lock:
+            if self.controller.counts.get(i_key) is None:
+                self.controller.counts[i_key] = Counter()
             self.controller.counts[i_key].update(adjustments)
 
         # TODO publish to server data here

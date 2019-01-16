@@ -19,8 +19,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/sensor/printingGUI.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="198">
-                  <caret line="738" column="64" selection-start-line="738" selection-start-column="64" selection-end-line="738" selection-end-column="64" />
+                <state relative-caret-position="-11913">
+                  <caret line="13" column="31" lean-forward="true" selection-start-line="13" selection-start-column="31" selection-end-line="13" selection-end-column="31" />
                 </state>
               </provider>
             </entry>
@@ -72,7 +72,7 @@
             <entry file="file://$PROJECT_DIR$/sensor/printingGUI.py">
               <provider selected="true" editor-type-id="text-editor">
                 <state relative-caret-position="77">
-                  <caret line="735" column="62" selection-start-line="735" selection-start-column="62" selection-end-line="735" selection-end-column="62" />
+                  <caret line="737" column="62" selection-start-line="737" selection-start-column="62" selection-end-line="737" selection-end-column="62" />
                 </state>
               </provider>
             </entry>
@@ -89,7 +89,7 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/sensor/printingMain.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="280">
+                <state relative-caret-position="-1118">
                   <caret line="24" column="20" selection-start-line="24" selection-start-column="20" selection-end-line="24" selection-end-column="20" />
                   <folding>
                     <element signature="e#0#10#0" expanded="true" />
@@ -249,12 +249,6 @@
               <item name="afRPIsens" type="462c0819:PsiDirectoryNode" />
               <item name="sensor" type="462c0819:PsiDirectoryNode" />
             </path>
-            <path>
-              <item name="afRPIsens" type="b2602c69:ProjectViewProjectNode" />
-              <item name="afRPIsens" type="462c0819:PsiDirectoryNode" />
-              <item name="sensor" type="462c0819:PsiDirectoryNode" />
-              <item name="v1" type="462c0819:PsiDirectoryNode" />
-            </path>
           </expand>
           <select />
         </subPane>
@@ -264,7 +258,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="SearchEverywhereHistoryKey" value="&#9;FILE&#9;file:///Users/justynlgh/Documents/repo/afRPIsens/sensor/sensorGlobal.py" />
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1547602080488" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1547602202107" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/server" />
     <property name="project.structure.last.edited" value="Modules" />
     <property name="project.structure.proportion" value="0.0" />
@@ -608,6 +602,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1680" height="1027" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" weight="0.23443224" />
       <window_info id="Structure" order="1" weight="0.24908425" />
@@ -627,7 +622,7 @@
       <window_info anchor="bottom" id="Inspection" order="8" weight="0.4" />
       <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.50305253" side_tool="true" weight="0.3272727" />
       <window_info anchor="bottom" id="Version Control" order="10" weight="0.32834226" />
-      <window_info active="true" anchor="bottom" id="Terminal" order="11" sideWeight="0.4969475" visible="true" weight="0.3272727" />
+      <window_info anchor="bottom" id="Terminal" order="11" sideWeight="0.4969475" visible="true" weight="0.3272727" />
       <window_info anchor="bottom" id="Dependency Viewer" order="12" weight="0.32896176" />
       <window_info anchor="bottom" id="Messages" order="13" weight="0.32941177" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
@@ -961,8 +956,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/sensor/printingGUI.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="198">
-          <caret line="738" column="64" selection-start-line="738" selection-start-column="64" selection-end-line="738" selection-end-column="64" />
+        <state relative-caret-position="-11913">
+          <caret line="13" column="31" lean-forward="true" selection-start-line="13" selection-start-column="31" selection-end-line="13" selection-end-column="31" />
         </state>
       </provider>
     </entry>
