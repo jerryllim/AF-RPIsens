@@ -56,6 +56,9 @@ class JobClass(Widget):
     def get_current_job(self):
         return self.info_dict["JO No."]
 
+    def get_sfu(self):
+        pass
+
 
 class SelectPage(Screen):
     cam = None
@@ -747,7 +750,7 @@ class PrintingGUIApp(App):
     controller = None
 
     def build(self):
-        # self.check_camera  # TODO uncomment
+        # self.check_camera()  # TODO uncomment
 
         self.config.set('Network', 'self_add', self.get_ip_add())
         # self.controller = printingMain.RaspberryPiController(self)
@@ -855,7 +858,7 @@ class FakeClass:
         pass
 
     def get_key(self, interval=5):
-        pass
+        return interval
 
 
 if __name__ == '__main__':
