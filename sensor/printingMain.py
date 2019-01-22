@@ -192,7 +192,12 @@ class RaspberryPiController:
 
 class DatabaseManager:
     def __init__(self):
-        self.database = ''  # TODO set database name
+        self.database = 'test.sqlite'  # TODO set database name
+        db = sqlite3.connect(self.database)
+        cursor = db.cursor()
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='employees';")
+        if not cursor.fetchone():
+            self.create_employees_table()
 
     def create_employees_table(self):
         db = sqlite3.connect(self.database)
@@ -226,7 +231,7 @@ class DatabaseManager:
     def insert_into_job_table(self, job_info):
         db = sqlite3.connect(self.database)
         cursor = db.cursor()
-        cursor.executemany("INSERT INTO job_info (?, ?, ?, ?, ?)", job_info)
+        cursor.executemany("INSERT INTO job_info (?, ?, ?, ?, ?, ?)", job_info)
         db.commit()
         db.close()
 
@@ -238,10 +243,10 @@ class DatabaseManager:
         db.commit()
         db.close()
 
-    def fetch_employee_name(self, emp_id):
+    def get_employee_name(self, emp_id):
         db = sqlite3.connect(self.database)
         cursor = db.cursor()
-        cursor.execute("SELECT name FROM employees WHERE emp_id = ?,", (emp_id, ))
+        cursor.execute("SELECT name FROM employees WHERE emp_id = ?;", (emp_id, ))
         result = cursor.fetchone()
         if result:
             return result[0]

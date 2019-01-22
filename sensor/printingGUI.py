@@ -537,10 +537,6 @@ class SimpleActionBar(BoxLayout):
             button.bind(on_release=self.log_in)
             self.add_widget(button, 3)
 
-    def on_employees(self, _instance, _value):
-        for button in self.employee_buttons:
-            button.text = 'Employee {} No.: {}'.format(button.number, self.employees.get(button.number, ''))
-
     def update_time(self, _dt):
         self.time = time.strftime('%x %H:%M')
 
@@ -555,9 +551,11 @@ class SimpleActionBar(BoxLayout):
         if alternate or employee_num == '':
             if self.employees.get(button.number) is not None:
                 self.employees.pop(button.number)
+            button.set_default_text()
         else:
             self.employees[button.number] = employee_num
-            button.text = 'Employee {} No.: {}'.format(button.number, employee_num)
+            emp_name = App.get_running_app().database_manager.get_employee_name(employee_num)
+            button.text = '{}'.format(emp_name)
 
     def get_employee(self):
         employee = None
@@ -574,7 +572,10 @@ class EmployeeButton(Button):
     def __init__(self, number, **kwargs):
         Button.__init__(self, **kwargs)
         self.number = number
-        self.text = 'Employee {} No.: '.format(self.number)
+        self.set_default_text()
+
+    def set_default_text(self):
+        self.text = 'Employee {}'.format(self.number)
 
 
 class NumPadGrid(GridLayout):
@@ -748,6 +749,7 @@ class PrintingGUIApp(App):
     user = None
     action_bar = None
     controller = None
+    database_manager = None
 
     def build(self):
         # self.check_camera()  # TODO uncomment
@@ -755,6 +757,7 @@ class PrintingGUIApp(App):
         self.config.set('Network', 'self_add', self.get_ip_add())
         # self.controller = printingMain.RaspberryPiController(self)
         self.controller = FakeClass()  # TODO set if testing
+        self.database_manager = printingMain.DatabaseManager()
 
         self.use_kivy_settings = False
         num_operators = self.config.get('General', 'num_operators')
