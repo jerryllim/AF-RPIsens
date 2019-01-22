@@ -1,7 +1,9 @@
+import os
 import zmq
 import time
 import json
 import pigpio
+import sqlite3
 import datetime
 import threading
 from collections import Counter
@@ -186,3 +188,62 @@ class RaspberryPiController:
                 # name = self.pin_to_name[pin]
                 key = self.get_key()
                 self.update_count(name, key)
+
+
+class DatabaseManager:
+    def __init__(self):
+        self.database = ''  # TODO set database name
+
+    def create_employees_table(self):
+        db = sqlite3.connect(self.database)
+        cursor = db.cursor()
+        try:
+            cursor.execute("DROP TABLE IF EXISTS employees;")
+            cursor.execute("CREATE TABLE IF NOT EXISTS employees (emp_id TEXT PRIMARY KEY, name TEXT);")
+            db.commit()
+        finally:
+            cursor.close()
+
+    def create_job_table(self):
+        db = sqlite3.connect(self.database)
+        cursor = db.cursor()
+        try:
+            cursor.execute("DROP TABLE IF EXISTS job_info;")
+            cursor.execute("CREATE TABLE IF NOT EXISTS job_info (jo_no INTEGER NOT NULL, jo_line INTEGER NOT NULL, code"
+                           " TEXT NOT NULL, desc TEXT NOT NULL, to_do INTEGER NOT NULL, ran INTEGER NOT NULL, PRIMARY "
+                           "KEY(jo_no, jo_line));")
+            db.commit()
+        finally:
+            db.close()
+
+    def replace_into_employees_table(self, emp_list):
+        db = sqlite3.connect(self.database)
+        cursor = db.cursor()
+        cursor.executemany("REPLACE INTO employees VALUES (?, ?);", emp_list)
+        db.commit()
+        db.close()
+
+    def insert_into_job_table(self, job_info):
+        db = sqlite3.connect(self.database)
+        cursor = db.cursor()
+        cursor.executemany("INSERT INTO job_info (?, ?, ?, ?, ?)", job_info)
+        db.commit()
+        db.close()
+
+    def update_into_employees_table(self, emp_list):
+        self.replace_into_employees_table(emp_list)
+        db = sqlite3.connect(self.database)
+        cursor = db.cursor()
+        cursor.execute("DELETE FROM employees WHERE name IS NULL;")
+        db.commit()
+        db.close()
+
+    def fetch_employee_name(self, emp_id):
+        db = sqlite3.connect(self.database)
+        cursor = db.cursor()
+        cursor.execute("SELECT name FROM employees WHERE emp_id = ?,", (emp_id, ))
+        result = cursor.fetchone()
+        if result:
+            return result[0]
+        else:
+            return emp_id
