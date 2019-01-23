@@ -48,6 +48,8 @@ class RaspberryPiController:
         self.context = zmq.Context()
         self.publisher_routine()
         self.respondent_routine()
+	self.requester_routine()
+	self.subscriber_routine()
         self.set_check_steady_job()
         self.scheduler.start()
 
