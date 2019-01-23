@@ -197,9 +197,9 @@ class DatabaseManager:
         cursor = db.cursor()
         cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='employees';")
         if not cursor.fetchone():
-            self.create_employees_table()
+            self.recreate_employees_table()
 
-    def create_employees_table(self):
+    def recreate_employees_table(self):
         db = sqlite3.connect(self.database)
         cursor = db.cursor()
         try:
@@ -209,7 +209,7 @@ class DatabaseManager:
         finally:
             cursor.close()
 
-    def create_job_table(self):
+    def recreate_job_table(self):
         db = sqlite3.connect(self.database)
         cursor = db.cursor()
         try:
@@ -217,6 +217,23 @@ class DatabaseManager:
             cursor.execute("CREATE TABLE IF NOT EXISTS job_info (jo_no INTEGER NOT NULL, jo_line INTEGER NOT NULL, code"
                            " TEXT NOT NULL, desc TEXT NOT NULL, to_do INTEGER NOT NULL, ran INTEGER NOT NULL, PRIMARY "
                            "KEY(jo_no, jo_line));")
+            db.commit()
+        finally:
+            db.close()
+
+    def recreate_ink_key_table(self):
+        db = sqlite3.connect(self.database)
+        cursor = db.cursor()
+        try:
+            cursor.execute("DROP TABLE IF EXISTS ink_key;")
+            cursor.execute("DROP TABLE IF EXISTS ink_impression;")
+            cursor.execute("CREATE TABLE IF NOT EXISTS ink_key (item TEXT NOT NULL, plate TEXT NOT NULL, '1' INTEGER, "
+                           "'2' INTEGER, '3' INTEGER, '4' INTEGER, '5' INTEGER, '6' INTEGER, '7' INTEGER, '8' INTEGER, "
+                           "'9' INTEGER, '10' INTEGER, '11' INTEGER, '12' INTEGER, '13' INTEGER, '14' INTEGER, '15' "
+                           "INTEGER, '16' INTEGER, '17' INTEGER, '18' INTEGER, '19' INTEGER, '20' INTEGER, '21' INTEGER"
+                           ", '22' INTEGER, '23' INTEGER, '24' INTEGER, '25' INTEGER, '26' INTEGER, '27' INTEGER, '28' "
+                           "INTEGER, '29' INTEGER, '30' INTEGER, '31' INTEGER, '32' INTEGER, PRIMARY KEY(item, plate));")
+            cursor.execute("CREATE TABLE IF NOT EXISTS ink_impression (item TEXT PRIMARY KEY, impression INTEGER NOT NULL);")
             db.commit()
         finally:
             db.close()
@@ -231,7 +248,7 @@ class DatabaseManager:
     def insert_into_job_table(self, job_info):
         db = sqlite3.connect(self.database)
         cursor = db.cursor()
-        cursor.executemany("INSERT INTO job_info (?, ?, ?, ?, ?, ?)", job_info)
+        cursor.executemany("INSERT INTO job_info VALUES (?, ?, ?, ?, ?, ?);", job_info)
         db.commit()
         db.close()
 
@@ -243,6 +260,18 @@ class DatabaseManager:
         db.commit()
         db.close()
 
+    def replace_ink_key_tables(self, ink_key):
+        db = sqlite3.connect(self.database)
+        cursor = db.cursor()
+        for item, info in ink_key.items():
+            impression = info.pop('impression')
+            cursor.execute("REPLACE INTO ink_impression VALUES (?, ?)", (item, impression))
+            for plate, zones in info.items():
+                keys = ",".join("'{}'".format(k) for k in zones.keys())
+                qm = ",".join(list('?'*len(zones.values())))
+                values = (item, plate) + tuple(zones.values())
+                cursor.execute("REPLACE INTO ink_key (item,plate," + keys + ") VALUES (?,?," + qm + ");", values)
+
     def get_employee_name(self, emp_id):
         db = sqlite3.connect(self.database)
         cursor = db.cursor()
@@ -252,3 +281,40 @@ class DatabaseManager:
             return result[0]
         else:
             return emp_id
+
+    def get_job_info(self, barcode):
+        jo_no = barcode[:-3]
+        jo_line = int(barcode[-3:])
+        db = sqlite3.connect(self.database)
+        db.row_factory = self.dict_factory
+        cursor = db.cursor()
+        cursor.execute("SELECT * FROM job_info WHERE jo_no = ? AND jo_line = ?;", (jo_no, jo_line))
+        # TODO request from server if not found
+        return cursor.fetchone()
+
+    @staticmethod
+    def dict_factory(cursor, row):
+        d = {}
+        for idx, col in enumerate(cursor.description):
+            d[col[0]] = row[idx]
+        return d
+
+    def get_ink_key(self, item):
+        db = sqlite3.connect(self.database)
+        cursor = db.cursor()
+        db.row_factory = self.dict_factory
+
+        d = {}
+
+        # TODO detect and what to return if None
+        cursor.execute("SELECT impression FROM ink_impression WHERE item = ?;", (item, ))
+        d.update(cursor.fetchone())
+
+        cursor.execute("SELECT * FROM ink_key WHERE item = ?", (item, ))
+
+        for row in cursor:
+            plate = row.pop('plate')
+            row.pop('item')
+            d[plate] = row
+
+        return d

@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="8c4eab11-9431-48ea-8992-fef6a6e722be" name="Default" comment="Reduced labels (populate in init) &amp; created NumericProperty for counter">
-      <change beforePath="$PROJECT_DIR$/.idea/dbnavigator.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dbnavigator.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/sensor/printingGUI.py" beforeDir="false" afterPath="$PROJECT_DIR$/sensor/printingGUI.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/sensor/printingMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/sensor/printingMain.py" afterDir="false" />
@@ -21,8 +20,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/sensor/printingGUI.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="172">
-                  <caret line="553" column="37" selection-start-line="553" selection-start-column="37" selection-end-line="553" selection-end-column="37" />
+                <state relative-caret-position="813">
+                  <caret line="164" column="53" lean-forward="true" selection-start-line="164" selection-start-column="53" selection-end-line="164" selection-end-column="53" />
                 </state>
               </provider>
             </entry>
@@ -30,7 +29,7 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/sensor/printinggui.kv">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="1935">
+                <state relative-caret-position="974">
                   <caret line="129" column="14" selection-start-line="129" selection-start-column="14" selection-end-line="129" selection-end-column="14" />
                 </state>
               </provider>
@@ -39,11 +38,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/sensor/printingMain.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="2445">
-                  <caret line="173" column="28" selection-start-line="173" selection-start-column="28" selection-end-line="173" selection-end-column="28" />
-                  <folding>
-                    <element signature="e#0#10#0" expanded="true" />
-                  </folding>
+                <state relative-caret-position="691">
+                  <caret line="87" column="16" selection-start-line="87" selection-start-column="16" selection-end-line="87" selection-end-column="16" />
                 </state>
               </provider>
             </entry>
@@ -82,8 +78,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/sensor/printingGUI.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="244">
-                  <caret line="762" selection-start-line="762" selection-end-line="762" />
+                <state relative-caret-position="270">
+                  <caret line="495" column="78" lean-forward="true" selection-start-line="495" selection-start-column="78" selection-end-line="495" selection-end-column="78" />
                 </state>
               </provider>
             </entry>
@@ -100,11 +96,20 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/sensor/printingMain.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="271">
-                  <caret line="203" column="27" lean-forward="true" selection-start-line="203" selection-start-column="27" selection-end-line="203" selection-end-column="27" />
+                <state relative-caret-position="95">
+                  <caret line="262" column="41" selection-start-line="262" selection-start-column="41" selection-end-line="262" selection-end-column="41" />
                   <folding>
                     <element signature="e#0#6#0" expanded="true" />
                   </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/sensor/WDF_TU24253Z_P.json">
+              <provider selected="true" editor-type-id="text-editor">
+                <state>
+                  <caret column="31" selection-start-column="20" selection-end-column="31" />
                 </state>
               </provider>
             </entry>
@@ -131,8 +136,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>setting</find>
-      <find>update</find>
       <find>dumps</find>
       <find>update_coun</find>
       <find>save_d</find>
@@ -161,6 +164,8 @@
       <find>No id</find>
       <find>employeesca</find>
       <find>actionbar</find>
+      <find>scan</find>
+      <find>info_dict</find>
     </findStrings>
     <replaceStrings>
       <replace>TMessage</replace>
@@ -232,8 +237,8 @@
         <option value="$PROJECT_DIR$/sensor/printingkivy.py" />
         <option value="$PROJECT_DIR$/sensor/settings_json.py" />
         <option value="$PROJECT_DIR$/sensor/printinggui.ini" />
-        <option value="$PROJECT_DIR$/sensor/printingMain.py" />
         <option value="$PROJECT_DIR$/sensor/printingGUI.py" />
+        <option value="$PROJECT_DIR$/sensor/printingMain.py" />
       </list>
     </option>
   </component>
@@ -269,7 +274,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="SearchEverywhereHistoryKey" value="&#9;FILE&#9;file:///Users/justynlgh/Documents/repo/afRPIsens/sensor/sensorGlobal.py" />
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1548146788337" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1548234582997" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/server" />
     <property name="project.structure.last.edited" value="Modules" />
     <property name="project.structure.proportion" value="0.0" />
@@ -624,8 +629,8 @@
       <window_info id="Favorites" order="6" side_tool="true" />
       <window_info anchor="bottom" id="Inspection Results" order="0" weight="0.32896176" />
       <window_info anchor="bottom" id="Message" order="1" />
-      <window_info anchor="bottom" id="Find" order="2" weight="0.29839572" />
-      <window_info active="true" anchor="bottom" id="Run" order="3" sideWeight="0.493895" visible="true" weight="0.3368984" />
+      <window_info anchor="bottom" id="Find" order="2" visible="true" weight="0.29839572" />
+      <window_info anchor="bottom" id="Run" order="3" sideWeight="0.493895" weight="0.3368984" />
       <window_info anchor="bottom" id="Debug" order="4" weight="0.3989305" />
       <window_info anchor="bottom" id="TODO" order="5" weight="0.32834226" />
       <window_info anchor="bottom" id="Cvs" order="6" weight="0.25" />
@@ -823,9 +828,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sensor/WDF_TU24253Z_P.json">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
     <entry file="file://$PROJECT_DIR$/sensor/v1/sensorReading.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="360">
@@ -905,20 +907,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sensor/printinggui.kv">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1935">
-          <caret line="129" column="14" selection-start-line="129" selection-start-column="14" selection-end-line="129" selection-end-column="14" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sensor/Z000461580003.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret column="22" selection-start-column="12" selection-end-column="22" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/Library/Caches/IdeaIC2018.3/python_stubs/-1199943126/_sqlite3.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="201">
@@ -953,20 +941,41 @@
     <entry file="file://$PROJECT_DIR$/test.sqlite">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/sensor/printingMain.py">
+    <entry file="file://$PROJECT_DIR$/sensor/Z000461580003.json">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2445">
-          <caret line="173" column="28" selection-start-line="173" selection-start-column="28" selection-end-line="173" selection-end-column="28" />
-          <folding>
-            <element signature="e#0#10#0" expanded="true" />
-          </folding>
+        <state>
+          <caret column="24" selection-start-column="24" selection-end-column="24" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sensor/printinggui.kv">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="7800">
+          <caret line="520" selection-start-line="520" selection-end-line="520" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/sensor/printingGUI.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="172">
-          <caret line="553" column="37" selection-start-line="553" selection-start-column="37" selection-end-line="553" selection-end-column="37" />
+        <state relative-caret-position="270">
+          <caret line="495" column="78" lean-forward="true" selection-start-line="495" selection-start-column="78" selection-end-line="495" selection-end-column="78" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sensor/WDF_TU24253Z_P.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret column="31" selection-start-column="20" selection-end-column="31" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sensor/printingMain.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="95">
+          <caret line="262" column="41" selection-start-line="262" selection-start-column="41" selection-end-line="262" selection-end-column="41" />
+          <folding>
+            <element signature="e#0#6#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

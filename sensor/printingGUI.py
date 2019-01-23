@@ -102,49 +102,34 @@ class SelectPage(Screen):
         self.ids['camera_viewer'].texture = image_texture
 
     def start_job(self):
-        job_num = self.ids.job_entry.text
+        barcode = self.ids.job_entry.text
         # TODO clear job_entry text
+        database_manager = App.get_running_app().database_manager
 
-        try:
-            with open('{}.json'.format(job_num), 'r') as infile:
-                job_dict = json.load(infile)
-
-            try:
-                file_name = job_dict.get('Code', '').replace('/', '_')
-                with open('{}.json'.format(file_name)) as inkfile:
-                    item_ink_key_dict = json.load(inkfile)
-
-            except FileNotFoundError:
-                item_ink_key_dict = {}
-
-            employees = App.get_running_app().action_bar.employees.copy()
-            if len(employees) < len(App.get_running_app().action_bar.employee_buttons):
-                raise ValueError('Please log in')
-            App.get_running_app().current_job = JobClass(job_dict, item_ink_key_dict, employees)
-            self.parent.get_screen('adjustment_page').generate_tabs()
-            self.parent.get_screen('run_page').generate_screen()
-            self.parent.transition.direction = 'left'
-            self.parent.current = 'adjustment_page'
-
-        except FileNotFoundError:
-            # TODO check/request server for job?
+        job_dict = database_manager.get_job_info(barcode)
+        if not job_dict:
             popup_boxlayout = BoxLayout(orientation='vertical')
             popup_boxlayout.add_widget(Label(text='JO number ("{}") was not found, please try again.'.
-                                             format(job_num)))
+                                             format(barcode)))
             dismiss_button = Button(text='Dismiss', size_hint=(1, None))
             popup_boxlayout.add_widget(dismiss_button)
             popup = Popup(title='No job found', content=popup_boxlayout, auto_dismiss=False, size_hint=(0.5, 0.5))
             dismiss_button.bind(on_press=popup.dismiss)
             popup.open()
+            return
 
-        except ValueError as e:
-            popup_boxlayout = BoxLayout(orientation='vertical')
-            popup_boxlayout.add_widget(Label(text=e.args[0]))
-            dismiss_button = Button(text='Dismiss', size_hint=(1, None))
-            popup_boxlayout.add_widget(dismiss_button)
-            popup = Popup(title='No job found', content=popup_boxlayout, auto_dismiss=False, size_hint=(0.5, 0.5))
-            dismiss_button.bind(on_press=popup.dismiss)
-            popup.open()
+        item_code = job_dict.get('Code')
+        item_ink_key_dict = database_manager.get_ink_key(item_code)
+
+        employees = App.get_running_app().action_bar.employees.copy()
+        if len(employees) < len(App.get_running_app().action_bar.employee_buttons):
+            raise ValueError('Please log in')
+
+        App.get_running_app().current_job = JobClass(job_dict, item_ink_key_dict, employees)
+        self.parent.get_screen('adjustment_page').generate_tabs()
+        self.parent.get_screen('run_page').generate_screen()
+        self.parent.transition.direction = 'left'
+        self.parent.current = 'adjustment_page'
 
 
 class AdjustmentPage(Screen):
