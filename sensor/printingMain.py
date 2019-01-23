@@ -44,7 +44,8 @@ class RaspberryPiController:
         self.server_add = self.gui.config.get('Network', 'ip_add')
         self.subscribe_port = self.gui.config.get('Network', 'port')
         self.self_add = self.gui.config.get('Network', 'self_add')
-
+        
+        self.context = zmq.Context()
         self.publisher_routine()
         self.respondent_routine()
         self.set_check_steady_job()
@@ -52,6 +53,8 @@ class RaspberryPiController:
 
         self.respondent_thread = threading.Thread(target=self.respond)
         self.respondent_thread.start()
+        self.requester_thread = threading.Thread(target=self.subscribe)
+        self.requester_thread.start()
 
     def load_pin_dict(self):
         try:
@@ -133,8 +136,7 @@ class RaspberryPiController:
     def respondent_routine(self):
         port_number = "{}:9999".format(self.self_add)
 
-        context = zmq.Context()
-        self.respondent = context.socket(zmq.REP)
+        self.respondent = self.context.socket(zmq.REP)
         self.respondent.setsockopt(zmq.LINGER, 0)
         self.respondent.bind("tcp://%s" % port_number)
         # print("Successfully binded to port %s for respondent" % self.port_number)
@@ -153,9 +155,8 @@ class RaspberryPiController:
         # port connection sould be declared beforehand
         port = '{}:{}'.format(self.server_add, self.subscribe_port)
 
-        # establishing context, publisher pattern and connection to server port
-        context = zmq.Context()
-        self.publisher = context.socket(zmq.PUB)
+        # establish publisher pattern and connection to server port
+        self.publisher = self.context.socket(zmq.PUB)
         self.publisher.connect("tcp://%s" % port)
         time.sleep(1)  # Wait for publisher to connect to port
         # print("Successfully connected to machine %s" % port)
@@ -167,7 +168,35 @@ class RaspberryPiController:
             self.publisher_routine()
 
         self.publisher.send_string(msg_json)
+        
+    def requester_routine(self):
+	    port_number = "{}:8888".format(self.self_add)
+	    #print("Connecting to machine...")
+	    self.requester = self.context.socket(zmq.REQ)
+	    self.requester.connect("tcp://%s" % port_number)
+	    #print("Successfully connected to machine %s" % port_number)
 
+    def request(self, msg):
+	    self.requester.send_string(msg)
+	    recv_msg = self.requester.recv()
+
+    def subscriber_routine(self):
+	    port = "152.228.1.135:56788" # TODO port add here 
+	    self.subscriber = self.context.socket(zmq.SUB)
+	    self.subscriber.setsockopt_string(zmq.SUBSCRIBE, "")
+
+	    print("Connecting to machine...")
+	    self.subscriber.bind("tcp://%s" % port)
+	    print("Successfully connected to machine %s" % port)
+
+    def subscribe(self):
+	    while True:
+		    # wait for messages from publishers
+		    print("Waiting for progression updates...")
+		    rev_msg = str(self.subscriber.recv())
+		    #received_json = json.loads(rev_msg)
+		    print("Received message: %s" % rev_msg) 
+    
     def pin_triggered2(self, pin, level, _tick):
         name = self.pin_to_name[pin]
         # self.states[name] = level
