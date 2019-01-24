@@ -300,6 +300,7 @@ class DatabaseManager:
         return d
 
     def get_ink_key(self, item):
+        """Returns empty dictionary if not found"""
         db = sqlite3.connect(self.database)
         cursor = db.cursor()
         db.row_factory = self.dict_factory
@@ -318,5 +319,4 @@ class DatabaseManager:
             row.pop('item')
             d[plate] = row
 
-        # TODO return empty dictionary when not found?
         return d
