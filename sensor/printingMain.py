@@ -306,9 +306,10 @@ class DatabaseManager:
 
         d = {}
 
-        # TODO detect and what to return if None
         cursor.execute("SELECT impression FROM ink_impression WHERE item = ?;", (item, ))
-        d.update(cursor.fetchone())
+        impression_d = cursor.fetchone()
+        if impression_d:
+            d.update(impression_d)
 
         cursor.execute("SELECT * FROM ink_key WHERE item = ?", (item, ))
 
@@ -317,4 +318,5 @@ class DatabaseManager:
             row.pop('item')
             d[plate] = row
 
+        # TODO return empty dictionary when not found?
         return d

@@ -423,13 +423,14 @@ class InkKeyBoxLayout(BoxLayout):
     def __init__(self, ink_key_dict, **kwargs):
         BoxLayout.__init__(self, **kwargs)
         self.ink_key_dict = ink_key_dict
-        self.impression_text.text = '{}'.format(self.ink_key_dict.get('impression', ''))
+        if not ink_key_dict:
+            self.clear_widgets()
+            self.add_widget(Label(text='No ink key found.'))
+            return
+        self.impression_text.text = '{}'.format(self.ink_key_dict.pop('impression', ''))
         self.impression_text.bind(focus=self.edit_impression)
         keys = list(self.ink_key_dict.keys())
-        try:
-            keys.remove('impression')
-        except ValueError:
-            pass
+
         for key in keys:
             layout = InkZoneLayout(key, self.ink_key_dict.get(key, ''))
             self.add_widget(layout)
