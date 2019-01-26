@@ -1,6 +1,6 @@
-import server.serverDB as serverDB
-import server.serverGUI as serverGUI
-import server.serverCommunication as serverCommunication
+import server.v1.serverDB as serverDB
+import server.v1.serverGUI as serverGUI
+import server.v1.serverCommunication as serverCommunication
 import tkinter
 
 

@@ -1,5 +1,4 @@
-import server.serverDB as serverDB
-import server.serverGUI as serverGUI
+import server.v1.serverGUI as serverGUI
 import tkinter
 
 root = tkinter.Tk()

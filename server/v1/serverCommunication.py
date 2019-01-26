@@ -3,7 +3,7 @@ import json
 import zmq
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-import server.serverDB as serverDB
+import server.v1.serverDB as serverDB
 
 
 class CommunicationManager:
