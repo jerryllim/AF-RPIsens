@@ -2,6 +2,7 @@ import zmq
 import json
 import time
 
+
 class NetworkManager():
 	def __init__(self):
 		self.context = zmq.Context()
@@ -36,6 +37,7 @@ class NetworkManager():
 			# print("Received request (%s)" % _message)
 			res_json = self.get_counts()
 			self.respondent.send_string(res_json)
+
 
 if __name__ == '__main__':
 	NetworkManager()
