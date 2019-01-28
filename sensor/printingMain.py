@@ -1,4 +1,3 @@
-import os
 import ast
 import zmq
 import time
