@@ -1,4 +1,5 @@
 import os
+import ast
 import zmq
 import time
 import json
@@ -31,6 +32,7 @@ class RaspberryPiController:
         self.counts_lock = threading.Lock()
         self.scheduler = BackgroundScheduler()
         self.gui = gui
+        self.database_manager = DatabaseManager()
         self.load_pin_dict()
         self.pi = pigpio.pi()
 
@@ -48,17 +50,17 @@ class RaspberryPiController:
         self.self_add = self.gui.config.get('Network', 'self_add')
         
         self.context = zmq.Context()
-        self.publisher_routine()
+        # self.publisher_routine()
         self.respondent_routine()
         self.requester_routine()
-        self.subscriber_routine()
+        # self.subscriber_routine()
         self.set_check_steady_job()
         self.scheduler.start()
 
         self.respondent_thread = threading.Thread(target=self.respond)
         self.respondent_thread.start()
-        self.requester_thread = threading.Thread(target=self.subscribe)
-        self.requester_thread.start()
+        # self.requester_thread = threading.Thread(target=self.subscribe)
+        # self.requester_thread.start()
 
     def load_pin_dict(self):
         try:
@@ -135,7 +137,20 @@ class RaspberryPiController:
             temp = self.counts.copy()
             self.counts.clear()
 
-        return json.dumps(temp)
+        return temp
+
+    @staticmethod
+    def parse_job_info(data_str):
+        data_list = data_str.split(";")
+        values = [ast.literal_eval(value) for value in data_list]
+
+        return values
+
+    def parse_emp_info(self, emp_data):
+        self.database_manager.update_into_employees_table(emp_data.items())
+
+    def parse_ink_info(self, ink_data):
+        self.database_manager.replace_ink_key_tables(ink_data)
     
     def respondent_routine(self):
         port_number = "{}:9999".format(self.self_add)
@@ -149,29 +164,47 @@ class RaspberryPiController:
         # routine functions begins here
         while True:
             # wait for next request from client
-            _message = str(self.respondent.recv(), "utf-8")
-            # print("Received request (%s)" % _message)
+            recv_message = str(self.respondent.recv(), "utf-8")
+            recv_dict = json.loads(recv_message)
+            # print("Received request (%s)" % recv_message)
             time.sleep(1)
-            res_json = self.get_counts()
-            self.respondent.send_string(res_json)
+            reply_dict = {}
+
+            for key in recv_dict.keys():
+                if key == "jam":
+                    reply_dict["jam"] = self.get_counts()
+                elif key == "job_info":
+                    pass
+                    job_str = recv_dict.pop(key)
+                    job_data = self.parse_job_info(job_str)
+                    self.database_manager.recreate_job_table()
+                    self.database_manager.insert_into_job_table(job_data)
+                elif key == "emp":
+                    emp_data = recv_dict.pop(key)
+                    self.parse_emp_info(emp_data)
+                elif key == "ink_key":
+                    ink_data = recv_dict.pop(key)
+                    self.parse_ink_info(ink_data)
+
+            self.respondent.send_string(json.dumps(reply_dict))
     
-    def publisher_routine(self):
-        # port connection sould be declared beforehand
-        port = '{}:{}'.format(self.server_add, self.subscribe_port)
-
-        # establish publisher pattern and connection to server port
-        self.publisher = self.context.socket(zmq.PUB)
-        self.publisher.connect("tcp://%s" % port)
-        time.sleep(1)  # Wait for publisher to connect to port
-        # print("Successfully connected to machine %s" % port)
-
-    def publish(self, msg):
-        # routine function starts here
-        msg_json = msg
-        if self.publisher is None:
-            self.publisher_routine()
-
-        self.publisher.send_string(msg_json)
+    # def publisher_routine(self):
+    #     # port connection sould be declared beforehand
+    #     port = '{}:{}'.format(self.server_add, self.subscribe_port)
+    #
+    #     # establish publisher pattern and connection to server port
+    #     self.publisher = self.context.socket(zmq.PUB)
+    #     self.publisher.connect("tcp://%s" % port)
+    #     time.sleep(1)  # Wait for publisher to connect to port
+    #     # print("Successfully connected to machine %s" % port)
+    #
+    # def publish(self, msg):
+    #     # routine function starts here
+    #     msg_json = msg
+    #     if self.publisher is None:
+    #         self.publisher_routine()
+    #
+    #     self.publisher.send_string(msg_json)
         
     def requester_routine(self):
         port_number = "{}:8888".format(self.self_add)
@@ -186,23 +219,23 @@ class RaspberryPiController:
 
         return recv_msg
 
-    def subscriber_routine(self):
-        port = "152.228.1.135:56788" # TODO port add here
-        self.subscriber = self.context.socket(zmq.SUB)
-        self.subscriber.setsockopt_string(zmq.SUBSCRIBE, "")
-
-        # print("Connecting to machine...")
-        self.subscriber.bind("tcp://%s" % port)
-        # print("Successfully connected to machine %s" % port)
-
-    def subscribe(self):
-        while True:
-            # wait for messages from publishers
-            print("Waiting for progression updates...")
-            rev_msg = str(self.subscriber.recv())
-            # print("Received message: %s" % rev_msg)
-            received_json = json.loads(rev_msg)
-            # TODO what to do with the received json
+    # def subscriber_routine(self):
+    #     port = "152.228.1.135:56788" # TODO port add here
+    #     self.subscriber = self.context.socket(zmq.SUB)
+    #     self.subscriber.setsockopt_string(zmq.SUBSCRIBE, "")
+    #
+    #     # print("Connecting to machine...")
+    #     self.subscriber.bind("tcp://%s" % port)
+    #     # print("Successfully connected to machine %s" % port)
+    #
+    # def subscribe(self):
+    #     while True:
+    #         # wait for messages from publishers
+    #         print("Waiting for progression updates...")
+    #         rev_msg = str(self.subscriber.recv())
+    #         # print("Received message: %s" % rev_msg)
+    #         received_json = json.loads(rev_msg)
+    #         # TODO what to do with the received json
     
     def pin_triggered2(self, pin, level, _tick):
         name = self.pin_to_name[pin]
@@ -269,7 +302,8 @@ class DatabaseManager:
                            "INTEGER, '16' INTEGER, '17' INTEGER, '18' INTEGER, '19' INTEGER, '20' INTEGER, '21' INTEGER"
                            ", '22' INTEGER, '23' INTEGER, '24' INTEGER, '25' INTEGER, '26' INTEGER, '27' INTEGER, '28' "
                            "INTEGER, '29' INTEGER, '30' INTEGER, '31' INTEGER, '32' INTEGER, PRIMARY KEY(item, plate));")
-            cursor.execute("CREATE TABLE IF NOT EXISTS ink_impression (item TEXT PRIMARY KEY, impression INTEGER NOT NULL);")
+            cursor.execute("CREATE TABLE IF NOT EXISTS ink_impression (item TEXT PRIMARY KEY, impression INTEGER NOT "
+                           "NULL);")
             db.commit()
         finally:
             db.close()

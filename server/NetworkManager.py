@@ -3,7 +3,7 @@ import json
 import time
 
 
-class NetworkManager():
+class NetworkManager:
 	def __init__(self):
 		self.context = zmq.Context()
 		self.requester_routine()

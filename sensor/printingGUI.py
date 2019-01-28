@@ -743,7 +743,6 @@ class PrintingGUIApp(App):
         self.config.set('Network', 'self_add', self.get_ip_add())
         # self.controller = printingMain.RaspberryPiController(self)
         self.controller = FakeClass()  # TODO set if testing
-        self.database_manager = printingMain.DatabaseManager()
 
         self.use_kivy_settings = False
         num_operators = self.config.get('General', 'num_operators')
