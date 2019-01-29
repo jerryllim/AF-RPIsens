@@ -117,6 +117,100 @@ class DatabaseServer:
 				db.commit()
 		finally:
 			db.close()
+			
+	def create_emp(self):
+		db = pymysql.connect("localhost", "user", "pass", "test")
+		cursor = db.cursor()
+		try:
+			# Drop table if it already exist
+			cursor.execute("DROP TABLE IF EXISTS emp;")
+
+			# create EMP table
+			sql = '''CREATE TABLE IF NOT EXISTS emp (
+					emp_no VARCHAR(10) NOT NULL PRIMARY KEY,
+					name VARCHAR(20),
+					modified DATETIME)'''
+
+			cursor.execute(sql)
+			db.commit()
+		finally:
+			db.close()
+
+	def insert_emp(self):
+		db = pymysql.connect("localhost", "user", "pass", "test")
+		cursor = db.cursor()
+		try:
+			sql = '''INSERT INTO emp (emp_no, name, modified)
+					VALUES (%s, %s, %s);'''
+			cursor.execute(sql, (self.emp_no.get(), self.emp_name.get(), time.strftime('%Y-%m-%d %H:%M:%S')))
+			db.commit()
+			self.insert_temp(emp_no, name)
+		except MySQLError as error:
+			print("Failed to insert record to database: {}".format(error))
+			db.rollback()
+		finally:
+			db.close()
+
+	def delete_emp(self):
+		db = pymysql.connect("localhost", "user", "pass", "test")
+		cursor = db.cursor()
+		try:
+			sql = '''DELETE FROM emp WHERE emp_no = %s'''
+			cursor.execute(sql, (self.emp_no.get()))
+			db.commit()
+			self.insert_temp(emp_no)
+		except MySQLError as error:
+			print("Failed to delete record from database: {}".format(error))
+			db.rollback()
+		finally:
+			db.close()
+
+	def update_emp(self):
+		db = pymysql.connect("localhost", "user", "pass", "test")
+		cursor = db.cursor()
+		try:
+			sql = '''UPDATE emp SET name = %s, modified = %s WHERE emp_no = %s'''
+			cursor.execute(sql, (self.emp_name.get(), time.strftime('%Y-%m-%d %H:%M:%S')))
+			db.commit()
+			self.insert_temp(emp_no, name)
+		except MySQLError as error:
+			print("Failed to update record to database: {}".format(error))
+			db.rollback()
+		finally:
+			db.close()
+
+	def t_emp(self):
+		db = pymysql.connect("localhost", "user", "pass", "test")
+		cursor = db.cursor()
+		try:
+			# create temp EMP table
+			sql = '''CREATE TABLE IF NOT EXISTS t_emp (
+					emp_no VARCHAR(10) NOT NULL PRIMARY KEY,
+					name VARCHAR(20),
+					modified DATETIME)'''
+			cursor.execute(sql)
+			db.commit()
+		except MySQLError as error:
+			print("Failed to create table in database: {}".format(error))
+			db.rollback()
+		finally:
+			db.close()
+
+	def insert_temp(self, emp_no, name = None):
+		self.t_emp()
+		db = pymysql.connect("localhost", "user", "pass", "test")
+		cursor = db.cursor()
+		try:
+			sql = '''INSERT INTO t_emp (emp_no, name, modified)
+					VALUES (%s, %s, %s)
+					ON DUPLICATE KEY UPDATE emp_no = %s, name = %s, modified = %s'''
+			cursor.execute(sql, (emp_no, name, time.strftime('%Y-%m-%d %H:%M:%S'), emp_no, name, time.strftime('%Y-%m-%d %H:%M:%S')))
+			db.commit()
+		except MySQLError as error:
+			print("Failed to insert/update record to database: {}".format(error))
+			db.rollback()
+		finally:
+			db.close()
 
 
 if __name__ == '__main__':
