@@ -280,6 +280,9 @@ class RaspberryPiController:
     def get_employee_name(self, emp_id):
         return self.database_manager.get_employee_name(emp_id)
 
+    def replace_ink_key_tables(self, ink_key):
+        self.database_manager.replace_ink_key_tables(ink_key)
+
 
 class DatabaseManager:
     def __init__(self):
@@ -353,6 +356,7 @@ class DatabaseManager:
         db.close()
 
     def replace_ink_key_tables(self, ink_key):
+        print(ink_key)
         db = sqlite3.connect(self.database)
         cursor = db.cursor()
         for item, info in ink_key.items():
@@ -394,8 +398,8 @@ class DatabaseManager:
     def get_ink_key(self, item):
         """Returns empty dictionary if not found"""
         db = sqlite3.connect(self.database)
-        cursor = db.cursor()
         db.row_factory = self.dict_factory
+        cursor = db.cursor()
 
         d = {}
 
@@ -409,6 +413,7 @@ class DatabaseManager:
         for row in cursor:
             plate = row.pop('plate')
             row.pop('item')
-            d[plate] = row
+            new = {k: v for k, v in row.items() if v is not None}
+            d[plate] = new
 
         return d

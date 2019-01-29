@@ -59,6 +59,9 @@ class JobClass(Widget):
     def get_sfu(self):
         pass
 
+    def get_item_code(self):
+        return self.info_dict.get('code', '')
+
 
 class SelectPage(Screen):
     cam = None
@@ -104,32 +107,39 @@ class SelectPage(Screen):
     def start_job(self):
         barcode = self.ids.job_entry.text
         # TODO clear job_entry text
-        controller: printingMain.RaspberryPiController = App.get_running_app().controller
+        try:
+            controller: printingMain.RaspberryPiController = App.get_running_app().controller
 
-        job_dict = controller.get_job_info(barcode)
-        if not job_dict:
+            job_dict = controller.get_job_info(barcode)
+            if not job_dict:
+                popup_boxlayout = BoxLayout(orientation='vertical')
+                popup_boxlayout.add_widget(Label(text='JO number ("{}") was not found, please try again.'.
+                                                 format(barcode)))
+                dismiss_button = Button(text='Dismiss', size_hint=(1, None))
+                popup_boxlayout.add_widget(dismiss_button)
+                popup = Popup(title='No job found', content=popup_boxlayout, auto_dismiss=False, size_hint=(0.5, 0.5))
+                dismiss_button.bind(on_press=popup.dismiss)
+                popup.open()
+                return
+
+            item_code = job_dict.get('code')
+            item_ink_key_dict = controller.get_ink_key(item_code)
+
+            employees = App.get_running_app().action_bar.employees.copy()
+            if len(employees) < len(App.get_running_app().action_bar.employee_buttons):
+                raise ValueError('Please log in')
+
+            App.get_running_app().current_job = JobClass(job_dict, item_ink_key_dict, employees)
+            self.parent.get_screen('adjustment_page').generate_tabs()
+            self.parent.get_screen('run_page').generate_screen()
+            self.parent.transition.direction = 'left'
+            self.parent.current = 'adjustment_page'
+        except ValueError:
             popup_boxlayout = BoxLayout(orientation='vertical')
-            popup_boxlayout.add_widget(Label(text='JO number ("{}") was not found, please try again.'.
+            popup_boxlayout.add_widget(Label(text='Please log in'.
                                              format(barcode)))
-            dismiss_button = Button(text='Dismiss', size_hint=(1, None))
-            popup_boxlayout.add_widget(dismiss_button)
-            popup = Popup(title='No job found', content=popup_boxlayout, auto_dismiss=False, size_hint=(0.5, 0.5))
-            dismiss_button.bind(on_press=popup.dismiss)
+            popup = Popup(title='No employee logged in', content=popup_boxlayout, size_hint=(0.5, 0.5))
             popup.open()
-            return
-
-        item_code = job_dict.get('Code')
-        item_ink_key_dict = controller.get_ink_key(item_code)
-
-        employees = App.get_running_app().action_bar.employees.copy()
-        if len(employees) < len(App.get_running_app().action_bar.employee_buttons):
-            raise ValueError('Please log in')
-
-        App.get_running_app().current_job = JobClass(job_dict, item_ink_key_dict, employees)
-        self.parent.get_screen('adjustment_page').generate_tabs()
-        self.parent.get_screen('run_page').generate_screen()
-        self.parent.transition.direction = 'left'
-        self.parent.current = 'adjustment_page'
 
 
 class AdjustmentPage(Screen):
@@ -153,6 +163,9 @@ class AdjustmentPage(Screen):
                                                              text)
         current_job.adjustments['E03'] = self.int_text_input(self.adjustment_tabbedpanel.ids['adjustment_tab'].
                                                              plate_text.text)
+
+        if current_job.ink_key.pop('update', False):
+            App.get_running_app().controller.replace_ink_key_tables({current_job.get_item_code(): current_job.ink_key})
         self.parent.transition.direction = 'left'
         self.parent.current = 'run_page'
 
@@ -420,10 +433,10 @@ class InkKeyTab(ScrollView):
 
 
 class InkKeyBoxLayout(BoxLayout):
-    def __init__(self, ink_key_dict, **kwargs):
+    def __init__(self, _ink_key_dict, **kwargs):
         BoxLayout.__init__(self, **kwargs)
-        self.ink_key_dict = ink_key_dict
-        if not ink_key_dict:
+        self.ink_key_dict = App.get_running_app().current_job.ink_key.copy()
+        if not self.ink_key_dict:
             self.clear_widgets()
             self.add_widget(Label(text='No ink key found.'))
             return
@@ -432,14 +445,16 @@ class InkKeyBoxLayout(BoxLayout):
         keys = list(self.ink_key_dict.keys())
 
         for key in keys:
-            layout = InkZoneLayout(key, self.ink_key_dict.get(key, ''))
+            layout = InkZoneLayout(key)
             self.add_widget(layout)
 
     def edit_impression(self, _instance, focus):
         def dismiss_popup(_button):
             if value_textinput.text:
-                self.ink_key_dict['impression'] = int(value_textinput.text)
-                self.impression_text.text = '{}'.format(self.ink_key_dict['impression'])
+                ink_key_dict = App.get_running_app().current_job.ink_key
+                ink_key_dict['update'] = True
+                ink_key_dict['impression'] = int(value_textinput.text)
+                self.impression_text.text = '{}'.format(ink_key_dict['impression'])
 
             edit_popup.dismiss()
 
@@ -461,9 +476,9 @@ class InkKeyBoxLayout(BoxLayout):
 
 
 class InkZoneLayout(BoxLayout):
-    def __init__(self, plate, ink_dict, **kwargs):
+    def __init__(self, plate, **kwargs):
         BoxLayout.__init__(self, **kwargs)
-        self.ink_dict = ink_dict
+        self.plate = plate
         self.buttons = []
         self.ids['plate_code'].text = 'Plate: {}'.format(plate)
         self.load_widgets()
@@ -471,10 +486,11 @@ class InkZoneLayout(BoxLayout):
     def load_widgets(self):
         self.buttons.clear()
         self.ids['ink_zones'].clear_widgets()
+        ink_dict = App.get_running_app().current_job.ink_key.get(self.plate)
 
-        zones = sorted(self.ink_dict.keys(), key=alphanum_key)
+        zones = sorted(ink_dict.keys(), key=alphanum_key)
         for zone in zones:
-            button = Button(text="{}\n[b][size=20sp]{}[/size][/b]".format(zone, self.ink_dict.get(zone, '')),
+            button = Button(text="{}\n[b][size=20sp]{}[/size][/b]".format(zone, ink_dict.get(zone, '')),
                             size_hint=(1, None), halign='center', markup=True)
             button.bind(on_press=self.edit_ink_key)
             self.buttons.append(button)
@@ -483,7 +499,8 @@ class InkZoneLayout(BoxLayout):
     def edit_ink_key(self, instance):
         def dismiss_popup(_button):
             if value_textinput.text:
-                self.ink_dict[key] = int(value_textinput.text)
+                App.get_running_app().current_job.ink_key['update'] = True
+                App.get_running_app().current_job.ink_key[self.plate][key] = int(value_textinput.text)
 
             edit_popup.dismiss()
             self.load_widgets()
@@ -819,6 +836,7 @@ class PrintingGUIApp(App):
             self.controller.counts[i_key].update(adjustments)
 
         # TODO publish to server data here
+
         # msg = self.current_job.get_sfu()
         # self.controller.publish(msg)
 
@@ -841,12 +859,32 @@ class FakeClass:
     import threading
     counts_lock = threading.Lock()
     counts = {}
+    database_manager = None
 
     def __init__(self):
-        pass
+        self.database_manager = printingMain.DatabaseManager()
 
     def get_key(self, interval=5):
         return interval
+
+    def get_job_info(self, barcode):
+        job_info = self.database_manager.get_job_info(barcode)
+        # if job_info is None:
+        #     reply_msg = self.request({"job_info": barcode})
+        #     value = reply_msg.pop(barcode)
+        #     job_info = {'jo_no': value[0], 'jo_line': value[1], 'code': value[2], 'desc': value[3], 'to_do': value[4],
+        #                 'ran': value[5]}
+
+        return job_info
+
+    def get_ink_key(self, item):
+        return self.database_manager.get_ink_key(item)
+
+    def get_employee_name(self, emp_id):
+        return self.database_manager.get_employee_name(emp_id)
+
+    def replace_ink_key_tables(self, ink_key):
+        self.database_manager.replace_ink_key_tables(ink_key)
 
 
 if __name__ == '__main__':
