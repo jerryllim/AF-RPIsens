@@ -212,9 +212,16 @@ class RaspberryPiController:
         self.requester.connect("tcp://%s" % port_number)
         # print("Successfully connected to machine %s" % port_number)
 
-    def request(self, msg):
-        self.requester.send_string(msg)
-        recv_msg = self.requester.recv()
+    def request(self, msg_dict):
+        timeout = 2000
+        recv_msg = None
+        # Try 3 times, each waiting for 2 seconds for reply from server
+        for i in range(3):
+            self.requester.send_json(msg_dict)
+
+            if self.requester.poll(timeout):
+                recv_msg = self.requester.recv_json()
+                break
 
         return recv_msg
 
@@ -256,6 +263,22 @@ class RaspberryPiController:
                 # name = self.pin_to_name[pin]
                 key = self.get_key()
                 self.update_count(name, key)
+
+    def get_job_info(self, barcode):
+        job_info = self.database_manager.get_job_info(barcode)
+        if job_info is None:
+            reply_msg = self.request({"job_info": barcode})
+            value = reply_msg.pop(barcode)
+            job_info = {'jo_no': value[0], 'jo_line': value[1], 'code': value[2], 'desc': value[3], 'to_do': value[4],
+                        'ran': value[5]}
+
+        return job_info
+
+    def get_ink_key(self, item):
+        return self.database_manager.get_ink_key(item)
+
+    def get_employee_name(self, emp_id):
+        return self.database_manager.get_employee_name(emp_id)
 
 
 class DatabaseManager:
@@ -358,7 +381,7 @@ class DatabaseManager:
         db.row_factory = self.dict_factory
         cursor = db.cursor()
         cursor.execute("SELECT * FROM job_info WHERE jo_no = ? AND jo_line = ?;", (jo_no, jo_line))
-        # TODO request from server if not found
+
         return cursor.fetchone()
 
     @staticmethod

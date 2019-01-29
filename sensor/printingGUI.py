@@ -54,7 +54,7 @@ class JobClass(Widget):
         return self.adjustments
 
     def get_current_job(self):
-        return self.info_dict["JO No."]
+        return "{jo_no}{jo_line:03d}".format(**self.info_dict)
 
     def get_sfu(self):
         pass
@@ -104,9 +104,9 @@ class SelectPage(Screen):
     def start_job(self):
         barcode = self.ids.job_entry.text
         # TODO clear job_entry text
-        database_manager = App.get_running_app().database_manager
+        controller: printingMain.RaspberryPiController = App.get_running_app().controller
 
-        job_dict = database_manager.get_job_info(barcode)
+        job_dict = controller.get_job_info(barcode)
         if not job_dict:
             popup_boxlayout = BoxLayout(orientation='vertical')
             popup_boxlayout.add_widget(Label(text='JO number ("{}") was not found, please try again.'.
@@ -119,7 +119,7 @@ class SelectPage(Screen):
             return
 
         item_code = job_dict.get('Code')
-        item_ink_key_dict = database_manager.get_ink_key(item_code)
+        item_ink_key_dict = controller.get_ink_key(item_code)
 
         employees = App.get_running_app().action_bar.employees.copy()
         if len(employees) < len(App.get_running_app().action_bar.employee_buttons):
@@ -137,7 +137,7 @@ class AdjustmentPage(Screen):
 
     def generate_tabs(self):
         current_job = App.get_running_app().current_job
-        self.ids['jo_no'].text = 'JO No.: {}'.format(current_job.info_dict['JO No.'])
+        self.ids['jo_no'].text = 'JO No.: {}'.format(current_job.info_dict['jo_no'])
 
         if self.adjustment_tabbedpanel is not None:
             self.ids['box_layout'].remove_widget(self.adjustment_tabbedpanel)
@@ -273,10 +273,10 @@ class RunPageLayout(BoxLayout):
         BoxLayout.__init__(self, **kwargs)
         current_job = App.get_running_app().current_job
         self.job_dict = current_job.info_dict
-        self.ids['jo_no'].text = 'JO No.: {}'.format(self.job_dict['JO No.'])
-        self.ids['to_do'].text = 'To do: {}'.format(self.job_dict['To do'])
-        self.ids['code'].text = 'Code: {}'.format(self.job_dict['Code'])
-        self.ids['desc'].text = 'Description: {}'.format(self.job_dict['Desc'])
+        self.ids['jo_no'].text = 'JO No.: {}'.format(self.job_dict['jo_no'])
+        self.ids['to_do'].text = 'To do: {}'.format(self.job_dict['to_do'])
+        self.ids['code'].text = 'Code: {}'.format(self.job_dict['code'])
+        self.ids['desc'].text = 'Description: {}'.format(self.job_dict['desc'])
         if not current_job.qc:
             self.qc_label.text = 'QC check: Not complete'
         else:
@@ -540,7 +540,7 @@ class SimpleActionBar(BoxLayout):
             button.set_default_text()
         else:
             self.employees[button.number] = employee_num
-            emp_name = App.get_running_app().database_manager.get_employee_name(employee_num)
+            emp_name = App.get_running_app().controller.get_employee_name(employee_num)
             button.text = '{}'.format(emp_name)
 
     def get_employee(self):
@@ -735,7 +735,7 @@ class PrintingGUIApp(App):
     user = None
     action_bar = None
     controller = None
-    database_manager = None
+    # database_manager = None
 
     def build(self):
         # self.check_camera()  # TODO uncomment
