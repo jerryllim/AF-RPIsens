@@ -57,7 +57,8 @@ class JobClass(Widget):
         return "{jo_no}{jo_line:03d}".format(**self.info_dict)
 
     def get_sfu(self):
-        pass
+        # TODO reformat the return information
+        return self.info_dict
 
     def get_item_code(self):
         return self.info_dict.get('code', '')
@@ -768,8 +769,8 @@ class PrintingGUIApp(App):
         # self.check_camera()  # TODO uncomment
 
         self.config.set('Network', 'self_add', self.get_ip_add())
-        # self.controller = printingMain.RaspberryPiController(self)
-        self.controller = FakeClass()  # TODO set if testing
+        self.controller = printingMain.RaspberryPiController(self)
+        # self.controller = FakeClass()  # TODO set if testing
 
         self.use_kivy_settings = False
         num_operators = self.config.get('General', 'num_operators')
@@ -845,10 +846,12 @@ class PrintingGUIApp(App):
                 self.controller.counts[i_key] = Counter()
             self.controller.counts[i_key].update(adjustments)
 
-        # TODO publish to server data here
+        sfu_data = self.current_job.get_sfu()
+        req_msg = {'sfu': sfu_data}
+        if self.current_job.ink_key_updated():
+            req_msg['ink_key'] = self.current_job.get_ink_key()
 
-        # msg = self.current_job.get_sfu()
-        # self.controller.publish(msg)
+        self.controller.request(req_msg)
 
 
 def try_int(s):
