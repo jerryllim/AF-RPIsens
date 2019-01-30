@@ -356,7 +356,6 @@ class DatabaseManager:
         db.close()
 
     def replace_ink_key_tables(self, ink_key):
-        print(ink_key)
         db = sqlite3.connect(self.database)
         cursor = db.cursor()
         for item, info in ink_key.items():
@@ -367,6 +366,9 @@ class DatabaseManager:
                 qm = ",".join(list('?'*len(zones.values())))
                 values = (item, plate) + tuple(zones.values())
                 cursor.execute("REPLACE INTO ink_key (item,plate," + keys + ") VALUES (?,?," + qm + ");", values)
+
+        db.commit()
+        db.close()
 
     def get_employee_name(self, emp_id):
         db = sqlite3.connect(self.database)
@@ -386,7 +388,11 @@ class DatabaseManager:
         cursor = db.cursor()
         cursor.execute("SELECT * FROM job_info WHERE jo_no = ? AND jo_line = ?;", (jo_no, jo_line))
 
-        return cursor.fetchone()
+        job_info = cursor.fetchone()
+
+        db.close()
+
+        return job_info
 
     @staticmethod
     def dict_factory(cursor, row):
@@ -415,5 +421,7 @@ class DatabaseManager:
             row.pop('item')
             new = {k: v for k, v in row.items() if v is not None}
             d[plate] = new
+
+        db.close()
 
         return d

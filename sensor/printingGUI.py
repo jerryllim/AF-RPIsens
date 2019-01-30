@@ -62,6 +62,15 @@ class JobClass(Widget):
     def get_item_code(self):
         return self.info_dict.get('code', '')
 
+    def get_ink_key(self):
+        ink_key_copy = self.ink_key.copy()
+        ink_key_copy.pop('update', False)
+        item_ink_key = {self.get_item_code(): ink_key_copy}
+        return item_ink_key
+
+    def ink_key_updated(self):
+        return self.ink_key.get('update', False)
+
 
 class SelectPage(Screen):
     cam = None
@@ -164,8 +173,9 @@ class AdjustmentPage(Screen):
         current_job.adjustments['E03'] = self.int_text_input(self.adjustment_tabbedpanel.ids['adjustment_tab'].
                                                              plate_text.text)
 
-        if current_job.ink_key.pop('update', False):
-            App.get_running_app().controller.replace_ink_key_tables({current_job.get_item_code(): current_job.ink_key})
+        if current_job.ink_key_updated():
+            App.get_running_app().controller.replace_ink_key_tables(current_job.get_ink_key())
+
         self.parent.transition.direction = 'left'
         self.parent.current = 'run_page'
 
