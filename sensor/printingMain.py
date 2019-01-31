@@ -363,8 +363,8 @@ class DatabaseManager:
             cursor.execute("REPLACE INTO ink_impression VALUES (?, ?)", (item, impression))
             for plate, i_keys in info.items():
                 keys = ",".join("'{}'".format(k) for k in range(1, len(i_keys)+1))
-                qm = ",".join(list('?'*len(i_keys.values())))
-                values = (item, plate) + i_keys
+                qm = ",".join(list('?'*len(i_keys)))
+                values = [item, plate] + i_keys
                 cursor.execute("REPLACE INTO ink_key (item,plate," + keys + ") VALUES (?,?," + qm + ");", values)
 
         db.commit()
@@ -404,7 +404,7 @@ class DatabaseManager:
     def get_ink_key(self, item):
         """Returns empty dictionary if not found"""
         db = sqlite3.connect(self.database)
-        db.row_factory = self.dict_factory
+        # db.row_factory = self.dict_factory
         cursor = db.cursor()
 
         d = {}
@@ -412,7 +412,7 @@ class DatabaseManager:
         cursor.execute("SELECT impression FROM ink_impression WHERE item = ?;", (item, ))
         impression_d = cursor.fetchone()
         if impression_d:
-            d.update(impression_d)
+            d['impression'] = impression_d[0]
 
         cursor.execute("SELECT * FROM ink_key WHERE item = ?", (item, ))
 
@@ -421,7 +421,7 @@ class DatabaseManager:
             # row.pop('item')
             # new = {k: v for k, v in row.items() if v is not None}
             plate = row[1]
-            new = tuple(v for v in list(row) if type(v) == int)
+            new = [v for v in list(row) if type(v) == int]
 
             d[plate] = new
 
