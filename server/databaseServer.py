@@ -1,9 +1,15 @@
 import pymysql
-import time
+from datetime import datetime, timedelta
+
 
 class DatabaseServer:
-	def __init__(self):
-		self.create_JAM()
+	def __init__(self, host='localhost', user='user', password='pass', db='test'):
+		self.host = host
+		self.user = user
+		self.password = password
+		self.db = db
+
+		self.create_jam_table()
 
 	def setting_json(self):
 		# TODO create dictionary based on server settings
@@ -38,8 +44,8 @@ class DatabaseServer:
 	def receive_match(self):
 		# TODO retrieve json from RPi and match with settings_json
 		recv_dict = {
-			'A0001_Z00012345001_1459':{'S01':100,'S02':125,'S10':1},
-			'A0001_Z00012345001_1500':{'S01':25,'S02':30,'S10':0}
+			'A0001_Z00012345001_1459': {'S01': 100, 'S02': 125, 'S10': 1},
+			'A0001_Z00012345001_1500': {'S01': 25, 'S02': 30, 'S10': 0}
 		}
 		sett_dict = self.setting_json()
 		for recv_id, recv_info in recv_dict.items():
@@ -50,17 +56,20 @@ class DatabaseServer:
 				else:
 					print(key, " not found")
 
-	def create_JAM(self):
-		db = pymysql.connect("localhost", "user", "pass", "test")
+	def create_jam_table(self):
+		db = pymysql.connect(self.host, self.user, self.password, self.db)
+
 		try:
 			with db.cursor() as cursor:
 				# Drop table if it already exist (for testing)
-				cursor.execute("DROP TABLE IF EXISTS jam;")
+				cursor.execute("DROP TABLE IF EXISTS jam_current_table;")
 
 				# create JAM table
-				sql = '''CREATE TABLE IF NOT EXISTS jam (
+				# TODO confirm varchar lengths
+				sql = '''CREATE TABLE IF NOT EXISTS jam_current_table (
 						machine VARCHAR(10) NOT NULL,
 						jo_no INTEGER NOT NULL,
+						emp VARCHAR(10) NOT NULL
 						date_time DATETIME NOT NULL,
 						output INTEGER DEFAULT 0,
 						col1 INTEGER DEFAULT 0,
@@ -77,60 +86,62 @@ class DatabaseServer:
 
 				cursor.execute(sql)
 				db.commit()
+		except pymysql.MySQLError:
+			db.rollback()
 		finally:
 			db.close()
 
-	"""def insert_JAM(self):
-		db = pymysql.connect("localhost", "user", "pass", "test")
-		cursor = db.cursor()
-		try:
-			# Insert value into table
-			sql = '''INSERT INTO jam (machine, jo_no, date_time, output, col1, col2, col3, col4, col5, col5, col6, col7, col8, col9, col10)
-					VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);'''
-			cursor.execute(sql, (sens["sensor"], sens["data"], sens["client"]))
-			db.commit()
-		finally:
-			db.close()"""
-
-	def insert_JAM(self):
-		db = pymysql.connect("localhost", "user", "pass", "test")
+	def insert_jam(self):
+		db = pymysql.connect(self.host, self.user, self.password, self.db)
 
 		try:
 			with db.cursor() as cursor:
-				column_names = ['machine', 'jo_no', 'date_time', 'output', 'col1', 'col2', 'col3', 'col4', 'col5', 'col5', 'col6', 'col7', 'col8', 'col9', 'col10']
-				column_names_str = ', '.join(column_names)
-				binds_str = ', '.join('%s' for _ in range(len(column_names)))
 				recv_dict = {
-					'A0001_Z00012345001_1459':{'S01':100,'S02':125,'S10':1},
-					'A0001_Z00012345001_1500':{'S01':25,'S02':30,'S10':0}
+					'A0001_Z00012345001_1459': {'S01': 100, 'S02': 125, 'S10': 1},
+					'A0001_Z00012345001_1500': {'S01': 25, 'S02': 30, 'S10': 0}
 				}
 				sett_dict = self.setting_json()
 				for recv_id, recv_info in recv_dict.items():
-					for key in recv_info:
-						if sett_dict.get(key, None):
-							sql = ("INSERT INTO jam ({column_names}) "
-									"VALUES ({binds})"
-									.format(column_names=column_names_str,
-									binds=binds_str))
-							values = [recv_info[column_name] for column_name in column_names]
-							cursor.execute(sql, values)
-							print("Inserted successfully")
+
+					emp, job, time = recv_id.split('_', 3)
+					recv_time = datetime.strptime(time, '%H%M')
+					now = datetime.now()
+					date_time = now.replace(hour=recv_time.hour, minute=recv_time.minute)
+					if recv_time.time() > now.time():
+						date_time = date_time - timedelta(1)
+
+					for key in recv_info.keys():
+
+						values = sett_dict.get(key, None)
+
+						if values:
+							query = """INSERT INTO jam_current_table (machine, jo_no, emp, datetime, {header}) VALUES 
+										({machine}, {jo_no}, {emp}, {date_time}, {value} ON DUPLICATE KEY UPDATE 
+										{header} = {header} + {value}""".format(header=values[1],
+																				machine=values[0],
+																				jo_no=job, emp=emp,
+																				date_time=date_time,
+																				value=recv_info[key])
+							cursor.execute(query)
 				db.commit()
+		except pymysql.MySQLError:
+			db.rollback()
 		finally:
 			db.close()
 
-	def create_emp(self):
-		db = pymysql.connect("localhost", "user", "pass", "test")
+	def create_emp_table(self):
+		db = pymysql.connect(self.host, self.user, self.password, self.db)
+
 		try:
 			with db.cursor() as cursor:
 				# Drop table if it already exist
-				cursor.execute("DROP TABLE IF EXISTS emp;")
+				cursor.execute("DROP TABLE IF EXISTS emp_table;")
 
 				# create EMP table
-				sql = '''CREATE TABLE IF NOT EXISTS emp (
-						emp_no VARCHAR(10) NOT NULL PRIMARY KEY,
+				sql = '''CREATE TABLE IF NOT EXISTS emp_table (
+						emp_no VARCHAR(10) PRIMARY KEY,
 						name VARCHAR(40),
-						modified DATETIME)'''
+						last_modified TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)'''
 
 				cursor.execute(sql)
 				db.commit()
@@ -138,92 +149,97 @@ class DatabaseServer:
 			db.close()
 
 	def insert_emp(self, emp_id, emp_name):
-		db = pymysql.connect("localhost", "user", "pass", "test")
+		db = pymysql.connect(self.host, self.user, self.password, self.db)
 		try:
 			with db.cursor() as cursor:
-				sql = '''INSERT INTO emp (emp_no, name, modified)
-						VALUES (%s, %s, %s);'''
-				cursor.execute(sql, (emp_id, semp_name, time.strftime('%Y-%m-%d %H:%M:%S'),))
+				sql = '''INSERT INTO emp_table (emp_no, name) VALUES (%s, %s);'''
+				cursor.execute(sql, (emp_id, emp_name))
 				db.commit()
-				self.insert_temp(emp_no, name)
-		except MySQLError as error:
+				self.insert_t_emp(emp_id, emp_name)
+
+		except pymysql.MySQLError as error:
 			print("Failed to insert record to database: {}".format(error))
 			db.rollback()
 		finally:
 			db.close()
 
 	def delete_emp(self, emp_id):
-		db = pymysql.connect("localhost", "user", "pass", "test")
+		db = pymysql.connect(self.host, self.user, self.password, self.db)
 		try:
 			with db.cursor() as cursor:
-				sql = '''DELETE FROM emp WHERE emp_no = %s'''
+				sql = '''DELETE FROM emp_table WHERE emp_no = %s'''
 				cursor.execute(sql, (emp_id,))
 				db.commit()
-				self.insert_temp(emp_no)
-		except MySQLError as error:
+				self.insert_t_emp(emp_id)
+
+		except pymysql.MySQLError as error:
 			print("Failed to delete record from database: {}".format(error))
 			db.rollback()
 		finally:
 			db.close()
 
-	def update_emp(self, emp_name):
-		db = pymysql.connect("localhost", "user", "pass", "test")
+	def update_emp(self, emp_id, emp_name):
+		db = pymysql.connect(self.host, self.user, self.password, self.db)
 		try:
 			with db.cursor() as cursor:
-				sql = '''UPDATE emp SET name = %s, modified = %s WHERE emp_no = %s'''
-				cursor.execute(sql, (emp_name, time.strftime('%Y-%m-%d %H:%M:%S'),))
+				sql = '''UPDATE emp_table SET name = %s WHERE emp_no = %s'''
+				cursor.execute(sql, (emp_name, emp_id))
 				db.commit()
-				self.insert_temp(emp_id, emp_name)
-		except MySQLError as error:
+				self.insert_t_emp(emp_id, emp_name)
+
+		except pymysql.MySQLError as error:
 			print("Failed to update record to database: {}".format(error))
 			db.rollback()
 		finally:
 			db.close()
 
-	def t_emp(self):
-		db = pymysql.connect("localhost", "user", "pass", "test")
+	def create_t_emp_table(self):
+		db = pymysql.connect(self.host, self.user, self.password, self.db)
 		try:
 			with db.cursor() as cursor:
 				# create temp EMP table
-				sql = '''CREATE TABLE IF NOT EXISTS t_emp (
-						emp_no VARCHAR(10) NOT NULL PRIMARY KEY,
-						name VARCHAR(20),
-						modified DATETIME)'''
+				sql = '''CREATE TABLE IF NOT EXISTS t_emp_table (
+						emp_no VARCHAR(10) PRIMARY KEY,
+						name VARCHAR(40),
+						last_modified TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)'''
 				cursor.execute(sql)
 				db.commit()
-		except MySQLError as error:
+
+		except pymysql.MySQLError as error:
 			print("Failed to create table in database: {}".format(error))
 			db.rollback()
 		finally:
 			db.close()
 
-	def insert_temp(self, emp_id, emp_name = None):
-		self.t_emp()
-		db = pymysql.connect("localhost", "user", "pass", "test")
+	def insert_t_emp(self, emp_id, emp_name=None):
+		self.create_t_emp_table()
+		db = pymysql.connect(self.host, self.user, self.password, self.db)
+
 		try:
 			with db.cursor() as cursor:
-				sql = '''INSERT INTO t_emp (emp_no, name, modified)
-						VALUES (%s, %s, %s)
-						ON DUPLICATE KEY UPDATE emp_no = %s, name = %s, modified = %s'''
-				cursor.execute(sql, (emp_id, name, time.strftime('%Y-%m-%d %H:%M:%S'), emp_no, name, time.strftime('%Y-%m-%d %H:%M:%S'),))
+				sql = '''INSERT INTO t_emp (emp_no, name,) VALUES (%s, %s)
+						ON DUPLICATE KEY UPDATE name = %s'''
+				cursor.execute(sql, (emp_id, emp_name, emp_name))
 				db.commit()
-		except MySQLError as error:
+
+		except pymysql.MySQLError as error:
 			print("Failed to insert/update record to database: {}".format(error))
 			db.rollback()
 		finally:
 			db.close()
 
-	def create_job(self):
-		db = pymysql.connect("localhost", "user", "pass", "test")
+	def create_job_table(self):
+		db = pymysql.connect(self.host, self.user, self.password, self.db)
+
 		try:
 			with db.cursor() as cursor:
 				# Drop table if it already exist
-				cursor.execute("DROP TABLE IF EXISTS job_info;")
+				cursor.execute("DROP TABLE IF EXISTS job_info_table;")
 
-				# create EMP table
-				sql = '''CREATE TABLE IF NOT EXISTS job_info (
-						jo_no VARCHAR(13) NOT NULL PRIMARY KEY,
-						mac VARCHAR(20),
+				# TODO check varchar length for each column
+				sql = '''CREATE TABLE IF NOT EXISTS job_info_table (
+						jo_no VARCHAR(13) PRIMARY KEY,
+						mac VARCHAR(5),
 						to_do INT,
 						code VARCHAR(14),
 						descp VARCHAR(50),
@@ -231,69 +247,55 @@ class DatabaseServer:
 						edd VARCHAR(12),
 						so_qty INT,
 						so_rem VARCHAR(10),
-						ran INT,
-						-- complete TINYINT(1))''' 
-					# not needed when delete_job() is immediately called in update_job()
+						ran INT'''
 				cursor.execute(sql)
 				db.commit()
 		finally:
 			db.close()
 
-	def insert_job(self):
-		db = pymysql.connect("localhost", "user", "pass", "test")
+	def insert_job(self, job_list):
+		"""
+		Call to insert job from eb to database
+		:param job_list: list containing tuples. A tuple will contain the job information e.g. ('job#', 'mac', ...,
+		'so_rem')
+		:return:
+		"""
+		db = pymysql.connect(self.host, self.user, self.password, self.db)
 		column_names = ['jo_no', 'mac', 'to_do', 'code', 'descp', 'so_no', 'edd', 'so_qty', 'so_rem']
 		column_names_str = ', '.join(column_names)
-		binds_str = ', '.join('%s' for _ in range(len(column_names)))
+		binds_str = ', '.join(['%s'] * len(column_names))
 		try:
 			with db.cursor() as cursor:
-				# rcv_json is the dictionary/csv received from eb containing the job info
-				for data_dict in rcv_json:
-					sql = ('''INSERT INTO job_info ({column_names})
-							VALUES ({binds})'''
-							.format(column_names=column_names_str, binds=binds_str))
-					values = ([data_dict[column_name] for column_name in column_names],)
-					cursor.execute(sql, values)
+				for job_info in job_list:
+					query = '''INSERT INTO job_info ({col_names}) VALUES ({binds});'''.format(col_names=column_names_str
+																							  , binds=binds_str)
+					cursor.execute(query, job_info)
 					db.commit()
-		except MySQLError as error:
+
+		except pymysql.MySQLError as error:
 			print("Failed to insert record to database: {}".format(error))
 			db.rollback()
 		finally:
 			db.close()
 
 	def update_job(self, ran_no, jo_id):
-		db = pymysql.connect("localhost", "user", "pass", "test")
+		db = pymysql.connect(self.host, self.user, self.password, self.db)
 		try:
 			with db.cursor() as cursor:
 				sql = '''UPDATE job_info SET ran = %s WHERE jo_no = %s'''
-				cursor.execute(sql, (ran_no, jo_id,)) # ?=what ran and jo_no was received from RPi
+				cursor.execute(sql, (ran_no, jo_id,))
+				self.check_complete(cursor, jo_id)  # Check if job has been completed
 				db.commit()
-				self.delete_job()
-		except MySQLError as error:
+		except pymysql.MySQLError as error:
 			print("Failed to update record to database: {}".format(error))
 		finally:
 			db.close()
 
-	def complete_job(self, jo_id): # extra
-		db = pymysql.connect("localhost", "user", "pass", "test")
-		try: 
-			with db.cursor() as cursor:
-				sql = '''UPDATE job_info SET complete = IF(ran >= to_do, complete = 1, complete) WHERE jo_no = %s'''
-				cursor.execeute(sql, (jo_id,)) # ?=what jo_no was received from RPi
-				db.commit()
-		except MySQLError as error:
-			print("Failed to update record to database: {}".format(error))
-		finally:
-			db.close()
+	@staticmethod
+	def check_complete(cursor, jo_id):
+		query = '''DELETE FROM job_info WHERE jo_no = %s AND ran >= to_do'''
+		cursor.execute(query, jo_id)
 
-	def delete_job(self, jo_id):
-		db = pymysql.connect("localhost", "user", "pass", "test")
-		try: # no finally: db.close() because illegal and redundant in update_job()
-			with db.cursor() as cursor:
-				sql = '''DELETE FROM job_info WHERE jo_no = %s AND ran >= to_do'''
-				cursor.execute(sql, (jo_id,))
-				db.commit()
-		except MySQLError as error:
-			print("Failed to delete record to database: {}".format(error))
 
 if __name__ == '__main__':
 	DatabaseServer()
