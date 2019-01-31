@@ -361,10 +361,10 @@ class DatabaseManager:
         for item, info in ink_key.items():
             impression = info.pop('impression')
             cursor.execute("REPLACE INTO ink_impression VALUES (?, ?)", (item, impression))
-            for plate, zones in info.items():
-                keys = ",".join("'{}'".format(k) for k in zones.keys())
-                qm = ",".join(list('?'*len(zones.values())))
-                values = (item, plate) + tuple(zones.values())
+            for plate, i_keys in info.items():
+                keys = ",".join("'{}'".format(k) for k in range(1, len(i_keys)+1))
+                qm = ",".join(list('?'*len(i_keys.values())))
+                values = (item, plate) + i_keys
                 cursor.execute("REPLACE INTO ink_key (item,plate," + keys + ") VALUES (?,?," + qm + ");", values)
 
         db.commit()
@@ -417,9 +417,12 @@ class DatabaseManager:
         cursor.execute("SELECT * FROM ink_key WHERE item = ?", (item, ))
 
         for row in cursor:
-            plate = row.pop('plate')
-            row.pop('item')
-            new = {k: v for k, v in row.items() if v is not None}
+            # plate = row.pop('plate')
+            # row.pop('item')
+            # new = {k: v for k, v in row.items() if v is not None}
+            plate = row[1]
+            new = tuple(v for v in list(row) if type(v) == int)
+
             d[plate] = new
 
         db.close()

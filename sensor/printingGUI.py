@@ -66,8 +66,7 @@ class JobClass(Widget):
     def get_ink_key(self):
         ink_key_copy = self.ink_key.copy()
         ink_key_copy.pop('update', False)
-        item_ink_key = {self.get_item_code(): ink_key_copy}
-        return item_ink_key
+        return ink_key_copy
 
     def ink_key_updated(self):
         return self.ink_key.get('update', False)
@@ -175,7 +174,9 @@ class AdjustmentPage(Screen):
                                                              plate_text.text)
 
         if current_job.ink_key_updated():
-            App.get_running_app().controller.replace_ink_key_tables(current_job.get_ink_key())
+            item = current_job.get_item_code()
+            ink_key = current_job.get_ink_key()
+            App.get_running_app().controller.replace_ink_key_tables({item: ink_key})
 
         self.parent.transition.direction = 'left'
         self.parent.current = 'run_page'
@@ -439,12 +440,11 @@ class InkKeyTab(ScrollView):
     def __init__(self, **kwargs):
         ScrollView.__init__(self, **kwargs)
         self.clear_widgets()
-        ink_key_dict = App.get_running_app().current_job.ink_key
-        self.add_widget(Factory.InkKeyBoxLayout(ink_key_dict))
+        self.add_widget(Factory.InkKeyBoxLayout())
 
 
 class InkKeyBoxLayout(BoxLayout):
-    def __init__(self, _ink_key_dict, **kwargs):
+    def __init__(self, **kwargs):
         BoxLayout.__init__(self, **kwargs)
         self.ink_key_dict = App.get_running_app().current_job.ink_key.copy()
         if not self.ink_key_dict:
@@ -849,7 +849,21 @@ class PrintingGUIApp(App):
         sfu_data = self.current_job.get_sfu()
         req_msg = {'sfu': sfu_data}
         if self.current_job.ink_key_updated():
-            req_msg['ink_key'] = self.current_job.get_ink_key()
+            # Change the format from dictionary to list (with only values)
+            ink_d = {}
+            ink_key = self.current_job.get_ink_key()
+            item = self.current_job.get_item_code()
+            ink_d['impression'] = ink_key.pop('impression')
+            for plate, ink_dict in ink_key.items():
+                values = []
+                zones = sorted(ink_dict.keys(), key=alphanum_key)
+                for zone in zones:
+                    values.append(ink_dict[zone])
+
+                ink_d[plate] = values
+
+            # Add the ink_d to req_msg with
+            req_msg['ink_key'] = {item: ink_d}
 
         self.controller.request(req_msg)
 
