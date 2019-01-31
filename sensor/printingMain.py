@@ -386,7 +386,8 @@ class DatabaseManager:
         db = sqlite3.connect(self.database)
         db.row_factory = self.dict_factory
         cursor = db.cursor()
-        cursor.execute("SELECT * FROM job_info WHERE jo_no = ? AND jo_line = ?;", (jo_no, jo_line))
+        cursor.execute("SELECT * FROM job_info WHERE jo_no = ? AND jo_line = ? LIMIT 1;", (jo_no, jo_line))
+        cursor.execute("DELETE FROM job_info WHERE jo_no = ? AND jo_line = ? LIMIT 1;", (jo_no, jo_line))
 
         job_info = cursor.fetchone()
 
