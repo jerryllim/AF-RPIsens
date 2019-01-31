@@ -497,21 +497,29 @@ class InkZoneLayout(BoxLayout):
     def load_widgets(self):
         self.buttons.clear()
         self.ids['ink_zones'].clear_widgets()
-        ink_dict = App.get_running_app().current_job.ink_key.get(self.plate)
+        zone_list = App.get_running_app().current_job.ink_key.get(self.plate)
 
-        zones = sorted(ink_dict.keys(), key=alphanum_key)
-        for zone in zones:
-            button = Button(text="{}\n[b][size=20sp]{}[/size][/b]".format(zone, ink_dict.get(zone, '')),
+        for index in range(len(zone_list)):
+            button = Button(text="{0}\n[b][size=20sp]{1}[/size][/b]".format(index+1, zone_list[index]),
                             size_hint=(1, None), halign='center', markup=True)
             button.bind(on_press=self.edit_ink_key)
             self.buttons.append(button)
             self.ids['ink_zones'].add_widget(button)
 
+        # zones = sorted(ink_dict.keys(), key=alphanum_key)
+        # for zone in zones:
+        #     button = Button(text="{}\n[b][size=20sp]{}[/size][/b]".format(zone, ink_dict.get(zone, '')),
+        #                     size_hint=(1, None), halign='center', markup=True)
+        #     button.bind(on_press=self.edit_ink_key)
+        #     self.buttons.append(button)
+        #     self.ids['ink_zones'].add_widget(button)
+
     def edit_ink_key(self, instance):
         def dismiss_popup(_button):
             if value_textinput.text:
                 App.get_running_app().current_job.ink_key['update'] = True
-                App.get_running_app().current_job.ink_key[self.plate][key] = int(value_textinput.text)
+                index = int(key) - 1
+                App.get_running_app().current_job.ink_key[self.plate][index] = int(value_textinput.text)
 
             edit_popup.dismiss()
             self.load_widgets()
@@ -769,8 +777,8 @@ class PrintingGUIApp(App):
         # self.check_camera()  # TODO uncomment
 
         self.config.set('Network', 'self_add', self.get_ip_add())
-        self.controller = printingMain.RaspberryPiController(self)
-        # self.controller = FakeClass()  # TODO set if testing
+        # self.controller = printingMain.RaspberryPiController(self)
+        self.controller = FakeClass()  # TODO set if testing
 
         self.use_kivy_settings = False
         num_operators = self.config.get('General', 'num_operators')
@@ -850,20 +858,11 @@ class PrintingGUIApp(App):
         req_msg = {'sfu': sfu_data}
         if self.current_job.ink_key_updated():
             # Change the format from dictionary to list (with only values)
-            ink_d = {}
             ink_key = self.current_job.get_ink_key()
             item = self.current_job.get_item_code()
-            ink_d['impression'] = ink_key.pop('impression')
-            for plate, ink_dict in ink_key.items():
-                values = []
-                zones = sorted(ink_dict.keys(), key=alphanum_key)
-                for zone in zones:
-                    values.append(ink_dict[zone])
-
-                ink_d[plate] = values
 
             # Add the ink_d to req_msg with
-            req_msg['ink_key'] = {item: ink_d}
+            req_msg['ink_key'] = {item: ink_key}
 
         self.controller.request(req_msg)
 
@@ -912,6 +911,9 @@ class FakeClass:
 
     def replace_ink_key_tables(self, ink_key):
         self.database_manager.replace_ink_key_tables(ink_key)
+
+    def request(self, req_msg):
+        print(req_msg)
 
 
 if __name__ == '__main__':
