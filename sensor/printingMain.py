@@ -217,7 +217,7 @@ class RaspberryPiController:
         recv_msg = None
         # Try 3 times, each waiting for 2 seconds for reply from server
         for i in range(3):
-            self.dealer.send("", zmq.SNDMORE)
+            self.dealer.send_string("", zmq.SNDMORE)
             self.dealer.send_json(msg_dict)
 
             if self.dealer.poll(timeout):
