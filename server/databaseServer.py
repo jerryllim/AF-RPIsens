@@ -296,6 +296,70 @@ class DatabaseServer:
 		query = '''DELETE FROM job_info WHERE jo_no = %s AND ran >= to_do'''
 		cursor.execute(query, jo_id)
 
+	def create_qc_table(self):
+		db = pymysql.connect(self.host, self.user, self.password, self.db)
+
+		try:
+			with db.cursor() as cursor:
+				# TODO check varchar length for emp, machine & jo_no columns
+				query = '''CREATE TABLE IF NOT EXISTS qc_table (
+						emp_id VARCHAR(10) NOT NULL,
+						date_time DATETIME NOT NULL,
+						machine VARCHAR(10) NOT NULL,
+						jo_no VARCHAR(10) NOT NULL,
+						quality TINYINT UNSIGNED NOT NULL);'''
+				cursor.execute(query)
+				db.commit()
+		finally:
+			db.close()
+
+	def insert_qc(self, values):
+		db = pymysql.connect(self.host, self.user, self.password, self.db)
+
+		try:
+			with db.cursor() as cursor:
+				for value in values:
+					query = '''INSERT INTO qc_table (emp_id, date_time, machine, jo_no, quality) 
+							VALUES (%s, %s, %s, %s, %s)'''
+					cursor.execute(query, value)
+
+				db.commit()
+		finally:
+			db.close()
+
+	def create_maintenance_table(self):
+		db = pymysql.connect(self.host, self.user, self.password, self.db)
+
+		try:
+			with db.cursor() as cursor:
+				# Drop table if it already exist
+				cursor.execute("DROP TABLE IF EXISTS maintenance_table;")
+
+				# TODO check varchar length for emp & machine.
+				query = '''CREATE TABLE IF NOT EXISTS maintenance_table (
+						emp_id VARCHAR(10) NOT NULL,
+						start_time DATETIME NOT NULL,
+						end_time DATETIME NOT NULL,
+						machine VARCHAR(10) NOT NULL;'''
+				cursor.execute(query)
+				db.commit()
+		finally:
+			db.close()
+
+	def insert_maintenance(self, values):
+		db = pymysql.connect(self.host, self.user, self.password, self.db)
+
+		try:
+			with db.cursor() as cursor:
+				for value in values:
+					query = '''INSERT INTO maintenance_table (emp_id, start_time, end_time, machine) 
+							VALUES (%s, %s, %s, %s)'''
+					cursor.execute(query, value)
+
+				db.commit()
+		finally:
+			db.close()
+
 
 if __name__ == '__main__':
 	DatabaseServer()
