@@ -20,7 +20,7 @@ class RaspberryPiController:
     _output = 0
     publisher = None
     respondent = None
-    requester = None
+    dealer = None
     subscriber = None
     STEADY_ID = 'steady_pin_check'
     # states = {}
@@ -51,7 +51,7 @@ class RaspberryPiController:
         self.context = zmq.Context()
         # self.publisher_routine()
         self.respondent_routine()
-        self.requester_routine()
+        self.dealer_routine()
         # self.subscriber_routine()
         self.set_check_steady_job()
         self.scheduler.start()
@@ -205,11 +205,11 @@ class RaspberryPiController:
     #
     #     self.publisher.send_string(msg_json)
         
-    def requester_routine(self):
+    def dealer_routine(self):
         port_number = "{}:8888".format(self.self_add)
         # print("Connecting to machine...")
-        self.requester = self.context.socket(zmq.REQ)
-        self.requester.connect("tcp://%s" % port_number)
+        self.dealer = self.context.socket(zmq.DEALER)
+        self.dealer.connect("tcp://%s" % port_number)
         # print("Successfully connected to machine %s" % port_number)
 
     def request(self, msg_dict):
@@ -217,10 +217,12 @@ class RaspberryPiController:
         recv_msg = None
         # Try 3 times, each waiting for 2 seconds for reply from server
         for i in range(3):
-            self.requester.send_json(msg_dict)
+            self.dealer.send_string("", zmq.SNDMORE)
+            self.dealer.send_json(msg_dict)
 
-            if self.requester.poll(timeout):
-                recv_msg = self.requester.recv_json()
+            if self.dealer.poll(timeout):
+                self.dealer.recv()
+                recv_msg = self.dealer.recv_json()
                 break
 
         return recv_msg
