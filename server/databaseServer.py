@@ -291,6 +291,22 @@ class DatabaseServer:
 		finally:
 			db.close()
 
+	def delete_job(self, jo_ids):
+		"""
+		Delete multiple jobs
+		:param jo_ids: List of jo_id
+		:return:
+		"""
+		db = pymysql.connect(self.host, self.user, self.password, self.db)
+		try:
+			with db.cursor() as cursor:
+				query = '''DELETE FROM job_info WHERE jo_no = %s'''
+				cursor.executemany(query, jo_ids)
+		except pymysql.MySQLError as error:
+			print("Failed to update record to database: {}".format(error))
+		finally:
+			db.close()
+
 	@staticmethod
 	def check_complete(cursor, jo_id):
 		query = '''DELETE FROM job_info WHERE jo_no = %s AND ran >= to_do'''
