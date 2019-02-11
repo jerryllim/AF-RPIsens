@@ -3,17 +3,22 @@ import json
 import time
 import pymysql
 import threading
-import databaseServer
+from server import databaseServer
 import apscheduler.schedulers.background
 
+
 class NetworkManager:
+	dealer = None
+	router = None
+
 	def __init__(self):
 		self.context = zmq.Context()
 		self.dealer_routine()
 		self.router_routine()
+		self.database_manager = databaseServer.DatabaseManager()
 
 	def dealer_routine(self):
-		#port_number = "{}:8888".format(self.self_add)
+		# port_number = "{}:8888".format(self.self_add)
 		port_number = "152.228.1.124:8888"
 		self.dealer = self.context.socket(zmq.DEALER)
 		self.dealer.setsockopt(zmq.LINGER, 0)
@@ -36,7 +41,7 @@ class NetworkManager:
 		if self.dealer in socks:
 			try:
 				recv_msg = str(self.dealer.recv())
-				#print("recv_msg: %s" % recv_msg)
+				# print("recv_msg: %s" % recv_msg)
 				deal_msg = json.loads(recv_msg)
 				return deal_msg
 			except IOError as error:
@@ -44,22 +49,21 @@ class NetworkManager:
 		else:
 			print("Machine did not respond")			
 
-
 	def router_routine(self):
-		#port_number = "{}:9999".format(self.self_add)
+		# port_number = "{}:9999".format(self.self_add)
 		port_number = "152.228.1.124:9999"
 		self.router = self.context.socket(zmq.ROUTER)
 		self.router.bind("tcp://%s" % port_number)
-		#print("Successfully binded to port %s for respondent" % self.port_number)
+		# print("Successfully binded to port %s for respondent" % self.port_number)
 
 	def route(self):
 		while True:
-			ident = self.router.recv() # routing information
-			delimiter = self.router.recv() # delimiter
+			ident = self.router.recv()  # routing information
+			delimiter = self.router.recv()  # delimiter
 			message = self.router.recv_json()
 			reply_dict = {}
 
-			for keys in message.keys():
+			for key in message.keys():
 				if key == "job_info":
 					barcode = message.get("job_info", None)
 					reply_dict = databaseServer.get_job(barcode)

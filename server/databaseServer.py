@@ -2,7 +2,7 @@ import pymysql
 from datetime import datetime, timedelta
 
 
-class DatabaseServer:
+class DatabaseManager:
 	def __init__(self, host='localhost', user='user', password='pass', db='test'):
 		self.host = host
 		self.user = user
