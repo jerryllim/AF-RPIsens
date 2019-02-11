@@ -291,7 +291,7 @@ class DatabaseManager:
         self.database = 'test.sqlite'  # TODO set database name
         db = sqlite3.connect(self.database)
         cursor = db.cursor()
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='employees';")
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='employees_table';")
         if not cursor.fetchone():
             self.recreate_employees_table()
 
@@ -299,8 +299,8 @@ class DatabaseManager:
         db = sqlite3.connect(self.database)
         cursor = db.cursor()
         try:
-            cursor.execute("DROP TABLE IF EXISTS employees;")
-            cursor.execute("CREATE TABLE IF NOT EXISTS employees (emp_id TEXT PRIMARY KEY, name TEXT);")
+            cursor.execute("DROP TABLE IF EXISTS employees_table;")
+            cursor.execute("CREATE TABLE IF NOT EXISTS employees_table (emp_id TEXT PRIMARY KEY, name TEXT);")
             db.commit()
         finally:
             cursor.close()
@@ -309,10 +309,15 @@ class DatabaseManager:
         db = sqlite3.connect(self.database)
         cursor = db.cursor()
         try:
-            cursor.execute("DROP TABLE IF EXISTS job_info;")
-            cursor.execute("CREATE TABLE IF NOT EXISTS job_info (jo_no INTEGER NOT NULL, jo_line INTEGER NOT NULL, code"
-                           " TEXT NOT NULL, desc TEXT NOT NULL, to_do INTEGER NOT NULL, ran INTEGER NOT NULL, PRIMARY "
-                           "KEY(jo_no, jo_line));")
+            cursor.execute("DROP TABLE IF EXISTS job_info_table;")
+            cursor.execute("CREATE TABLE IF NOT EXISTS job_info_table "
+                           "(jo_no INTEGER NOT NULL, "
+                           "jo_line INTEGER NOT NULL, "
+                           "code TEXT NOT NULL, "
+                           "desc TEXT NOT NULL, "
+                           "to_do INTEGER NOT NULL, "
+                           "ran INTEGER NOT NULL, "
+                           "PRIMARY KEY(jo_no, jo_line));")
             db.commit()
         finally:
             db.close()
@@ -321,16 +326,46 @@ class DatabaseManager:
         db = sqlite3.connect(self.database)
         cursor = db.cursor()
         try:
-            cursor.execute("DROP TABLE IF EXISTS ink_key;")
-            cursor.execute("DROP TABLE IF EXISTS ink_impression;")
-            cursor.execute("CREATE TABLE IF NOT EXISTS ink_key (item TEXT NOT NULL, plate TEXT NOT NULL, '1' INTEGER, "
-                           "'2' INTEGER, '3' INTEGER, '4' INTEGER, '5' INTEGER, '6' INTEGER, '7' INTEGER, '8' INTEGER, "
-                           "'9' INTEGER, '10' INTEGER, '11' INTEGER, '12' INTEGER, '13' INTEGER, '14' INTEGER, '15' "
-                           "INTEGER, '16' INTEGER, '17' INTEGER, '18' INTEGER, '19' INTEGER, '20' INTEGER, '21' INTEGER"
-                           ", '22' INTEGER, '23' INTEGER, '24' INTEGER, '25' INTEGER, '26' INTEGER, '27' INTEGER, '28' "
-                           "INTEGER, '29' INTEGER, '30' INTEGER, '31' INTEGER, '32' INTEGER, PRIMARY KEY(item, plate));")
-            cursor.execute("CREATE TABLE IF NOT EXISTS ink_impression (item TEXT PRIMARY KEY, impression INTEGER NOT "
-                           "NULL);")
+            cursor.execute("DROP TABLE IF EXISTS ink_key_table;")
+            cursor.execute("DROP TABLE IF EXISTS ink_impression_table;")
+            cursor.execute("CREATE TABLE IF NOT EXISTS ink_key_table "
+                           "(item TEXT NOT NULL, "
+                           "plate TEXT NOT NULL, "
+                           "'1' INTEGER, "
+                           "'2' INTEGER, "
+                           "'3' INTEGER, "
+                           "'4' INTEGER, "
+                           "'5' INTEGER, "
+                           "'6' INTEGER, "
+                           "'7' INTEGER, "
+                           "'8' INTEGER, "
+                           "'9' INTEGER, "
+                           "'10' INTEGER, "
+                           "'11' INTEGER, "
+                           "'12' INTEGER, "
+                           "'13' INTEGER, "
+                           "'14' INTEGER, "
+                           "'15' INTEGER, "
+                           "'16' INTEGER, "
+                           "'17' INTEGER, "
+                           "'18' INTEGER, "
+                           "'19' INTEGER, "
+                           "'20' INTEGER, "
+                           "'21' INTEGER, "
+                           "'22' INTEGER, "
+                           "'23' INTEGER, "
+                           "'24' INTEGER, "
+                           "'25' INTEGER, "
+                           "'26' INTEGER, "
+                           "'27' INTEGER, "
+                           "'28' INTEGER, "
+                           "'29' INTEGER, "
+                           "'30' INTEGER, "
+                           "'31' INTEGER, "
+                           "'32' INTEGER, "
+                           "PRIMARY KEY(item, plate));")
+            cursor.execute("CREATE TABLE IF NOT EXISTS ink_impression_table (item TEXT PRIMARY KEY, impression INTEGER "
+                           "NOT NULL);")
             db.commit()
         finally:
             db.close()
@@ -338,14 +373,14 @@ class DatabaseManager:
     def replace_into_employees_table(self, emp_list):
         db = sqlite3.connect(self.database)
         cursor = db.cursor()
-        cursor.executemany("REPLACE INTO employees VALUES (?, ?);", emp_list)
+        cursor.executemany("REPLACE INTO employees_table VALUES (?, ?);", emp_list)
         db.commit()
         db.close()
 
     def insert_into_job_table(self, job_info):
         db = sqlite3.connect(self.database)
         cursor = db.cursor()
-        cursor.executemany("INSERT INTO job_info VALUES (?, ?, ?, ?, ?, ?);", job_info)
+        cursor.executemany("INSERT INTO job_info_table VALUES (?, ?, ?, ?, ?, ?);", job_info)
         db.commit()
         db.close()
 
@@ -353,7 +388,7 @@ class DatabaseManager:
         self.replace_into_employees_table(emp_list)
         db = sqlite3.connect(self.database)
         cursor = db.cursor()
-        cursor.execute("DELETE FROM employees WHERE name IS NULL;")
+        cursor.execute("DELETE FROM employees_table WHERE name IS NULL;")
         db.commit()
         db.close()
 
@@ -362,12 +397,12 @@ class DatabaseManager:
         cursor = db.cursor()
         for item, info in ink_key.items():
             impression = info.pop('impression')
-            cursor.execute("REPLACE INTO ink_impression VALUES (?, ?)", (item, impression))
+            cursor.execute("REPLACE INTO ink_impression_table VALUES (?, ?)", (item, impression))
             for plate, i_keys in info.items():
                 keys = ",".join("'{}'".format(k) for k in range(1, len(i_keys)+1))
                 qm = ",".join(list('?'*len(i_keys)))
                 values = [item, plate] + i_keys
-                cursor.execute("REPLACE INTO ink_key (item,plate," + keys + ") VALUES (?,?," + qm + ");", values)
+                cursor.execute("REPLACE INTO ink_key_table (item,plate," + keys + ") VALUES (?,?," + qm + ");", values)
 
         db.commit()
         db.close()
@@ -375,7 +410,7 @@ class DatabaseManager:
     def get_employee_name(self, emp_id):
         db = sqlite3.connect(self.database)
         cursor = db.cursor()
-        cursor.execute("SELECT name FROM employees WHERE emp_id = ?;", (emp_id, ))
+        cursor.execute("SELECT name FROM employees_table WHERE emp_id = ?;", (emp_id, ))
         result = cursor.fetchone()
         if result:
             return result[0]
@@ -388,8 +423,8 @@ class DatabaseManager:
         db = sqlite3.connect(self.database)
         db.row_factory = self.dict_factory
         cursor = db.cursor()
-        cursor.execute("SELECT * FROM job_info WHERE jo_no = ? AND jo_line = ? LIMIT 1;", (jo_no, jo_line))
-        cursor.execute("DELETE FROM job_info WHERE jo_no = ? AND jo_line = ? LIMIT 1;", (jo_no, jo_line))
+        cursor.execute("SELECT * FROM job_info_table WHERE jo_no = ? AND jo_line = ? LIMIT 1;", (jo_no, jo_line))
+        cursor.execute("DELETE FROM job_info_table WHERE jo_no = ? AND jo_line = ? LIMIT 1;", (jo_no, jo_line))
 
         job_info = cursor.fetchone()
 
@@ -412,12 +447,12 @@ class DatabaseManager:
 
         d = {}
 
-        cursor.execute("SELECT impression FROM ink_impression WHERE item = ?;", (item, ))
+        cursor.execute("SELECT impression FROM ink_impression_table WHERE item = ?;", (item, ))
         impression_d = cursor.fetchone()
         if impression_d:
             d['impression'] = impression_d[0]
 
-        cursor.execute("SELECT * FROM ink_key WHERE item = ?", (item, ))
+        cursor.execute("SELECT * FROM ink_key_table WHERE item = ?", (item, ))
 
         for row in cursor:
             # plate = row.pop('plate')
