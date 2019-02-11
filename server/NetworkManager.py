@@ -75,6 +75,19 @@ class NetworkManager:
 
 	def request_jam(self):
 		msg_dict = {}
+		deal_msg = self.request(msg_dict)
+		databaseServer.insert_jam(deal_msg)
+
+	def send_job_info(self):
+		msg_dict = databaseServer.get_all_job()
+		self.request(msg_dict)
+
+	def send_ink_key(self):
+		msg_dict = database.get_ink_key()
+		self.request(msg_dict)
+
+	def send_emp(self):
+		msg_dict = databaseServer.get_emp()
 		self.request(msg_dict)
 
 	def request_schedule(self):
