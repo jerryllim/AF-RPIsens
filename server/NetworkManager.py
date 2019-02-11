@@ -28,17 +28,17 @@ class NetworkManager:
 		print("request msg sent")
 
 		# use poll for timeouts:
-	    poller = zmq.Poller()
-	    poller.register(dealer, zmq.POLLIN)
+		poller = zmq.Poller()
+		poller.register(dealer, zmq.POLLIN)
 
-    	socks = dict(poller.poll(3 * 1000))
+		socks = dict(poller.poll(3 * 1000))
 
-    	if self.dealer in socks:
-    		try:
+		if self.dealer in socks:
+			try:
 				recv_msg = str(self.dealer.recv())
 				#print("recv_msg: %s" % recv_msg)
-				jam_msg = json.loads(recv_msg)
-				return jam_msg
+				deal_msg = json.loads(recv_msg)
+				return deal_msg
 			except IOError as error:
 				print("Problem with socket")
 		else:
