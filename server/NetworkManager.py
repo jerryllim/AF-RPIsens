@@ -29,7 +29,7 @@ class NetworkManager:
 
 		# use poll for timeouts:
 		poller = zmq.Poller()
-		poller.register(dealer, zmq.POLLIN)
+		poller.register(self.dealer, zmq.POLLIN)
 
 		socks = dict(poller.poll(3 * 1000))
 
