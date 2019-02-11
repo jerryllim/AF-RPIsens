@@ -313,8 +313,8 @@ class DatabaseServer:
 		try:
 			sql = '''SELECT * FROM job_info_table WHERE jo_no = %s LIMIT 1;'''
 			cursor.execute(sql, (barcode_msg,))
-			db.commit()
 			reply_dict = cursor.fetchone()
+			db.commit()
 			return reply_dict
 		except pymysql.MySQLError as error:
 			print("Failed to select record in database: {}".format(error))
