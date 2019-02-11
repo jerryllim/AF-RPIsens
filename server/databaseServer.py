@@ -320,6 +320,20 @@ class DatabaseServer:
 			print("Failed to select record in database: {}".format(error))
 		finally:
 			db.close()
+			
+	def get_all_job(self):
+		db = pymysql.connect("localhost", "user", "pass", "test")
+		cursor = db.cursor(pymysql.cursors.DictCursor)
+		try:
+			sql = '''SELECT * FROM job_info_table'''
+			cursor.execute(sql)
+			reply_dict = cursor.fetchall()
+			db.commit()
+			return reply_dict
+		except pymysql.MySQLError as error:
+			print("Failed to select record in database: {}".format(error))
+		finally:
+			db.close()
 
 	@staticmethod
 	def check_complete(cursor, jo_id):
