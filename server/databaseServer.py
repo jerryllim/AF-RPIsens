@@ -315,11 +315,11 @@ class DatabaseServer:
 			cursor.execute(sql, (barcode_msg,))
 			reply_dict = cursor.fetchone()
 			db.commit()
-			return reply_dict
 		except pymysql.MySQLError as error:
 			print("Failed to select record in database: {}".format(error))
 		finally:
 			db.close()
+			return reply_dict
 			
 	def get_all_job(self):
 		db = pymysql.connect("localhost", "user", "pass", "test")
@@ -329,11 +329,11 @@ class DatabaseServer:
 			cursor.execute(sql)
 			reply_dict = cursor.fetchall()
 			db.commit()
-			return reply_dict
 		except pymysql.MySQLError as error:
 			print("Failed to select record in database: {}".format(error))
 		finally:
 			db.close()
+			return reply_dict
 
 	@staticmethod
 	def check_complete(cursor, jo_id):
