@@ -376,6 +376,108 @@ class DatabaseServer:
 		finally:
 			db.close()
 
+	def create_ink_key_table(self):
+		db = pymysql.connect(self.host, self.user, self.password, self.db)
+
+		try:
+			with db.cursor() as cursor:
+				# Drop table if it already exist
+				cursor.execute("DROP TABLE IF EXISTS ink_key_table;")
+				cursor.execute("DROP TABLE IF EXISTS ink_impression_table;")
+
+				# TODO check varchar length for item 14? & plate 13?.
+				query = '''CREATE TABLE IF NOT EXISTS ink_key_table (
+						item VARCHAR(20) NOT NULL,
+						plate VARCHAR(20) NOT NULL,
+						`1` SMALLINT UNSIGNED,
+						`2` SMALLINT UNSIGNED,
+						`3` SMALLINT UNSIGNED,
+						`4` SMALLINT UNSIGNED,
+						`5` SMALLINT UNSIGNED,
+						`6` SMALLINT UNSIGNED,
+						`7` SMALLINT UNSIGNED,
+						`8` SMALLINT UNSIGNED,
+						`9` SMALLINT UNSIGNED,
+						`10` SMALLINT UNSIGNED,
+						`11` SMALLINT UNSIGNED,
+						`12` SMALLINT UNSIGNED,
+						`13` SMALLINT UNSIGNED,
+						`14` SMALLINT UNSIGNED,
+						`15` SMALLINT UNSIGNED,
+						`16` SMALLINT UNSIGNED,
+						`17` SMALLINT UNSIGNED,
+						`18` SMALLINT UNSIGNED,
+						`19` SMALLINT UNSIGNED,
+						`20` SMALLINT UNSIGNED,
+						`21` SMALLINT UNSIGNED,
+						`22` SMALLINT UNSIGNED,
+						`23` SMALLINT UNSIGNED,
+						`24` SMALLINT UNSIGNED,
+						`25` SMALLINT UNSIGNED,
+						`26` SMALLINT UNSIGNED,
+						`27` SMALLINT UNSIGNED,
+						`28` SMALLINT UNSIGNED,
+						`29` SMALLINT UNSIGNED,
+						`30` SMALLINT UNSIGNED,
+						`31` SMALLINT UNSIGNED,
+						`32` SMALLINT UNSIGNED,
+						PRIMARY KEY(item, plate));'''
+				cursor.execute(query)
+
+				query2 = '''CREATE TABLE IF NOT EXISTS ink_impression_table (
+						item VARCHAR(20) PRIMARY KEY,
+						impression SMALLINT UNSIGNED NOT NULL);'''
+				cursor.execute(query2)
+				db.commit()
+		finally:
+			db.close()
+
+	def replace_ink_key(self, ink_keys):
+		db = pymysql.connect(self.host, self.user, self.password, self.db)
+
+		try:
+			with db.cursor() as cursor:
+				for item, info in ink_keys.items():
+					impression = info.pop('impression')
+					query = '''REPLACE INTO ink_impression_table (item, impression) VALUES (%s, %s)'''
+					cursor.execute(query, (item, impression))
+
+					for plate, i_keys in info.items():
+						keys = ",".join("'{}'".format(k) for k in range(1, len(i_keys)+1))
+						p_s = ",".join(list('%s'*len(i_keys)))
+						values = [item, plate] + i_keys
+						query2 = 'REPLACE INTO ink_key_table (item,plate,' + keys + ') VALUES (%s,%s,' + p_s + ');'
+						cursor.execute(query2, values)
+
+			db.commit()
+		finally:
+			db.close()
+
+	def get_ink_key(self, item):
+		db = pymysql.connect(self.host, self.user, self.password, self.db)
+
+		try:
+			d = {}
+			with db.cursor() as cursor:
+				query = "SELECT impression FROM ink_impression_table WHERE item = %s LIMIT 1"
+				cursor.execute(query, (item,))
+				impression = cursor.fetchone()
+				if impression:
+					d['impression'] = impression
+
+				query2 = "SELECT * FROM ink_key_table WHERE item = %s"
+				cursor.execute(query2, (item,))
+				for row in cursor:
+					plate = row[1]
+					new = [v for v in list(row) if type(v) == int]
+
+					d[plate] = new
+
+			db.commit()
+		finally:
+			db.close()
+			return d
+
 
 if __name__ == '__main__':
 	DatabaseServer()
