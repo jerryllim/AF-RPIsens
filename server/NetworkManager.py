@@ -67,7 +67,7 @@ class NetworkManager:
 					pass
 				elif key == "ink_key":
 					ink_key = message.get("ink_key", None)
-					databaseServer.get_ink_key(ink_key)
+					databaseServer.replace_ink_key(ink_key)
 
 			self.router.send(ident, zmq.SNDMORE)
 			self.router.send(delimiter, zmq.SNDMORE)
