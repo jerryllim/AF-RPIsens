@@ -91,15 +91,19 @@ class DatabaseManager:
 		finally:
 			db.close()
 
-	def insert_jam(self):
+	def insert_jam(self, recv_dict=None):
+		# TODO remove recv_dict as a keyword argument
+		if not recv_dict:
+			recv_dict = {
+				'A0001_Z00012345001_1459': {'S01': 100, 'S02': 125, 'S10': 1},
+				'A0001_Z00012345001_1500': {'S01': 25, 'S02': 30, 'S10': 0}
+			}
+
 		db = pymysql.connect(self.host, self.user, self.password, self.db)
 
 		try:
 			with db.cursor() as cursor:
-				recv_dict = {
-					'A0001_Z00012345001_1459': {'S01': 100, 'S02': 125, 'S10': 1},
-					'A0001_Z00012345001_1500': {'S01': 25, 'S02': 30, 'S10': 0}
-				}
+				# TODO change sett_dict format
 				sett_dict = self.setting_json()
 				for recv_id, recv_info in recv_dict.items():
 
@@ -508,4 +512,4 @@ class DatabaseManager:
 
 
 if __name__ == '__main__':
-	DatabaseServer()
+	DatabaseManager()

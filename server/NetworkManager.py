@@ -4,7 +4,8 @@ import time
 import pymysql
 import threading
 from server import databaseServer
-import apscheduler.schedulers.background
+from apscheduler.triggers.cron import CronTrigger
+from apscheduler.schedulers.background import BackgroundScheduler
 
 
 class NetworkManager:
@@ -13,20 +14,21 @@ class NetworkManager:
 
 	def __init__(self):
 		self.context = zmq.Context()
+		self.database_manager = databaseServer.DatabaseManager()
 		self.dealer_routine()
 		self.router_routine()
-		self.database_manager = databaseServer.DatabaseManager()
 
 	def dealer_routine(self):
 		# port_number = "{}:8888".format(self.self_add)
-		port_number = "152.228.1.124:8888"
+		port_numbers = ["152.228.1.124:8888", ]
 		self.dealer = self.context.socket(zmq.DEALER)
 		self.dealer.setsockopt(zmq.LINGER, 0)
-		for port in port_number:
-			self.dealer.connect("tcp://%s" % port_number)
+		for port in port_numbers:
+			self.dealer.connect("tcp://%s" % port)
 			#print("Successfully connected to machine %s" % port_number)
 
 	def request(self, msg):
+		# TODO add a for loop to loop over all ports
 		msg_json = json.dumps(msg)
 		self.dealer.send_string("", zmq.SNDMORE)  # delimiter
 		self.dealer.send_string(msg_json)
@@ -40,7 +42,7 @@ class NetworkManager:
 
 		if self.dealer in socks:
 			try:
-				recv_msg = str(self.dealer.recv())
+				recv_msg = self.dealer.recv_string()
 				# print("recv_msg: %s" % recv_msg)
 				deal_msg = json.loads(recv_msg)
 				return deal_msg
@@ -66,12 +68,12 @@ class NetworkManager:
 			for key in message.keys():
 				if key == "job_info":
 					barcode = message.get("job_info", None)
-					reply_dict = databaseServer.get_job(barcode)
+					reply_dict = self.database_manager.get_job_info(barcode)
 				elif key == "sfu":
 					pass
 				elif key == "ink_key":
 					ink_key = message.get("ink_key", None)
-					databaseServer.replace_ink_key(ink_key)
+					self.database_manager.replace_ink_key(ink_key)
 
 			self.router.send(ident, zmq.SNDMORE)
 			self.router.send(delimiter, zmq.SNDMORE)
@@ -80,24 +82,32 @@ class NetworkManager:
 	def request_jam(self):
 		msg_dict = {}
 		deal_msg = self.request(msg_dict)
-		databaseServer.insert_jam(deal_msg)
+
+		self.database_manager.insert_jam(deal_msg)
 
 	def send_job_info(self):
-		msg_dict = databaseServer.get_all_job()
+		msg_dict = self.database_manager.get_all_job()
 		self.request(msg_dict)
 
 	def send_ink_key(self):
-		msg_dict = database.get_ink_key()
+		# TODO why no argument for get_ink_key?
+		msg_dict = self.database_manager.get_ink_key()
 		self.request(msg_dict)
 
 	def send_emp(self):
-		msg_dict = databaseServer.get_emp()
+		# TODO no get_emp function
+		msg_dict = self.database_manager.get_emp()
 		self.request(msg_dict)
 
-	def request_schedule(self):
-		scheduler = apscheduler.schedulers.background.BackgroundScheduler()
-		self.job = scheduler.add_job(self.request_jam, 'cron', minute='*/5', id='5mins')
+	def request_schedule(self, interval=5):
+		# TODO create self.scheduler instead? So that the schedule can be changeable, to remove all jobs at change?
+		scheduler = BackgroundScheduler()
+		cron_trigger = CronTrigger(minute='*/{}'.format(interval))
+		# TODO change id as a constant string instead of harcoded?
+		self.job = scheduler.add_job(self.request_jam, cron_trigger, id='5mins')
+		# TODO do a self.scheduler.start() outside of this function?
 		scheduler.start()
+
 
 if __name__ == '__main__':
 	NetworkManager()
