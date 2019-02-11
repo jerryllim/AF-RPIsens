@@ -173,7 +173,6 @@ class RaspberryPiController:
                 if key == "jam":
                     reply_dict["jam"] = self.get_counts()
                 elif key == "job_info":
-                    pass
                     job_str = recv_dict.pop(key)
                     job_data = self.parse_job_info(job_str)
                     self.database_manager.recreate_job_table()
