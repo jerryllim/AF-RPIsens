@@ -306,6 +306,7 @@ class DatabaseServer:
 			print("Failed to update record to database: {}".format(error))
 		finally:
 			db.close()
+			
 	def get_job_info(self, barcode_msg):
 		db = pymysql.connect("localhost", "user", "pass", "test")
 		cursor = db.cursor(pymysql.cursors.DictCursor)
