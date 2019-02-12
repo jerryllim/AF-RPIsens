@@ -196,6 +196,20 @@ class DatabaseManager:
 			db.rollback()
 		finally:
 			db.close()
+			
+	def get_emp(self):
+		db = pymysql.connect("localhost", "user", "pass", "test")
+		cursor = db.cursor(pymysql.cursors.DictCursor)
+		try:
+			sql = '''SELECT * FROM emp_table'''
+			cursor.execute(sql)
+			reply_dict = cursor.fetchall()
+			db.commit()
+		except pymysql.MySQLError as error:
+			print("Failed to select record in database: {}".format(error))
+		finally:
+			db.close()
+			return reply_dict
 
 	def create_t_emp_table(self):
 		db = pymysql.connect(self.host, self.user, self.password, self.db)
