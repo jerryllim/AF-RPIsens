@@ -198,7 +198,8 @@ class DatabaseManager:
 			db.close()
 			
 	def get_emp(self):
-		db = pymysql.connect("localhost", "user", "pass", "test")
+		db = pymysql.connect(self.host, self.user, self.password, self.db)
+		# TODO why not use with here as well?
 		cursor = db.cursor(pymysql.cursors.DictCursor)
 		try:
 			sql = '''SELECT * FROM emp_table'''
