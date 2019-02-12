@@ -331,6 +331,7 @@ class DatabaseManager:
 	def get_job_info(self, barcode_msg):
 		db = pymysql.connect(self.host, self.user, self.password, self.db)
 		cursor = db.cursor(pymysql.cursors.DictCursor)
+		reply_dict = {}
 		try:
 			sql = '''SELECT * FROM job_info_table WHERE jo_no = %s LIMIT 1;'''
 			cursor.execute(sql, (barcode_msg,))
