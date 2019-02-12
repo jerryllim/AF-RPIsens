@@ -11,6 +11,8 @@ from apscheduler.schedulers.background import BackgroundScheduler
 class NetworkManager:
 	dealer = None
 	router = None
+	port_numbers = ["152.228.1.124:8888", "152.228.1.124:7777"]
+	# port_number = "{}:8888".format(self.self_add)
 
 	def __init__(self):
 		self.context = zmq.Context()
@@ -19,8 +21,6 @@ class NetworkManager:
 		self.router_routine()
 
 	def dealer_routine(self):
-		# port_number = "{}:8888".format(self.self_add)
-		port_numbers = ["152.228.1.124:8888", ]
 		self.dealer = self.context.socket(zmq.DEALER)
 		self.dealer.setsockopt(zmq.LINGER, 0)
 		for port in port_numbers:
@@ -28,28 +28,28 @@ class NetworkManager:
 			#print("Successfully connected to machine %s" % port_number)
 
 	def request(self, msg):
-		# TODO add a for loop to loop over all ports
-		msg_json = json.dumps(msg)
-		self.dealer.send_string("", zmq.SNDMORE)  # delimiter
-		self.dealer.send_string(msg_json)
-		print("request msg sent")
+		for port in port_numbers:
+			msg_json = json.dumps(msg)
+			self.dealer.send_string("", zmq.SNDMORE)  # delimiter
+			self.dealer.send_string(msg_json)
+			print("request msg sent")
 
-		# use poll for timeouts:
-		poller = zmq.Poller()
-		poller.register(self.dealer, zmq.POLLIN)
+			# use poll for timeouts:
+			poller = zmq.Poller()
+			poller.register(self.dealer, zmq.POLLIN)
 
-		socks = dict(poller.poll(3 * 1000))
+			socks = dict(poller.poll(3 * 1000))
 
-		if self.dealer in socks:
-			try:
-				recv_msg = self.dealer.recv_string()
-				# print("recv_msg: %s" % recv_msg)
-				deal_msg = json.loads(recv_msg)
-				return deal_msg
-			except IOError as error:
-				print("Problem with socket")
-		else:
-			print("Machine did not respond")			
+			if self.dealer in socks:
+				try:
+					recv_msg = self.dealer.recv_string()
+					# print("recv_msg: %s" % recv_msg)
+					deal_msg = json.loads(recv_msg)
+					return deal_msg
+				except IOError as error:
+					print("Problem with socket")
+			else:
+				print("Machine did not respond")			
 
 	def router_routine(self):
 		# port_number = "{}:9999".format(self.self_add)
