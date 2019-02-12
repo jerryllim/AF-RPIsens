@@ -260,14 +260,14 @@ class DatabaseManager:
 				sql = '''CREATE TABLE IF NOT EXISTS job_info_table (
 						jo_no VARCHAR(13) PRIMARY KEY,
 						mac VARCHAR(5),
-						to_do INT,
+						to_do INT UNSIGNED,
 						code VARCHAR(14),
 						descp VARCHAR(50),
 						so_no VARCHAR(30),
 						edd VARCHAR(12),
-						so_qty INT,
+						so_qty INT UNSIGNED,
 						so_rem VARCHAR(10),
-						ran INT'''
+						ran INT UNSIGNED'''
 				cursor.execute(sql)
 				db.commit()
 		finally:
@@ -281,6 +281,7 @@ class DatabaseManager:
 		:return:
 		"""
 		db = pymysql.connect(self.host, self.user, self.password, self.db)
+		# TODO make sure that the column names are the same as the incoming csv files
 		column_names = ['jo_no', 'mac', 'to_do', 'code', 'descp', 'so_no', 'edd', 'so_qty', 'so_rem']
 		column_names_str = ', '.join(column_names)
 		binds_str = ', '.join(['%s'] * len(column_names))
