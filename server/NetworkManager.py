@@ -86,16 +86,16 @@ class NetworkManager:
 		self.database_manager.insert_jam(deal_msg)
 
 	def send_job_info(self):
-		msg_dict = self.database_manager.get_all_job()
+		# TODO retrive mac from server settings
+		msg_dict = self.database_manager.get_spec_job(mac)
 		self.request(msg_dict)
 
 	def send_ink_key(self):
-		# TODO why no argument for get_ink_key?
-		msg_dict = self.database_manager.get_ink_key()
+		# TODO retrieve machine from server settings
+		msg_dict = self.database_manager.get_ink_key(item, machine)
 		self.request(msg_dict)
 
 	def send_emp(self):
-		# TODO no get_emp function
 		msg_dict = self.database_manager.get_emp()
 		self.request(msg_dict)
 
