@@ -421,6 +421,7 @@ class DatabaseManager:
 				query = '''CREATE TABLE IF NOT EXISTS ink_key_table (
 						item VARCHAR(20) NOT NULL,
 						plate VARCHAR(20) NOT NULL,
+						machine VARCHAR(20) NOT NULL,
 						`1` SMALLINT UNSIGNED,
 						`2` SMALLINT UNSIGNED,
 						`3` SMALLINT UNSIGNED,
@@ -453,12 +454,14 @@ class DatabaseManager:
 						`30` SMALLINT UNSIGNED,
 						`31` SMALLINT UNSIGNED,
 						`32` SMALLINT UNSIGNED,
-						PRIMARY KEY(item, plate));'''
+						PRIMARY KEY(item, plate, machine));'''
 				cursor.execute(query)
 
 				query2 = '''CREATE TABLE IF NOT EXISTS ink_impression_table (
-						item VARCHAR(20) PRIMARY KEY,
-						impression SMALLINT UNSIGNED NOT NULL);'''
+						item VARCHAR(20) NOT NULL,
+						machine VARCHAR(20) NOT NULL,
+						impression SMALLINT UNSIGNED NOT NULL,
+						PRIMARY KEY(item, machine));'''
 				cursor.execute(query2)
 				db.commit()
 		finally:
@@ -471,34 +474,34 @@ class DatabaseManager:
 			with db.cursor() as cursor:
 				for item, info in ink_keys.items():
 					impression = info.pop('impression')
-					query = '''REPLACE INTO ink_impression_table (item, impression) VALUES (%s, %s)'''
+					query = '''REPLACE INTO ink_impression_table (item, machine, impression) VALUES (%s, %s, %s)'''
 					cursor.execute(query, (item, impression))
 
 					for plate, i_keys in info.items():
 						keys = ",".join("'{}'".format(k) for k in range(1, len(i_keys)+1))
 						p_s = ",".join(list('%s'*len(i_keys)))
 						values = [item, plate] + i_keys
-						query2 = 'REPLACE INTO ink_key_table (item,plate,' + keys + ') VALUES (%s,%s,' + p_s + ');'
+						query2 = 'REPLACE INTO ink_key_table (item,plate,machine' + keys + ') VALUES (%s,%s,%s' + p_s + ');'
 						cursor.execute(query2, values)
 
 			db.commit()
 		finally:
 			db.close()
 
-	def get_ink_key(self, item):
+	def get_ink_key(self, item, machine):
 		db = pymysql.connect(self.host, self.user, self.password, self.db)
 
+		d = {}
 		try:
-			d = {}
 			with db.cursor() as cursor:
-				query = "SELECT impression FROM ink_impression_table WHERE item = %s LIMIT 1"
-				cursor.execute(query, (item,))
+				query = "SELECT impression FROM ink_impression_table WHERE item = %s AND machine = %s LIMIT 1"
+				cursor.execute(query, (item, machine))
 				impression = cursor.fetchone()
 				if impression:
 					d['impression'] = impression
 
-				query2 = "SELECT * FROM ink_key_table WHERE item = %s"
-				cursor.execute(query2, (item,))
+				query2 = "SELECT * FROM ink_key_table WHERE item = %s and machine = %s"
+				cursor.execute(query2, (item, machine))
 				for row in cursor:
 					plate = row[1]
 					new = [v for v in list(row) if type(v) == int]
