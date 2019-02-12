@@ -210,6 +210,7 @@ class DatabaseManager:
 			print("Failed to select record in database: {}".format(error))
 		finally:
 			db.close()
+			# TODO the reply_dict should be outside for finally to work (at least create an empty dictionary)
 			return reply_dict
 
 	def create_t_emp_table(self):
