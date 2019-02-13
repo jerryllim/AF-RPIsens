@@ -420,19 +420,14 @@ class DatabaseManager:
     def get_job_info(self, barcode):
         jo_no = barcode[:-3]
         jo_line = int(barcode[-3:])
-        print(jo_no, ' + ', jo_line)
         db = sqlite3.connect(self.database)
         db.row_factory = self.dict_factory
         cursor = db.cursor()
-        cursor.execute("SELECT * FROM job_info_table")
-        for row in cursor:
-            print(row)
 
         cursor.execute("SELECT * FROM job_info_table WHERE jo_no = ? AND jo_line = ? LIMIT 1;", (jo_no, jo_line))
         job_info = cursor.fetchone()
 
         cursor.execute("DELETE FROM job_info_table WHERE jo_no = ? AND jo_line = ? LIMIT 1;", (jo_no, jo_line))
-        print(job_info)
 
         db.close()
 
