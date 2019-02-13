@@ -152,6 +152,7 @@ class RaspberryPiController:
         self.database_manager.replace_ink_key_tables(ink_data)
     
     def respondent_routine(self):
+        # TODO add self port to settings
         port_number = "{}:8888".format(self.self_add)
 
         self.respondent = self.context.socket(zmq.REP)
