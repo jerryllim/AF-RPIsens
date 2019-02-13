@@ -30,8 +30,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/sensor/printingGUI.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="412">
-                  <caret line="462" column="61" selection-start-line="462" selection-start-column="61" selection-end-line="462" selection-end-column="61" />
+                <state relative-caret-position="167">
+                  <caret line="463" column="8" selection-start-line="463" selection-start-column="8" selection-end-line="463" selection-end-column="8" />
                 </state>
               </provider>
             </entry>
@@ -39,7 +39,7 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/sensor/printinggui.kv">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="192">
+                <state relative-caret-position="-181">
                   <caret line="471" column="10" selection-start-line="471" selection-start-column="1" selection-end-line="471" selection-end-column="10" />
                 </state>
               </provider>
@@ -98,7 +98,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>edit_im</find>
       <find>start</find>
       <find>next</find>
       <find>adjustmentTab</find>
@@ -128,6 +127,7 @@
       <find>no ink</find>
       <find>in</find>
       <find>inkkeybox</find>
+      <find>Button</find>
     </findStrings>
     <replaceStrings>
       <replace>TMessage</replace>
@@ -247,7 +247,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="SearchEverywhereHistoryKey" value="&#9;FILE&#9;file:///Users/justynlgh/Documents/repo/afRPIsens/sensor/sensorGlobal.py" />
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1550036168944" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1550036194312" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/server" />
     <property name="project.structure.last.edited" value="Modules" />
     <property name="project.structure.proportion" value="0.0" />
@@ -968,15 +968,15 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/sensor/printinggui.kv">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="192">
+        <state relative-caret-position="-181">
           <caret line="471" column="10" selection-start-line="471" selection-start-column="1" selection-end-line="471" selection-end-column="10" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/sensor/printingGUI.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="412">
-          <caret line="462" column="61" selection-start-line="462" selection-start-column="61" selection-end-line="462" selection-end-column="61" />
+        <state relative-caret-position="167">
+          <caret line="463" column="8" selection-start-line="463" selection-start-column="8" selection-end-line="463" selection-end-column="8" />
         </state>
       </provider>
     </entry>

@@ -447,11 +447,7 @@ class InkKeyBoxLayout(BoxLayout):
     def __init__(self, **kwargs):
         BoxLayout.__init__(self, **kwargs)
         self.ink_key_dict = App.get_running_app().current_job.ink_key.copy()
-        # TODO Change to 'Add Plate'
-        if not self.ink_key_dict:
-            self.clear_widgets()
-            self.add_widget(Label(text='No ink key found.'))
-            return
+
         self.impression_text.text = '{}'.format(self.ink_key_dict.pop('impression', ''))
         self.impression_text.bind(focus=self.edit_impression)
         keys = list(self.ink_key_dict.keys())
@@ -460,6 +456,8 @@ class InkKeyBoxLayout(BoxLayout):
             layout = InkZoneLayout(key)
             self.add_widget(layout)
 
+        # TODO how to add plate since operator has no keyboard for the plate code input.
+        # Retrieve plate code from job info?
         self.add_widget(Button(text='Add plate', size_hint=(1, None)))
 
     def edit_impression(self, _instance, focus):
