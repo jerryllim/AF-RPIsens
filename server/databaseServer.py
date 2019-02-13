@@ -8,8 +8,10 @@ class DatabaseManager:
 		self.user = user
 		self.password = password
 		self.db = db
+		# localhost, user, pass, test
 
 		self.create_jam_table()
+		self.create_job_table()
 
 	def setting_json(self):
 		# TODO create dictionary based on server settings
@@ -17,7 +19,7 @@ class DatabaseManager:
 		sett_dict = {
 			"machine": "Kruger",
 			"IP": "152.228.1.124:9999",
-			"S01": ("Kruger", "output"),
+			"S01": None,
 			"S02": ("Kruger", "col2"),
 			"S03": ("Kruger", "col3"),
 			"S04": None,
@@ -31,7 +33,7 @@ class DatabaseManager:
 			"S12": None,
 			"S13": None,
 			"S14": None,
-			"S15": None,
+			"S15": ("Kruger", "output"),
 			"E01": None,
 			"E02": None,
 			"E03": None,
@@ -62,14 +64,14 @@ class DatabaseManager:
 		try:
 			with db.cursor() as cursor:
 				# Drop table if it already exist (for testing)
-				cursor.execute("DROP TABLE IF EXISTS jam_current_table;")
+				# cursor.execute("DROP TABLE IF EXISTS jam_current_table;")
 
 				# create JAM table
 				# TODO confirm varchar lengths
 				sql = '''CREATE TABLE IF NOT EXISTS jam_current_table (
 						machine VARCHAR(10) NOT NULL,
-						jo_no INTEGER NOT NULL,
-						emp VARCHAR(10) NOT NULL
+						jo_no VARCHAR(15) NOT NULL,
+						emp VARCHAR(10) NOT NULL,
 						date_time DATETIME NOT NULL,
 						output INTEGER DEFAULT 0,
 						col1 INTEGER DEFAULT 0,
@@ -82,9 +84,10 @@ class DatabaseManager:
 						col8 INTEGER DEFAULT 0,
 						col9 INTEGER DEFAULT 0,
 						col10 INTEGER DEFAULT 0,
-						PRIMARY KEY(machine, jo_no, date_time));'''
+						PRIMARY KEY(machine, jo_no, date_time, emp));'''
 
 				cursor.execute(sql)
+
 				db.commit()
 		except pymysql.MySQLError:
 			db.rollback()
@@ -93,11 +96,11 @@ class DatabaseManager:
 
 	def insert_jam(self, recv_dict=None):
 		# TODO remove recv_dict as a keyword argument
-		if not recv_dict:
-			recv_dict = {
-				'A0001_Z00012345001_1459': {'S01': 100, 'S02': 125, 'S10': 1},
-				'A0001_Z00012345001_1500': {'S01': 25, 'S02': 30, 'S10': 0}
-			}
+		# if not recv_dict:
+		# 	recv_dict = {
+		# 		'A0001_Z00012345001_1459': {'S01': 100, 'S02': 125, 'S10': 1},
+		# 		'A0001_Z00012345001_1500': {'S01': 25, 'S02': 30, 'S10': 0}
+		# 	}
 
 		db = pymysql.connect(self.host, self.user, self.password, self.db)
 
@@ -106,7 +109,7 @@ class DatabaseManager:
 				# TODO change sett_dict format
 				sett_dict = self.setting_json()
 				for recv_id, recv_info in recv_dict.items():
-
+					print(recv_id)
 					emp, job, time = recv_id.split('_', 3)
 					recv_time = datetime.strptime(time, '%H%M')
 					now = datetime.now()
@@ -115,21 +118,22 @@ class DatabaseManager:
 						date_time = date_time - timedelta(1)
 
 					for key in recv_info.keys():
-
 						values = sett_dict.get(key, None)
+						# print(values)
 
 						if values:
-							query = """INSERT INTO jam_current_table (machine, jo_no, emp, datetime, {header}) VALUES 
-										({machine}, {jo_no}, {emp}, {date_time}, {value} ON DUPLICATE KEY UPDATE 
-										{header} = {header} + {value}""".format(header=values[1],
+							query = "INSERT INTO jam_current_table (machine, jo_no, emp, date_time, "\
+							"{header}) VALUES ('{machine}', '{jo_no}', '{emp}', '{date_time}', {value}) ON "\
+							"DUPLICATE KEY UPDATE {header} = {header} + {value};".format(header=values[1],
 																				machine=values[0],
 																				jo_no=job, emp=emp,
-																				date_time=date_time,
+																				date_time=date_time.strftime("%Y-%m-%d %H:%M"),
 																				value=recv_info[key])
 							cursor.execute(query)
 				db.commit()
-		except pymysql.MySQLError:
+		except pymysql.MySQLError as e:
 			db.rollback()
+			print(e)
 		finally:
 			db.close()
 
@@ -198,8 +202,7 @@ class DatabaseManager:
 			db.close()
 			
 	def get_emp(self):
-		db = pymysql.connect(self.host, self.user, self.password, self.db)
-		# TODO why not use with here as well?
+		db = pymysql.connect("localhost", "user", "pass", "test")
 		cursor = db.cursor(pymysql.cursors.DictCursor)
 		try:
 			sql = '''SELECT * FROM emp_table'''
@@ -210,7 +213,6 @@ class DatabaseManager:
 			print("Failed to select record in database: {}".format(error))
 		finally:
 			db.close()
-			# TODO the reply_dict should be outside for finally to work (at least create an empty dictionary)
 			return reply_dict
 
 	def create_t_emp_table(self):
@@ -254,20 +256,22 @@ class DatabaseManager:
 		try:
 			with db.cursor() as cursor:
 				# Drop table if it already exist
-				cursor.execute("DROP TABLE IF EXISTS job_info_table;")
+				# cursor.execute("DROP TABLE IF EXISTS job_info_table;")
 
 				# TODO check varchar length for each column
-				sql = '''CREATE TABLE IF NOT EXISTS job_info_table (
-						jo_no VARCHAR(13) PRIMARY KEY,
-						mac VARCHAR(5),
-						to_do INT UNSIGNED,
-						code VARCHAR(14),
-						descp VARCHAR(50),
-						so_no VARCHAR(30),
-						edd VARCHAR(12),
-						so_qty INT UNSIGNED,
-						so_rem VARCHAR(10),
-						ran INT UNSIGNED'''
+				sql = 'CREATE TABLE IF NOT EXISTS job_info_table (' \
+						'jo_no VARCHAR(13) PRIMARY KEY,' \
+						'mac VARCHAR(5),' \
+						'to_do INT,' \
+						'code VARCHAR(14),' \
+						'descp VARCHAR(50),' \
+						'so_no VARCHAR(30),' \
+						'edd VARCHAR(12),' \
+						'so_qty INT,' \
+						'so_rem VARCHAR(10),' \
+						'ran INT);'
+
+				print(sql)
 				cursor.execute(sql)
 				db.commit()
 		finally:
@@ -281,7 +285,6 @@ class DatabaseManager:
 		:return:
 		"""
 		db = pymysql.connect(self.host, self.user, self.password, self.db)
-		# TODO make sure that the column names are the same as the incoming csv files
 		column_names = ['jo_no', 'mac', 'to_do', 'code', 'descp', 'so_no', 'edd', 'so_qty', 'so_rem']
 		column_names_str = ', '.join(column_names)
 		binds_str = ', '.join(['%s'] * len(column_names))
@@ -330,12 +333,17 @@ class DatabaseManager:
 			
 	def get_job_info(self, barcode_msg):
 		db = pymysql.connect(self.host, self.user, self.password, self.db)
-		cursor = db.cursor(pymysql.cursors.DictCursor)
+		cursor = db.cursor()
 		reply_dict = {}
 		try:
-			sql = '''SELECT * FROM job_info_table WHERE jo_no = %s LIMIT 1;'''
+			sql = '''SELECT jo_no, code, descp, to_do, ran FROM job_info_table WHERE jo_no = %s LIMIT 1'''
 			cursor.execute(sql, (barcode_msg,))
-			reply_dict = cursor.fetchone()
+			temp = cursor.fetchone()
+			barcode = temp[0]
+			jo_no = barcode[:-3]
+			jo_line = int(barcode[-3:])
+			reply_dict = [jo_no, jo_line] + list(temp[1:])
+			print("reply_dict: ", reply_dict)
 			db.commit()
 		except pymysql.MySQLError as error:
 			print("Failed to select record in database: {}".format(error))
@@ -347,16 +355,19 @@ class DatabaseManager:
 		db = pymysql.connect(self.host, self.user, self.password, self.db)
 		reply_dict = {}
 		try:
-			with db.cursor(pymysql.cursors.DictCursor) as cursor:
+			with db.cursor() as cursor:
 				sql = '''SELECT * FROM job_info_table WHERE mac = %s'''
 				cursor.execute(sql, (mac,))
-				reply_dict = cursor.fetchall()
+				temp_list = []
+				for row in cursor:
+					temp_list.append(row)
+				joined_list = ';'.join(map(str,temp_list))
 				db.commit()
 		except pymysql.MySQLError as error:
 			print("Failed to select record in database: {}".format(error))
 		finally:
 			db.close()
-			return reply_dict
+			return joined_list
 
 	@staticmethod
 	def check_complete(cursor, jo_id):
@@ -440,7 +451,7 @@ class DatabaseManager:
 				query = '''CREATE TABLE IF NOT EXISTS ink_key_table (
 						item VARCHAR(20) NOT NULL,
 						plate VARCHAR(20) NOT NULL,
-						machine VARCHAR(20) NOT NULL,
+						machine VARCHAR(20). NOT NULL,
 						`1` SMALLINT UNSIGNED,
 						`2` SMALLINT UNSIGNED,
 						`3` SMALLINT UNSIGNED,
@@ -473,14 +484,12 @@ class DatabaseManager:
 						`30` SMALLINT UNSIGNED,
 						`31` SMALLINT UNSIGNED,
 						`32` SMALLINT UNSIGNED,
-						PRIMARY KEY(item, plate, machine));'''
+						PRIMARY KEY(item, plate));'''
 				cursor.execute(query)
 
 				query2 = '''CREATE TABLE IF NOT EXISTS ink_impression_table (
-						item VARCHAR(20) NOT NULL,
-						machine VARCHAR(20) NOT NULL,
-						impression SMALLINT UNSIGNED NOT NULL,
-						PRIMARY KEY(item, machine));'''
+						item VARCHAR(20) PRIMARY KEY,
+						impression SMALLINT UNSIGNED NOT NULL);'''
 				cursor.execute(query2)
 				db.commit()
 		finally:
@@ -493,34 +502,34 @@ class DatabaseManager:
 			with db.cursor() as cursor:
 				for item, info in ink_keys.items():
 					impression = info.pop('impression')
-					query = '''REPLACE INTO ink_impression_table (item, machine, impression) VALUES (%s, %s, %s)'''
+					query = '''REPLACE INTO ink_impression_table (item, impression) VALUES (%s, %s)'''
 					cursor.execute(query, (item, impression))
 
 					for plate, i_keys in info.items():
 						keys = ",".join("'{}'".format(k) for k in range(1, len(i_keys)+1))
 						p_s = ",".join(list('%s'*len(i_keys)))
 						values = [item, plate] + i_keys
-						query2 = 'REPLACE INTO ink_key_table (item,plate,machine' + keys + ') VALUES (%s,%s,%s' + p_s + ');'
+						query2 = 'REPLACE INTO ink_key_table (item,plate,' + keys + ') VALUES (%s,%s,' + p_s + ');'
 						cursor.execute(query2, values)
 
 			db.commit()
 		finally:
 			db.close()
 
-	def get_ink_key(self, item, machine):
+	def get_ink_key(self, item):
 		db = pymysql.connect(self.host, self.user, self.password, self.db)
 
-		d = {}
 		try:
+			d = {}
 			with db.cursor() as cursor:
-				query = "SELECT impression FROM ink_impression_table WHERE item = %s AND machine = %s LIMIT 1"
-				cursor.execute(query, (item, machine))
+				query = "SELECT impression FROM ink_impression_table WHERE item = %s LIMIT 1"
+				cursor.execute(query, (item,))
 				impression = cursor.fetchone()
 				if impression:
 					d['impression'] = impression
 
-				query2 = "SELECT * FROM ink_key_table WHERE item = %s and machine = %s"
-				cursor.execute(query2, (item, machine))
+				query2 = "SELECT * FROM ink_key_table WHERE item = %s"
+				cursor.execute(query2, (item,))
 				for row in cursor:
 					plate = row[1]
 					new = [v for v in list(row) if type(v) == int]
