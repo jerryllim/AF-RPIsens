@@ -419,6 +419,7 @@ class DatabaseManager:
     def get_job_info(self, barcode):
         jo_no = barcode[:-3]
         jo_line = int(barcode[-3:])
+        print(jo_no, ' + ', jo_line)
         db = sqlite3.connect(self.database)
         db.row_factory = self.dict_factory
         cursor = db.cursor()
