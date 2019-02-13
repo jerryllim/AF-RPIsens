@@ -83,7 +83,7 @@ class RaspberryPiController:
 
         return temp
 
-    def get_key(self, interval=5, emp=None):
+    def get_key(self, interval=1, emp=None):
         # TODO change to UTC now?
         now = datetime.datetime.now()
         # Floor to nearest interval (default = 5)
@@ -97,7 +97,7 @@ class RaspberryPiController:
         else:
             jo_no = 'None'
 
-        return '{0}_{1}_{2}'.format(emp, jo_no, now.strftime('%Y%m%d%H%M'))
+        return '{0}_{1}_{2}'.format(emp, jo_no, now.strftime('%H%M'))
 
     def pin_triggered(self, pin, _level, _tick):
         name = self.pin_to_name[pin]
