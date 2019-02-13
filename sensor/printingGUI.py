@@ -487,6 +487,10 @@ class InkKeyBoxLayout(BoxLayout):
             edit_popup.open()
 
 
+class InkZoneButton(Button):
+    pass
+
+
 class InkZoneLayout(BoxLayout):
     def __init__(self, plate, **kwargs):
         BoxLayout.__init__(self, **kwargs)
@@ -501,9 +505,7 @@ class InkZoneLayout(BoxLayout):
         zone_list = App.get_running_app().current_job.ink_key.get(self.plate)
 
         for index in range(len(zone_list)):
-            button = Button(text="{0}\n[b][size=20sp]{1}[/size][/b]".format(index+1, zone_list[index]),
-                            size_hint=(1, None), halign='center', markup=True)
-            button.height = button.minimum_height
+            button = InkZoneButton(text="{0}\n[b][size=20sp]{1}[/size][/b]".format(index+1, zone_list[index]))
             button.bind(on_press=self.edit_ink_key)
             self.buttons.append(button)
             self.ids['ink_zones'].add_widget(button)
