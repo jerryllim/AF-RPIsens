@@ -7,7 +7,7 @@ from server import databaseServer
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.schedulers.background import BackgroundScheduler
 
-port_numbers = ["152.228.1.192:8888", ]
+port_numbers = ["152.228.1.192:1234", ]
 
 class NetworkManager:
 	dealer = None
@@ -17,8 +17,10 @@ class NetworkManager:
 	def __init__(self):
 		self.context = zmq.Context()
 		self.database_manager = databaseServer.DatabaseManager()
-		self.dealer_routine()
 		self.router_routine()
+		self.dealer_routine()
+		self.router_thread = threading.Thread(target=self.route)
+		self.router_thread.start()
 
 	def dealer_routine(self):
 		self.dealer = self.context.socket(zmq.DEALER)
@@ -50,7 +52,7 @@ class NetworkManager:
 					print(recv_msg)
 					temp_list.update(recv_msg)
 				except IOError as error:
-					print("Problem with socket")
+					print("Problem with socket: ", error)
 			else:
 				print("Machine did not respond")
 
@@ -58,7 +60,7 @@ class NetworkManager:
 
 	def router_routine(self):
 		# port_number = "{}:9999".format(self.self_add)
-		port_number = "152.228.1.124:8888"
+		port_number = "152.228.1.124:9999"
 		self.router = self.context.socket(zmq.ROUTER)
 		self.router.bind("tcp://%s" % port_number)
 		# print("Successfully binded to port %s for respondent" % self.port_number)
@@ -85,10 +87,10 @@ class NetworkManager:
 			self.router.send_json(reply_dict)
 
 	def request_jam(self):
-		msg_dict = {}
+		msg_dict = {"jam": None}
 		deal_msg = self.request(msg_dict)
-
-		self.database_manager.insert_jam(deal_msg)
+		jam_msg = deal_msg.pop('jam')
+		self.database_manager.insert_jam(jam_msg)
 
 	def send_job_info(self):
 		# TODO retrive mac from server settings
