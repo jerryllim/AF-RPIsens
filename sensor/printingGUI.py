@@ -117,7 +117,7 @@ class SelectPage(Screen):
         barcode = self.ids.job_entry.text
         # TODO clear job_entry text
         try:
-            controller: printingMain.RaspberryPiController = App.get_running_app().controller
+            controller = App.get_running_app().controller
 
             job_dict = controller.get_job_info(barcode)
             if not job_dict:
@@ -460,6 +460,8 @@ class InkKeyBoxLayout(BoxLayout):
             layout = InkZoneLayout(key)
             self.add_widget(layout)
 
+        self.add_widget(Button(text='Add plate'))
+
     def edit_impression(self, _instance, focus):
         def dismiss_popup(_button):
             if value_textinput.text:
@@ -778,8 +780,8 @@ class PrintingGUIApp(App):
         # self.check_camera()  # TODO uncomment
 
         self.config.set('Network', 'self_add', self.get_ip_add())
-        # self.controller = printingMain.RaspberryPiController(self)
-        self.controller = FakeClass()  # TODO set if testing
+        self.controller = printingMain.RaspberryPiController(self)
+        # self.controller = FakeClass()  # TODO set if testing
 
         self.use_kivy_settings = False
         num_operators = self.config.get('General', 'num_operators')
