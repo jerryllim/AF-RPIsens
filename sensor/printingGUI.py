@@ -460,7 +460,7 @@ class InkKeyBoxLayout(BoxLayout):
             layout = InkZoneLayout(key)
             self.add_widget(layout)
 
-        self.add_widget(Button(text='Add plate'))
+        self.add_widget(Button(text='Add plate', size_hint=(1, None)))
 
     def edit_impression(self, _instance, focus):
         def dismiss_popup(_button):
