@@ -117,6 +117,8 @@ class SelectPage(Screen):
         barcode = self.ids.job_entry.text
         try:
             controller = App.get_running_app().controller
+            if not barcode:
+                raise ValueError('Please scan barcode')
 
             job_dict = controller.get_job_info(barcode)
             if not job_dict:
@@ -143,10 +145,9 @@ class SelectPage(Screen):
             self.parent.get_screen('run_page').generate_screen()
             self.parent.transition.direction = 'left'
             self.parent.current = 'adjustment_page'
-        except ValueError:
+        except ValueError as err_msg:
             popup_boxlayout = BoxLayout(orientation='vertical')
-            popup_boxlayout.add_widget(Label(text='Please log in'.
-                                             format(barcode)))
+            popup_boxlayout.add_widget(Label(text=err_msg))
             popup = Popup(title='No employee logged in', content=popup_boxlayout, size_hint=(0.5, 0.5))
             popup.open()
 
