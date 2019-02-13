@@ -7,7 +7,7 @@ from server import databaseServer
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.schedulers.background import BackgroundScheduler
 
-port_numbers = ["152.228.1.124:9999", "152.228.1.124:8888", ]
+port_numbers = ["152.228.1.192:8888", ]
 
 class NetworkManager:
 	dealer = None
@@ -58,7 +58,7 @@ class NetworkManager:
 
 	def router_routine(self):
 		# port_number = "{}:9999".format(self.self_add)
-		port_number = "152.228.1.124:9999"
+		port_number = "152.228.1.124:8888"
 		self.router = self.context.socket(zmq.ROUTER)
 		self.router.bind("tcp://%s" % port_number)
 		# print("Successfully binded to port %s for respondent" % self.port_number)
