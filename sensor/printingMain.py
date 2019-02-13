@@ -220,6 +220,7 @@ class RaspberryPiController:
         for i in range(3):
             self.dealer.send_string("", zmq.SNDMORE)
             self.dealer.send_json(msg_dict)
+            print('Attemp ', i, 'for ', msg_dict)
 
             if self.dealer.poll(timeout):
                 self.dealer.recv()
