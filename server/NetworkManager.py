@@ -7,11 +7,11 @@ from server import databaseServer
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.schedulers.background import BackgroundScheduler
 
+port_numbers = ["152.228.1.124:9999", "152.228.1.124:8888", ]
 
 class NetworkManager:
 	dealer = None
 	router = None
-	port_numbers = ["152.228.1.124:8888", "152.228.1.124:7777"]
 	# port_number = "{}:8888".format(self.self_add)
 
 	def __init__(self):
@@ -28,6 +28,7 @@ class NetworkManager:
 			#print("Successfully connected to machine %s" % port_number)
 
 	def request(self, msg):
+		temp_list = {}
 		for port in port_numbers:
 			msg_json = json.dumps(msg)
 			self.dealer.send_string("", zmq.SNDMORE)  # delimiter
@@ -42,14 +43,18 @@ class NetworkManager:
 
 			if self.dealer in socks:
 				try:
-					recv_msg = self.dealer.recv_string()
+					self.dealer.recv()
+					recv_msg = self.dealer.recv_json()
 					# print("recv_msg: %s" % recv_msg)
-					deal_msg = json.loads(recv_msg)
-					return deal_msg
+					#deal_msg = json.loads(recv_msg)
+					print(recv_msg)
+					temp_list.update(recv_msg)
 				except IOError as error:
 					print("Problem with socket")
 			else:
-				print("Machine did not respond")			
+				print("Machine did not respond")
+
+		return temp_list			
 
 	def router_routine(self):
 		# port_number = "{}:9999".format(self.self_add)
