@@ -115,7 +115,6 @@ class SelectPage(Screen):
 
     def start_job(self):
         barcode = self.ids.job_entry.text
-        # TODO clear job_entry text
         try:
             controller = App.get_running_app().controller
 
@@ -138,6 +137,7 @@ class SelectPage(Screen):
             if len(employees) < len(App.get_running_app().action_bar.employee_buttons):
                 raise ValueError('Please log in')
 
+            self.ids.job_entry.text = ''
             App.get_running_app().current_job = JobClass(job_dict, item_ink_key_dict, employees)
             self.parent.get_screen('adjustment_page').generate_tabs()
             self.parent.get_screen('run_page').generate_screen()
