@@ -429,9 +429,9 @@ class DatabaseManager:
             print(row)
 
         cursor.execute("SELECT * FROM job_info_table WHERE jo_no = ? AND jo_line = ? LIMIT 1;", (jo_no, jo_line))
-        cursor.execute("DELETE FROM job_info_table WHERE jo_no = ? AND jo_line = ? LIMIT 1;", (jo_no, jo_line))
-
         job_info = cursor.fetchone()
+
+        cursor.execute("DELETE FROM job_info_table WHERE jo_no = ? AND jo_line = ? LIMIT 1;", (jo_no, jo_line))
         print(job_info)
 
         db.close()
