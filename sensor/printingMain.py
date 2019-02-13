@@ -330,38 +330,38 @@ class DatabaseManager:
             cursor.execute("CREATE TABLE IF NOT EXISTS ink_key_table "
                            "(item TEXT NOT NULL, "
                            "plate TEXT NOT NULL, "
-                           "'1' INTEGER, "
-                           "'2' INTEGER, "
-                           "'3' INTEGER, "
-                           "'4' INTEGER, "
-                           "'5' INTEGER, "
-                           "'6' INTEGER, "
-                           "'7' INTEGER, "
-                           "'8' INTEGER, "
-                           "'9' INTEGER, "
-                           "'10' INTEGER, "
-                           "'11' INTEGER, "
-                           "'12' INTEGER, "
-                           "'13' INTEGER, "
-                           "'14' INTEGER, "
-                           "'15' INTEGER, "
-                           "'16' INTEGER, "
-                           "'17' INTEGER, "
-                           "'18' INTEGER, "
-                           "'19' INTEGER, "
-                           "'20' INTEGER, "
-                           "'21' INTEGER, "
-                           "'22' INTEGER, "
-                           "'23' INTEGER, "
-                           "'24' INTEGER, "
-                           "'25' INTEGER, "
-                           "'26' INTEGER, "
-                           "'27' INTEGER, "
-                           "'28' INTEGER, "
-                           "'29' INTEGER, "
-                           "'30' INTEGER, "
-                           "'31' INTEGER, "
-                           "'32' INTEGER, "
+                           "'1' INTEGER DEFAULT 0, "
+                           "'2' INTEGER DEFAULT 0, "
+                           "'3' INTEGER DEFAULT 0, "
+                           "'4' INTEGER DEFAULT 0, "
+                           "'5' INTEGER DEFAULT 0, "
+                           "'6' INTEGER DEFAULT 0, "
+                           "'7' INTEGER DEFAULT 0, "
+                           "'8' INTEGER DEFAULT 0, "
+                           "'9' INTEGER DEFAULT 0, "
+                           "'10' INTEGER DEFAULT 0, "
+                           "'11' INTEGER DEFAULT 0, "
+                           "'12' INTEGER DEFAULT 0, "
+                           "'13' INTEGER DEFAULT 0, "
+                           "'14' INTEGER DEFAULT 0, "
+                           "'15' INTEGER DEFAULT 0, "
+                           "'16' INTEGER DEFAULT 0, "
+                           "'17' INTEGER DEFAULT 0, "
+                           "'18' INTEGER DEFAULT 0, "
+                           "'19' INTEGER DEFAULT 0, "
+                           "'20' INTEGER DEFAULT 0, "
+                           "'21' INTEGER DEFAULT 0, "
+                           "'22' INTEGER DEFAULT 0, "
+                           "'23' INTEGER DEFAULT 0, "
+                           "'24' INTEGER DEFAULT 0, "
+                           "'25' INTEGER DEFAULT 0, "
+                           "'26' INTEGER DEFAULT 0, "
+                           "'27' INTEGER DEFAULT 0, "
+                           "'28' INTEGER DEFAULT 0, "
+                           "'29' INTEGER DEFAULT 0, "
+                           "'30' INTEGER DEFAULT 0, "
+                           "'31' INTEGER DEFAULT 0, "
+                           "'32' INTEGER DEFAULT 0, "
                            "PRIMARY KEY(item, plate));")
             cursor.execute("CREATE TABLE IF NOT EXISTS ink_impression_table (item TEXT PRIMARY KEY, impression INTEGER "
                            "NOT NULL);")
@@ -451,16 +451,20 @@ class DatabaseManager:
         if impression_d:
             d['impression'] = impression_d[0]
 
-        cursor.execute("SELECT * FROM ink_key_table WHERE item = ?", (item, ))
+        cursor.execute("SELECT plate, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `8`,"
+                       " `9`, `10`, `11`, `12`, `13`, `14`, `15`, `16`,"
+                       " `17`, `18`, `19`, `20`, `21`, `22`, `23`, `24`,"
+                       " `25`, `26`, `27`, `28`, `29`, `30`, `31`, `32`"
+                       " FROM ink_key_table WHERE item = ?", (item, ))
 
         for row in cursor:
             # plate = row.pop('plate')
             # row.pop('item')
             # new = {k: v for k, v in row.items() if v is not None}
-            plate = row[1]
-            new = [v for v in list(row) if type(v) == int]
+            list_row = list(row)
+            plate = list_row.pop(0)
 
-            d[plate] = new
+            d[plate] = list_row
 
         db.close()
 
