@@ -45,7 +45,7 @@ class RaspberryPiController:
         self.set_output_callback(output_pin)
 
         self.server_add = self.gui.config.get('Network', 'ip_add')
-        self.subscribe_port = self.gui.config.get('Network', 'port')
+        self.server_port = self.gui.config.get('Network', 'port')
         self.self_add = self.gui.config.get('Network', 'self_add')
         
         self.context = zmq.Context()
@@ -207,7 +207,7 @@ class RaspberryPiController:
     #     self.publisher.send_string(msg_json)
         
     def dealer_routine(self):
-        port_number = "{}:8888".format(self.self_add)
+        port_number = "{}:{}".format(self.server_add, self.server_port)
         # print("Connecting to machine...")
         self.dealer = self.context.socket(zmq.DEALER)
         self.dealer.connect("tcp://%s" % port_number)
@@ -220,7 +220,7 @@ class RaspberryPiController:
         for i in range(3):
             self.dealer.send_string("", zmq.SNDMORE)
             self.dealer.send_json(msg_dict)
-            print('Attemp ', i, 'for ', msg_dict)
+            print('Attempt ', i, 'for ', msg_dict)
 
             if self.dealer.poll(timeout):
                 self.dealer.recv()
