@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="8c4eab11-9431-48ea-8992-fef6a6e722be" name="Default" comment="Reduced labels (populate in init) &amp; created NumericProperty for counter">
-      <change beforePath="$PROJECT_DIR$/sensor/printingGUI.py" beforeDir="false" afterPath="$PROJECT_DIR$/sensor/printingGUI.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/sensor/printinggui.kv" beforeDir="false" afterPath="$PROJECT_DIR$/sensor/printinggui.kv" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
@@ -40,8 +39,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/sensor/printinggui.kv">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="546">
-                  <caret line="525" column="16" selection-start-line="525" selection-start-column="16" selection-end-line="525" selection-end-column="16" />
+                <state relative-caret-position="474">
+                  <caret line="523" column="32" selection-start-line="523" selection-start-column="32" selection-end-line="523" selection-end-column="32" />
                 </state>
               </provider>
             </entry>
@@ -77,7 +76,7 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/server/databaseServer.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="640">
+                <state relative-caret-position="627">
                   <caret line="525" column="50" selection-start-line="525" selection-end-line="526" />
                   <folding>
                     <element signature="e#0#14#0" expanded="true" />
@@ -200,8 +199,8 @@
         <option value="$PROJECT_DIR$/server/NetworkManager.py" />
         <option value="$PROJECT_DIR$/server/databaseServer.py" />
         <option value="$PROJECT_DIR$/sensor/printingMain.py" />
-        <option value="$PROJECT_DIR$/sensor/printinggui.kv" />
         <option value="$PROJECT_DIR$/sensor/printingGUI.py" />
+        <option value="$PROJECT_DIR$/sensor/printinggui.kv" />
       </list>
     </option>
   </component>
@@ -248,7 +247,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="SearchEverywhereHistoryKey" value="&#9;FILE&#9;file:///Users/justynlgh/Documents/repo/afRPIsens/sensor/sensorGlobal.py" />
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1550041788180" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1550041912122" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/server" />
     <property name="project.structure.last.edited" value="Modules" />
     <property name="project.structure.proportion" value="0.0" />
@@ -976,8 +975,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/sensor/printinggui.kv">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="546">
-          <caret line="525" column="16" selection-start-line="525" selection-start-column="16" selection-end-line="525" selection-end-column="16" />
+        <state relative-caret-position="474">
+          <caret line="523" column="32" selection-start-line="523" selection-start-column="32" selection-end-line="523" selection-end-column="32" />
         </state>
       </provider>
     </entry>
