@@ -447,6 +447,7 @@ class InkKeyBoxLayout(BoxLayout):
     def __init__(self, **kwargs):
         BoxLayout.__init__(self, **kwargs)
         self.ink_key_dict = App.get_running_app().current_job.ink_key.copy()
+        # TODO Change to 'Add Plate'
         if not self.ink_key_dict:
             self.clear_widgets()
             self.add_widget(Label(text='No ink key found.'))
