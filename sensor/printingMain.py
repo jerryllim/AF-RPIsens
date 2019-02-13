@@ -153,10 +153,11 @@ class RaspberryPiController:
     
     def respondent_routine(self):
         # TODO add self port to settings
-        port_number = "{}:6666".format(self.self_add)
+        port_number = "{}:1234".format(self.self_add)
 
         self.respondent = self.context.socket(zmq.REP)
         self.respondent.setsockopt(zmq.LINGER, 0)
+        print(port_number)
         self.respondent.bind("tcp://%s" % port_number)
         # print("Successfully binded to port %s for respondent" % self.port_number)
 
