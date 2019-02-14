@@ -557,6 +557,12 @@ class SimpleActionBar(BoxLayout):
         BoxLayout.__init__(self, **kwargs)
         Clock.schedule_interval(self.update_time, 1)
 
+        self.create_employee_buttons(num_operators)
+
+    def create_employee_buttons(self, num_operators):
+        for button in self.employee_buttons:
+            self.remove_widget(button)
+
         for i in range(1, num_operators+1):
             button = EmployeeButton(i)
             self.employee_buttons.append(button)
@@ -781,8 +787,8 @@ class PrintingGUIApp(App):
         # self.check_camera()  # TODO uncomment
 
         self.config.set('Network', 'self_add', self.get_ip_add())
-        self.controller = printingMain.RaspberryPiController(self)
-        # self.controller = FakeClass()  # TODO set if testing
+        # self.controller = printingMain.RaspberryPiController(self)
+        self.controller = FakeClass(self)  # TODO set if testing
 
         self.use_kivy_settings = False
         num_operators = self.config.get('General', 'num_operators')
@@ -812,8 +818,9 @@ class PrintingGUIApp(App):
         ip_add = self.get_ip_add()
         config.setdefaults('Network', {
             'self_add': ip_add,
-            'ip_add': '152.228.1.124',
-            'port': 9999})
+            'self_port': 8888,
+            'server_add': '152.228.1.124',
+            'server_port': 9999})
 
     def build_settings(self, settings):
         settings.register_type('scroll_options', SettingScrollableOptions)
@@ -840,8 +847,10 @@ class PrintingGUIApp(App):
             raise SystemExit
 
     def on_config_change(self, config, section, key, value):
-        # TODO to change number of operators and self_add, server ip and port?
-        pass
+        if section == 'Network':
+            self.controller.update_ip_ports()
+        elif section == 'General' and key == 'num_operators':
+            self.action_bar.create_employee_buttons(int(value))
 
     def update_output(self):
         # TODO add checks for maintenance or ...
@@ -891,8 +900,9 @@ class FakeClass:
     counts = {}
     database_manager = None
 
-    def __init__(self):
+    def __init__(self, gui):
         self.database_manager = printingMain.DatabaseManager()
+        self.gui = gui
 
     def get_key(self, interval=5):
         return interval
@@ -918,6 +928,12 @@ class FakeClass:
 
     def request(self, req_msg):
         print(req_msg)
+
+    def update_ip_ports(self):
+        print(self.gui.config.get('Network', 'server_add'))
+        print(self.gui.config.get('Network', 'server_port'))
+        print(self.gui.config.get('Network', 'self_add'))
+        print(self.gui.config.get('Network', 'self_port'))
 
 
 if __name__ == '__main__':
