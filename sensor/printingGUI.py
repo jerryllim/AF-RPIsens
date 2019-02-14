@@ -264,7 +264,6 @@ class RunPage(Screen):
 
     def stop_job(self, _instance):
         self.wastagePopup.save_dismiss()
-        # TODO publish job
         App.get_running_app().publish_job()
         self.parent.transition.direction = 'right'
         self.parent.current = 'select_page'
