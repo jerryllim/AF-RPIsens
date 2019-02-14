@@ -137,6 +137,7 @@ class SelectPage(Screen):
 
             employees = App.get_running_app().action_bar.employees.copy()
             if len(employees) < len(App.get_running_app().action_bar.employee_buttons):
+                print(len(employees), ' !< ', len(App.get_running_app().action_bar.employee_buttons))
                 raise ValueError('Please log in')
 
             self.ids.job_entry.text = ''
@@ -147,6 +148,7 @@ class SelectPage(Screen):
             self.parent.current = 'adjustment_page'
         except ValueError as err_msg:
             popup_boxlayout = BoxLayout(orientation='vertical')
+            print(err_msg)
             popup_boxlayout.add_widget(Label(text=err_msg))
             popup = Popup(title='No employee logged in', content=popup_boxlayout, size_hint=(0.5, 0.5))
             popup.open()
