@@ -23,6 +23,10 @@ class RaspberryPiController:
     dealer = None
     subscriber = None
     STEADY_ID = 'steady_pin_check'
+    server_add = None
+    server_port = None
+    self_add = None
+    self_port = None
     # states = {}
 
     def __init__(self, gui, filename='pin_dict.json'):
@@ -44,9 +48,7 @@ class RaspberryPiController:
         output_pin = int(output_string[-2:])
         self.set_output_callback(output_pin)
 
-        self.server_add = self.gui.config.get('Network', 'ip_add')
-        self.server_port = self.gui.config.get('Network', 'port')
-        self.self_add = self.gui.config.get('Network', 'self_add')
+        self.update_ip_ports()
         
         self.context = zmq.Context()
         # self.publisher_routine()
@@ -60,6 +62,12 @@ class RaspberryPiController:
         self.respondent_thread.start()
         # self.requester_thread = threading.Thread(target=self.subscribe)
         # self.requester_thread.start()
+
+    def update_ip_ports(self):
+        self.server_add = self.gui.config.get('Network', 'server_add')
+        self.server_port = self.gui.config.get('Network', 'server_port')
+        self.self_add = self.gui.config.get('Network', 'self_add')
+        self.self_port = self.gui.config.get('Network', 'self_port')
 
     def load_pin_dict(self):
         try:
@@ -168,8 +176,7 @@ class RaspberryPiController:
             recv_message = str(self.respondent.recv(), "utf-8")
             recv_dict = json.loads(recv_message)
             # print("Received request (%s)" % recv_message)
-            time.sleep(1)
-            reply_dict = {}
+            reply_dict = {'ip': self.self_add}
 
             for key in recv_dict.keys():
                 if key == "jam":
@@ -215,6 +222,7 @@ class RaspberryPiController:
 
     def request(self, msg_dict):
         timeout = 2000
+        msg_dict['ip'] = self.self_add
         recv_msg = None
         # Try 3 times, each waiting for 2 seconds for reply from server
         for i in range(3):
