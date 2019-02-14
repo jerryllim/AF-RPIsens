@@ -90,6 +90,7 @@ class NetworkManager:
 		msg_dict = {"jam": None}
 		deal_msg = self.request(msg_dict)
 		jam_msg = deal_msg.pop('jam')
+		# TODO pop qc and maintenance
 		self.database_manager.insert_jam(jam_msg)
 
 	def send_job_info(self):
