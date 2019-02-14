@@ -432,8 +432,8 @@ class DatabaseManager:
 		try:
 			with db.cursor() as cursor:
 				for value in values:
-					query = '''INSERT INTO maintenance_table (emp_id, start_time, end_time, machine) 
-							VALUES (%s, %s, %s, %s)'''
+					query = '''INSERT INTO maintenance_table (emp_id, jo_no, start_time, end_time, machine) 
+							VALUES (%s, %s, %s, %s, %s)'''
 					cursor.execute(query, value)
 
 				db.commit()
