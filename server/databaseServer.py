@@ -202,8 +202,10 @@ class DatabaseManager:
 			db.close()
 			
 	def get_emp(self):
-		db = pymysql.connect("localhost", "user", "pass", "test")
+		db = pymysql.connect(self.host, self.user, self.password, self.db)
+		reply_dict = {}
 		cursor = db.cursor(pymysql.cursors.DictCursor)
+
 		try:
 			sql = '''SELECT * FROM emp_table'''
 			cursor.execute(sql)
@@ -381,25 +383,25 @@ class DatabaseManager:
 		try:
 			with db.cursor() as cursor:
 				# TODO check varchar length for emp, machine & jo_no columns
-				query = '''CREATE TABLE IF NOT EXISTS qc_table (
-						emp_id VARCHAR(10) NOT NULL,
-						date_time DATETIME NOT NULL,
-						machine VARCHAR(10) NOT NULL,
-						jo_no VARCHAR(15) NOT NULL,
-						quality TINYINT UNSIGNED NOT NULL);'''
+				query = 'CREATE TABLE IF NOT EXISTS qc_table (' \
+						'emp_id VARCHAR(10) NOT NULL,' \
+						'date_time DATETIME NOT NULL,' \
+						'machine VARCHAR(10) NOT NULL,' \
+						'jo_no VARCHAR(15) NOT NULL,' \
+						'quality TINYINT UNSIGNED NOT NULL);'
 				cursor.execute(query)
 				db.commit()
 		finally:
 			db.close()
 
-	def insert_qc(self, values):
+	def insert_qc(self, machine, values):
 		db = pymysql.connect(self.host, self.user, self.password, self.db)
 
 		try:
 			with db.cursor() as cursor:
 				for value in values:
-					query = '''INSERT INTO qc_table (emp_id, date_time, machine, jo_no, quality) 
-							VALUES (%s, %s, %s, %s, %s)'''
+					query = 'INSERT INTO qc_table (emp_id, date_time, machine, jo_no, quality) VALUES (%s, %s, ' \
+						'{machine}, %s, %s)'.format(machine=machine)
 					cursor.execute(query, value)
 
 				db.commit()
@@ -415,25 +417,25 @@ class DatabaseManager:
 				cursor.execute("DROP TABLE IF EXISTS maintenance_table;")
 
 				# TODO check varchar length for emp & machine.
-				query = '''CREATE TABLE IF NOT EXISTS maintenance_table (
-						emp_id VARCHAR(10) NOT NULL,
-						jo_no VARCHAR(15),
-						start_time DATETIME NOT NULL,
-						end_time DATETIME NOT NULL,
-						machine VARCHAR(10) NOT NULL;'''
+				query = 'CREATE TABLE IF NOT EXISTS maintenance_table (' \
+						'emp_id VARCHAR(10) NOT NULL,' \
+						'machine VARCHAR(10) NOT NULL,' \
+						'jo_no VARCHAR(15),' \
+						'date_time DATETIME NOT NULL,' \
+						'start TINYINT NOT NULL;'
 				cursor.execute(query)
 				db.commit()
 		finally:
 			db.close()
 
-	def insert_maintenance(self, values):
+	def insert_maintenance(self, machine, values):
 		db = pymysql.connect(self.host, self.user, self.password, self.db)
 
 		try:
 			with db.cursor() as cursor:
 				for value in values:
-					query = '''INSERT INTO maintenance_table (emp_id, jo_no, start_time, end_time, machine) 
-							VALUES (%s, %s, %s, %s, %s)'''
+					query = 'INSERT INTO maintenance_table (emp_id, machine, jo_no, date_time, start) VALUES ' \
+							'(%s, {machine}, %s, %s, %s)'.format(machine=machine)
 					cursor.execute(query, value)
 
 				db.commit()
@@ -518,20 +520,20 @@ class DatabaseManager:
 		finally:
 			db.close()
 
-	def get_ink_key(self, item):
+	def get_ink_key(self, item, machine):
 		db = pymysql.connect(self.host, self.user, self.password, self.db)
 
+		d = {}
 		try:
-			d = {}
 			with db.cursor() as cursor:
-				query = "SELECT impression FROM ink_impression_table WHERE item = %s LIMIT 1"
-				cursor.execute(query, (item,))
+				query = "SELECT impression FROM ink_impression_table WHERE item = %s AND machine = %s LIMIT 1"
+				cursor.execute(query, (item, machine))
 				impression = cursor.fetchone()
 				if impression:
 					d['impression'] = impression
 
-				query2 = "SELECT * FROM ink_key_table WHERE item = %s"
-				cursor.execute(query2, (item,))
+				query2 = "SELECT * FROM ink_key_table WHERE item = %s AND machine = %s"
+				cursor.execute(query2, (item, machine))
 				for row in cursor:
 					plate = row[1]
 					new = [v for v in list(row) if type(v) == int]

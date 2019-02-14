@@ -107,23 +107,39 @@ class RaspberryPiController:
 
         return '{0}_{1}_{2}'.format(emp, jo_no, now.strftime('%H%M'))
 
+    def get_key_tuple(self, interval=1, emp=None):
+        # TODO change to UTC now?
+        now = datetime.datetime.now()
+        # Floor to nearest interval (default = 5)
+        now = now - datetime.timedelta(minutes=now.minute % interval)
+
+        if not emp:
+            emp = self.gui.action_bar.employees[1]
+
+        if self.gui.current_job:
+            jo_no = self.gui.current_job.get_current_job()
+        else:
+            jo_no = 'None'
+
+        return [emp, jo_no, now.strftime('%H%M')]
+
     def add_qc(self, emp, _pass):
-        key = self.get_key(emp=emp)
+        key = self.get_key_tuple(emp=emp)
 
         with self.counts_lock:
             if self.counts.get('qc') is None:
                 self.counts['qc'] = []
 
-            self.counts['qc'].append((key, int(_pass)))
+            self.counts['qc'].append(key + [int(_pass)])
 
     def add_maintenance(self, emp, start):
-        key = self.get_key(emp=emp)
+        key = self.get_key_tuple(emp=emp)
 
         with self.counts_lock:
-            if self.counts.get('maintenence') is None:
+            if self.counts.get('maintenance') is None:
                 self.counts['maintenance'] = []
 
-            self.counts['maintenance'].append((key, int(start)))
+            self.counts['maintenance'].append(key + [int(start)])
 
     def pin_triggered(self, pin, _level, _tick):
         name = self.pin_to_name[pin]

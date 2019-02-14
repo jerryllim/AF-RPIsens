@@ -89,19 +89,32 @@ class NetworkManager:
 	def request_jam(self):
 		msg_dict = {"jam": None}
 		deal_msg = self.request(msg_dict)
-		jam_msg = deal_msg.pop('jam')
-		# TODO pop qc and maintenance
+		# TODO get_machine from IP
+		machine = deal_msg.get('ip')
+		qc_list = deal_msg.pop('qc', [])
+		if qc_list:
+			self.database_manager.insert_qc(machine, qc_list)
+
+		maintenance_list = deal_msg.pop('qc', [])
+		if maintenance_list:
+			self.database_manager.insert_maintenance(machine, maintenance_list)
+
+		jam_msg = deal_msg.pop('jam', None)
 		self.database_manager.insert_jam(jam_msg)
 
 	def send_job_info(self):
 		# TODO retrive mac from server settings
-		msg_dict = self.database_manager.get_spec_job(mac)
-		self.request(msg_dict)
+		for pi in self.settings.get_pis():
+			mac = self.settings.get_mac(pi)
+			msg_dict = self.database_manager.get_spec_job(mac)
+			self.request(msg_dict)
 
 	def send_ink_key(self):
 		# TODO retrieve machine from server settings
-		msg_dict = self.database_manager.get_ink_key(item, machine)
-		self.request(msg_dict)
+		for pi in self.settings.get_pis():
+			machine = self.settings.get_machine(pi)
+			msg_dict = self.database_manager.get_ink_key(item, machine)
+			self.request(msg_dict)
 
 	def send_emp(self):
 		msg_dict = self.database_manager.get_emp()
