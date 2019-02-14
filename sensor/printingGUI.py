@@ -58,7 +58,10 @@ class JobClass(Widget):
 
     def get_sfu(self):
         # TODO reformat the return information
-        return self.info_dict
+        sfu_dict = self.info_dict.copy()
+        sfu_dict.update(self.wastage)
+        sfu_dict['output'] = self.output
+        return sfu_dict
 
     def get_item_code(self):
         return self.info_dict.get('code', '')
