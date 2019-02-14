@@ -283,11 +283,11 @@ class RunPage(Screen):
         qc_popup.parent_method = self.update_qc
         qc_popup.open()
 
-    def update_qc(self, employee_num, fail=False):
+    def update_qc(self, employee_num, _pass=False):
         c_time = time.strftime('%x %H:%M')
-        grade = 'Fail' if fail else 'Pass'
+        grade = 'Pass' if _pass else 'Fail'
         App.get_running_app().current_job.qc.append((employee_num, c_time, grade))
-        # TODO update dictionary for QC
+        App.get_running_app().controller.add_qc(employee_num, _pass)
         self.runPage.qc_label.text = 'QC Check: {} at {}, {}'.format(employee_num, c_time, grade)
 
 
@@ -315,13 +315,17 @@ class RunPageLayout(BoxLayout):
 
 class MaintenancePage(Screen):
     maintenance_layout = None
+    employee_num = None
 
     def setup_maintenance(self, employee_num):
         self.clear_widgets()
+        self.employee_num = employee_num
+        App.get_running_app().controller.add_maintenance(employee_num, start=True)
         self.maintenance_layout = Factory.MaintenancePageLayout(employee_num)
         self.add_widget(self.maintenance_layout)
 
     def complete(self):
+        App.get_running_app().controller.add_maintenance(self.employee_num, start=True)
         screen_manager = App.get_running_app().screen_manager
         self.parent.transition.direction = 'down'
         screen_manager.current = screen_manager.previous()

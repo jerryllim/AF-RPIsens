@@ -107,6 +107,24 @@ class RaspberryPiController:
 
         return '{0}_{1}_{2}'.format(emp, jo_no, now.strftime('%H%M'))
 
+    def add_qc(self, emp, _pass):
+        key = self.get_key(emp=emp)
+
+        with self.counts_lock:
+            if self.counts.get('qc') is None:
+                self.counts['qc'] = []
+
+            self.counts['qc'].append((key, int(_pass)))
+
+    def add_maintenance(self, emp, start):
+        key = self.get_key(emp=emp)
+
+        with self.counts_lock:
+            if self.counts.get('maintenence') is None:
+                self.counts['maintenance'] = []
+
+            self.counts['maintenance'].append((key, int(start)))
+
     def pin_triggered(self, pin, _level, _tick):
         name = self.pin_to_name[pin]
         key = self.get_key()
