@@ -354,6 +354,7 @@ class DatabaseManager:
 	def get_spec_job(self, mac):
 		db = pymysql.connect(self.host, self.user, self.password, self.db)
 		reply_dict = {}
+		joined_list = ''
 		try:
 			with db.cursor() as cursor:
 				sql = '''SELECT * FROM job_info_table WHERE mac = %s'''
@@ -361,7 +362,7 @@ class DatabaseManager:
 				temp_list = []
 				for row in cursor:
 					temp_list.append(row)
-				joined_list = ';'.join(map(str,temp_list))
+				joined_list = ';'.join(map(str, temp_list))
 				db.commit()
 		except pymysql.MySQLError as error:
 			print("Failed to select record in database: {}".format(error))
@@ -384,7 +385,7 @@ class DatabaseManager:
 						emp_id VARCHAR(10) NOT NULL,
 						date_time DATETIME NOT NULL,
 						machine VARCHAR(10) NOT NULL,
-						jo_no VARCHAR(10) NOT NULL,
+						jo_no VARCHAR(15) NOT NULL,
 						quality TINYINT UNSIGNED NOT NULL);'''
 				cursor.execute(query)
 				db.commit()
@@ -416,6 +417,7 @@ class DatabaseManager:
 				# TODO check varchar length for emp & machine.
 				query = '''CREATE TABLE IF NOT EXISTS maintenance_table (
 						emp_id VARCHAR(10) NOT NULL,
+						jo_no VARCHAR(15),
 						start_time DATETIME NOT NULL,
 						end_time DATETIME NOT NULL,
 						machine VARCHAR(10) NOT NULL;'''
