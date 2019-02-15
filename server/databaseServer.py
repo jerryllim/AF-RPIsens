@@ -1,8 +1,9 @@
 import pymysql
 from datetime import datetime, timedelta
 
+
 class Settings:
-	setting = {"152.228.1.135":{
+	setting = {"152.228.1.135": {
 			"machine": "Kruger",
 			"S01": None,
 			"S02": ("Kruger", "col2"),
@@ -19,18 +20,45 @@ class Settings:
 			"S13": None,
 			"S14": None,
 			"S15": ("Kruger", "output"),
-			"E01": None,
+			"E01": ("Kruger", "col1"),
 			"E02": None,
 			"E03": None,
 			"E04": None,
-			"E05": None}}
+			"E05": None},
+		"152.228.1.192": {
+		"machine": "SM53",
+		"S01": None,
+		"S02": None,
+		"S03": None,
+		"S04": None,
+		"S05": ("SM53", "col5"),
+		"S06": None,
+		"S07": ("SM53", "col7"),
+		"S08": ("SM53", "col8"),
+		"S09": None,
+		"S10": ("SM53", "col10"),
+		"S11": None,
+		"S12": None,
+		"S13": None,
+		"S14": None,
+		"S15": ("SM53", "output"),
+		"E01": ("SM53", "col1"),
+		"E02": ("SM53", "col2"),
+		"E03": ("SM53", "col3"),
+		"E04": None,
+		"E05": None}}
 
 	def get_ip_key(self, ip, key):
 		print("in class settings: ", self.setting[ip][key])
-		return self.setting[ip][key]
+		if self.setting.get(ip) and (self.setting.get(ip)).get(key):
+			return self.setting[ip][key]
+		else:
+			return None
+
 
 class DatabaseManager:
-	def __init__(self, host='localhost', user='user', password='pass', db='test'):
+	def __init__(self, settings, host='localhost', user='user', password='pass', db='test'):
+		self.settings = settings
 		self.host = host
 		self.user = user
 		self.password = password
@@ -134,9 +162,9 @@ class DatabaseManager:
 		try:
 			with db.cursor() as cursor:
 				# TODO change sett_dict format
-				#sett_dict = self.setting_json()
+				# sett_dict = self.setting_json()
 				for recv_id, recv_info in recv_dict.items():
-					print(recv_id)
+					print(recv_id)  # TODO to delete this print?
 					emp, job, time = recv_id.split('_', 3)
 					recv_time = datetime.strptime(time, '%H%M')
 					now = datetime.now()
@@ -145,14 +173,14 @@ class DatabaseManager:
 						date_time = date_time - timedelta(1)
 
 					for key in recv_info.keys():
-						#values = sett_dict.get(key, None)
-						values = Settings().get_ip_key(ip, key)
+						# values = sett_dict.get(key, None)
+						values = self.settings.get_ip_key(ip, key)
 						# print(values)
 
 						if values:
 							query = "INSERT INTO jam_current_table (machine, jo_no, emp, date_time, "\
 							"{header}) VALUES ('{machine}', '{jo_no}', '{emp}', '{date_time}', {value}) ON "\
-							"DUPLICATE KEY UPDATE {header} = {header} + {value};".format(header=values[1], 
+							"DUPLICATE KEY UPDATE {header} = {header} + {value};".format(header=values[1],
 														     machine=values[0],
 														     jo_no=job, emp=emp,
 														     date_time=date_time.strftime("%Y-%m-%d %H:%M"),

@@ -18,7 +18,8 @@ class NetworkManager:
 
 	def __init__(self):
 		self.context = zmq.Context()
-		self.database_manager = databaseServer.DatabaseManager()
+		self.settings = databaseServer.Settings()
+		self.database_manager = databaseServer.DatabaseManager(self.settings)
 		self.router_routine()
 		self.dealer_routine()
 		self.router_thread = threading.Thread(target=self.route)
@@ -29,7 +30,7 @@ class NetworkManager:
 		self.dealer.setsockopt(zmq.LINGER, 0)
 		for port in port_numbers:
 			self.dealer.connect("tcp://%s" % port)
-			#print("Successfully connected to machine %s" % port_number)
+			# print("Successfully connected to machine %s" % port_number)
 
 	def request(self, msg):
 		temp_list = {}
