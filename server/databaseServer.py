@@ -1,6 +1,33 @@
 import pymysql
 from datetime import datetime, timedelta
 
+class Settings:
+	setting = {"152.228.1.135":{
+			"machine": "Kruger",
+			"S01": None,
+			"S02": ("Kruger", "col2"),
+			"S03": ("Kruger", "col3"),
+			"S04": None,
+			"S05": ("Kruger", "col5"),
+			"S06": None,
+			"S07": ("Kruger", "col7"),
+			"S08": ("Kruger", "col8"),
+			"S09": None,
+			"S10": ("Kruger", "col10"),
+			"S11": None,
+			"S12": None,
+			"S13": None,
+			"S14": None,
+			"S15": ("Kruger", "output"),
+			"E01": None,
+			"E02": None,
+			"E03": None,
+			"E04": None,
+			"E05": None}}
+
+	def get_ip_key(self, ip, key):
+		print("in class settings: ", self.setting[ip][key])
+		return self.setting[ip][key]
 
 class DatabaseManager:
 	def __init__(self, host='localhost', user='user', password='pass', db='test'):
@@ -94,7 +121,7 @@ class DatabaseManager:
 		finally:
 			db.close()
 
-	def insert_jam(self, recv_dict=None):
+	def insert_jam(self, ip, recv_dict=None):
 		# TODO remove recv_dict as a keyword argument
 		# if not recv_dict:
 		# 	recv_dict = {
@@ -107,7 +134,7 @@ class DatabaseManager:
 		try:
 			with db.cursor() as cursor:
 				# TODO change sett_dict format
-				sett_dict = self.setting_json()
+				#sett_dict = self.setting_json()
 				for recv_id, recv_info in recv_dict.items():
 					print(recv_id)
 					emp, job, time = recv_id.split('_', 3)
@@ -118,7 +145,8 @@ class DatabaseManager:
 						date_time = date_time - timedelta(1)
 
 					for key in recv_info.keys():
-						values = sett_dict.get(key, None)
+						#values = sett_dict.get(key, None)
+						values = Settings().get_ip_key(ip, key)
 						# print(values)
 
 						if values:
