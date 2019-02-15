@@ -180,13 +180,6 @@ class RaspberryPiController:
 
         return temp
 
-    @staticmethod
-    def parse_job_info(data_str):
-        data_list = data_str.split(";")
-        values = [ast.literal_eval(value) for value in data_list]
-
-        return values
-
     def parse_emp_info(self, emp_data):
         self.database_manager.update_into_employees_table(emp_data.items())
 
@@ -216,10 +209,9 @@ class RaspberryPiController:
                 if key == "jam":
                     reply_dict["jam"] = self.get_counts()
                 elif key == "job_info":
-                    job_str = recv_dict.pop(key)
-                    job_data = self.parse_job_info(job_str)
+                    job_list = recv_dict.pop(key)
                     self.database_manager.recreate_job_table()
-                    self.database_manager.insert_into_job_table(job_data)
+                    self.database_manager.insert_into_job_table(job_list)
                 elif key == "emp":
                     emp_data = recv_dict.pop(key)
                     self.parse_emp_info(emp_data)

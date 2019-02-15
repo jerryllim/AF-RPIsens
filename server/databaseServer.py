@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 class Settings:
 	setting = {"152.228.1.135": {
 			"machine": "Kruger",
+			"mac": 'ZF1',
 			"S01": None,
 			"S02": ("Kruger", "col2"),
 			"S03": ("Kruger", "col3"),
@@ -27,6 +28,7 @@ class Settings:
 			"E05": None},
 		"152.228.1.192": {
 		"machine": "SM53",
+		"mac": 'ZP10',
 		"S01": None,
 		"S02": None,
 		"S03": None,
@@ -319,6 +321,7 @@ class DatabaseManager:
 				# TODO check varchar length for each column
 				sql = 'CREATE TABLE IF NOT EXISTS job_info_table (' \
 						'jo_no VARCHAR(13) PRIMARY KEY,' \
+						'jo_line INT,' \
 						'mac VARCHAR(5),' \
 						'to_do INT,' \
 						'code VARCHAR(14),' \
@@ -343,7 +346,7 @@ class DatabaseManager:
 		:return:
 		"""
 		db = pymysql.connect(self.host, self.user, self.password, self.db)
-		column_names = ['jo_no', 'mac', 'to_do', 'code', 'descp', 'so_no', 'edd', 'so_qty', 'so_rem']
+		column_names = ['jo_no', 'jo_line', 'mac', 'to_do', 'code', 'descp', 'so_no', 'edd', 'so_qty', 'so_rem']
 		column_names_str = ', '.join(column_names)
 		binds_str = ', '.join(['%s'] * len(column_names))
 		try:
@@ -360,13 +363,13 @@ class DatabaseManager:
 		finally:
 			db.close()
 
-	def update_job(self, ran_no, jo_id):
+	def update_job(self, ran_no, jo_id, jo_line):
 		db = pymysql.connect(self.host, self.user, self.password, self.db)
 		try:
 			with db.cursor() as cursor:
-				sql = '''UPDATE job_info SET ran = %s WHERE jo_no = %s'''
-				cursor.execute(sql, (ran_no, jo_id,))
-				self.check_complete(cursor, jo_id)  # Check if job has been completed
+				sql = '''UPDATE job_info SET ran = %s WHERE jo_no = %s AND jo_line = %s'''
+				cursor.execute(sql, (ran_no, jo_id, jo_line))
+				self.check_complete(cursor, jo_id, jo_line)  # Check if job has been completed
 				db.commit()
 		except pymysql.MySQLError as error:
 			print("Failed to update record to database: {}".format(error))
@@ -376,31 +379,30 @@ class DatabaseManager:
 	def delete_job(self, jo_ids):
 		"""
 		Delete multiple jobs
-		:param jo_ids: List of jo_id
+		:param jo_ids: List of jo_no & jo_line
 		:return:
 		"""
 		db = pymysql.connect(self.host, self.user, self.password, self.db)
 		try:
 			with db.cursor() as cursor:
-				query = '''DELETE FROM job_info WHERE jo_no = %s'''
+				query = '''DELETE FROM job_info WHERE jo_no = %s AND jo_line = %s'''
 				cursor.executemany(query, jo_ids)
 		except pymysql.MySQLError as error:
 			print("Failed to update record to database: {}".format(error))
 		finally:
 			db.close()
 			
-	def get_job_info(self, barcode_msg):
+	def get_job_info(self, barcode):
 		db = pymysql.connect(self.host, self.user, self.password, self.db)
 		cursor = db.cursor()
 		reply_dict = {}
 		try:
-			sql = '''SELECT jo_no, code, descp, to_do, ran FROM job_info_table WHERE jo_no = %s LIMIT 1'''
-			cursor.execute(sql, (barcode_msg,))
-			temp = cursor.fetchone()
-			barcode = temp[0]
 			jo_no = barcode[:-3]
 			jo_line = int(barcode[-3:])
-			reply_dict = [jo_no, jo_line] + list(temp[1:])
+			sql = '''SELECT code, descp, to_do, ran FROM job_info_table WHERE jo_no = %s LIMIT 1 AND jo_line = %s'''
+			cursor.execute(sql, (jo_no, jo_line))
+			temp = cursor.fetchone()
+			reply_dict = [jo_no, jo_line] + list(temp)
 			print("reply_dict: ", reply_dict)
 			db.commit()
 		except pymysql.MySQLError as error:
@@ -409,29 +411,26 @@ class DatabaseManager:
 			db.close()
 			return reply_dict
 			
-	def get_spec_job(self, mac):
+	def get_jobs_for(self, mac):
 		db = pymysql.connect(self.host, self.user, self.password, self.db)
-		reply_dict = {}
-		joined_list = ''
+		job_list = []
 		try:
 			with db.cursor() as cursor:
 				sql = '''SELECT * FROM job_info_table WHERE mac = %s'''
 				cursor.execute(sql, (mac,))
-				temp_list = []
 				for row in cursor:
-					temp_list.append(row)
-				joined_list = ';'.join(map(str, temp_list))
-				db.commit()
+					job_list.append(row)
+
 		except pymysql.MySQLError as error:
 			print("Failed to select record in database: {}".format(error))
 		finally:
 			db.close()
-			return joined_list
+			return job_list
 
 	@staticmethod
-	def check_complete(cursor, jo_id):
-		query = '''DELETE FROM job_info WHERE jo_no = %s AND ran >= to_do'''
-		cursor.execute(query, jo_id)
+	def check_complete(cursor, jo_id, jo_line):
+		query = '''DELETE FROM job_info WHERE jo_no = %s AND jo_line = %s AND ran >= to_do'''
+		cursor.execute(query, (jo_id, jo_line))
 
 	def create_qc_table(self):
 		db = pymysql.connect(self.host, self.user, self.password, self.db)

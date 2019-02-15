@@ -109,8 +109,8 @@ class NetworkManager:
 		# TODO retrive mac from server settings
 		for pi in self.settings.get_pis():
 			mac = self.settings.get_mac(pi)
-			msg_dict = self.database_manager.get_spec_job(mac)
-			self.request(msg_dict)
+			job_list = self.database_manager.get_jobs_for(mac)
+			self.request({'job_info': job_list})
 
 	def send_ink_key(self):
 		# TODO retrieve machine from server settings
