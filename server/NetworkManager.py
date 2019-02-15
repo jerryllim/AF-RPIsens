@@ -7,7 +7,9 @@ from server import databaseServer
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.schedulers.background import BackgroundScheduler
 
+# TODO why are we using such a global variable?
 port_numbers = ["152.228.1.192:1234", ]
+
 
 class NetworkManager:
 	dealer = None
