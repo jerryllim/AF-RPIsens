@@ -152,11 +152,11 @@ class DatabaseManager:
 						if values:
 							query = "INSERT INTO jam_current_table (machine, jo_no, emp, date_time, "\
 							"{header}) VALUES ('{machine}', '{jo_no}', '{emp}', '{date_time}', {value}) ON "\
-							"DUPLICATE KEY UPDATE {header} = {header} + {value};".format(header=values[1],
-																				machine=values[0],
-																				jo_no=job, emp=emp,
-																				date_time=date_time.strftime("%Y-%m-%d %H:%M"),
-																				value=recv_info[key])
+							"DUPLICATE KEY UPDATE {header} = {header} + {value};".format(header=values[1], 
+														     machine=values[0],
+														     jo_no=job, emp=emp,
+														     date_time=date_time.strftime("%Y-%m-%d %H:%M"),
+														     value=recv_info[key])
 							cursor.execute(query)
 				db.commit()
 		except pymysql.MySQLError as e:
