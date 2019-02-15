@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="8c4eab11-9431-48ea-8992-fef6a6e722be" name="Default" comment="Reduced labels (populate in init) &amp; created NumericProperty for counter">
-      <change beforePath="$PROJECT_DIR$/server/NetworkManager.py" beforeDir="false" afterPath="$PROJECT_DIR$/server/NetworkManager.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/databaseServer.py" beforeDir="false" afterPath="$PROJECT_DIR$/server/databaseServer.py" afterDir="false" />
-    </list>
+    <list default="true" id="8c4eab11-9431-48ea-8992-fef6a6e722be" name="Default" comment="Reduced labels (populate in init) &amp; created NumericProperty for counter" />
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -62,11 +59,11 @@
       </split-first>
       <split-second>
         <leaf>
-          <file pinned="false" current-in-tab="false">
+          <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/server/NetworkManager.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="299">
-                  <caret line="118" column="57" selection-start-line="118" selection-start-column="57" selection-end-line="118" selection-end-column="57" />
+                <state relative-caret-position="270">
+                  <caret line="107" column="28" lean-forward="true" selection-start-line="107" selection-start-column="28" selection-end-line="107" selection-end-column="28" />
                   <folding>
                     <element signature="e#0#10#0" expanded="true" />
                   </folding>
@@ -74,11 +71,11 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="true">
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/server/databaseServer.py">
               <provider selected="true" editor-type-id="text-editor">
                 <state relative-caret-position="327">
-                  <caret line="630" column="38" selection-start-line="630" selection-start-column="38" selection-end-line="630" selection-end-column="38" />
+                  <caret line="630" column="41" selection-start-line="630" selection-start-column="41" selection-end-line="630" selection-end-column="41" />
                   <folding>
                     <element signature="e#0#14#0" expanded="true" />
                   </folding>
@@ -212,8 +209,8 @@
         <option value="$PROJECT_DIR$/sensor/printinggui.ini" />
         <option value="$PROJECT_DIR$/sensor/printingGUI.py" />
         <option value="$PROJECT_DIR$/sensor/printingMain.py" />
-        <option value="$PROJECT_DIR$/server/NetworkManager.py" />
         <option value="$PROJECT_DIR$/server/databaseServer.py" />
+        <option value="$PROJECT_DIR$/server/NetworkManager.py" />
       </list>
     </option>
   </component>
@@ -260,7 +257,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="SearchEverywhereHistoryKey" value="&#9;FILE&#9;file:///Users/justynlgh/Documents/repo/afRPIsens/sensor/sensorGlobal.py" />
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1550210079195" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1550210930654" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/server" />
     <property name="project.structure.last.edited" value="Modules" />
     <property name="project.structure.proportion" value="0.0" />
@@ -939,22 +936,22 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/server/NetworkManager.py">
+    <entry file="file://$PROJECT_DIR$/server/databaseServer.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="299">
-          <caret line="118" column="57" selection-start-line="118" selection-start-column="57" selection-end-line="118" selection-end-column="57" />
+        <state relative-caret-position="327">
+          <caret line="630" column="41" selection-start-line="630" selection-start-column="41" selection-end-line="630" selection-end-column="41" />
           <folding>
-            <element signature="e#0#10#0" expanded="true" />
+            <element signature="e#0#14#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/server/databaseServer.py">
+    <entry file="file://$PROJECT_DIR$/server/NetworkManager.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="327">
-          <caret line="630" column="38" selection-start-line="630" selection-start-column="38" selection-end-line="630" selection-end-column="38" />
+        <state relative-caret-position="270">
+          <caret line="107" column="28" lean-forward="true" selection-start-line="107" selection-start-column="28" selection-end-line="107" selection-end-column="28" />
           <folding>
-            <element signature="e#0#14#0" expanded="true" />
+            <element signature="e#0#10#0" expanded="true" />
           </folding>
         </state>
       </provider>

@@ -59,6 +59,7 @@ class RaspberryPiController:
         self.scheduler.start()
 
         self.respondent_thread = threading.Thread(target=self.respond)
+        self.respondent_thread.daemon = True
         self.respondent_thread.start()
         # self.requester_thread = threading.Thread(target=self.subscribe)
         # self.requester_thread.start()
