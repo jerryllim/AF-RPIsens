@@ -615,6 +615,28 @@ class DatabaseManager:
 			db.close()
 			return d
 
+	def get_ink_key_for(self, machine):
+		db = pymysql.connect(self.host, self.user, self.password, self.db)
 
-if __name__ == '__main__':
-	DatabaseManager()
+		d = {}
+		try:
+			with db.cursor() as cursor:
+				query = "SELECT item, impression FROM ink_impression_table WHERE machine = %s"
+				cursor.execute(query, (machine, ))
+				for row in cursor:
+					item = row[0]
+					impression = row[1]
+					d[item] = {'impression': impression}
+
+					query2 = "SELECT * FROM ink_key_table WHERE item = %s AND machine = %s"
+					cursor.execute(query2, (item, machine))
+					for inner_row in cursor:
+						plate = inner_row[1]
+						new = [v for v in list(row) if type(v) == int]
+
+						d[plate] = new
+
+			db.commit()
+		finally:
+			db.close()
+			return d

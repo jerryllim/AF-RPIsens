@@ -107,16 +107,16 @@ class NetworkManager:
 
 	def send_job_info(self):
 		# TODO retrive mac from server settings
-		for pi in self.settings.get_pis():
-			mac = self.settings.get_mac(pi)
+		for ip in self.settings.get_ips():
+			mac = self.settings.get_mac(ip)
 			job_list = self.database_manager.get_jobs_for(mac)
 			self.request({'job_info': job_list})
 
 	def send_ink_key(self):
 		# TODO retrieve machine from server settings
-		for pi in self.settings.get_pis():
-			machine = self.settings.get_machine(pi)
-			msg_dict = self.database_manager.get_ink_key(item, machine)
+		for ip in self.settings.get_ips():
+			machine = self.settings.get_machine(ip)
+			msg_dict = self.database_manager.get_ink_key(machine)
 			self.request(msg_dict)
 
 	def send_emp(self):
