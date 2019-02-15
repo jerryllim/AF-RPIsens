@@ -57,6 +57,21 @@ class Settings:
 		else:
 			return None
 
+	def get_mac(self, ip):
+		if self.setting.get(ip):
+			return self.setting[ip]['mac']
+		else:
+			return False
+
+	def get_machine(self, ip):
+		if self.setting.get(ip):
+			return self.setting[ip]['machine']
+		else:
+			return False
+
+	def get_ips(self):
+		return list(self.setting.keys())
+
 
 class DatabaseManager:
 	def __init__(self, settings, host='localhost', user='user', password='pass', db='test'):
