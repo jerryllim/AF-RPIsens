@@ -102,7 +102,7 @@ class NetworkManager:
 		if maintenance_list:
 			self.database_manager.insert_maintenance(machine, maintenance_list)
 
-		jam_msg = deal_msg.pop('jam', None)
+		jam_msg = deal_msg.pop('jam', {})
 		self.database_manager.insert_jam(machine, jam_msg)
 
 	def send_job_info(self):
