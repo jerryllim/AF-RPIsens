@@ -89,7 +89,8 @@ class NetworkManager:
 			msg_dict = {"jam": None}
 			deal_msg = self.request(port, msg_dict)
 			# TODO get_machine from IP
-			machine = deal_msg.get('ip')
+			machine_ip = deal_msg.get('ip')
+			machine = self.settings.get_machine(machine_ip)
 			qc_list = deal_msg.pop('qc', [])
 			if qc_list:
 				self.database_manager.insert_qc(machine, qc_list)
@@ -99,7 +100,7 @@ class NetworkManager:
 				self.database_manager.insert_maintenance(machine, maintenance_list)
 
 			jam_msg = deal_msg.pop('jam', {})
-			self.database_manager.insert_jam(machine, jam_msg)
+			self.database_manager.insert_jam(machine_ip, jam_msg)
 
 	def send_job_info(self):
 		# TODO retrive mac from server settings
