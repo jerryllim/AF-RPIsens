@@ -51,18 +51,14 @@ class RaspberryPiController:
         self.update_ip_ports()
         
         self.context = zmq.Context()
-        # self.publisher_routine()
         self.respondent_routine()
         self.dealer_routine()
-        # self.subscriber_routine()
         self.set_check_steady_job()
         self.scheduler.start()
 
         self.respondent_thread = threading.Thread(target=self.respond)
         self.respondent_thread.daemon = True
         self.respondent_thread.start()
-        # self.requester_thread = threading.Thread(target=self.subscribe)
-        # self.requester_thread.start()
 
     def update_ip_ports(self):
         self.server_add = self.gui.config.get('Network', 'server_add')
@@ -221,24 +217,6 @@ class RaspberryPiController:
                     self.parse_emp_info(emp_data)
 
             self.respondent.send_string(json.dumps(reply_dict))
-    
-    # def publisher_routine(self):
-    #     # port connection sould be declared beforehand
-    #     port = '{}:{}'.format(self.server_add, self.subscribe_port)
-    #
-    #     # establish publisher pattern and connection to server port
-    #     self.publisher = self.context.socket(zmq.PUB)
-    #     self.publisher.connect("tcp://%s" % port)
-    #     time.sleep(1)  # Wait for publisher to connect to port
-    #     # print("Successfully connected to machine %s" % port)
-    #
-    # def publish(self, msg):
-    #     # routine function starts here
-    #     msg_json = msg
-    #     if self.publisher is None:
-    #         self.publisher_routine()
-    #
-    #     self.publisher.send_string(msg_json)
         
     def dealer_routine(self):
         port_number = "{}:{}".format(self.server_add, self.server_port)
@@ -263,24 +241,6 @@ class RaspberryPiController:
                 break
 
         return recv_msg
-
-    # def subscriber_routine(self):
-    #     port = "152.228.1.135:56788" # TODO port add here
-    #     self.subscriber = self.context.socket(zmq.SUB)
-    #     self.subscriber.setsockopt_string(zmq.SUBSCRIBE, "")
-    #
-    #     # print("Connecting to machine...")
-    #     self.subscriber.bind("tcp://%s" % port)
-    #     # print("Successfully connected to machine %s" % port)
-    #
-    # def subscribe(self):
-    #     while True:
-    #         # wait for messages from publishers
-    #         print("Waiting for progression updates...")
-    #         rev_msg = str(self.subscriber.recv())
-    #         # print("Received message: %s" % rev_msg)
-    #         received_json = json.loads(rev_msg)
-    #         # TODO what to do with the received json
     
     def pin_triggered2(self, pin, level, _tick):
         name = self.pin_to_name[pin]
