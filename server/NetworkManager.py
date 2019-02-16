@@ -10,7 +10,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 class NetworkManager:
 	dealer = None
 	router = None
-	port_numbers = ["152.228.1.192:1234", ]
+	port_numbers = ["152.228.1.135:7777", ]
 	# port_number = "{}:8888".format(self.self_add)
 
 	def __init__(self):
@@ -30,6 +30,7 @@ class NetworkManager:
 	def request(self, port, msg):
 		temp_list = {}
 		self.dealer.connect("tcp://%s" % port)
+		print(port)
 		msg_json = json.dumps(msg)
 		self.dealer.send_string("", zmq.SNDMORE)  # delimiter
 		self.dealer.send_string(msg_json)
@@ -39,11 +40,11 @@ class NetworkManager:
 		poller = zmq.Poller()
 		poller.register(self.dealer, zmq.POLLIN)
 
-		socks = dict(poller.poll(2 * 1000))
+		socks = dict(poller.poll(5 * 1000))
 
 		if self.dealer in socks:
 			try:
-				self.dealer.recv()
+				self.dealer.recv() # delimiter
 				recv_msg = self.dealer.recv_json()
 				print(recv_msg)
 				temp_list.update(recv_msg)
@@ -85,20 +86,20 @@ class NetworkManager:
 			self.router.send_json(reply_dict)
 
 	def request_jam(self):
-		for port in port_numbers:
+		for port in self.port_numbers:
 			msg_dict = {"jam": None}
 			deal_msg = self.request(port, msg_dict)
 			# TODO get_machine from IP
 			machine = deal_msg.get('ip')
-			qc_list = deal_msg.pop('qc', [])
+			jam_msg = deal_msg.pop('jam', {})
+			qc_list = jam_msg.pop('qc', [])
 			if qc_list:
 				self.database_manager.insert_qc(machine, qc_list)
 
-			maintenance_list = deal_msg.pop('qc', [])
+			maintenance_list = jam_msg.pop('qc', [])
 			if maintenance_list:
 				self.database_manager.insert_maintenance(machine, maintenance_list)
 
-			jam_msg = deal_msg.pop('jam', {})
 			self.database_manager.insert_jam(machine, jam_msg)
 
 	def send_job_info(self):

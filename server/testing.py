@@ -9,13 +9,15 @@ try:
 		if jam == "1":
 			print("requesting...")
 			network_manager.request_jam()
+			print("requested")
 		elif jam == "2":
 			print("exiting...")
 			break
 		else:
 			print("no such commands")
+			
 except KeyboardInterrupt:
 	print("interrupted with ctrl+c")
 	raise
-finally:
-	sys.exit()
+# finally:
+	# sys.exit()
