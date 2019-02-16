@@ -269,7 +269,8 @@ class RunPage(Screen):
         qc_popup.parent_method = self.update_qc
         qc_popup.open()
 
-    def update_qc(self, employee_num, _pass=False):
+    def update_qc(self, employee_num, fail=False):
+        _pass = not fail
         c_time = time.strftime('%x %H:%M')
         grade = 'Pass' if _pass else 'Fail'
         App.get_running_app().current_job.qc.append((employee_num, c_time, grade))
