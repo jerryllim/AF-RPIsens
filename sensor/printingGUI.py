@@ -666,11 +666,11 @@ class PrintingGUIApp(App):
     # database_manager = None
 
     def build(self):
-        # self.check_camera()  # TODO uncomment
+        self.check_camera()  # TODO uncomment
 
         self.config.set('Network', 'self_add', self.get_ip_add())
-        # self.controller = printingMain.RaspberryPiController(self)
-        self.controller = FakeClass(self)  # TODO set if testing
+        self.controller = printingMain.RaspberryPiController(self)
+        # self.controller = FakeClass(self)  # TODO set if testing
 
         self.use_kivy_settings = False
         num_operators = self.config.get('General', 'num_operators')
