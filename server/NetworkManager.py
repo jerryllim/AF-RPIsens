@@ -3,7 +3,7 @@ import json
 import time
 import pymysql
 import threading
-from server import databaseServer
+import databaseServer
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.schedulers.background import BackgroundScheduler
 
@@ -20,6 +20,7 @@ class NetworkManager:
 		self.router_routine()
 		self.dealer_routine()
 		self.router_thread = threading.Thread(target=self.route)
+		self.router_thread.daemon = True
 		self.router_thread.start()
 
 	def dealer_routine(self):

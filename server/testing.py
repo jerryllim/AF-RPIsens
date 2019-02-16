@@ -9,7 +9,7 @@ try:
 		if jam == "1":
 			print("requesting...")
 			network_manager.request_jam()
-		elif:
+		elif jam == "2":
 			print("exiting...")
 			break
 		else:
