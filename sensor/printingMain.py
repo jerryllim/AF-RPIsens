@@ -99,7 +99,10 @@ class RaspberryPiController:
         now = now - datetime.timedelta(minutes=now.minute % interval)
 
         if not emp:
-            emp = self.gui.action_bar.employees[1]
+            if self.gui.action_bar:
+                emp = self.gui.action_bar.employees[1]
+            else:
+                emp = None
 
         if self.gui.current_job:
             jo_no = self.gui.current_job.get_current_job()
@@ -115,7 +118,10 @@ class RaspberryPiController:
         now = now - datetime.timedelta(minutes=now.minute % interval)
 
         if not emp:
-            emp = self.gui.action_bar.employees[1]
+            if self.gui.action_bar:
+                emp = self.gui.action_bar.employees[1]
+            else:
+                emp = None
 
         if self.gui.current_job:
             jo_no = self.gui.current_job.get_current_job()

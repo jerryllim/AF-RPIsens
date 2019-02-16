@@ -1,26 +1,27 @@
 import pymysql
 from datetime import datetime, timedelta
 
+
 class Settings:
 	setting = {"152.228.1.135": {
-			"machine": "Kruger",
+			"machine": "Exia",
 			"mac": 'ZF1',
 			"S01": None,
-			"S02": ("Kruger", "col2"),
-			"S03": ("Kruger", "col3"),
+			"S02": ("Exia", "col2"),
+			"S03": ("Exia", "col3"),
 			"S04": None,
-			"S05": ("Kruger", "col5"),
+			"S05": ("Exia", "col5"),
 			"S06": None,
-			"S07": ("Kruger", "col7"),
-			"S08": ("Kruger", "col8"),
+			"S07": ("Exia", "col7"),
+			"S08": ("Exia", "col8"),
 			"S09": None,
-			"S10": ("Kruger", "col10"),
+			"S10": ("Exia", "col10"),
 			"S11": None,
 			"S12": None,
 			"S13": None,
 			"S14": None,
-			"S15": ("Kruger", "output"),
-			"E01": ("Kruger", "col1"),
+			"S15": ("Exia", "output"),
+			"E01": ("Exia", "col1"),
 			"E02": None,
 			"E03": None,
 			"E04": None,
@@ -88,23 +89,23 @@ class DatabaseManager:
 		# TODO create dictionary based on server settings
 
 		sett_dict = {
-			"machine": "Kruger",
+			"machine": "Exia",
 			"IP": "152.228.1.124:9999",
 			"S01": None,
-			"S02": ("Kruger", "col2"),
-			"S03": ("Kruger", "col3"),
+			"S02": ("Exia", "col2"),
+			"S03": ("Exia", "col3"),
 			"S04": None,
-			"S05": ("Kruger", "col5"),
+			"S05": ("Exia", "col5"),
 			"S06": None,
-			"S07": ("Kruger", "col7"),
-			"S08": ("Kruger", "col8"),
+			"S07": ("Exia", "col7"),
+			"S08": ("Exia", "col8"),
 			"S09": None,
-			"S10": ("Kruger", "col10"),
+			"S10": ("Exia", "col10"),
 			"S11": None,
 			"S12": None,
 			"S13": None,
 			"S14": None,
-			"S15": ("Kruger", "output"),
+			"S15": ("Exia", "output"),
 			"E01": None,
 			"E02": None,
 			"E03": None,
@@ -181,8 +182,8 @@ class DatabaseManager:
 				# sett_dict = self.setting_json()
 				for recv_id, recv_info in recv_dict.items():
 					print(recv_id)  # TODO to delete this print?
-					emp, job, time = recv_id.split('_', 3)
-					recv_time = datetime.strptime(time, '%H%M')
+					emp, job, time_str = recv_id.split('_', 3)
+					recv_time = datetime.strptime(time_str, '%H%M')
 					now = datetime.now()
 					date_time = now.replace(hour=recv_time.hour, minute=recv_time.minute)
 					if recv_time.time() > now.time():
@@ -469,8 +470,18 @@ class DatabaseManager:
 		try:
 			with db.cursor() as cursor:
 				for value in values:
-					query = 'INSERT INTO qc_table (emp_id, date_time, machine, jo_no, quality) VALUES (%s, %s, ' \
-						'{machine}, %s, %s)'.format(machine=machine)
+					emp, jo_no, time_str, grade = value
+					recv_time = datetime.strptime(time_str, '%H%M')
+					now = datetime.now()
+					date_time = now.replace(hour=recv_time.hour, minute=recv_time.minute)
+					if recv_time.time() > now.time():
+						date_time = date_time - timedelta(1)
+
+					query = 'INSERT INTO qc_table (emp_id, date_time, machine, jo_no, quality) VALUES ({emp}, ' \
+							'{date_time}, {machine}, {jo_no}, ' \
+							'{grade})'.format(emp=emp, date_time=date_time.strftime("%Y-%m-%d %H:%M"),
+											  machine=machine, jo_no=jo_no, grade=grade)
+
 					cursor.execute(query, value)
 
 				db.commit()
@@ -503,14 +514,24 @@ class DatabaseManager:
 		try:
 			with db.cursor() as cursor:
 				for value in values:
+					emp, jo_no, time_str, start = value
+					recv_time = datetime.strptime(time_str, '%H%M')
+					now = datetime.now()
+					date_time = now.replace(hour=recv_time.hour, minute=recv_time.minute)
+					if recv_time.time() > now.time():
+						date_time = date_time - timedelta(1)
+
 					query = 'INSERT INTO maintenance_table (emp_id, machine, jo_no, date_time, start) VALUES ' \
-							'(%s, {machine}, %s, %s, %s)'.format(machine=machine)
+							'({emp}, {machine}, {jo_no}, {date_time}, ' \
+							'{start})'.format(emp=emp, machine=machine, jo_no=jo_no,
+											  date_time=date_time.strftime("%Y-%m-%d %H:%M"), start=start)
 					cursor.execute(query, value)
 
 				db.commit()
 		finally:
 			db.close()
 
+	# TODO remove ink_key table from server
 	def create_ink_key_table(self):
 		db = pymysql.connect(self.host, self.user, self.password, self.db)
 
