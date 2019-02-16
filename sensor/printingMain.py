@@ -99,7 +99,10 @@ class RaspberryPiController:
         now = now - datetime.timedelta(minutes=now.minute % interval)
 
         if not emp:
-            emp = self.gui.action_bar.employees[1]
+            if self.gui.action_bar:
+                emp = self.gui.action_bar.employees[1]
+            else:
+                emp = None
 
         if self.gui.current_job:
             jo_no = self.gui.current_job.get_current_job()
@@ -115,7 +118,10 @@ class RaspberryPiController:
         now = now - datetime.timedelta(minutes=now.minute % interval)
 
         if not emp:
-            emp = self.gui.action_bar.employees[1]
+            if self.gui.action_bar:
+                emp = self.gui.action_bar.employees[1]
+            else:
+                emp = None
 
         if self.gui.current_job:
             jo_no = self.gui.current_job.get_current_job()
@@ -186,7 +192,7 @@ class RaspberryPiController:
     
     def respondent_routine(self):
         # TODO add self port to settings
-        port_number = "{}:1234".format(self.self_add)
+        port_number = "{}:{}".format(self.self_add, self.self_port)
 
         self.respondent = self.context.socket(zmq.REP)
         self.respondent.setsockopt(zmq.LINGER, 0)
