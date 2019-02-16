@@ -7,6 +7,7 @@ import databaseServer
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.schedulers.background import BackgroundScheduler
 
+
 class NetworkManager:
 	dealer = None
 	router = None
