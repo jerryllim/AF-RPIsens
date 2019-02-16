@@ -1,7 +1,6 @@
 import pymysql
 from datetime import datetime, timedelta
 
-
 class Settings:
 	setting = {"152.228.1.135": {
 			"machine": "Kruger",
@@ -204,9 +203,9 @@ class DatabaseManager:
 														     value=recv_info[key])
 							cursor.execute(query)
 				db.commit()
-		except pymysql.MySQLError as e:
+		except pymysql.MySQLError as error:
 			db.rollback()
-			print(e)
+			print("Failed to insert record to database: {}".format(error))
 		finally:
 			db.close()
 

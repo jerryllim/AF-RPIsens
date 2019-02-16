@@ -7,13 +7,10 @@ from server import databaseServer
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.schedulers.background import BackgroundScheduler
 
-# TODO why are we using such a global variable?
-port_numbers = ["152.228.1.192:1234", ]
-
-
 class NetworkManager:
 	dealer = None
 	router = None
+	port_numbers = ["152.228.1.192:1234", ]
 	# port_number = "{}:8888".format(self.self_add)
 
 	def __init__(self):
@@ -28,36 +25,33 @@ class NetworkManager:
 	def dealer_routine(self):
 		self.dealer = self.context.socket(zmq.DEALER)
 		self.dealer.setsockopt(zmq.LINGER, 0)
-		for port in port_numbers:
-			self.dealer.connect("tcp://%s" % port)
-			# print("Successfully connected to machine %s" % port_number)
 
-	def request(self, msg):
+	def request(self, port, msg):
 		temp_list = {}
-		for port in port_numbers:
-			msg_json = json.dumps(msg)
-			self.dealer.send_string("", zmq.SNDMORE)  # delimiter
-			self.dealer.send_string(msg_json)
-			print("request msg sent")
+		self.dealer.connect("tcp://%s" % port)
+		msg_json = json.dumps(msg)
+		self.dealer.send_string("", zmq.SNDMORE)  # delimiter
+		self.dealer.send_string(msg_json)
+		print("request msg sent")
 
-			# use poll for timeouts:
-			poller = zmq.Poller()
-			poller.register(self.dealer, zmq.POLLIN)
+		# use poll for timeouts:
+		poller = zmq.Poller()
+		poller.register(self.dealer, zmq.POLLIN)
 
-			socks = dict(poller.poll(3 * 1000))
+		socks = dict(poller.poll(2 * 1000))
 
-			if self.dealer in socks:
-				try:
-					self.dealer.recv()
-					recv_msg = self.dealer.recv_json()
-					# print("recv_msg: %s" % recv_msg)
-					#deal_msg = json.loads(recv_msg)
-					print(recv_msg)
-					temp_list.update(recv_msg)
-				except IOError as error:
-					print("Problem with socket: ", error)
-			else:
-				print("Machine did not respond")
+		if self.dealer in socks:
+			try:
+				self.dealer.recv()
+				recv_msg = self.dealer.recv_json()
+				print(recv_msg)
+				temp_list.update(recv_msg)
+			except IOError as error:
+				print("Problem with socket: ", error)
+			finally:
+				self.dealer.disconnect("tcp://%s" % port)
+		else:
+			print("Machine is not connected")
 
 		return temp_list			
 
@@ -90,20 +84,21 @@ class NetworkManager:
 			self.router.send_json(reply_dict)
 
 	def request_jam(self):
-		msg_dict = {"jam": None}
-		deal_msg = self.request(msg_dict)
-		# TODO get_machine from IP
-		machine = deal_msg.get('ip')
-		qc_list = deal_msg.pop('qc', [])
-		if qc_list:
-			self.database_manager.insert_qc(machine, qc_list)
+		for port in port_numbers:
+			msg_dict = {"jam": None}
+			deal_msg = self.request(port, msg_dict)
+			# TODO get_machine from IP
+			machine = deal_msg.get('ip')
+			qc_list = deal_msg.pop('qc', [])
+			if qc_list:
+				self.database_manager.insert_qc(machine, qc_list)
 
-		maintenance_list = deal_msg.pop('qc', [])
-		if maintenance_list:
-			self.database_manager.insert_maintenance(machine, maintenance_list)
+			maintenance_list = deal_msg.pop('qc', [])
+			if maintenance_list:
+				self.database_manager.insert_maintenance(machine, maintenance_list)
 
-		jam_msg = deal_msg.pop('jam', {})
-		self.database_manager.insert_jam(machine, jam_msg)
+			jam_msg = deal_msg.pop('jam', {})
+			self.database_manager.insert_jam(machine, jam_msg)
 
 	def send_job_info(self):
 		# TODO retrive mac from server settings
