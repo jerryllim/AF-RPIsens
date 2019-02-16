@@ -103,7 +103,7 @@ class NetworkManager:
 			if maintenance_list:
 				self.database_manager.insert_maintenance(machine, maintenance_list)
 
-			self.database_manager.insert_jam(machine, jam_msg)
+			self.database_manager.insert_jam(machine_ip, jam_msg)
 
 	def send_job_info(self):
 		# TODO retrive mac from server settings
