@@ -35,7 +35,7 @@ from kivy.properties import NumericProperty, StringProperty
 class JobClass(Widget):
     output = NumericProperty(0)
 
-    def __init__(self, info_dict, ink_key, employees, wastage=None):
+    def __init__(self, info_dict, employees, wastage=None):
         Widget.__init__(self)
         self.info_dict = info_dict
         # TODO get default unit
@@ -44,7 +44,6 @@ class JobClass(Widget):
         self.wastage = wastage
         self.employees = employees
         self.qc = []
-        self.ink_key = ink_key
         self.adjustments = {'E01': 0, 'E02': 0, 'E03': 0}
 
     # def get_employee(self):
@@ -65,14 +64,6 @@ class JobClass(Widget):
 
     def get_item_code(self):
         return self.info_dict.get('code', '')
-
-    def get_ink_key(self):
-        ink_key_copy = self.ink_key.copy()
-        ink_key_copy.pop('update', False)
-        return ink_key_copy
-
-    def ink_key_updated(self):
-        return self.ink_key.get('update', False)
 
 
 class SelectPage(Screen):
@@ -135,25 +126,22 @@ class SelectPage(Screen):
                 popup.open()
                 return
 
-            item_code = job_dict.get('code')
-            item_ink_key_dict = controller.get_ink_key(item_code)
-
             employees = App.get_running_app().action_bar.employees.copy()
             if len(employees) < len(App.get_running_app().action_bar.employee_buttons):
                 print(len(employees), ' !< ', len(App.get_running_app().action_bar.employee_buttons))
                 raise ValueError('Please log in')
 
             self.ids.job_entry.text = ''
-            App.get_running_app().current_job = JobClass(job_dict, item_ink_key_dict, employees)
+            App.get_running_app().current_job = JobClass(job_dict, employees)
             self.parent.get_screen('adjustment_page').generate_tabs()
             self.parent.get_screen('run_page').generate_screen()
             self.parent.transition.direction = 'left'
             self.parent.current = 'adjustment_page'
+
         except ValueError as err_msg:
             popup_boxlayout = BoxLayout(orientation='vertical')
-            print(err_msg)
-            popup_boxlayout.add_widget(Label(text=err_msg))
-            popup = Popup(title='No employee logged in', content=popup_boxlayout, size_hint=(0.5, 0.5))
+            popup_boxlayout.add_widget(Label(text=str(err_msg)))
+            popup = Popup(title='Error', content=popup_boxlayout, size_hint=(0.5, 0.5))
             popup.open()
 
 
@@ -178,11 +166,6 @@ class AdjustmentPage(Screen):
                                                              text)
         current_job.adjustments['E03'] = self.int_text_input(self.adjustment_tabbedpanel.ids['adjustment_tab'].
                                                              plate_text.text)
-
-        if current_job.ink_key_updated():
-            item = current_job.get_item_code()
-            ink_key = current_job.get_ink_key()
-            App.get_running_app().controller.replace_ink_key_tables({item: ink_key})
 
         self.parent.transition.direction = 'left'
         self.parent.current = 'run_page'
@@ -445,116 +428,6 @@ class EmployeeScanPage(Popup):
         self.dismiss()
 
 
-class InkKeyTab(ScrollView):
-    def __init__(self, **kwargs):
-        ScrollView.__init__(self, **kwargs)
-        self.clear_widgets()
-        self.add_widget(Factory.InkKeyBoxLayout())
-
-
-class InkKeyBoxLayout(BoxLayout):
-    def __init__(self, **kwargs):
-        BoxLayout.__init__(self, **kwargs)
-        self.ink_key_dict = App.get_running_app().current_job.ink_key.copy()
-
-        self.impression_text.text = '{}'.format(self.ink_key_dict.pop('impression', ''))
-        self.impression_text.bind(focus=self.edit_impression)
-        keys = list(self.ink_key_dict.keys())
-
-        for key in keys:
-            layout = InkZoneLayout(key)
-            self.add_widget(layout)
-
-        # TODO how to add plate since operator has no keyboard for the plate code input.
-        # Retrieve plate code from job info?
-        self.add_widget(Button(text='Add plate', size_hint=(1, None)))
-
-    def edit_impression(self, _instance, focus):
-        def dismiss_popup(_button):
-            if value_textinput.text:
-                ink_key_dict = App.get_running_app().current_job.ink_key
-                ink_key_dict['update'] = True
-                ink_key_dict['impression'] = int(value_textinput.text)
-                self.impression_text.text = '{}'.format(ink_key_dict['impression'])
-
-            edit_popup.dismiss()
-
-        if focus is True:
-            content_boxlayout = BoxLayout(orientation='vertical', spacing=10, padding=10)
-            value_textinput = TextInput()
-            value_textinput.bind(focus=lambda inst, _focus: numpad.set_target(inst))
-            content_boxlayout.add_widget(value_textinput)
-            numpad = NumPadGrid()
-            numpad.size_hint = (1, 4)
-            numpad.set_target(value_textinput)
-            content_boxlayout.add_widget(numpad)
-            dismiss_button = Button(text='Dismiss')
-            content_boxlayout.add_widget(dismiss_button)
-            edit_popup = Popup(title='Edit impression', content=content_boxlayout, auto_dismiss=False, size_hint=(0.5,
-                                                                                                                  0.7))
-            dismiss_button.bind(on_press=dismiss_popup)
-            edit_popup.open()
-
-
-class InkZoneButton(Button):
-    pass
-
-
-class InkZoneLayout(BoxLayout):
-    def __init__(self, plate, **kwargs):
-        BoxLayout.__init__(self, **kwargs)
-        self.plate = plate
-        self.buttons = []
-        self.ids['plate_code'].text = 'Plate: {}'.format(plate)
-        self.load_widgets()
-
-    def load_widgets(self):
-        self.buttons.clear()
-        self.ids['ink_zones'].clear_widgets()
-        zone_list = App.get_running_app().current_job.ink_key.get(self.plate)
-
-        for index in range(len(zone_list)):
-            button = InkZoneButton(text="{0}\n[b][size=20sp]{1}[/size][/b]".format(index+1, zone_list[index]))
-            button.bind(on_press=self.edit_ink_key)
-            self.buttons.append(button)
-            self.ids['ink_zones'].add_widget(button)
-
-        # zones = sorted(ink_dict.keys(), key=alphanum_key)
-        # for zone in zones:
-        #     button = Button(text="{}\n[b][size=20sp]{}[/size][/b]".format(zone, ink_dict.get(zone, '')),
-        #                     size_hint=(1, None), halign='center', markup=True)
-        #     button.bind(on_press=self.edit_ink_key)
-        #     self.buttons.append(button)
-        #     self.ids['ink_zones'].add_widget(button)
-
-    def edit_ink_key(self, instance):
-        def dismiss_popup(_button):
-            if value_textinput.text:
-                App.get_running_app().current_job.ink_key['update'] = True
-                index = int(key) - 1
-                App.get_running_app().current_job.ink_key[self.plate][index] = int(value_textinput.text)
-
-            edit_popup.dismiss()
-            self.load_widgets()
-
-        text = instance.text
-        key, value = text.split('\n', 2)
-        content_boxlayout = BoxLayout(orientation='vertical', spacing=10, padding=10)
-        value_textinput = TextInput()
-        value_textinput.bind(focus=lambda inst, _focus: numpad.set_target(inst))
-        content_boxlayout.add_widget(value_textinput)
-        numpad = NumPadGrid()
-        numpad.size_hint = (1, 4)
-        numpad.set_target(value_textinput)
-        content_boxlayout.add_widget(numpad)
-        dismiss_button = Button(text='Dismiss')
-        content_boxlayout.add_widget(dismiss_button)
-        edit_popup = Popup(title='Edit ink key {}'.format(key), content=content_boxlayout, auto_dismiss=False,
-                           size_hint=(0.5, 0.7))
-        dismiss_button.bind(on_press=dismiss_popup)
-        edit_popup.open()
-
-
 class SimpleActionBar(BoxLayout):
     time = StringProperty()
     emp_popup = None
@@ -796,8 +669,8 @@ class PrintingGUIApp(App):
         # self.check_camera()  # TODO uncomment
 
         self.config.set('Network', 'self_add', self.get_ip_add())
-        self.controller = printingMain.RaspberryPiController(self)
-        # self.controller = FakeClass(self)  # TODO set if testing
+        # self.controller = printingMain.RaspberryPiController(self)
+        self.controller = FakeClass(self)  # TODO set if testing
 
         self.use_kivy_settings = False
         num_operators = self.config.get('General', 'num_operators')
@@ -878,13 +751,6 @@ class PrintingGUIApp(App):
 
         sfu_data = self.current_job.get_sfu()
         req_msg = {'sfu': sfu_data}
-        if self.current_job.ink_key_updated():
-            # Change the format from dictionary to list (with only values)
-            ink_key = self.current_job.get_ink_key()
-            item = self.current_job.get_item_code()
-
-            # Add the ink_d to req_msg with
-            req_msg['ink_key'] = {item: ink_key}
 
         self.controller.request(req_msg)
 
@@ -926,14 +792,8 @@ class FakeClass:
 
         return job_info
 
-    def get_ink_key(self, item):
-        return self.database_manager.get_ink_key(item)
-
     def get_employee_name(self, emp_id):
         return self.database_manager.get_employee_name(emp_id)
-
-    def replace_ink_key_tables(self, ink_key):
-        self.database_manager.replace_ink_key_tables(ink_key)
 
     def request(self, req_msg):
         print(req_msg)

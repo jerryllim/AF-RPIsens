@@ -71,17 +71,11 @@
 
 <AdjustmentTabbedPanel>:
     do_default_tab: False
-    ink_key_tab: ink_key_tab
 
     TabbedPanelItem:
         text: 'Adjustments'
         AdjustmentTab:
             id: adjustment_tab
-
-    TabbedPanelItem:
-        text: 'Ink Key'
-        InkKeyTab:
-            id: ink_key_tab
 
 <AdjustmentTab>:
     orientation: 'horizontal'
@@ -468,60 +462,4 @@
         on_release: root.parent.complete()
 
     BoxLayout:
-
-<InkKeyBoxLayout>:
-    orientation: 'vertical'
-    size_hint: (1, None)
-    height: self.minimum_height
-    spacing: 10
-    padding: 10
-    impression_text: impression_text
-
-    BoxLayout:
-        orientation: 'horizontal'
-        size_hint: (1, None)
-        height: self.minimum_height
-
-        Label:
-            text: 'Impression'
-            size_hint: (1, None)
-            height: sp(50)
-            font_size: sp(25)
-
-        TextInput:
-            id: impression_text
-            multiline: False
-            input_filter: 'int'
-            size_hint: (1, None)
-            font_size: sp(25)
-            valign: 'middle'
-            height: sp(50)
-
-
-<InkZoneLayout>:
-    id: ink_zone
-    orientation: 'vertical'
-    size_hint: (1, None)
-    height: self.minimum_height
-
-    Label:
-        id: plate_code
-        size_hint: (1, None)
-        height: sp(50)
-        font_size: sp(25)
-        text_size: self.size
-        halign: 'left'
-
-    GridLayout:
-        id: ink_zones
-        cols: 8
-        orientation: 'horizontal'
-        size_hint: (1, None)
-        height: self.minimum_height
-
-<InkZoneButton>:
-    size_hint: (1, None)
-    height: self.texture_size[1]
-    halign: 'center'
-    markup: True
 

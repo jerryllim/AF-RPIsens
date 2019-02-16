@@ -183,9 +183,6 @@ class RaspberryPiController:
 
     def parse_emp_info(self, emp_data):
         self.database_manager.update_into_employees_table(emp_data.items())
-
-    def parse_ink_info(self, ink_data):
-        self.database_manager.replace_ink_key_tables(ink_data)
     
     def respondent_routine(self):
         # TODO add self port to settings
@@ -216,9 +213,6 @@ class RaspberryPiController:
                 elif key == "emp":
                     emp_data = recv_dict.pop(key)
                     self.parse_emp_info(emp_data)
-                elif key == "ink_key":
-                    ink_data = recv_dict.pop(key)
-                    self.parse_ink_info(ink_data)
 
             self.respondent.send_string(json.dumps(reply_dict))
     
@@ -316,14 +310,8 @@ class RaspberryPiController:
 
         return job_info
 
-    def get_ink_key(self, item):
-        return self.database_manager.get_ink_key(item)
-
     def get_employee_name(self, emp_id):
         return self.database_manager.get_employee_name(emp_id)
-
-    def replace_ink_key_tables(self, ink_key):
-        self.database_manager.replace_ink_key_tables(ink_key)
 
 
 class DatabaseManager:
@@ -362,54 +350,6 @@ class DatabaseManager:
         finally:
             db.close()
 
-    def recreate_ink_key_table(self):
-        db = sqlite3.connect(self.database)
-        cursor = db.cursor()
-        try:
-            cursor.execute("DROP TABLE IF EXISTS ink_key_table;")
-            cursor.execute("DROP TABLE IF EXISTS ink_impression_table;")
-            cursor.execute("CREATE TABLE IF NOT EXISTS ink_key_table "
-                           "(item TEXT NOT NULL, "
-                           "plate TEXT NOT NULL, "
-                           "'1' INTEGER DEFAULT 0, "
-                           "'2' INTEGER DEFAULT 0, "
-                           "'3' INTEGER DEFAULT 0, "
-                           "'4' INTEGER DEFAULT 0, "
-                           "'5' INTEGER DEFAULT 0, "
-                           "'6' INTEGER DEFAULT 0, "
-                           "'7' INTEGER DEFAULT 0, "
-                           "'8' INTEGER DEFAULT 0, "
-                           "'9' INTEGER DEFAULT 0, "
-                           "'10' INTEGER DEFAULT 0, "
-                           "'11' INTEGER DEFAULT 0, "
-                           "'12' INTEGER DEFAULT 0, "
-                           "'13' INTEGER DEFAULT 0, "
-                           "'14' INTEGER DEFAULT 0, "
-                           "'15' INTEGER DEFAULT 0, "
-                           "'16' INTEGER DEFAULT 0, "
-                           "'17' INTEGER DEFAULT 0, "
-                           "'18' INTEGER DEFAULT 0, "
-                           "'19' INTEGER DEFAULT 0, "
-                           "'20' INTEGER DEFAULT 0, "
-                           "'21' INTEGER DEFAULT 0, "
-                           "'22' INTEGER DEFAULT 0, "
-                           "'23' INTEGER DEFAULT 0, "
-                           "'24' INTEGER DEFAULT 0, "
-                           "'25' INTEGER DEFAULT 0, "
-                           "'26' INTEGER DEFAULT 0, "
-                           "'27' INTEGER DEFAULT 0, "
-                           "'28' INTEGER DEFAULT 0, "
-                           "'29' INTEGER DEFAULT 0, "
-                           "'30' INTEGER DEFAULT 0, "
-                           "'31' INTEGER DEFAULT 0, "
-                           "'32' INTEGER DEFAULT 0, "
-                           "PRIMARY KEY(item, plate));")
-            cursor.execute("CREATE TABLE IF NOT EXISTS ink_impression_table (item TEXT PRIMARY KEY, impression INTEGER "
-                           "NOT NULL);")
-            db.commit()
-        finally:
-            db.close()
-
     def replace_into_employees_table(self, emp_list):
         db = sqlite3.connect(self.database)
         cursor = db.cursor()
@@ -429,21 +369,6 @@ class DatabaseManager:
         db = sqlite3.connect(self.database)
         cursor = db.cursor()
         cursor.execute("DELETE FROM employees_table WHERE name IS NULL;")
-        db.commit()
-        db.close()
-
-    def replace_ink_key_tables(self, ink_key):
-        db = sqlite3.connect(self.database)
-        cursor = db.cursor()
-        for item, info in ink_key.items():
-            impression = info.pop('impression')
-            cursor.execute("REPLACE INTO ink_impression_table VALUES (?, ?)", (item, impression))
-            for plate, i_keys in info.items():
-                keys = ",".join("'{}'".format(k) for k in range(1, len(i_keys)+1))
-                qm = ",".join(list('?'*len(i_keys)))
-                values = [item, plate] + i_keys
-                cursor.execute("REPLACE INTO ink_key_table (item,plate," + keys + ") VALUES (?,?," + qm + ");", values)
-
         db.commit()
         db.close()
 
@@ -467,7 +392,7 @@ class DatabaseManager:
         cursor.execute("SELECT * FROM job_info_table WHERE jo_no = ? AND jo_line = ? LIMIT 1;", (jo_no, jo_line))
         job_info = cursor.fetchone()
 
-        cursor.execute("DELETE FROM job_info_table WHERE jo_no = ? AND jo_line = ? LIMIT 1;", (jo_no, jo_line))
+        cursor.execute("DELETE FROM job_info_table WHERE jo_no = ? AND jo_line = ?;", (jo_no, jo_line))
 
         db.close()
 
@@ -478,36 +403,4 @@ class DatabaseManager:
         d = {}
         for idx, col in enumerate(cursor.description):
             d[col[0]] = row[idx]
-        return d
-
-    def get_ink_key(self, item):
-        """Returns empty dictionary if not found"""
-        db = sqlite3.connect(self.database)
-        # db.row_factory = self.dict_factory
-        cursor = db.cursor()
-
-        d = {}
-
-        cursor.execute("SELECT impression FROM ink_impression_table WHERE item = ?;", (item, ))
-        impression_d = cursor.fetchone()
-        if impression_d:
-            d['impression'] = impression_d[0]
-
-        cursor.execute("SELECT plate, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `8`,"
-                       " `9`, `10`, `11`, `12`, `13`, `14`, `15`, `16`,"
-                       " `17`, `18`, `19`, `20`, `21`, `22`, `23`, `24`,"
-                       " `25`, `26`, `27`, `28`, `29`, `30`, `31`, `32`"
-                       " FROM ink_key_table WHERE item = ?", (item, ))
-
-        for row in cursor:
-            # plate = row.pop('plate')
-            # row.pop('item')
-            # new = {k: v for k, v in row.items() if v is not None}
-            list_row = list(row)
-            plate = list_row.pop(0)
-
-            d[plate] = list_row
-
-        db.close()
-
         return d
