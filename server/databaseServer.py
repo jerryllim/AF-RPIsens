@@ -331,7 +331,7 @@ class DatabaseManager:
 		try:
 			with db.cursor() as cursor:
 				# Drop table if it already exist
-				# cursor.execute("DROP TABLE IF EXISTS job_info_table;")
+				cursor.execute("DROP TABLE IF EXISTS job_info_table;")
 
 				# TODO check varchar length for each column
 				sql = 'CREATE TABLE IF NOT EXISTS job_info_table (' \
