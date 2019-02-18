@@ -44,6 +44,8 @@ class Settings(tk.Frame):
 
 		self.tabControl.pack(expand=1, fill="both")
 
+# TODO Network class tab
+
 if __name__ == '__main__':
 	root = tk.Tk()
 	main_app = MainApplication(root)
