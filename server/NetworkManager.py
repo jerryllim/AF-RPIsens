@@ -100,7 +100,7 @@ class NetworkManager:
 			if qc_list:
 				self.database_manager.insert_qc(machine, qc_list)
 
-			maintenance_list = jam_msg.pop('qc', [])
+			maintenance_list = jam_msg.pop('maintenance', [])
 			if maintenance_list:
 				self.database_manager.insert_maintenance(machine, maintenance_list)
 
