@@ -85,51 +85,6 @@ class DatabaseManager:
 		self.create_jam_table()
 		self.create_job_table()
 
-	def setting_json(self):
-		# TODO create dictionary based on server settings
-
-		sett_dict = {
-			"machine": "Exia",
-			"IP": "152.228.1.124:9999",
-			"S01": None,
-			"S02": ("Exia", "col2"),
-			"S03": ("Exia", "col3"),
-			"S04": None,
-			"S05": ("Exia", "col5"),
-			"S06": None,
-			"S07": ("Exia", "col7"),
-			"S08": ("Exia", "col8"),
-			"S09": None,
-			"S10": ("Exia", "col10"),
-			"S11": None,
-			"S12": None,
-			"S13": None,
-			"S14": None,
-			"S15": ("Exia", "output"),
-			"E01": None,
-			"E02": None,
-			"E03": None,
-			"E04": None,
-			"E05": None
-		}
-
-		return sett_dict
-
-	def receive_match(self):
-		# TODO retrieve json from RPi and match with settings_json
-		recv_dict = {
-			'A0001_Z00012345001_1459': {'S01': 100, 'S02': 125, 'S10': 1},
-			'A0001_Z00012345001_1500': {'S01': 25, 'S02': 30, 'S10': 0}
-		}
-		sett_dict = self.setting_json()
-		for recv_id, recv_info in recv_dict.items():
-			for key in recv_info:
-				if sett_dict.get(key, None):
-					print(key, " ", sett_dict[key])
-
-				else:
-					print(key, " not found")
-
 	def create_jam_table(self):
 		db = pymysql.connect(self.host, self.user, self.password, self.db)
 
