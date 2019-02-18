@@ -7,6 +7,7 @@ import databaseServer
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.schedulers.background import BackgroundScheduler
 
+
 class NetworkManager:
 	dealer = None
 	router = None
@@ -111,13 +112,6 @@ class NetworkManager:
 			mac = self.settings.get_mac(ip)
 			job_list = self.database_manager.get_jobs_for(mac)
 			self.request({'job_info': job_list})
-
-	def send_ink_key(self):
-		# TODO retrieve machine from server settings
-		for ip in self.settings.get_ips():
-			machine = self.settings.get_machine(ip)
-			msg_dict = self.database_manager.get_ink_key(machine)
-			self.request(msg_dict)
 
 	def send_emp(self):
 		msg_dict = self.database_manager.get_emp()
