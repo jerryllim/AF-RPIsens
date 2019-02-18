@@ -667,7 +667,7 @@ class PrintingGUIApp(App):
     # database_manager = None
 
     def build(self):
-        self.check_camera()  # TODO uncomment
+        # self.check_camera()  # TODO uncomment
 
         self.config.set('Network', 'self_add', self.get_ip_add())
         self.controller = printingMain.RaspberryPiController(self)
