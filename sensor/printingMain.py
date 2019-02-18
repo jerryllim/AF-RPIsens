@@ -95,7 +95,7 @@ class RaspberryPiController:
         now = now - datetime.timedelta(minutes=now.minute % interval)
 
         if not emp:
-            if self.gui.action_bar:
+            if self.gui.action_bar and self.gui.action_bar.employees.get(1):
                 emp = self.gui.action_bar.employees[1]
             else:
                 emp = None
@@ -114,7 +114,7 @@ class RaspberryPiController:
         now = now - datetime.timedelta(minutes=now.minute % interval)
 
         if not emp:
-            if self.gui.action_bar:
+            if self.gui.action_bar and self.gui.action_bar.employees.get(1):
                 emp = self.gui.action_bar.employees[1]
             else:
                 emp = None
