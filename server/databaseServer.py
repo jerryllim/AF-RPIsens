@@ -100,6 +100,7 @@ class DatabaseManager:
 						jo_no VARCHAR(15) NOT NULL,
 						emp VARCHAR(10) NOT NULL,
 						date_time DATETIME NOT NULL,
+						shift VARCHAR(3) DEFAULT NULL,
 						output INTEGER DEFAULT 0,
 						col1 INTEGER DEFAULT 0,
 						col2 INTEGER DEFAULT 0,
