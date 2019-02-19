@@ -55,6 +55,9 @@ class NetworkManager:
 				self.dealer.disconnect("tcp://%s" % port)
 		else:
 			print("Machine is not connected")
+			self.dealer.close()
+			self.dealer_routine()
+
 
 		return temp_list			
 
