@@ -30,12 +30,13 @@ class NetworkManager:
 
 	def request(self, port, msg):
 		temp_list = {}
+		now = time.strftime("%Y-%m-%d %H:%M:%S")
 		self.dealer.connect("tcp://%s" % port)
 		print(port)
 		msg_json = json.dumps(msg)
 		self.dealer.send_string("", zmq.SNDMORE)  # delimiter
 		self.dealer.send_string(msg_json)
-		print("request msg sent")
+		print("request msg sent %s" % now)
 
 		# use poll for timeouts:
 		poller = zmq.Poller()
