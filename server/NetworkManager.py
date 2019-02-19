@@ -11,7 +11,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 class NetworkManager:
 	dealer = None
 	router = None
-	port_numbers = ["152.228.1.135:7777", ]
+	port_numbers = ["152.228.1.135:7777", "152.228.1.192:7777"]
 	# port_number = "{}:8888".format(self.self_add)
 
 	def __init__(self):
