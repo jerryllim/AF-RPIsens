@@ -41,7 +41,7 @@ class NetworkManager:
 		poller = zmq.Poller()
 		poller.register(self.dealer, zmq.POLLIN)
 
-		socks = dict(poller.poll(5 * 1000))
+		socks = dict(poller.poll(2 * 1000))
 
 		if self.dealer in socks:
 			try:
