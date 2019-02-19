@@ -74,7 +74,7 @@ class Settings:
 
 
 class DatabaseManager:
-	def __init__(self, settings, host='localhost', user='user', password='pass', db='test'):
+	def __init__(self, settings, host='localhost', user='pi', password='prod93', db='test'):
 		self.settings = settings
 		self.host = host
 		self.user = user
