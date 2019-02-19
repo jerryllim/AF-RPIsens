@@ -63,7 +63,7 @@ class NetworkManager:
 
 	def router_routine(self):
 		# port_number = "{}:9999".format(self.self_add)
-		port_number = "152.228.1.124:9999"
+		port_number = "152.228.1.232:9999"
 		self.router = self.context.socket(zmq.ROUTER)
 		self.router.bind("tcp://%s" % port_number)
 		# print("Successfully binded to port %s for respondent" % self.port_number)
