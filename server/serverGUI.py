@@ -64,7 +64,7 @@ class Network(ttk.Frame):
 		add_button = ttk.Button(self.midFrame, text="Add", command=self.get_entry_dict)
 		add_button.grid(row=0, column=0, padx=10, pady=5, sticky=tk.EW)
 
-		edit_button = ttk.Button(self.midFrame, text="Edit")
+		edit_button = ttk.Button(self.midFrame, text="Edit", command=self.edit_machine)
 		edit_button.grid(row=0, column=1, padx=10, pady=5, sticky=tk.EW)
 
 		delete_button = ttk.Button(self.midFrame, text="Delete", command=self.delete_machine)
@@ -184,6 +184,30 @@ class Network(ttk.Frame):
 			self.terminal_tree.delete(selected_machine)
 		except ValueError as error:
 			pass
+
+	def edit_machine(self):
+		iid = self.terminal_tree.focus()
+		machine, ip, mac = self.terminal_tree.item(iid)['values']
+
+		sensor_keys = ["S01", "S02", "S03", "S04", "S05", "S06", "S07", "S08", "S09", "S10", "S11", "S12", "S13", "S14", "S15", "E01", "E02", "E03", "E04", "E05"]
+
+		for index in range(len(self.sensorEntry)):
+			self.sensorEntry[index].delete(0, tk.END)
+			entry_value = self.setting_dict[ip].get(sensor_keys[index], None)
+			if entry_value is not None:
+				self.sensorEntry[index].insert(0, entry_value)
+
+		self.Machine_entry.delete(0, tk.END)
+		self.IP_entry.delete(0, tk.END)
+		self.Mac_entry.delete(0, tk.END)
+		self.Machine_entry.insert(0, machine)
+		self.IP_entry.insert(0, ip)
+		self.Mac_entry.insert(0, mac)
+
+	def display_entry(self, ip):
+		display = []
+		for values in self.setting_dict[ip]:
+			display.append(values)
 
 class Extra(ttk.Frame):
 	def __init__(self, master):
