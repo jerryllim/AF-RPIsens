@@ -134,7 +134,6 @@ class Network(ttk.Frame):
 
 			print(self.setting_dict)
 		else:
-			print("Please input the mandatory fields")
 			popup = tk.Toplevel(self.master)
 			popup.title("Error")
 			popup.transient(self.master)
