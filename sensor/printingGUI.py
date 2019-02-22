@@ -51,6 +51,11 @@ class JobClass(Widget):
     def get_current_job(self):
         return "{jo_no}{jo_line:03d}".format(**self.info_dict)
 
+    def get_all_info(self):
+        # TODO add employee
+        return {'info': self.info_dict.copy(), 'waste': self.wastage.copy(), 'qc': self.qc,
+                'adjustments': self.adjustments}
+
     def get_sfu(self):
         # TODO reformat the return information
         sfu_dict = self.info_dict.copy()

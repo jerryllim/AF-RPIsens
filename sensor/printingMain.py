@@ -1,3 +1,4 @@
+import os
 import ast
 import zmq
 import time
@@ -17,7 +18,7 @@ class RaspberryPiController:
     steady_pins = {}
     pin_to_name = {}
     counts = {}
-    _output = 0
+    permanent = 0
     publisher = None
     respondent = None
     dealer = None
@@ -56,6 +57,7 @@ class RaspberryPiController:
         self.set_check_steady_job()
         self.scheduler.start()
 
+        self.respondent_kill = threading.Event()
         self.respondent_thread = threading.Thread(target=self.respond)
         self.respondent_thread.daemon = True
         self.respondent_thread.start()
@@ -151,7 +153,7 @@ class RaspberryPiController:
 
     def output_pin_triggered(self, _pin, _level, _tick):
         # TODO store output here? and to FeRAM?
-        self._output += 1
+        self.permanent += 1
         self.gui.update_output()
 
     def set_output_callback(self, pin):
@@ -195,7 +197,7 @@ class RaspberryPiController:
 
     def respond(self):
         # routine functions begins here
-        while True:
+        while not self.respondent_kill:
             # wait for next request from client
             recv_message = str(self.respondent.recv(), "utf-8")
             recv_dict = json.loads(recv_message)
@@ -237,7 +239,6 @@ class RaspberryPiController:
     
     def pin_triggered2(self, pin, level, _tick):
         name = self.pin_to_name[pin]
-        # self.states[name] = level
         key = self.get_key()
 
         if level and not self.counts[key][name]:
@@ -270,6 +271,23 @@ class RaspberryPiController:
 
     def get_employee_name(self, emp_id):
         return self.database_manager.get_employee_name(emp_id)
+
+    def graceful_shutdown(self):
+        self.respondent_kill.set()
+        self.respondent_thread.join(timeout=3)
+
+        with self.counts_lock:
+            to_save_dict = {'counter': self.counts.copy(), 'permanent': self.permanent}
+
+        current_job = self.gui.current_job
+        if current_job:
+            to_save_dict.update(current_job.get_all_info)
+
+        with open('last_save.json', 'w') as write_file:
+            json.dump(to_save_dict, write_file)
+
+        time.sleep(1)  # TODO remove sleep?
+        os.system('sudo shutdown -h now')
 
 
 class DatabaseManager:
