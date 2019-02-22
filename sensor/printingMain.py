@@ -187,14 +187,11 @@ class RaspberryPiController:
         self.database_manager.update_into_employees_table(emp_data.items())
     
     def respondent_routine(self):
-        # TODO add self port to settings
         port_number = "{}:{}".format(self.self_add, self.self_port)
 
         self.respondent = self.context.socket(zmq.REP)
         self.respondent.setsockopt(zmq.LINGER, 0)
-        print(port_number)
         self.respondent.bind("tcp://%s" % port_number)
-        # print("Successfully binded to port %s for respondent" % self.port_number)
 
     def respond(self):
         # routine functions begins here
@@ -202,7 +199,6 @@ class RaspberryPiController:
             # wait for next request from client
             recv_message = str(self.respondent.recv(), "utf-8")
             recv_dict = json.loads(recv_message)
-            # print("Received request (%s)" % recv_message)
             reply_dict = {'ip': self.self_add}
 
             for key in recv_dict.keys():
@@ -220,10 +216,8 @@ class RaspberryPiController:
         
     def dealer_routine(self):
         port_number = "{}:{}".format(self.server_add, self.server_port)
-        # print("Connecting to machine...")
         self.dealer = self.context.socket(zmq.DEALER)
         self.dealer.connect("tcp://%s" % port_number)
-        # print("Successfully connected to machine %s" % port_number)
 
     def request(self, msg_dict):
         timeout = 2000
@@ -233,7 +227,6 @@ class RaspberryPiController:
         for i in range(3):
             self.dealer.send_string("", zmq.SNDMORE)
             self.dealer.send_json(msg_dict)
-            print('Attempt ', i, 'for ', msg_dict)
 
             if self.dealer.poll(timeout):
                 self.dealer.recv()
@@ -267,7 +260,6 @@ class RaspberryPiController:
         job_info = self.database_manager.get_job_info(barcode)
         if job_info is None:
             reply_msg = self.request({"job_info": barcode})
-            print(reply_msg)
             if reply_msg:
                 value = reply_msg.pop(barcode)
                 if value:
@@ -285,6 +277,9 @@ class DatabaseManager:
         self.database = 'test.sqlite'  # TODO set database name
         db = sqlite3.connect(self.database)
         cursor = db.cursor()
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='job_info_table';")
+        if not cursor.fetchone():
+            self.recreate_job_table()
         cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='employees_table';")
         if not cursor.fetchone():
             self.recreate_employees_table()
@@ -297,7 +292,7 @@ class DatabaseManager:
             cursor.execute("CREATE TABLE IF NOT EXISTS employees_table (emp_id TEXT PRIMARY KEY, name TEXT);")
             db.commit()
         finally:
-            cursor.close()
+            db.close()
 
     def recreate_job_table(self):
         db = sqlite3.connect(self.database)
