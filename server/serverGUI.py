@@ -1,6 +1,7 @@
 import os
 import json
 import tkinter as tk
+import NetworkManager
 from tkinter import ttk
 from tkinter import messagebox
 
@@ -33,8 +34,15 @@ class Network(ttk.Frame):
 		self.button_frame()
 		self.details_frame()
 		self.populate_treeview()
+		self.editClick = False
 
 	def treeview_frame(self):
+		def bMove(event):
+			tv = event.widget
+			moveTo = tv.index(tv.identify_row(event.y))    
+			for s in tv.selection():
+				tv.move(s, '', moveTo)
+
 		self.topFrame = ttk.Frame(self)
 		self.topFrame.pack(side=tk.TOP, fill=tk.BOTH, anchor=tk.N)
 
@@ -56,6 +64,7 @@ class Network(ttk.Frame):
 		self.terminal_tree.heading("1", text="Machine")
 		self.terminal_tree.heading("2", text="IP")
 		self.terminal_tree.heading("3", text="Mac")
+		self.terminal_tree.bind("<B1-Motion>",bMove, add='+')
 
 	def button_frame(self):
 		self.midFrame = ttk.Frame(self)
@@ -107,6 +116,9 @@ class Network(ttk.Frame):
 		self.Mac_entry = ttk.Entry(self.bottomFrame, text="mac")
 		self.Mac_entry.grid(row=1, column=1, pady=5, sticky=tk.W)
 
+		clear_button = ttk.Button(self.bottomFrame, text="Clear", command=self.clear_entry)
+		clear_button.grid(row=1, column=4, pady=5, padx=(0,50), sticky=tk.EW)
+
 		Separator = ttk.Separator(self.bottomFrame, orient='horizontal')
 		Separator.grid(row=2, columnspan=5, pady=5, sticky=tk.EW)
 
@@ -145,20 +157,20 @@ class Network(ttk.Frame):
 
 			self.terminal_tree.insert('', tk.END, values=(self.Machine_entry.get(), self.IP_entry.get(), self.Mac_entry.get()))
 
-			print(self.setting_dict)
-
 			self.setting_dict.update(merge_dict)
-
-			print(self.setting_dict)
 
 		else:
 			messagebox.showerror("Error", "Please input the mandatory fields: \nMachine, IP and Mac")
 
 	def save_settings(self):
+		if self.editClick == True:
+			self.delete_machine()
+			self.get_entry_dict()
+			self.editClick = False
+		else:
+			pass
+
 		settings = self.setting_dict
-		print(settings)
-		# settings = {**self.treeview_insert,**self.setting_dict}
-		#print(self.get_entry_dict())
 		with open(self.filename, 'w+') as outfile:
 			json.dump(settings, outfile)
 
@@ -172,13 +184,11 @@ class Network(ttk.Frame):
 			for ip, details in self.setting_dict.items():
 				self.terminal_tree.insert('', tk.END, values=(details.get('machine'), ip, details.get('mac')))
 
-		print(self.setting_dict)
-
 	def delete_machine(self):
 		try:
 			iid = self.terminal_tree.focus()
 			machine, ip, mac = self.terminal_tree.item(iid)['values']
-			del self.setting_dict[ip]
+			self.setting_dict.pop(str(ip), None)
 
 			selected_machine = self.terminal_tree.selection()[0]  # <-- get selected item
 			self.terminal_tree.delete(selected_machine)
@@ -186,6 +196,7 @@ class Network(ttk.Frame):
 			pass
 
 	def edit_machine(self):
+		self.editClick = True
 		iid = self.terminal_tree.focus()
 		machine, ip, mac = self.terminal_tree.item(iid)['values']
 
@@ -204,16 +215,23 @@ class Network(ttk.Frame):
 		self.IP_entry.insert(0, ip)
 		self.Mac_entry.insert(0, mac)
 
-	def display_entry(self, ip):
-		display = []
-		for values in self.setting_dict[ip]:
-			display.append(values)
+	def clear_entry(self):
+		self.Machine_entry.delete(0, tk.END)
+		self.IP_entry.delete(0, tk.END)
+		self.Mac_entry.delete(0, tk.END)
+		for index in range(len(self.sensorEntry)):
+			self.sensorEntry[index].delete(0, tk.END)
 
 class Extra(ttk.Frame):
 	def __init__(self, master):
 		ttk.Frame.__init__(self)
-		label = ttk.Label(self, text="Hi, this is extra")
-		label.grid(row=1,column=0,padx=10,pady=10)
+		self.networkmanager = NetworkManager.NetworkManager()
+		self.request_buttons()
+
+	def request_buttons(self):
+		# manual req button
+		req_button = ttk.Button(self, text="Request", command=networkmanager.request_jam)
+		req_button.grid(row=0, column=0, padx=10, pady=5, sticky=tk.EW)
 
 class Employee(ttk.Frame):
 	def __init__(self, master):
