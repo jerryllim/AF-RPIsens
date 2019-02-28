@@ -159,13 +159,13 @@ class RaspberryPiController:
     def set_output_callback(self, pin):
         self.pi.callback(pin, pigpio.RISING_EDGE, self.output_pin_triggered)
 
-    def pin_setup(self, pin, bounce=10):
+    def pin_setup(self, pin, bounce=30):
         self.pi.set_mode(pin, pigpio.INPUT)
         self.pi.set_pull_up_down(pin, pigpio.PUD_DOWN)
         self.pi.set_glitch_filter(pin, (bounce * 1000))
         self.callbacks.append(self.pi.callback(pin, pigpio.RISING_EDGE, self.pin_triggered))
 
-    def pin_setup2(self, pin, bounce=10):
+    def pin_setup2(self, pin, bounce=30):
         self.pi.set_mode(pin, pigpio.INPUT)
         self.pi.set_pull_up_down(pin, pigpio.PUD_DOWN)
         self.pi.set_glitch_filter(pin, (bounce * 1000))
