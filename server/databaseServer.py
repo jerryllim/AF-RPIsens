@@ -490,19 +490,20 @@ class DatabaseManager:
 	def create_past_table(self):
 		db = pymysql.connect(self.host, self.user, self.password, self.db)
 
-		try;
+		try:
 			with db.cursor() as cursor:
 				sql = 'CREATE TABLE IF NOT EXISTS jam_past_table LIKE jam_current_table;'
 				cursor.execute(sql)
 
 				db.commit()
+
 		finally:
 			db.close()
 
 	def transfer_table(self):
 		db = pymysql.connect(self.host, self.user, self.password, self.db)
 
-		try;
+		try:
 			with db.cursor() as cursor:
 				sql = "INSERT IGNORE INTO jam_past_table (machine, jo_no, emp, date_time, shift, output, col1, col2, col3, col4, col5, col6, col7, col8, col9, col10) SELECT * FROM jam_current_table WHERE datetime < NOW() - INTERVAL 2 WEEK;"
 				cursor.execute(sql)
