@@ -5,7 +5,7 @@ import pymysql
 
 class Settings:
     setting = {"152.228.1.135": {
-        "machine": "Exia",
+        "nickname": "Exia",
         "mac": 'ZF1',
         "S01": None,
         "S02": ("Exia", "col2"),
@@ -28,7 +28,7 @@ class Settings:
         "E04": None,
         "E05": None},
         "152.228.1.192": {
-            "machine": "SM53",
+            "nickname": "SM53",
             "mac": 'ZP10',
             "S01": None,
             "S02": None,
