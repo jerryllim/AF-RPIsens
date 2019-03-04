@@ -1,15 +1,14 @@
 import sqlite3
-from PySide2 import QtCore, QtWidgets, QtGui
+import pymysql
+from PySide2 import QtCore, QtWidgets, QtGui, QtSql
 
 
-class ServerGUI(QtWidgets.QWidget):
+class TabPis(QtWidgets.QWidget):
     sensor_list = ['S01', 'S02', 'S03', 'S04', 'S05', 'S06', 'S07', 'S08', 'S09', 'S10', 'S11', 'S12', 'S13', 'S14',
                    'S15', 'E01', 'E02', 'E03', 'E04', 'E05']
 
     def __init__(self):
         QtWidgets.QWidget.__init__(self)
-        self.setWindowTitle('JAM Server')
-        self.setGeometry(60, 60, 800, 500)
 
         # Connect to save
         self.conn = sqlite3.connect('serverTest.sqlite')
@@ -17,10 +16,18 @@ class ServerGUI(QtWidgets.QWidget):
         self.cursor = self.conn.cursor()
 
         # Tree View for the networks
-        self.pis_treeview = QtWidgets.QTreeView(self)
         self.pis_model = QtGui.QStandardItemModel(0, 3, self)
+        self.pis_treeview = QtWidgets.QTreeView(self)
+        self.pis_treeview.setModel(self.pis_model)
         self.pis_treeview.setAlternatingRowColors(True)
         self.pis_treeview.setRootIsDecorated(False)
+        self.pis_treeview.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.pis_treeview.setSortingEnabled(True)
+        self.pis_treeview.activated.connect(self.set_fields)
+        header = self.pis_treeview.header()
+        header.setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+        for i in range(3):
+            self.pis_treeview.resizeColumnToContents(i)
 
         # Button box for New, Edit, Delete
         button_box = QtWidgets.QVBoxLayout()
@@ -42,7 +49,7 @@ class ServerGUI(QtWidgets.QWidget):
         self.main_lineedits = {}
         form_layout = QtWidgets.QFormLayout()
         nick_edit = QtWidgets.QLineEdit()
-        rx = QtCore.QRegExp('([A-Za-z0-9_])+')
+        rx = QtCore.QRegExp('([A-Za-z0-9_]){1,15}')
         validator = QtGui.QRegExpValidator(rx)
         nick_edit.setValidator(validator)
         self.main_lineedits['nick'] = nick_edit
@@ -124,16 +131,6 @@ class ServerGUI(QtWidgets.QWidget):
             self.pis_model.setItem(index, 0, nick_item)
             self.pis_model.setItem(index, 1, ip_item)
             self.pis_model.setItem(index, 2, mac_item)
-
-        self.pis_treeview.setModel(self.pis_model)
-        header = self.pis_treeview.header()
-        header.setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
-        for i in range(3):
-            self.pis_treeview.resizeColumnToContents(i)
-
-        self.pis_treeview.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
-        self.pis_treeview.setSortingEnabled(True)
-        self.pis_treeview.activated.connect(self.set_fields)
 
     @staticmethod
     def dict_factory(cursor, row):
@@ -247,7 +244,137 @@ class ServerGUI(QtWidgets.QWidget):
             combo.setCurrentIndex(0)
 
 
+class TabEmps(QtWidgets.QWidget):
+    def __init__(self):
+        QtWidgets.QWidget.__init__(self)
+
+        # Insertion fields
+        insert_grid = QtWidgets.QGridLayout()
+        self.insert_edits = {}
+        id_label = QtWidgets.QLabel('ID: ')
+        id_edit = QtWidgets.QLineEdit()
+        rx = QtCore.QRegExp('([A-Za-z0-9]){1,6}')
+        validator = QtGui.QRegExpValidator(rx)
+        id_edit.setMaximumWidth(70)
+        id_edit.setValidator(validator)
+        self.insert_edits['id'] = id_edit
+        name_label = QtWidgets.QLabel('Name: ')
+        name_edit = QtWidgets.QLineEdit()
+        name_edit.setMaxLength(20)
+        self.insert_edits['name'] = name_edit
+        insert_grid.addWidget(id_label, 0, 0)
+        insert_grid.addWidget(id_edit, 0, 1)
+        insert_grid.addWidget(name_label, 0, 2)
+        insert_grid.addWidget(name_edit, 0, 3)
+
+        # Tree View
+        self.emp_model = QtGui.QStandardItemModel(0, 3, self)
+        self.emp_treeview = QtWidgets.QTreeView(self)
+        self.emp_treeview.setModel(self.emp_model)
+        self.emp_treeview.setAlternatingRowColors(True)
+        self.emp_treeview.setRootIsDecorated(False)
+        self.emp_treeview.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.emp_treeview.setSortingEnabled(True)
+        self.emp_treeview.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+        header = self.emp_treeview.header()
+        header.setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+        for i in range(3):
+            self.emp_treeview.resizeColumnToContents(i)
+
+        self.populate_model()
+        vbox_layout = QtWidgets.QVBoxLayout()
+        vbox_layout.addLayout(insert_grid)
+        vbox_layout.addWidget(self.emp_treeview)
+
+        # Buttons
+        buttons_box = QtWidgets.QVBoxLayout()
+        add_btn = QtWidgets.QPushButton('Add', self)
+        add_btn.clicked.connect(self.add_emp)
+        buttons_box.addWidget(add_btn)
+        del_btn = QtWidgets.QPushButton('Delete', self)
+        del_btn.clicked.connect(self.delete_emp)
+        buttons_box.addWidget(del_btn)
+        import_btn = QtWidgets.QPushButton('Import', self)
+        buttons_box.addWidget(import_btn)
+        buttons_box.addStretch()
+
+        hbox_layout = QtWidgets.QHBoxLayout()
+        hbox_layout.addLayout(vbox_layout)
+        hbox_layout.addLayout(buttons_box)
+
+        self.setLayout(hbox_layout)
+        self.show()
+
+    def populate_model(self):
+        self.emp_model.clear()
+        self.emp_model.setHorizontalHeaderLabels(['ID', 'Name', 'modified on'])
+        # Connect to SQL
+        db = pymysql.connect('localhost', 'user', 'pass', 'test')
+        with db.cursor() as cursor:
+            cursor.execute("SELECT emp_id, name, modified_on FROM emp_table;")
+
+            for row in cursor:
+                id_item = QtGui.QStandardItem(row[0])
+                name_item = QtGui.QStandardItem(row[1])
+                date_item = QtGui.QStandardItem(str(row[2]))
+                index = self.emp_model.rowCount()
+                self.emp_model.setItem(index, 0, id_item)
+                self.emp_model.setItem(index, 1, name_item)
+                self.emp_model.setItem(index, 2, date_item)
+
+        db.close()
+
+    def add_emp(self):
+        if len(self.insert_edits['id'].text()) > 0:
+            try:
+                db = pymysql.connect('localhost', 'user', 'pass', 'test')
+                id_ = self.insert_edits['id'].text()
+                name = self.insert_edits['name'].text()
+
+                with db.cursor() as cursor:
+                    cursor.execute("INSERT INTO emp_table (emp_id, name) VALUES (%s, %s);", (id_, name))
+                    db.commit()
+                    self.insert_edits['id'].setText('')
+                    self.insert_edits['name'].setText('')
+            except pymysql.Error as error:
+                db.rollback()
+                print(error)  # TODO log error
+                msgbox = QtWidgets.QMessageBox()
+                msgbox.setText(str(error))
+                msgbox.exec_()
+            finally:
+                self.populate_model()
+                db.close()
+
+    def delete_emp(self):
+        rows = set()
+        for idx in self.emp_treeview.selectedIndexes():
+            rows.add(idx.row())
+
+        try:
+            db = pymysql.connect('localhost', 'user', 'pass', 'test')
+
+            with db.cursor() as cursor:
+                for row in rows:
+                    emp_id = self.emp_model.item(row, 0).text()
+                    cursor.execute("DELETE FROM emp_table WHERE emp_id = %s", (emp_id, ))
+
+                db.commit()
+        except pymysql.Error as error:
+            db.rollback()
+            print(error)  # TODO log error
+            msgbox = QtWidgets.QMessageBox()
+            msgbox.setText(str(error))
+            msgbox.exec_()
+        finally:
+            self.populate_model()
+            db.close()
+
+
 if __name__ == '__main__':
     app = QtWidgets.QApplication([])
-    window = ServerGUI()
+    # app.setWindowTitle('JAM Server')
+    # app.setGeometry(60, 60, 800, 500)
+    # window = TabPis()
+    window = TabEmps()
     app.exec_()
