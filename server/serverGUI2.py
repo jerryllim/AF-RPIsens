@@ -42,12 +42,19 @@ class ServerGUI(QtWidgets.QWidget):
         self.main_lineedits = {}
         form_layout = QtWidgets.QFormLayout()
         nick_edit = QtWidgets.QLineEdit()
+        rx = QtCore.QRegExp('([A-Za-z0-9_])+')
+        validator = QtGui.QRegExpValidator(rx)
+        nick_edit.setValidator(validator)
         self.main_lineedits['nick'] = nick_edit
         form_layout.addRow('Nickname:', nick_edit)
         ip_edit = QtWidgets.QLineEdit()
+        ip_rx = QtCore.QRegExp('((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\.|$)){4}')
+        ip_validator = QtGui.QRegExpValidator(ip_rx)
+        ip_edit.setValidator(ip_validator)
         self.main_lineedits['ip'] = ip_edit
         form_layout.addRow('IP:', ip_edit)
         mac_edit = QtWidgets.QLineEdit()
+        mac_edit.setValidator(validator)
         self.main_lineedits['mac'] = mac_edit
         form_layout.addRow('Mac:', mac_edit)
 
