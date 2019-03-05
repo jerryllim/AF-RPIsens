@@ -440,6 +440,7 @@ class TabMisc(QtWidgets.QWidget):
         req_layout.addWidget(req_btn, 0, 3)
         req_box.setLayout(req_layout)
 
+        # Database group
         db_box = QtWidgets.QGroupBox('Database')
         db_layout = QtWidgets.QGridLayout()
         db_layout.setColumnMinimumWidth(0, 100)
@@ -469,13 +470,46 @@ class TabMisc(QtWidgets.QWidget):
         db_test_btn.clicked.connect(lambda: self.test_db_connection(host_edit.text(), port_edit.text(), user_edit.text(), pass_edit.text(), db_edit.text()))
         db_layout.addWidget(db_test_btn, 3, 3)
 
+        # Shift group
+        shift_box = QtWidgets.QGroupBox('Shifts')
+        shift_layout = QtWidgets.QGridLayout()
+        shift_box.setLayout(shift_layout)
+        shift_layout.addWidget(QtWidgets.QLabel('Enable'), 0, 0)
+        shift_layout.addWidget(QtWidgets.QLabel('Shift'), 0, 1)
+        shift_layout.addWidget(QtWidgets.QLabel('Start time'), 0, 2)
+        shift_layout.addWidget(QtWidgets.QLabel('End time'), 0, 3)
+        self.shift_checks = []
+        self.shift_starts = []
+        self.shift_ends = []
+        shift_labels = ['Morning shift', 'Morning Overtime', 'Night shift', 'Night Overtime']
+        for col in range(1, 5):
+            check = QtWidgets.QCheckBox()
+            check.setChecked(True)
+            check.setMaximumWidth(50)
+            check.stateChanged.connect(lambda state, idx=(col-1): self.shift_check_state(state, idx))
+            self.shift_checks.append(check)
+            label = QtWidgets.QLabel(shift_labels[col - 1])
+            start = QtWidgets.QTimeEdit(QtCore.QTime(7, 0))
+            self.shift_starts.append(start)
+            end = QtWidgets.QTimeEdit(QtCore.QTime(17, 15))
+            self.shift_ends.append(end)
+            shift_layout.addWidget(check, col, 0)
+            shift_layout.addWidget(label, col, 1)
+            shift_layout.addWidget(start, col, 2)
+            shift_layout.addWidget(end, col, 3)
+
         vbox_layout = QtWidgets.QVBoxLayout()
         # vbox_layout.setAlignment(QtCore.Qt.AlignHCenter)
         vbox_layout.addWidget(req_box)
         vbox_layout.addWidget(db_box)
+        vbox_layout.addWidget(shift_box)
         vbox_layout.addStretch()
         self.setLayout(vbox_layout)
         self.show()
+
+    def shift_check_state(self, state, idx):
+        self.shift_starts[idx].setDisabled(not state)
+        self.shift_ends[idx].setDisabled(not state)
 
     @staticmethod
     def test_db_connection(host, port, user, password, db):
@@ -515,6 +549,7 @@ class DisplayTable(QtWidgets.QWidget):
         self.date_spin.setDate(QtCore.QDate.currentDate())
         start_label = QtWidgets.QLabel('Start: ')
         self.start_spin = QtWidgets.QTimeEdit(QtCore.QTime(7, 0))
+        self.start_spin.setDisplayFormat('HH:mm')
         hour_label = QtWidgets.QLabel('Hours: ')
         self.hour_spin = QtWidgets.QSpinBox()
         self.hour_spin.setMinimum(1)
