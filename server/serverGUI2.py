@@ -395,10 +395,102 @@ class TabEmps(QtWidgets.QWidget):
                     self.populate_model()
 
 
+class TabWidget(QtWidgets.QWidget):
+    def __init__(self):
+        QtWidgets.QWidget.__init__(self)
+
+        self.setWindowTitle('JAM Server')
+        self.setGeometry(60, 60, 800, 500)
+
+        self.tabs = QtWidgets.QTabWidget()
+        self.table_tab = DisplayTable()  # TODO to change
+        self.pis_tab = TabPis()
+        self.emp_tab = TabEmps()
+        self.tabs.addTab(self.table_tab, 'Display table')
+        self.tabs.addTab(self.pis_tab, 'Pis')
+        self.tabs.addTab(self.emp_tab, 'Employees')
+
+        layout = QtWidgets.QVBoxLayout()
+        layout.addWidget(self.tabs)
+        self.setLayout(layout)
+        self.show()
+
+
+class MiscTab(QtWidgets.QWidget):
+    def __init__(self):
+        QtWidgets.QWidget.__init__(self)
+
+        # Request group
+        req_box = QtWidgets.QGroupBox('Request')
+        req_layout = QtWidgets.QVBoxLayout()
+        req_btn = QtWidgets.QPushButton('Request now')
+        req_layout.addWidget(req_btn)
+        req_box.setLayout(req_layout)
+
+
+        vbox_layout = QtWidgets.QVBoxLayout()
+        vbox_layout.addWidget(req_box)
+        self.setLayout(vbox_layout)
+        self.show()
+
+
+class DisplayTable(QtWidgets.QWidget):
+    def __init__(self):
+        QtWidgets.QWidget.__init__(self)
+
+        table_model = QtGui.QStandardItemModel(3, 10)
+        table_hheaders = ['Machine', 'Sum']
+        for i in range(7, 20):
+            table_hheaders.append('{:02d}'.format(i))
+        table_model.setHorizontalHeaderLabels(table_hheaders)
+
+        output_list = []
+
+        table_vheaders = ['SM52', 'SM53']
+        for row, machine in enumerate(table_vheaders):
+            output_list.append([0] * 13)
+            table_model.setItem(row, 0, QtGui.QStandardItem(machine))
+
+        table_view = QtWidgets.QTableView()
+        table_view.setModel(table_model)
+        table_view.setAlternatingRowColors(True)
+        v_header = table_view.verticalHeader()
+        v_header.hide()
+        db = pymysql.connect('localhost', 'user', 'pass', 'test')
+
+        with db.cursor() as cursor:
+            cursor.execute("SELECT machine, DATE(date_time), HOUR(date_time), SUM(output) FROM jam_current_table WHERE DATE(date_time) = '2019-02-25' GROUP BY machine, DATE(date_time), HOUR(date_time);")
+
+            for row in cursor:
+                col = table_hheaders.index('{:02d}'.format(row[2])) - 2
+                idx = table_vheaders.index(row[0])
+                output_list[idx][col] = row[3]
+                # table_model.setItem(idx, col, QtGui.QStandardItem(str(row[3])))
+
+        for idx, row in enumerate(output_list):
+            for col, value in enumerate(row):
+                item = QtGui.QStandardItem(str(value))
+                if value <= 0:
+                    font = QtGui.QFont()
+                    font.setBold(True)
+                    item.setForeground(QtGui.QBrush(QtGui.QColor(255, 0, 0)))
+                    item.setFont(font)
+                table_model.setItem(idx, col+2, item)
+            table_model.setItem(idx, 1, QtGui.QStandardItem(str(sum(row))))
+    # h_header = table_view.horizontalHeader()
+        # h_header.hide()
+
+        box_layout = QtWidgets.QVBoxLayout()
+        box_layout.addWidget(table_view)
+        self.setLayout(box_layout)
+        self.show()
+
+
+
 if __name__ == '__main__':
     app = QtWidgets.QApplication([])
     # app.setWindowTitle('JAM Server')
     # app.setGeometry(60, 60, 800, 500)
     # window = TabPis()
-    window = TabEmps()
+    window = TabWidget()
     app.exec_()
