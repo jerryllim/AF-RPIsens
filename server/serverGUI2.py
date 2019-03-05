@@ -2,7 +2,7 @@ import csv
 import sqlite3
 import pymysql
 import datetime
-from PySide2 import QtCore, QtWidgets, QtGui, QtSql
+from PySide2 import QtCore, QtWidgets, QtGui
 
 
 class TabPis(QtWidgets.QWidget):
@@ -482,6 +482,8 @@ class TabMisc(QtWidgets.QWidget):
         msgbox = QtWidgets.QMessageBox()
         msgbox.setMinimumWidth(500)
         try:
+            if port.isnumeric():
+                port = int(port)
             conn = pymysql.connect(host=host, user=user, password=password, database=db, port=port)
             if conn.open:
                 msgbox.setText('Connection Successful')
@@ -550,7 +552,6 @@ class DisplayTable(QtWidgets.QWidget):
         else:
             for i in range(start.hour, end.hour):
                 table_hheaders.append('{:02d}'.format(i))
-        print(table_hheaders)
         self.table_model.setHorizontalHeaderLabels(table_hheaders)
 
         output_list = []

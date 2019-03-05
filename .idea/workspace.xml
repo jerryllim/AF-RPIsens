@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="8c4eab11-9431-48ea-8992-fef6a6e722be" name="Default" comment="Reduced labels (populate in init) &amp; created NumericProperty for counter" />
+    <list default="true" id="8c4eab11-9431-48ea-8992-fef6a6e722be" name="Default" comment="Reduced labels (populate in init) &amp; created NumericProperty for counter">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/serverGUI2.py" beforeDir="false" afterPath="$PROJECT_DIR$/server/serverGUI2.py" afterDir="false" />
+    </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -58,8 +61,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/server/serverGUI2.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="291">
-                  <caret line="451" column="66" lean-forward="true" selection-start-line="451" selection-start-column="44" selection-end-line="451" selection-end-column="66" />
+                <state relative-caret-position="246">
+                  <caret line="448" column="47" lean-forward="true" selection-start-line="448" selection-start-column="47" selection-end-line="448" selection-end-column="47" />
                   <folding>
                     <element signature="e#0#10#0" expanded="true" />
                   </folding>
@@ -110,8 +113,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/server/serverGUI2.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="2001">
-                  <caret line="544" column="24" selection-start-line="544" selection-start-column="24" selection-end-line="544" selection-end-column="24" />
+                <state relative-caret-position="-7946">
+                  <caret line="20" column="25" selection-start-line="20" selection-start-column="25" selection-end-line="20" selection-end-column="25" />
                   <folding>
                     <element signature="e#0#10#0" expanded="true" />
                   </folding>
@@ -273,7 +276,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="SearchEverywhereHistoryKey" value="&#9;FILE&#9;file:///Users/justynlgh/Documents/repo/afRPIsens/sensor/sensorGlobal.py" />
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1551774300170" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1551774562091" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/server" />
     <property name="project.structure.last.edited" value="Modules" />
     <property name="project.structure.proportion" value="0.0" />
@@ -621,7 +624,6 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1680" height="1027" extended-state="0" />
-    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" weight="0.23443224" />
       <window_info id="Structure" order="1" weight="0.24908425" />
@@ -633,7 +635,7 @@
       <window_info anchor="bottom" id="Inspection Results" order="0" weight="0.32896176" />
       <window_info anchor="bottom" id="Message" order="1" />
       <window_info anchor="bottom" id="Find" order="2" weight="0.29839572" />
-      <window_info active="true" anchor="bottom" id="Run" order="3" sideWeight="0.493895" visible="true" weight="0.3368984" />
+      <window_info anchor="bottom" id="Run" order="3" sideWeight="0.493895" weight="0.3368984" />
       <window_info anchor="bottom" id="Debug" order="4" weight="0.3989305" />
       <window_info anchor="bottom" id="TODO" order="5" weight="0.32834226" />
       <window_info anchor="bottom" id="Cvs" order="6" weight="0.25" />
@@ -641,7 +643,7 @@
       <window_info anchor="bottom" id="Inspection" order="8" weight="0.4" />
       <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.50305253" side_tool="true" weight="0.3272727" />
       <window_info anchor="bottom" id="Version Control" order="10" weight="0.32834226" />
-      <window_info anchor="bottom" id="Terminal" order="11" sideWeight="0.4969475" weight="0.3272727" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="11" sideWeight="0.4969475" visible="true" weight="0.3272727" />
       <window_info anchor="bottom" id="Dependency Viewer" order="12" weight="0.32896176" />
       <window_info anchor="bottom" id="Messages" order="13" weight="0.32941177" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
@@ -1038,8 +1040,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/server/serverGUI2.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2001">
-          <caret line="544" column="24" selection-start-line="544" selection-start-column="24" selection-end-line="544" selection-end-column="24" />
+        <state relative-caret-position="-7946">
+          <caret line="20" column="25" selection-start-line="20" selection-start-column="25" selection-end-line="20" selection-end-column="25" />
           <folding>
             <element signature="e#0#10#0" expanded="true" />
           </folding>
