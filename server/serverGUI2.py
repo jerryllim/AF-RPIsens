@@ -1,6 +1,7 @@
 import csv
 import sqlite3
 import pymysql
+import datetime
 from PySide2 import QtCore, QtWidgets, QtGui, QtSql
 
 
@@ -406,9 +407,11 @@ class TabWidget(QtWidgets.QWidget):
         self.table_tab = DisplayTable()  # TODO to change
         self.pis_tab = TabPis()
         self.emp_tab = TabEmps()
+        self.misc_tab = TabMisc()
         self.tabs.addTab(self.table_tab, 'Display table')
         self.tabs.addTab(self.pis_tab, 'Pis')
         self.tabs.addTab(self.emp_tab, 'Employees')
+        self.tabs.addTab(self.misc_tab, 'Misc')
 
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(self.tabs)
@@ -416,53 +419,158 @@ class TabWidget(QtWidgets.QWidget):
         self.show()
 
 
-class MiscTab(QtWidgets.QWidget):
+class TabMisc(QtWidgets.QWidget):
     def __init__(self):
         QtWidgets.QWidget.__init__(self)
 
         # Request group
         req_box = QtWidgets.QGroupBox('Request')
-        req_layout = QtWidgets.QVBoxLayout()
+        req_layout = QtWidgets.QGridLayout()
+        req_layout.setColumnMinimumWidth(0, 100)
+        dur_label = QtWidgets.QLabel('Duration: ')
+        dur_spinbox = QtWidgets.QSpinBox()
+        dur_spinbox.setMinimum(1)
+        dur_spinbox.setMaximum(90)
+        dur_label2 = QtWidgets.QLabel('minutes')
+        req_layout.addWidget(dur_label, 0, 0, QtCore.Qt.AlignRight)
+        req_layout.addWidget(dur_spinbox, 0, 1)
+        req_layout.addWidget(dur_label2, 0, 2)
         req_btn = QtWidgets.QPushButton('Request now')
-        req_layout.addWidget(req_btn)
+        req_layout.setAlignment(QtCore.Qt.AlignLeft)
+        req_layout.addWidget(req_btn, 0, 3)
         req_box.setLayout(req_layout)
 
+        db_box = QtWidgets.QGroupBox('Database')
+        db_layout = QtWidgets.QGridLayout()
+        db_layout.setColumnMinimumWidth(0, 100)
+        db_box.setLayout(db_layout)
+        host_label = QtWidgets.QLabel('TCP/IP Server: ')
+        host_edit = QtWidgets.QLineEdit()
+        port_label = QtWidgets.QLabel('Port: ')
+        port_edit = QtWidgets.QLineEdit()
+        port_edit.setMaximumWidth(100)
+        db_layout.addWidget(host_label, 0, 0, QtCore.Qt.AlignRight)
+        db_layout.addWidget(host_edit, 0, 1)
+        db_layout.addWidget(port_label, 0, 2, QtCore.Qt.AlignRight)
+        db_layout.addWidget(port_edit, 0, 3)
+        user_label = QtWidgets.QLabel('User: ')
+        user_edit = QtWidgets.QLineEdit()
+        db_layout.addWidget(user_label, 1, 0, QtCore.Qt.AlignRight)
+        db_layout.addWidget(user_edit, 1 ,1)
+        pass_label = QtWidgets.QLabel('Password: ')
+        pass_edit = QtWidgets.QLineEdit()
+        db_layout.addWidget(pass_label, 2, 0, QtCore.Qt.AlignRight)
+        db_layout.addWidget(pass_edit, 2, 1)
+        db_label = QtWidgets.QLabel('Database: ')
+        db_edit = QtWidgets.QLineEdit()
+        db_layout.addWidget(db_label, 3, 0, QtCore.Qt.AlignRight)
+        db_layout.addWidget(db_edit, 3, 1)
+        db_test_btn = QtWidgets.QPushButton('Test')
+        db_test_btn.clicked.connect(lambda: self.test_db_connection(host_edit.text(), port_edit.text(), user_edit.text(), pass_edit.text(), db_edit.text()))
+        db_layout.addWidget(db_test_btn, 3, 3)
 
         vbox_layout = QtWidgets.QVBoxLayout()
+        # vbox_layout.setAlignment(QtCore.Qt.AlignHCenter)
         vbox_layout.addWidget(req_box)
+        vbox_layout.addWidget(db_box)
+        vbox_layout.addStretch()
         self.setLayout(vbox_layout)
         self.show()
+
+    @staticmethod
+    def test_db_connection(host, port, user, password, db):
+        msgbox = QtWidgets.QMessageBox()
+        msgbox.setMinimumWidth(500)
+        try:
+            conn = pymysql.connect(host=host, user=user, password=password, database=db, port=port)
+            if conn.open:
+                msgbox.setText('Connection Successful')
+                msgbox.exec_()
+            else:
+                raise pymysql.Error('conn.open = False')
+            conn.close()
+        except pymysql.Error as error:
+            print(error)
+            msgbox.setText('Connection Failed')
+            msgbox.exec_()
 
 
 class DisplayTable(QtWidgets.QWidget):
     def __init__(self):
         QtWidgets.QWidget.__init__(self)
 
-        table_model = QtGui.QStandardItemModel(3, 10)
-        table_hheaders = ['Machine', 'Sum']
-        for i in range(7, 20):
-            table_hheaders.append('{:02d}'.format(i))
-        table_model.setHorizontalHeaderLabels(table_hheaders)
+        self.table_model = QtGui.QStandardItemModel(3, 10)
 
-        output_list = []
-
-        table_vheaders = ['SM52', 'SM53']
-        for row, machine in enumerate(table_vheaders):
-            output_list.append([0] * 13)
-            table_model.setItem(row, 0, QtGui.QStandardItem(machine))
-
-        table_view = QtWidgets.QTableView()
-        table_view.setModel(table_model)
-        table_view.setAlternatingRowColors(True)
-        v_header = table_view.verticalHeader()
+        self.table_view = QtWidgets.QTableView()
+        self.table_view.setModel(self.table_model)
+        self.table_view.setAlternatingRowColors(True)
+        v_header = self.table_view.verticalHeader()
         v_header.hide()
+
+        hbox = QtWidgets.QHBoxLayout()
+        date_label = QtWidgets.QLabel('Date: ')
+        self.date_spin = QtWidgets.QDateEdit()
+        self.date_spin.setDate(QtCore.QDate.currentDate())
+        start_label = QtWidgets.QLabel('Start: ')
+        self.start_spin = QtWidgets.QTimeEdit(QtCore.QTime(7, 0))
+        hour_label = QtWidgets.QLabel('Hours: ')
+        self.hour_spin = QtWidgets.QSpinBox()
+        self.hour_spin.setMinimum(1)
+        self.hour_spin.setMaximum(24)
+        populate_btn = QtWidgets.QPushButton('Refresh')
+        populate_btn.clicked.connect(self.populate_table)
+        hbox.addWidget(date_label)
+        hbox.addWidget(self.date_spin)
+        hbox.addWidget(start_label)
+        hbox.addWidget(self.start_spin)
+        hbox.addWidget(hour_label)
+        hbox.addWidget(self.hour_spin)
+        hbox.addWidget(populate_btn)
+
+        box_layout = QtWidgets.QVBoxLayout()
+        box_layout.addLayout(hbox)
+        box_layout.addWidget(self.table_view)
+        self.setLayout(box_layout)
+        self.show()
+
+    def populate_table(self):
+        self.table_model.clear()
         db = pymysql.connect('localhost', 'user', 'pass', 'test')
 
+        table_hheaders = ['Machine', 'Sum']
+        date = self.date_spin.date().toPython()
+        start_time = self.start_spin.time().toPython()
+        start = datetime.datetime.combine(date, start_time)
+        end = start + datetime.timedelta(hours=int(self.hour_spin.text()))
+        if start.hour >= end.hour:
+            for i in range(start.hour, 24):
+                table_hheaders.append('{:02d}'.format(i))
+            for i in range(end.hour):
+                table_hheaders.append('{:02d}'.format(i))
+        else:
+            for i in range(start.hour, end.hour):
+                table_hheaders.append('{:02d}'.format(i))
+        print(table_hheaders)
+        self.table_model.setHorizontalHeaderLabels(table_hheaders)
+
+        output_list = []
+        table_vheaders = []
         with db.cursor() as cursor:
-            cursor.execute("SELECT machine, DATE(date_time), HOUR(date_time), SUM(output) FROM jam_current_table WHERE DATE(date_time) = '2019-02-25' GROUP BY machine, DATE(date_time), HOUR(date_time);")
+            query = "SELECT DISTINCT machine FROM jam_current_table WHERE date_time >= %s AND date_time < %s"
+            cursor.execute(query, (start.isoformat(timespec='minutes'), end.isoformat(timespec='minutes')))
+            for row in cursor:
+                table_vheaders.append(row[0])
+        for row, machine in enumerate(table_vheaders):
+            output_list.append([0] * len(table_hheaders))
+            self.table_model.setItem(row, 0, QtGui.QStandardItem(machine))
+
+        with db.cursor() as cursor:
+            query = "SELECT machine, DATE(date_time), HOUR(date_time), SUM(output) FROM jam_current_table " \
+                    "WHERE date_time >= %s AND date_time < %s GROUP BY machine, DATE(date_time), HOUR(date_time);"
+            cursor.execute(query, (start.isoformat(timespec='minutes'), end.isoformat(timespec='minutes')))
 
             for row in cursor:
-                col = table_hheaders.index('{:02d}'.format(row[2])) - 2
+                col = table_hheaders.index('{:02d}'.format(row[2]))
                 idx = table_vheaders.index(row[0])
                 output_list[idx][col] = row[3]
                 # table_model.setItem(idx, col, QtGui.QStandardItem(str(row[3])))
@@ -475,15 +583,10 @@ class DisplayTable(QtWidgets.QWidget):
                     font.setBold(True)
                     item.setForeground(QtGui.QBrush(QtGui.QColor(255, 0, 0)))
                     item.setFont(font)
-                table_model.setItem(idx, col+2, item)
-            table_model.setItem(idx, 1, QtGui.QStandardItem(str(sum(row))))
-    # h_header = table_view.horizontalHeader()
+                self.table_model.setItem(idx, col, item)
+            self.table_model.setItem(idx, 1, QtGui.QStandardItem(str(sum(row))))
+        # h_header = table_view.horizontalHeader()
         # h_header.hide()
-
-        box_layout = QtWidgets.QVBoxLayout()
-        box_layout.addWidget(table_view)
-        self.setLayout(box_layout)
-        self.show()
 
 
 
