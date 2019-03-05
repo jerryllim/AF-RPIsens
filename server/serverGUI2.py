@@ -1,3 +1,4 @@
+import csv
 import sqlite3
 import pymysql
 from PySide2 import QtCore, QtWidgets, QtGui, QtSql
@@ -295,6 +296,7 @@ class TabEmps(QtWidgets.QWidget):
         del_btn.clicked.connect(self.delete_emp)
         buttons_box.addWidget(del_btn)
         import_btn = QtWidgets.QPushButton('Import', self)
+        import_btn.clicked.connect(self.import_csv)
         buttons_box.addWidget(import_btn)
         buttons_box.addStretch()
 
@@ -369,6 +371,28 @@ class TabEmps(QtWidgets.QWidget):
         finally:
             self.populate_model()
             db.close()
+
+    def import_csv(self):
+        path = QtWidgets.QFileDialog.getOpenFileName(self, 'Open CSV', None, 'CSV(*.csv)')
+        if path[0] != '':
+            with open(path[0], 'r') as csv_file:
+                csv_reader = csv.reader(csv_file)
+                db = pymysql.connect('localhost', 'user', 'pass', 'test')
+                try:
+                    with db.cursor() as cursor:
+                        csv_list = list(csv_reader)
+                        cursor.executemany("INSERT INTO emp_table (emp_id, name) VALUES (%s, %s);", csv_list)
+
+                    db.commit()
+                except pymysql.Error as error:
+                    db.rollback()
+                    print(error)  # TODO log error
+                    msgbox = QtWidgets.QMessageBox()
+                    msgbox.setText(str(error))
+                    msgbox.exec_()
+                finally:
+                    db.close()
+                    self.populate_model()
 
 
 if __name__ == '__main__':
