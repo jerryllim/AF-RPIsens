@@ -577,6 +577,8 @@ class DisplayTable(QtWidgets.QWidget):
 
         for idx, row in enumerate(output_list):
             for col, value in enumerate(row):
+                if col < 2:
+                    continue
                 item = QtGui.QStandardItem(str(value))
                 if value <= 0:
                     font = QtGui.QFont()
@@ -587,7 +589,6 @@ class DisplayTable(QtWidgets.QWidget):
             self.table_model.setItem(idx, 1, QtGui.QStandardItem(str(sum(row))))
         # h_header = table_view.horizontalHeader()
         # h_header.hide()
-
 
 
 if __name__ == '__main__':

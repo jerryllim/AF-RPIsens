@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="8c4eab11-9431-48ea-8992-fef6a6e722be" name="Default" comment="Reduced labels (populate in init) &amp; created NumericProperty for counter">
-      <change beforePath="$PROJECT_DIR$/server/serverGUI2.py" beforeDir="false" afterPath="$PROJECT_DIR$/server/serverGUI2.py" afterDir="false" />
-    </list>
+    <list default="true" id="8c4eab11-9431-48ea-8992-fef6a6e722be" name="Default" comment="Reduced labels (populate in init) &amp; created NumericProperty for counter" />
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -112,8 +110,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/server/serverGUI2.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="65">
-                  <caret line="541" column="54" lean-forward="true" selection-start-line="541" selection-start-column="54" selection-end-line="541" selection-end-column="54" />
+                <state relative-caret-position="2001">
+                  <caret line="544" column="24" selection-start-line="544" selection-start-column="24" selection-end-line="544" selection-end-column="24" />
                   <folding>
                     <element signature="e#0#10#0" expanded="true" />
                   </folding>
@@ -275,7 +273,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="SearchEverywhereHistoryKey" value="&#9;FILE&#9;file:///Users/justynlgh/Documents/repo/afRPIsens/sensor/sensorGlobal.py" />
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1551773187955" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1551774300170" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/server" />
     <property name="project.structure.last.edited" value="Modules" />
     <property name="project.structure.proportion" value="0.0" />
@@ -1040,8 +1038,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/server/serverGUI2.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="65">
-          <caret line="541" column="54" lean-forward="true" selection-start-line="541" selection-start-column="54" selection-end-line="541" selection-end-column="54" />
+        <state relative-caret-position="2001">
+          <caret line="544" column="24" selection-start-line="544" selection-start-column="24" selection-end-line="544" selection-end-column="24" />
           <folding>
             <element signature="e#0#10#0" expanded="true" />
           </folding>
