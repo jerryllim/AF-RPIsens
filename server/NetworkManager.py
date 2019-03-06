@@ -11,7 +11,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 class NetworkManager:
 	dealer = None
 	router = None
-	port_numbers = ["152.228.1.135:7777", ]
+	port_numbers = ["152.228.1.135:7777", "152.228.1.192:7777"]
 	# port_number = "{}:8888".format(self.self_add)
 
 	def __init__(self):
@@ -30,12 +30,13 @@ class NetworkManager:
 
 	def request(self, port, msg):
 		temp_list = {}
+		now = time.strftime("%Y-%m-%d %H:%M:%S")
 		self.dealer.connect("tcp://%s" % port)
 		print(port)
 		msg_json = json.dumps(msg)
 		self.dealer.send_string("", zmq.SNDMORE)  # delimiter
 		self.dealer.send_string(msg_json)
-		print("request msg sent")
+		print("request msg sent %s" % now)
 
 		# use poll for timeouts:
 		poller = zmq.Poller()
@@ -55,12 +56,15 @@ class NetworkManager:
 				self.dealer.disconnect("tcp://%s" % port)
 		else:
 			print("Machine is not connected")
+			self.dealer.close()
+			self.dealer_routine()
+
 
 		return temp_list			
 
 	def router_routine(self):
 		# port_number = "{}:9999".format(self.self_add)
-		port_number = "152.228.1.124:9999"
+		port_number = "152.228.1.232:9999"
 		self.router = self.context.socket(zmq.ROUTER)
 		self.router.bind("tcp://%s" % port_number)
 		# print("Successfully binded to port %s for respondent" % self.port_number)
@@ -100,7 +104,7 @@ class NetworkManager:
 			if qc_list:
 				self.database_manager.insert_qc(machine, qc_list)
 
-			maintenance_list = jam_msg.pop('qc', [])
+			maintenance_list = jam_msg.pop('maintenance', [])
 			if maintenance_list:
 				self.database_manager.insert_maintenance(machine, maintenance_list)
 

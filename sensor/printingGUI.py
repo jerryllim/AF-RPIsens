@@ -4,7 +4,6 @@ import re
 import cv2
 import sys
 import time
-import json
 import socket
 import ipaddress
 import printingMain
@@ -46,14 +45,16 @@ class JobClass(Widget):
         self.qc = []
         self.adjustments = {'E01': 0, 'E02': 0, 'E03': 0}
 
-    # def get_employee(self):
-    #     return self.employees[1]
-
     def get_adjustments(self):
         return self.adjustments
 
     def get_current_job(self):
         return "{jo_no}{jo_line:03d}".format(**self.info_dict)
+
+    def get_all_info(self):
+        # TODO add employee
+        return {'info': self.info_dict.copy(), 'waste': self.wastage.copy(), 'qc': self.qc,
+                'adjustments': self.adjustments}
 
     def get_sfu(self):
         # TODO reformat the return information
@@ -261,7 +262,6 @@ class RunPage(Screen):
         sm.get_screen('maintenance_page').setup_maintenance(employee_num)
         self.parent.transition.direction = 'up'
         sm.current = 'maintenance_page'
-        # TODO update dictionary for Maintenance
 
     def qc_check(self):
         qc_popup = EmployeeScanPage(qc=self.update_qc)
@@ -312,7 +312,7 @@ class MaintenancePage(Screen):
         self.add_widget(self.maintenance_layout)
 
     def complete(self):
-        App.get_running_app().controller.add_maintenance(self.employee_num, start=True)
+        App.get_running_app().controller.add_maintenance(self.employee_num, start=False)
         screen_manager = App.get_running_app().screen_manager
         self.parent.transition.direction = 'down'
         screen_manager.current = screen_manager.previous()
@@ -667,7 +667,7 @@ class PrintingGUIApp(App):
     # database_manager = None
 
     def build(self):
-        self.check_camera()  # TODO uncomment
+        # self.check_camera()  # TODO uncomment
 
         self.config.set('Network', 'self_add', self.get_ip_add())
         self.controller = printingMain.RaspberryPiController(self)

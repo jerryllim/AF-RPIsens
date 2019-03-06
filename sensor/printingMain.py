@@ -1,3 +1,4 @@
+import os
 import ast
 import zmq
 import time
@@ -17,7 +18,7 @@ class RaspberryPiController:
     steady_pins = {}
     pin_to_name = {}
     counts = {}
-    _output = 0
+    permanent = 0
     publisher = None
     respondent = None
     dealer = None
@@ -56,6 +57,7 @@ class RaspberryPiController:
         self.set_check_steady_job()
         self.scheduler.start()
 
+        self.respondent_kill = threading.Event()
         self.respondent_thread = threading.Thread(target=self.respond)
         self.respondent_thread.daemon = True
         self.respondent_thread.start()
@@ -151,7 +153,7 @@ class RaspberryPiController:
 
     def output_pin_triggered(self, _pin, _level, _tick):
         # TODO store output here? and to FeRAM?
-        self._output += 1
+        self.permanent += 1
         self.gui.update_output()
 
     def set_output_callback(self, pin):
@@ -187,22 +189,18 @@ class RaspberryPiController:
         self.database_manager.update_into_employees_table(emp_data.items())
     
     def respondent_routine(self):
-        # TODO add self port to settings
         port_number = "{}:{}".format(self.self_add, self.self_port)
 
         self.respondent = self.context.socket(zmq.REP)
         self.respondent.setsockopt(zmq.LINGER, 0)
-        print(port_number)
         self.respondent.bind("tcp://%s" % port_number)
-        # print("Successfully binded to port %s for respondent" % self.port_number)
 
     def respond(self):
         # routine functions begins here
-        while True:
+        while not self.respondent_kill:
             # wait for next request from client
             recv_message = str(self.respondent.recv(), "utf-8")
             recv_dict = json.loads(recv_message)
-            # print("Received request (%s)" % recv_message)
             reply_dict = {'ip': self.self_add}
 
             for key in recv_dict.keys():
@@ -220,10 +218,8 @@ class RaspberryPiController:
         
     def dealer_routine(self):
         port_number = "{}:{}".format(self.server_add, self.server_port)
-        # print("Connecting to machine...")
         self.dealer = self.context.socket(zmq.DEALER)
         self.dealer.connect("tcp://%s" % port_number)
-        # print("Successfully connected to machine %s" % port_number)
 
     def request(self, msg_dict):
         timeout = 2000
@@ -233,7 +229,6 @@ class RaspberryPiController:
         for i in range(3):
             self.dealer.send_string("", zmq.SNDMORE)
             self.dealer.send_json(msg_dict)
-            print('Attempt ', i, 'for ', msg_dict)
 
             if self.dealer.poll(timeout):
                 self.dealer.recv()
@@ -244,7 +239,6 @@ class RaspberryPiController:
     
     def pin_triggered2(self, pin, level, _tick):
         name = self.pin_to_name[pin]
-        # self.states[name] = level
         key = self.get_key()
 
         if level and not self.counts[key][name]:
@@ -267,7 +261,6 @@ class RaspberryPiController:
         job_info = self.database_manager.get_job_info(barcode)
         if job_info is None:
             reply_msg = self.request({"job_info": barcode})
-            print(reply_msg)
             if reply_msg:
                 value = reply_msg.pop(barcode)
                 if value:
@@ -279,12 +272,32 @@ class RaspberryPiController:
     def get_employee_name(self, emp_id):
         return self.database_manager.get_employee_name(emp_id)
 
+    def graceful_shutdown(self):
+        self.respondent_kill.set()
+        self.respondent_thread.join(timeout=3)
+
+        with self.counts_lock:
+            to_save_dict = {'counter': self.counts.copy(), 'permanent': self.permanent}
+
+        current_job = self.gui.current_job
+        if current_job:
+            to_save_dict.update(current_job.get_all_info)
+
+        with open('last_save.json', 'w') as write_file:
+            json.dump(to_save_dict, write_file)
+
+        time.sleep(1)  # TODO remove sleep?
+        os.system('sudo shutdown -h now')
+
 
 class DatabaseManager:
     def __init__(self):
         self.database = 'test.sqlite'  # TODO set database name
         db = sqlite3.connect(self.database)
         cursor = db.cursor()
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='job_info_table';")
+        if not cursor.fetchone():
+            self.recreate_job_table()
         cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='employees_table';")
         if not cursor.fetchone():
             self.recreate_employees_table()
@@ -297,7 +310,7 @@ class DatabaseManager:
             cursor.execute("CREATE TABLE IF NOT EXISTS employees_table (emp_id TEXT PRIMARY KEY, name TEXT);")
             db.commit()
         finally:
-            cursor.close()
+            db.close()
 
     def recreate_job_table(self):
         db = sqlite3.connect(self.database)

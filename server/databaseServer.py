@@ -5,51 +5,51 @@ import pymysql
 
 class Settings:
     setting = {"152.228.1.135": {
-        "nickname": "Exia",
-        "mac": 'ZF1',
-        "S01": None,
-        "S02": ("Exia", "col2"),
-        "S03": ("Exia", "col3"),
-        "S04": None,
-        "S05": ("Exia", "col5"),
-        "S06": None,
-        "S07": ("Exia", "col7"),
-        "S08": ("Exia", "col8"),
-        "S09": None,
-        "S10": ("Exia", "col10"),
-        "S11": None,
-        "S12": None,
-        "S13": None,
-        "S14": None,
-        "S15": ("Exia", "output"),
-        "E01": ("Exia", "col1"),
-        "E02": None,
-        "E03": None,
-        "E04": None,
-        "E05": None},
-        "152.228.1.192": {
-            "nickname": "SM53",
-            "mac": 'ZP10',
-            "S01": None,
-            "S02": None,
-            "S03": None,
-            "S04": None,
-            "S05": ("SM53", "col5"),
-            "S06": None,
-            "S07": ("SM53", "col7"),
-            "S08": ("SM53", "col8"),
-            "S09": None,
-            "S10": ("SM53", "col10"),
-            "S11": None,
-            "S12": None,
-            "S13": None,
-            "S14": None,
-            "S15": ("SM53", "output"),
-            "E01": ("SM53", "col1"),
-            "E02": ("SM53", "col2"),
-            "E03": ("SM53", "col3"),
-            "E04": None,
-            "E05": None}}
+                    "nickname": "SM52",
+                    "mac": 'ZF1',
+                    "S01": None,
+                    "S02": ("SM52", "col2"),
+                    "S03": ("SM52", "col3"),
+                    "S04": None,
+                    "S05": ("SM52", "col5"),
+                    "S06": None,
+                    "S07": ("SM52", "col7"),
+                    "S08": ("SM52", "col8"),
+                    "S09": None,
+                    "S10": ("SM52", "col10"),
+                    "S11": None,
+                    "S12": None,
+                    "S13": None,
+                    "S14": None,
+                    "S15": ("SM52", "output"),
+                    "E01": ("SM52", "col1"),
+                    "E02": None,
+                    "E03": None,
+                    "E04": None,
+                    "E05": None},
+                "152.228.1.192": {
+                    "nickname": "SM53",
+                    "mac": 'ZP10',
+                    "S01": None,
+                    "S02": None,
+                    "S03": None,
+                    "S04": None,
+                    "S05": ("SM53", "col5"),
+                    "S06": None,
+                    "S07": ("SM53", "col7"),
+                    "S08": ("SM53", "col8"),
+                    "S09": None,
+                    "S10": ("SM53", "col10"),
+                    "S11": None,
+                    "S12": None,
+                    "S13": None,
+                    "S14": None,
+                    "S15": ("SM53", "output"),
+                    "E01": ("SM53", "col1"),
+                    "E02": ("SM53", "col2"),
+                    "E03": ("SM53", "col3"),
+                    "E04": None,
+                    "E05": None}}
 
     def get_ip_key(self, ip, key):
         print("in class settings: ", self.setting[ip][key])
@@ -75,7 +75,7 @@ class Settings:
 
 
 class DatabaseManager:
-    def __init__(self, settings, host='localhost', user='user', password='pass', db='test'):
+    def __init__(self, settings, host='localhost', user='pi', password='prod93', db='test'):
         self.settings = settings
         self.host = host
         self.user = user
@@ -253,9 +253,8 @@ class DatabaseManager:
         try:
             with db.cursor() as cursor:
                 # create temp EMP table
-                sql = '''CREATE TABLE IF NOT EXISTS t_emp_table (
-                emp_no VARCHAR(10) PRIMARY KEY,
-                name VARCHAR(40),
+                sql = '''CREATE TABLE IF NOT EXISTS t_emp_table ( emp_no VARCHAR(10) PRIMARY KEY, 
+                name VARCHAR(40), 
                 last_modified TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)'''
                 cursor.execute(sql)
                 db.commit()
@@ -506,7 +505,9 @@ class DatabaseManager:
 
         try:
             with db.cursor() as cursor:
-                sql = "INSERT IGNORE INTO jam_past_table (machine, jo_no, emp, date_time, shift, output, col1, col2, col3, col4, col5, col6, col7, col8, col9, col10) SELECT * FROM jam_current_table WHERE datetime < NOW() - INTERVAL 2 WEEK;"
+                sql = "INSERT IGNORE INTO jam_past_table (machine, jo_no, emp, date_time, shift, output, col1, col2, " \
+                      "col3, col4, col5, col6, col7, col8, col9, col10) SELECT * FROM jam_current_table " \
+                      "WHERE datetime < NOW() - INTERVAL 2 WEEK;"
                 cursor.execute(sql)
 
                 db.commit()
