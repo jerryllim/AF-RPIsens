@@ -5,51 +5,51 @@ import pymysql
 
 class Settings:
     setting = {"152.228.1.135": {
-        "machine": "SM52",
-        "mac": 'ZF1',
-        "S01": None,
-        "S02": ("SM52", "col2"),
-        "S03": ("SM52", "col3"),
-        "S04": None,
-        "S05": ("SM52", "col5"),
-        "S06": None,
-        "S07": ("SM52", "col7"),
-        "S08": ("SM52", "col8"),
-        "S09": None,
-        "S10": ("SM52", "col10"),
-        "S11": None,
-        "S12": None,
-        "S13": None,
-        "S14": None,
-        "S15": ("SM52", "output"),
-        "E01": ("SM52", "col1"),
-        "E02": None,
-        "E03": None,
-        "E04": None,
-        "E05": None},
-        "152.228.1.192": {
-            "machine": "SM53",
-            "mac": 'ZP10',
-            "S01": None,
-            "S02": None,
-            "S03": None,
-            "S04": None,
-            "S05": ("SM53", "col5"),
-            "S06": None,
-            "S07": ("SM53", "col7"),
-            "S08": ("SM53", "col8"),
-            "S09": None,
-            "S10": ("SM53", "col10"),
-            "S11": None,
-            "S12": None,
-            "S13": None,
-            "S14": None,
-            "S15": ("SM53", "output"),
-            "E01": ("SM53", "col1"),
-            "E02": ("SM53", "col2"),
-            "E03": ("SM53", "col3"),
-            "E04": None,
-            "E05": None}}
+                    "nickname": "SM52",
+                    "mac": 'ZF1',
+                    "S01": None,
+                    "S02": ("SM52", "col2"),
+                    "S03": ("SM52", "col3"),
+                    "S04": None,
+                    "S05": ("SM52", "col5"),
+                    "S06": None,
+                    "S07": ("SM52", "col7"),
+                    "S08": ("SM52", "col8"),
+                    "S09": None,
+                    "S10": ("SM52", "col10"),
+                    "S11": None,
+                    "S12": None,
+                    "S13": None,
+                    "S14": None,
+                    "S15": ("SM52", "output"),
+                    "E01": ("SM52", "col1"),
+                    "E02": None,
+                    "E03": None,
+                    "E04": None,
+                    "E05": None},
+                "152.228.1.192": {
+                    "nickname": "SM53",
+                    "mac": 'ZP10',
+                    "S01": None,
+                    "S02": None,
+                    "S03": None,
+                    "S04": None,
+                    "S05": ("SM53", "col5"),
+                    "S06": None,
+                    "S07": ("SM53", "col7"),
+                    "S08": ("SM53", "col8"),
+                    "S09": None,
+                    "S10": ("SM53", "col10"),
+                    "S11": None,
+                    "S12": None,
+                    "S13": None,
+                    "S14": None,
+                    "S15": ("SM53", "output"),
+                    "E01": ("SM53", "col1"),
+                    "E02": ("SM53", "col2"),
+                    "E03": ("SM53", "col3"),
+                    "E04": None,
+                    "E05": None}}
 
     def get_ip_key(self, ip, key):
         print("in class settings: ", self.setting[ip][key])
@@ -97,22 +97,23 @@ class DatabaseManager:
                 # create JAM table
                 # TODO confirm varchar lengths
                 sql = '''CREATE TABLE IF NOT EXISTS jam_current_table (
-						machine VARCHAR(10) NOT NULL,
-						jo_no VARCHAR(15) NOT NULL,
-						emp VARCHAR(10) NOT NULL,
-						date_time DATETIME NOT NULL,
-						output INTEGER DEFAULT 0,
-						col1 INTEGER DEFAULT 0,
-						col2 INTEGER DEFAULT 0,
-						col3 INTEGER DEFAULT 0,
-						col4 INTEGER DEFAULT 0,
-						col5 INTEGER DEFAULT 0,
-						col6 INTEGER DEFAULT 0,
-						col7 INTEGER DEFAULT 0,
-						col8 INTEGER DEFAULT 0,
-						col9 INTEGER DEFAULT 0,
-						col10 INTEGER DEFAULT 0,
-						PRIMARY KEY(machine, jo_no, date_time, emp));'''
+                machine VARCHAR(10) NOT NULL,
+                jo_no VARCHAR(15) NOT NULL,
+                emp VARCHAR(10) NOT NULL,
+                date_time DATETIME NOT NULL,
+                shift VARCHAR(3) DEFAULT NULL,
+                output INTEGER DEFAULT 0,
+                col1 INTEGER DEFAULT 0,
+                col2 INTEGER DEFAULT 0,
+                col3 INTEGER DEFAULT 0,
+                col4 INTEGER DEFAULT 0,
+                col5 INTEGER DEFAULT 0,
+                col6 INTEGER DEFAULT 0,
+                col7 INTEGER DEFAULT 0,
+                col8 INTEGER DEFAULT 0,
+                col9 INTEGER DEFAULT 0,
+                col10 INTEGER DEFAULT 0,
+                PRIMARY KEY(machine, jo_no, date_time, emp));'''
 
                 cursor.execute(sql)
 
@@ -177,9 +178,9 @@ class DatabaseManager:
 
                 # create EMP table
                 sql = '''CREATE TABLE IF NOT EXISTS emp_table (
-						emp_no VARCHAR(10) PRIMARY KEY,
-						name VARCHAR(40),
-						last_modified TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)'''
+                emp_no VARCHAR(10) PRIMARY KEY,
+                name VARCHAR(40),
+                last_modified TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)'''
 
                 cursor.execute(sql)
                 db.commit()
@@ -481,6 +482,33 @@ class DatabaseManager:
                             '{start})'.format(emp=emp, machine=machine, jo_no=jo_no,
                                               date_time=date_time.strftime("%Y-%m-%d %H:%M"), start=start)
                     cursor.execute(query, value)
+
+                db.commit()
+        finally:
+            db.close()
+
+    def create_past_table(self):
+        db = pymysql.connect(self.host, self.user, self.password, self.db)
+
+        try:
+            with db.cursor() as cursor:
+                sql = 'CREATE TABLE IF NOT EXISTS jam_past_table LIKE jam_current_table;'
+                cursor.execute(sql)
+
+                db.commit()
+
+        finally:
+            db.close()
+
+    def transfer_table(self):
+        db = pymysql.connect(self.host, self.user, self.password, self.db)
+
+        try:
+            with db.cursor() as cursor:
+                sql = "INSERT IGNORE INTO jam_past_table (machine, jo_no, emp, date_time, shift, output, col1, col2, " \
+                      "col3, col4, col5, col6, col7, col8, col9, col10) SELECT * FROM jam_current_table " \
+                      "WHERE datetime < NOW() - INTERVAL 2 WEEK;"
+                cursor.execute(sql)
 
                 db.commit()
         finally:
