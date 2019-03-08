@@ -450,7 +450,7 @@ class MiscTab(QtWidgets.QWidget):
         db_label = QtWidgets.QLabel('Database: ', db_box)
         db_edit = QtWidgets.QLineEdit(db_box)
         self.db_edits['db'] = db_edit
-        db_edit.setText(self.config.get('Database', 'database'))
+        db_edit.setText(self.config.get('Database', 'db'))
         db_layout.addWidget(db_label, 3, 0, QtCore.Qt.AlignRight)
         db_layout.addWidget(db_edit, 3, 1)
         db_test_btn = QtWidgets.QPushButton('Test', db_box)
@@ -546,7 +546,7 @@ class ConfigurationWidget(QtWidgets.QWidget):
                                                                port=config.get('Database', 'port'),
                                                                user=config.get('Database', 'user'),
                                                                password=config.get('Database', 'password'),
-                                                               db=config.get('Database', 'database'))
+                                                               db=config.get('Database', 'db'))
 
         self.setWindowTitle('Configurations')
         self.setMinimumWidth(800)
@@ -576,7 +576,7 @@ class DisplayTable(QtWidgets.QWidget):
                                                                port=config.get('Database', 'port'),
                                                                user=config.get('Database', 'user'),
                                                                password=config.get('Database', 'password'),
-                                                               db=config.get('Database', 'database'))
+                                                               db=config.get('Database', 'db'))
 
         self.table_model = QtGui.QStandardItemModel(3, 10)
 
