@@ -81,6 +81,8 @@ class DatabaseManager:
         self.user = user
         self.password = password
         self.db = db
+        if port.isnumeric():
+            port = int(port)
         self.port = port
 
         self.create_jam_table()
@@ -105,14 +107,17 @@ class DatabaseManager:
 
         return success
 
-    def custom_query(self, query):
+    def custom_query(self, query, args=''):
         conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
         return_list = []
 
         try:
             with conn.cursor() as cursor:
-                cursor.execute(query)
+                if args:
+                    cursor.execute(query, args)
+                else:
+                    cursor.execute(query)
                 return_list = cursor.fetchall()
         except pymysql.MySQLError as error:
             conn.rollback()

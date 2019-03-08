@@ -517,7 +517,13 @@ class MiscTab(QtWidgets.QWidget):
 class ConfigurationWidget(QtWidgets.QWidget):
     def __init__(self, parent):
         QtWidgets.QWidget.__init__(self, parent)
-        self.database_manager = databaseServer.DatabaseManager(None, password='Lim8699', db='test')
+        config = configparser.ConfigParser()
+        config.read('jam.ini')
+        self.database_manager = databaseServer.DatabaseManager(None, host=config.get('Database', 'host'),
+                                                               port=config.get('Database', 'port'),
+                                                               user=config.get('Database', 'user'),
+                                                               password=config.get('Database', 'password'),
+                                                               db=config.get('Database', 'database'))
 
         self.setWindowTitle('Configurations')
         # self.setGeometry(60, 60, 800, 500)
@@ -537,6 +543,51 @@ class ConfigurationWidget(QtWidgets.QWidget):
         layout.addWidget(self.tab_widget)
         self.setLayout(layout)
         self.show()
+
+
+class DisplayTable(QtWidgets.QWidget):
+    def __init__(self):
+        QtWidgets.QWidget.__init__(self)
+
+        self.table_model = QtGui.QStandardItemModel(3, 10)
+
+        self.table_view = QtWidgets.QTableView()
+        self.table_view.setModel(self.table_model)
+        self.table_view.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.table_view.setAlternatingRowColors(True)
+        v_header = self.table_view.verticalHeader()
+        v_header.hide()
+
+        hbox = QtWidgets.QHBoxLayout()
+        date_label = QtWidgets.QLabel('Date: ')
+        self.date_spin = QtWidgets.QDateEdit()
+        self.date_spin.setDate(QtCore.QDate.currentDate())
+        start_label = QtWidgets.QLabel('Start: ')
+        self.start_spin = QtWidgets.QTimeEdit(QtCore.QTime(7, 0))
+        self.start_spin.setDisplayFormat('HH:mm')
+        hour_label = QtWidgets.QLabel('Hours: ')
+        self.hour_spin = QtWidgets.QSpinBox()
+        self.hour_spin.setMinimum(1)
+        self.hour_spin.setMaximum(24)
+        populate_btn = QtWidgets.QPushButton('Refresh')
+        populate_btn.clicked.connect(self.populate_table)
+        hbox.addWidget(date_label)
+        hbox.addWidget(self.date_spin)
+        hbox.addWidget(start_label)
+        hbox.addWidget(self.start_spin)
+        hbox.addWidget(hour_label)
+        hbox.addWidget(self.hour_spin)
+        hbox.addWidget(populate_btn)
+
+        box_layout = QtWidgets.QVBoxLayout()
+        box_layout.addLayout(hbox)
+        box_layout.addWidget(self.table_view)
+        self.setLayout(box_layout)
+        self.show()
+
+    def populate_table(self):
+        self.table_model.clear()
+        pass
 
 
 if __name__ == '__main__':
