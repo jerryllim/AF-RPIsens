@@ -15,10 +15,11 @@ class MachinesTab(QtWidgets.QWidget):
         self.machine_table = QtWidgets.QTableView(self)
         self.machine_table.setModel(self.machine_model)
         self.machine_table.setAlternatingRowColors(True)
+        self.machine_table.setSortingEnabled(True)
         v_header = self.machine_table.verticalHeader()
         v_header.hide()
         # v_header.setSectionsMovable(True)
-        self.populate_table()
+        self.populate_machines()
 
         # Add, Delete, Save button on right
         btn_box = QtWidgets.QVBoxLayout()
@@ -39,7 +40,7 @@ class MachinesTab(QtWidgets.QWidget):
         self.setLayout(box_layout)
         self.show()
 
-    def populate_table(self):
+    def populate_machines(self):
         self.machine_model.clear()
         # Set horizontal headers
         headers_list = self.database_manager.get_machines_headers()
@@ -50,7 +51,8 @@ class MachinesTab(QtWidgets.QWidget):
         for idx, row in enumerate(machines_list):
             for col, value in enumerate(row):
                 if value:
-                    item = QtGui.QStandardItem(str(value))
+                    item = QtGui.QStandardItem()
+                    item.setData(value, QtCore.Qt.EditRole)
                     if col == 0:
                         item.setFlags(QtCore.Qt.ItemIsEnabled)
                     self.machine_model.setItem(idx, col, item)
@@ -70,15 +72,25 @@ class MachinesTab(QtWidgets.QWidget):
         machines_list = []
 
         for row in range(self.machine_model.rowCount()):
-            items = []
-            for col in range(self.machine_model.columnCount()):
-                text = self.machine_model.item(row, col).text()
+            machine_name = self.machine_model.item(row, 0).data(QtCore.Qt.EditRole)
+            if not machine_name:
+                continue
+            items = [machine_name]
+            for col in range(1, self.machine_model.columnCount()):
+                item = self.machine_model.item(row, col)
+                if item:
+                    try:
+                        text = int(item.data(QtCore.Qt.EditRole))
+                    except ValueError as error:
+                        text = None
+                else:
+                    text = None
                 items.append(text)
 
             machines_list.append(items)
 
         self.database_manager.reinsert_machines(machines_list)
-        self.populate_table()
+        self.populate_machines()
 
 
 class PisTab(QtWidgets.QWidget):
@@ -499,8 +511,8 @@ class MiscTab(QtWidgets.QWidget):
 
     def test_db(self):
         success = self.database_manager.test_db_connection(self.db_edits['host'].text(), self.db_edits['port'].text(),
-                                                          self.db_edits['user'].text(), self.db_edits['password'].text(),
-                                                          self.db_edits['db'].text())
+                                                           self.db_edits['user'].text(),
+                                                           self.db_edits['password'].text(), self.db_edits['db'].text())
         msgbox = QtWidgets.QMessageBox()
         msgbox.setMinimumWidth(500)
         if success:
@@ -526,7 +538,6 @@ class ConfigurationWidget(QtWidgets.QWidget):
                                                                db=config.get('Database', 'database'))
 
         self.setWindowTitle('Configurations')
-        # self.setGeometry(60, 60, 800, 500)
         self.setMinimumWidth(800)
 
         self.tab_widget = QtWidgets.QTabWidget()
@@ -546,8 +557,15 @@ class ConfigurationWidget(QtWidgets.QWidget):
 
 
 class DisplayTable(QtWidgets.QWidget):
-    def __init__(self):
-        QtWidgets.QWidget.__init__(self)
+    def __init__(self, parent):
+        QtWidgets.QWidget.__init__(self, parent)
+        config = configparser.ConfigParser()
+        config.read('jam.ini')
+        self.database_manager = databaseServer.DatabaseManager(None, host=config.get('Database', 'host'),
+                                                               port=config.get('Database', 'port'),
+                                                               user=config.get('Database', 'user'),
+                                                               password=config.get('Database', 'password'),
+                                                               db=config.get('Database', 'database'))
 
         self.table_model = QtGui.QStandardItemModel(3, 10)
 
@@ -587,7 +605,25 @@ class DisplayTable(QtWidgets.QWidget):
 
     def populate_table(self):
         self.table_model.clear()
-        pass
+
+        table_hheaders = ['Machine', 'Sum']
+        date = self.date_spin.date().toPython()
+        start_time = self.start_spin.time().toPython()
+        start = datetime.datetime.combine(date, start_time)
+        end = start + datetime.timedelta(hours=int(self.hour_spin.text()))
+        if start.hour >= end.hour:
+            for i in range(start.hour, 24):
+                table_hheaders.append('{:02d}'.format(i))
+            for i in range(end.hour):
+                table_hheaders.append('{:02d}'.format(i))
+        else:
+            for i in range(start.hour, end.hour):
+                table_hheaders.append('{:02d}'.format(i))
+        self.table_model.setHorizontalHeaderLabels(table_hheaders)
+
+        table_vheaders = []
+        output_list = []
+        table_vheaders = self.database_manager.get_machine_names()
 
 
 if __name__ == '__main__':
