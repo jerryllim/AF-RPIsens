@@ -202,6 +202,29 @@ class DatabaseManager:
         finally:
             conn.close()
 
+    def get_output(self, start, end, machines_list=None):
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
+                               database=self.db, port=self.port)
+        output_list = []
+
+        try:
+            with conn.cursor() as cursor:
+                query = "SELECT machine, DATE(date_time), HOUR(date_time), SUM(output) FROM jam_current_table " \
+                        "WHERE date_time >= %s AND date_time < %s"
+                if machines_list:
+                    machines_str = str(tuple(machines_list))
+                    query = query + " AND machine IN " + machines_str
+
+                query = query + " GROUP BY machine, DATE(date_time), HOUR(date_time);"
+                cursor.execute(query, (start, end))
+                output_list = cursor.fetchall()
+        except pymysql.MySQLError as error:
+            conn.rollback()
+            print("Failed to insert record to database: {}".format(error))
+        finally:
+            conn.close()
+            return output_list
+
     def transfer_table(self):
         conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
@@ -774,3 +797,25 @@ class DatabaseManager:
         finally:
             conn.close()
             return machines_list
+
+    def get_machine_targets(self, col, machines_list=None):
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
+                               database=self.db, port=self.port)
+        targets_dict = {}
+        try:
+            with conn.cursor() as cursor:
+                query = "SELECT machine, "+ col +" FROM machines_table"
+                if machines_list:
+                    machines_str = str(tuple(machines_list))
+                    query = query + " WHERE machine IN " + machines_str
+                query = query + ";"
+
+                cursor.execute(query)
+                for row in cursor:
+                    targets_dict[row[0]] = row[1]
+        except pymysql.MySQLError as error:
+            conn.rollback()
+            print("Failed to insert record to database: {}".format(error))
+        finally:
+            conn.close()
+            return targets_dict

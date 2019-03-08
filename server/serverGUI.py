@@ -403,13 +403,13 @@ class MiscTab(QtWidgets.QWidget):
         req_layout = QtWidgets.QGridLayout()
         req_layout.setColumnMinimumWidth(0, 100)
         dur_label = QtWidgets.QLabel('Duration: ', req_box)
-        dur_spinbox = QtWidgets.QSpinBox(req_box)
-        dur_spinbox.setMinimum(1)
-        dur_spinbox.setMaximum(90)
-        dur_spinbox.setValue(self.config.getint('Request', 'duration'))
+        self.dur_spinbox = QtWidgets.QSpinBox(req_box)
+        self.dur_spinbox.setMinimum(1)
+        self.dur_spinbox.setMaximum(90)
+        self.dur_spinbox.setValue(self.config.getint('Request', 'duration'))
         dur_label2 = QtWidgets.QLabel('minutes', req_box)
         req_layout.addWidget(dur_label, 0, 0, QtCore.Qt.AlignRight)
-        req_layout.addWidget(dur_spinbox, 0, 1)
+        req_layout.addWidget(self.dur_spinbox, 0, 1)
         req_layout.addWidget(dur_label2, 0, 2)
         req_btn = QtWidgets.QPushButton('Request now', req_box)
         req_layout.setAlignment(QtCore.Qt.AlignLeft)
@@ -507,7 +507,6 @@ class MiscTab(QtWidgets.QWidget):
         state = bool(state)
         self.shift_starts[idx].setEnabled(state)
         self.shift_ends[idx].setEnabled(state)
-        self.config.set('Shift', 'shift{}_enable'.format(idx), str(state))
 
     def test_db(self):
         success = self.database_manager.test_db_connection(self.db_edits['host'].text(), self.db_edits['port'].text(),
@@ -522,6 +521,18 @@ class MiscTab(QtWidgets.QWidget):
         msgbox.exec_()
 
     def save_misc(self):
+        for key in self.db_edits.keys():
+            self.config.set('Database', key, self.db_edits[key].text())
+
+        for col in range(1, 5):
+            self.config.set('Shift', 'shift{}_enable'.format(col), str(self.shift_checks[col].isChecked()))
+            self.config.set('Shift', 'shift{}_start'.format(col), str(self.shift_starts[col].text()))
+            self.config.set('Shift', 'shift{}_end'.format(col), str(self.shift_ends[col].text()))
+        print(self.config.items('Shift'))
+
+        self.config.set('Request', 'duration', str(self.dur_spinbox.text()))
+
+        # TODO trigger reset all
         with open('jam.ini', 'w') as configfile:
             self.config.write(configfile)
 
@@ -553,7 +564,7 @@ class ConfigurationWidget(QtWidgets.QWidget):
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(self.tab_widget)
         self.setLayout(layout)
-        self.show()
+        # self.show()
 
 
 class DisplayTable(QtWidgets.QWidget):
@@ -621,12 +632,69 @@ class DisplayTable(QtWidgets.QWidget):
                 table_hheaders.append('{:02d}'.format(i))
         self.table_model.setHorizontalHeaderLabels(table_hheaders)
 
-        table_vheaders = []
         output_list = []
         table_vheaders = self.database_manager.get_machine_names()
+        for row, machine in enumerate(table_vheaders):
+            output_list.append([0] * len(table_hheaders))
+            self.table_model.setItem(row, 0, QtGui.QStandardItem(machine))
+
+        outputs = self.database_manager.get_output(start.isoformat(timespec='minutes'),
+                                                   end.isoformat(timespec='minutes'))
+        for row in outputs:
+            col = table_hheaders.index('{:02d}'.format(row[2]))
+            idx = table_vheaders.index(row[0])
+            output_list[idx][col] = row[3]
+
+        targets_dict = self.database_manager.get_machine_targets('output')
+
+        for idx, row in enumerate(output_list):
+            target = targets_dict[table_vheaders[idx]]
+            for col, value in enumerate(row):
+                if col < 2:
+                    continue
+                item = QtGui.QStandardItem(str(value))
+                if target and value <= target:
+                    font = QtGui.QFont()
+                    font.setBold(True)
+                    item.setForeground(QtGui.QBrush(QtGui.QColor(255, 0, 0)))
+                    item.setFont(font)
+                self.table_model.setItem(idx, col, item)
+            self.table_model.setItem(idx, 1, QtGui.QStandardItem(str(sum(row))))
+
+
+class JamMainWindow(QtWidgets.QMainWindow):
+    def __init__(self, parent):
+        QtWidgets.QMainWindow.__init__(self, parent)
+        self.display_table = DisplayTable(self)
+        self.setCentralWidget(self.display_table)
+
+        config_action = QtWidgets.QAction('&Configuration', self)
+        config_action.setShortcut(QtGui.QKeySequence('Ctrl+,'))
+        config_action.setStatusTip('Configurations Window')
+        config_action.triggered.connect(self.launch_configuration)
+        quit_action = QtWidgets.QAction('&Quit', self)
+        quit_action.setShortcut(QtGui.QKeySequence('Ctrl+q'))
+        quit_action.setStatusTip('Quit')
+        quit_action.triggered.connect(exit)
+
+        self.statusBar()
+
+        main_menu = self.menuBar()
+        file_menu = main_menu.addMenu(' &File')
+        file_menu.addAction(config_action)
+        file_menu.addAction(quit_action)
+
+        self.show()
+
+    def launch_configuration(self):
+        dialog = QtWidgets.QDialog(self)
+        configurations = ConfigurationWidget(dialog)
+        configurations.show()
+        dialog.exec_()
 
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication([])
-    window = ConfigurationWidget(None)
+    window = JamMainWindow(None)
+    # window = ConfigurationWidget(None)
     app.exec_()
