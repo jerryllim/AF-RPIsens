@@ -3,9 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="8c4eab11-9431-48ea-8992-fef6a6e722be" name="Default" comment="Reduced labels (populate in init) &amp; created NumericProperty for counter">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/NetworkManager.py" beforeDir="false" afterPath="$PROJECT_DIR$/server/NetworkManager.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/databaseServer.py" beforeDir="false" afterPath="$PROJECT_DIR$/server/databaseServer.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/serverGUI.py" beforeDir="false" afterPath="$PROJECT_DIR$/server/serverGUI.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/serverGUI2.py" beforeDir="false" afterPath="$PROJECT_DIR$/server/serverGUI2.py" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -18,11 +17,11 @@
     <splitter split-orientation="horizontal" split-proportion="0.5">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file pinned="false" current-in-tab="true">
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/server/databaseServer.py">
               <provider selected="true" editor-type-id="text-editor">
                 <state relative-caret-position="-32">
-                  <caret line="716" column="28" selection-start-line="716" selection-start-column="8" selection-end-line="716" selection-end-column="28" />
+                  <caret line="719" column="28" selection-start-line="719" selection-start-column="8" selection-end-line="719" selection-end-column="28" />
                   <folding>
                     <element signature="e#0#40#0" expanded="true" />
                   </folding>
@@ -33,20 +32,17 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/server/NetworkManager.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="431">
-                  <caret line="110" column="51" selection-start-line="110" selection-start-column="51" selection-end-line="110" selection-end-column="51" />
-                  <folding>
-                    <element signature="e#0#11#0" expanded="true" />
-                  </folding>
+                <state relative-caret-position="60">
+                  <caret line="4" column="21" selection-start-line="4" selection-start-column="21" selection-end-line="5" selection-end-column="49" />
                 </state>
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="false">
+          <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/server/serverGUI2.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="408">
-                  <caret line="513" column="49" lean-forward="true" selection-start-line="513" selection-start-column="49" selection-end-line="513" selection-end-column="49" />
+                <state relative-caret-position="-334">
+                  <caret line="565" column="13" selection-start-line="565" selection-start-column="6" selection-end-line="565" selection-end-column="13" />
                   <folding>
                     <element signature="e#0#10#0" expanded="true" />
                   </folding>
@@ -70,8 +66,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/server/databaseServer.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="254">
-                  <caret line="731" column="24" lean-forward="true" selection-start-line="731" selection-start-column="24" selection-end-line="731" selection-end-column="24" />
+                <state relative-caret-position="394">
+                  <caret line="766" column="17" selection-start-line="766" selection-start-column="17" selection-end-line="766" selection-end-column="17" />
                   <folding>
                     <element signature="e#0#40#0" expanded="true" />
                   </folding>
@@ -82,8 +78,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="214">
-                  <caret line="477" lean-forward="true" selection-start-line="477" selection-end-line="477" />
+                <state relative-caret-position="209">
+                  <caret line="154" column="34" lean-forward="true" selection-start-line="154" selection-start-column="34" selection-end-line="154" selection-end-column="34" />
                   <folding>
                     <element signature="e#0#10#0" expanded="true" />
                   </folding>
@@ -94,8 +90,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/server/serverGUI2.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="-374">
-                  <caret line="576" column="38" lean-forward="true" selection-start-line="576" selection-end-line="577" />
+                <state relative-caret-position="343">
+                  <caret line="578" lean-forward="true" selection-start-line="578" selection-end-line="578" />
                   <folding>
                     <element signature="e#0#10#0" expanded="true" />
                   </folding>
@@ -116,18 +112,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>get_ink</find>
-      <find>inkkeybox</find>
-      <find>adjustment</find>
-      <find>ink_ke</find>
-      <find>start</find>
-      <find>alternate</find>
-      <find>maintenance</find>
-      <find>|</find>
-      <find>qc</find>
-      <find>add_qc</find>
-      <find>Kruger</find>
-      <find>ink</find>
       <find>employees</find>
       <find>bounce</find>
       <find>horizontal</find>
@@ -146,6 +130,18 @@
       <find>Pis</find>
       <find>machines</find>
       <find>machineta</find>
+      <find>passsword</find>
+      <find>passswo</find>
+      <find>result</find>
+      <find>employe</find>
+      <find>employee</find>
+      <find>pis</find>
+      <find>header</find>
+      <find>print(qu</find>
+      <find>populate_pi</find>
+      <find>machine</find>
+      <find>print(1</find>
+      <find>print</find>
     </findStrings>
     <replaceStrings>
       <replace>TMessage</replace>
@@ -156,6 +152,7 @@
       <replace>secondary_left_frame</replace>
       <replace>TkHeadingFont</replace>
       <replace>Exia</replace>
+      <replace>password</replace>
     </replaceStrings>
   </component>
   <component name="Git.Settings">
@@ -216,10 +213,10 @@
         <option value="$PROJECT_DIR$/sensor/printingGUI.py" />
         <option value="$PROJECT_DIR$/test_pyside.py" />
         <option value="$PROJECT_DIR$/sensor/printingMain.py" />
+        <option value="$PROJECT_DIR$/server/serverGUI2.py" />
         <option value="$PROJECT_DIR$/server/NetworkManager.py" />
         <option value="$PROJECT_DIR$/server/databaseServer.py" />
         <option value="$PROJECT_DIR$/server/serverGUI.py" />
-        <option value="$PROJECT_DIR$/server/serverGUI2.py" />
       </list>
     </option>
   </component>
@@ -254,7 +251,7 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1552014608907" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1552017730377" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -282,7 +279,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.serverGUI2">
+  <component name="RunManager" selected="Python.serverGUI">
     <configuration default="true" type="Applet">
       <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
       <method v="2">
@@ -364,12 +361,12 @@
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
-      <option name="SDK_HOME" value="" />
+      <option name="SDK_HOME" value="/usr/local/bin/python3.7" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/server" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/server/v2/serverGUI.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/server/serverGUI.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -399,7 +396,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="test_pigpio" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="serverGUI" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="afRPIsens" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -407,11 +404,11 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/server" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/test_pigpio.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/server/v2/serverGUI.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -548,18 +545,17 @@
     </configuration>
     <list>
       <item itemvalue="Python.printingkivy" />
-      <item itemvalue="Python.test_pigpio" />
-      <item itemvalue="Python.serverGUI" />
       <item itemvalue="Python.test_pyside" />
       <item itemvalue="Python.serverGUI2" />
+      <item itemvalue="Python.serverGUI" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.serverGUI" />
         <item itemvalue="Python.serverGUI2" />
         <item itemvalue="Python.serverGUI" />
         <item itemvalue="Python.test_pyside" />
         <item itemvalue="Python.printingkivy" />
-        <item itemvalue="Python.test_pigpio" />
       </list>
     </recent_temporary>
   </component>
@@ -596,7 +592,7 @@
       <window_info anchor="bottom" id="Inspection Results" order="0" weight="0.32896176" />
       <window_info anchor="bottom" id="Message" order="1" />
       <window_info anchor="bottom" id="Find" order="2" weight="0.29839572" />
-      <window_info anchor="bottom" id="Run" order="3" sideWeight="0.493895" weight="0.3368984" />
+      <window_info active="true" anchor="bottom" id="Run" order="3" sideWeight="0.493895" visible="true" weight="0.3368984" />
       <window_info anchor="bottom" id="Debug" order="4" weight="0.3989305" />
       <window_info anchor="bottom" id="TODO" order="5" weight="0.32834226" />
       <window_info anchor="bottom" id="Cvs" order="6" weight="0.25" />
@@ -604,7 +600,7 @@
       <window_info anchor="bottom" id="Inspection" order="8" weight="0.4" />
       <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.50305253" side_tool="true" weight="0.3272727" />
       <window_info anchor="bottom" id="Version Control" order="10" weight="0.32834226" />
-      <window_info active="true" anchor="bottom" id="Terminal" order="11" sideWeight="0.4969475" visible="true" weight="0.3272727" />
+      <window_info anchor="bottom" id="Terminal" order="11" sideWeight="0.4969475" weight="0.3272727" />
       <window_info anchor="bottom" id="Dependency Viewer" order="12" weight="0.32896176" />
       <window_info anchor="bottom" id="Messages" order="13" weight="0.32941177" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
@@ -679,20 +675,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file:///Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/pymysql/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="384">
-          <caret line="107" selection-start-line="107" selection-end-line="107" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/server/testing.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret column="4" selection-end-line="1" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/Library/Caches/IdeaIC2018.3/python_stubs/-1199943126/PySide2/QtWidgets/QWidget.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="566">
@@ -712,40 +694,58 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/server/NetworkManager.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="431">
-          <caret line="110" column="51" selection-start-line="110" selection-start-column="51" selection-end-line="110" selection-end-column="51" />
-          <folding>
-            <element signature="e#0#11#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="60">
+          <caret line="4" column="21" selection-start-line="4" selection-start-column="21" selection-end-line="5" selection-end-column="49" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/pymysql/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="198">
+          <caret line="93" selection-start-line="93" selection-end-line="93" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/pymysql/err.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="490">
+          <caret line="108" selection-start-line="108" selection-end-line="108" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/server/serverGUI2.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="408">
-          <caret line="513" column="49" lean-forward="true" selection-start-line="513" selection-start-column="49" selection-end-line="513" selection-end-column="49" />
+        <state relative-caret-position="343">
+          <caret line="578" lean-forward="true" selection-start-line="578" selection-end-line="578" />
           <folding>
             <element signature="e#0#10#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/testing.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret column="4" selection-end-line="1" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/databaseServer.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="394">
+          <caret line="766" column="17" selection-start-line="766" selection-start-column="17" selection-end-line="766" selection-end-column="17" />
+          <folding>
+            <element signature="e#0#40#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="214">
-          <caret line="477" lean-forward="true" selection-start-line="477" selection-end-line="477" />
+        <state relative-caret-position="209">
+          <caret line="154" column="34" lean-forward="true" selection-start-line="154" selection-start-column="34" selection-end-line="154" selection-end-column="34" />
           <folding>
             <element signature="e#0#10#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/server/databaseServer.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-32">
-          <caret line="716" column="28" selection-start-line="716" selection-start-column="8" selection-end-line="716" selection-end-column="28" />
-          <folding>
-            <element signature="e#0#40#0" expanded="true" />
           </folding>
         </state>
       </provider>

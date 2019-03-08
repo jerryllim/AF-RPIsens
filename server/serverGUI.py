@@ -1,17 +1,17 @@
 import csv
 import datetime
 import configparser
+from server import databaseServer
 from PySide2 import QtCore, QtWidgets, QtGui
 
 
 class MachinesTab(QtWidgets.QWidget):
-    def __init__(self):
-        QtWidgets.QWidget.__init__(self)
+    def __init__(self, parent):
+        QtWidgets.QWidget.__init__(self, parent)
         self.database_manager = self.parent().database_manager
 
         # Tree View & Models for Machines
         self.machine_model = QtGui.QStandardItemModel(0, 3, self)
-        self.machine_model.itemChanged.connect(self.printing_changed)
         self.machine_table = QtWidgets.QTableView(self)
         self.machine_table.setModel(self.machine_model)
         self.machine_table.setAlternatingRowColors(True)
@@ -93,16 +93,16 @@ class PisTab(QtWidgets.QWidget):
         # Tree View for the Pis
         self.pis_model = QtGui.QStandardItemModel(0, 3, self)
         self.pis_treeview = QtWidgets.QTreeView(self)
+        self.pis_treeview.setModel(self.pis_model)
         self.pis_treeview.setAlternatingRowColors(True)
         self.pis_treeview.setRootIsDecorated(False)
         self.pis_treeview.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.pis_treeview.setSortingEnabled(True)
         self.pis_treeview.activated.connect(self.set_fields)
+        self.populate_pis()
         header = self.pis_treeview.header()
         header.setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
-        for i in range(3):
-            self.pis_treeview.resizeColumnToContents(i)
-        self.populate_pis()
+        header.setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeToContents)
 
         # Button box for New, Edit, Delete
         button_box = QtWidgets.QVBoxLayout()
@@ -148,8 +148,7 @@ class PisTab(QtWidgets.QWidget):
         detail_grid.setColumnStretch(1, 1)
         detail_grid.setColumnStretch(2, 1)
 
-        # TODO set dynamic machines
-        machines = ['-', 'Exia', 'Kyrios', 'Dynames', 'Virtue', 'Nadleeh']
+        machines = [None] + self.database_manager.get_machine_names()
         columns = [None]
         for row in self.database_manager.custom_query("SHOW COLUMNS FROM jam_current_table WHERE field LIKE 'col%' "
                                                      "OR field LIKE 'output%';"):
@@ -198,10 +197,10 @@ class PisTab(QtWidgets.QWidget):
 
         self.pis_dict = self.database_manager.get_pis()
 
-        for ip in self.pis_dict:
+        for ip in self.pis_dict.keys():
             nick_item = QtGui.QStandardItem(self.pis_dict[ip].get('nick'))
             ip_item = QtGui.QStandardItem(ip)
-            mac_item = QtGui.QStandardItem(self.pis_dict[ip].get('nick'))
+            mac_item = QtGui.QStandardItem(self.pis_dict[ip].get('mac'))
             index = self.pis_model.rowCount()
             self.pis_model.setItem(index, 0, nick_item)
             self.pis_model.setItem(index, 1, ip_item)
@@ -340,7 +339,7 @@ class EmployeesTab(QtWidgets.QWidget):
 
     def populate_employees(self):
         self.emp_model.clear()
-        self.emp_model.setHorizontalHeaderLabels(['ID', 'Name', 'modified on'])
+        self.emp_model.setHorizontalHeaderLabels(['ID', 'Name', 'last modified'])
 
         for row in self.database_manager.get_emps():
             id_item = QtGui.QStandardItem(row[0])
@@ -443,7 +442,7 @@ class MiscTab(QtWidgets.QWidget):
         db_layout.addWidget(db_label, 3, 0, QtCore.Qt.AlignRight)
         db_layout.addWidget(db_edit, 3, 1)
         db_test_btn = QtWidgets.QPushButton('Test', db_box)
-        db_test_btn.clicked.connect(lambda: self.test_db_connection(host_edit.text(), port_edit.text(), user_edit.text(), pass_edit.text(), db_edit.text()))
+        db_test_btn.clicked.connect(self.test_db)
         db_layout.addWidget(db_test_btn, 3, 3)
 
         # Shift group
@@ -496,12 +495,12 @@ class MiscTab(QtWidgets.QWidget):
         state = bool(state)
         self.shift_starts[idx].setEnabled(state)
         self.shift_ends[idx].setEnabled(state)
-        self.config.set('Shift', 'shift{}_enable'.format(idx), state)
+        self.config.set('Shift', 'shift{}_enable'.format(idx), str(state))
 
     def test_db(self):
-        success = self.database_manager.test_db_connection(self.db_edits['host'], self.db_edits['port'],
-                                                          self.db_edits['user'], self.db_edits['password'],
-                                                          self.db_edits['db'])
+        success = self.database_manager.test_db_connection(self.db_edits['host'].text(), self.db_edits['port'].text(),
+                                                          self.db_edits['user'].text(), self.db_edits['password'].text(),
+                                                          self.db_edits['db'].text())
         msgbox = QtWidgets.QMessageBox()
         msgbox.setMinimumWidth(500)
         if success:
@@ -513,3 +512,34 @@ class MiscTab(QtWidgets.QWidget):
     def save_misc(self):
         with open('jam.ini', 'w') as configfile:
             self.config.write(configfile)
+
+
+class ConfigurationWidget(QtWidgets.QWidget):
+    def __init__(self, parent):
+        QtWidgets.QWidget.__init__(self, parent)
+        self.database_manager = databaseServer.DatabaseManager(None, password='Lim8699', db='test')
+
+        self.setWindowTitle('Configurations')
+        # self.setGeometry(60, 60, 800, 500)
+        self.setMinimumWidth(800)
+
+        self.tab_widget = QtWidgets.QTabWidget()
+        self.machines_tab = MachinesTab(self)
+        self.pis_tab = PisTab(self)
+        self.emp_tab = EmployeesTab(self)
+        self.misc_tab = MiscTab(self)
+        self.tab_widget.addTab(self.machines_tab, 'Machines')
+        self.tab_widget.addTab(self.pis_tab, 'Pis')
+        self.tab_widget.addTab(self.emp_tab, 'Employees')
+        self.tab_widget.addTab(self.misc_tab, 'Miscellaneous')
+
+        layout = QtWidgets.QVBoxLayout()
+        layout.addWidget(self.tab_widget)
+        self.setLayout(layout)
+        self.show()
+
+
+if __name__ == '__main__':
+    app = QtWidgets.QApplication([])
+    window = ConfigurationWidget(None)
+    app.exec_()

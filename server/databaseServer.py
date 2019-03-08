@@ -85,6 +85,11 @@ class DatabaseManager:
 
         self.create_jam_table()
         self.create_job_table()
+        self.create_emp_table()
+        self.create_maintenance_table()
+        self.create_qc_table()
+        self.create_pis_table()
+        self.create_machines_table()
 
     @staticmethod
     def test_db_connection(host, port, user, password, db):
@@ -101,7 +106,7 @@ class DatabaseManager:
         return success
 
     def custom_query(self, query):
-        conn = pymysql.connect(host=self.host, user=self.user, passsword=self.password,
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
         return_list = []
 
@@ -117,7 +122,7 @@ class DatabaseManager:
             return return_list
 
     def create_jam_table(self):
-        conn = pymysql.connect(host=self.host, user=self.user, passsword=self.password,
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
 
         try:
@@ -158,7 +163,7 @@ class DatabaseManager:
             conn.close()
 
     def insert_jam(self, ip, recv_dict):
-        conn = pymysql.connect(host=self.host, user=self.user, passsword=self.password,
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
 
         try:
@@ -193,7 +198,7 @@ class DatabaseManager:
             conn.close()
 
     def transfer_table(self):
-        conn = pymysql.connect(host=self.host, user=self.user, passsword=self.password,
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
 
         try:
@@ -203,13 +208,12 @@ class DatabaseManager:
                       "col3, col4, col5, col6, col7, col8, col9, col10) SELECT * FROM jam_current_table " \
                       "WHERE datetime < NOW() - INTERVAL 2 WEEK;"
                 cursor.execute(sql)
-
                 conn.commit()
         finally:
             conn.close()
 
     def create_emp_table(self):
-        conn = pymysql.connect(host=self.host, user=self.user, passsword=self.password,
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
 
         try:
@@ -228,7 +232,7 @@ class DatabaseManager:
             conn.close()
 
     def insert_emp(self, emp_id, emp_name):
-        conn = pymysql.connect(host=self.host, user=self.user, passsword=self.password,
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
         try:
             with conn.cursor() as cursor:
@@ -243,7 +247,7 @@ class DatabaseManager:
             conn.close()
 
     def insert_emps(self, emp_list):
-        conn = pymysql.connect(host=self.host, user=self.user, passsword=self.password,
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
         try:
             with conn.cursor() as cursor:
@@ -258,7 +262,7 @@ class DatabaseManager:
             conn.close()
 
     def mark_to_delete_emp(self, emp_ids):
-        conn = pymysql.connect(host=self.host, user=self.user, passsword=self.password,
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
         emp_str = str(tuple(emp_ids))
 
@@ -274,7 +278,7 @@ class DatabaseManager:
             conn.close()
 
     def delete_emp(self):
-        conn = pymysql.connect(host=self.host, user=self.user, passsword=self.password,
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
 
         try:
@@ -289,7 +293,7 @@ class DatabaseManager:
             conn.close()
 
     def get_emps(self):
-        conn = pymysql.connect(host=self.host, user=self.user, passsword=self.password,
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
         emp_list = []
 
@@ -305,7 +309,7 @@ class DatabaseManager:
             return emp_list
 
     def get_last_modified_emp(self, timestamp=''):
-        conn = pymysql.connect(host=self.host, user=self.user, passsword=self.password,
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
         emp_list = []
 
@@ -374,9 +378,6 @@ class DatabaseManager:
 
         try:
             with db.cursor() as cursor:
-                # Drop table if it already exist
-                cursor.execute("DROP TABLE IF EXISTS job_info_table;")
-
                 # TODO check varchar length for each column
                 sql = 'CREATE TABLE IF NOT EXISTS job_info_table (' \
                       'jo_no VARCHAR(13) PRIMARY KEY,' \
@@ -391,7 +392,6 @@ class DatabaseManager:
                       'so_rem VARCHAR(10),' \
                       'ran INT);'
 
-                print(sql)
                 cursor.execute(sql)
                 db.commit()
         finally:
@@ -509,7 +509,8 @@ class DatabaseManager:
             db.close()
 
     def insert_qc(self, machine, values):
-        db = pymysql.connect(self.host, self.user, self.password, self.db)
+        db = pymysql.connect(host=self.host, user=self.user, password=self.password,
+                               database=self.db, port=self.port)
 
         try:
             with db.cursor() as cursor:
@@ -533,7 +534,8 @@ class DatabaseManager:
             db.close()
 
     def create_maintenance_table(self):
-        db = pymysql.connect(self.host, self.user, self.password, self.db)
+        db = pymysql.connect(host=self.host, user=self.user, password=self.password,
+                               database=self.db, port=self.port)
 
         try:
             with db.cursor() as cursor:
@@ -546,14 +548,15 @@ class DatabaseManager:
                         'machine VARCHAR(10) NOT NULL,' \
                         'jo_no VARCHAR(15),' \
                         'date_time DATETIME NOT NULL,' \
-                        'start TINYINT NOT NULL;'
+                        'start TINYINT NOT NULL);'
                 cursor.execute(query)
                 db.commit()
         finally:
             db.close()
 
     def insert_maintenance(self, machine, values):
-        db = pymysql.connect(self.host, self.user, self.password, self.db)
+        db = pymysql.connect(host=self.host, user=self.user, password=self.password,
+                               database=self.db, port=self.port)
 
         try:
             with db.cursor() as cursor:
@@ -576,7 +579,7 @@ class DatabaseManager:
             db.close()
 
     def create_pis_table(self):
-        conn = pymysql.connect(host=self.host, user=self.user, passsword=self.password,
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
 
         try:
@@ -599,7 +602,7 @@ class DatabaseManager:
             conn.close()
 
     def replace_pi(self, pi_row):
-        conn = pymysql.connect(host=self.host, user=self.user, passsword=self.password,
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
         replaced = False
 
@@ -620,7 +623,7 @@ class DatabaseManager:
         return replaced
 
     def delete_pi(self, ip):
-        conn = pymysql.connect(host=self.host, user=self.user, passsword=self.password,
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
 
         try:
@@ -635,7 +638,7 @@ class DatabaseManager:
             conn.close()
 
     def get_pis(self):
-        conn = pymysql.connect(host=self.host, user=self.user, passsword=self.password,
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
         pis_dict = {}
 
@@ -653,7 +656,7 @@ class DatabaseManager:
             return pis_dict
 
     def create_machines_table(self):
-        conn = pymysql.connect(host=self.host, user=self.user, passsword=self.password,
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
 
         try:
@@ -667,7 +670,7 @@ class DatabaseManager:
             conn.close()
 
     def insert_machine(self, machine_row):
-        conn = pymysql.connect(host=self.host, user=self.user, passsword=self.password,
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
 
         try:
@@ -682,7 +685,7 @@ class DatabaseManager:
             conn.close()
 
     def delete_machines(self, machines):
-        conn = pymysql.connect(host=self.host, user=self.user, passsword=self.password,
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
 
         try:
@@ -697,7 +700,7 @@ class DatabaseManager:
             conn.close()
 
     def reinsert_machines(self, machine_rows):
-        conn = pymysql.connect(host=self.host, user=self.user, passsword=self.password,
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
 
         try:
@@ -715,7 +718,7 @@ class DatabaseManager:
             conn.close()
 
     def get_machines_headers(self):
-        conn = pymysql.connect(host=self.host, user=self.user, passsword=self.password,
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
         headers_list = []
 
@@ -733,7 +736,7 @@ class DatabaseManager:
             return headers_list
 
     def get_machines(self):
-        conn = pymysql.connect(host=self.host, user=self.user, passsword=self.password,
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
         machines_list = []
 
@@ -742,6 +745,24 @@ class DatabaseManager:
                 sql = 'SELECT * FROM machines_table;'
                 cursor.execute(sql)
                 machines_list = cursor.fetchall()
+        except pymysql.MySQLError as error:
+            print(error)
+            conn.rollback()
+        finally:
+            conn.close()
+            return machines_list
+
+    def get_machine_names(self):
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
+                               database=self.db, port=self.port)
+        machines_list = []
+
+        try:
+            with conn.cursor() as cursor:
+                sql = 'SELECT machine FROM machines_table;'
+                cursor.execute(sql)
+                for row in cursor:
+                    machines_list.append(row[0])
         except pymysql.MySQLError as error:
             print(error)
             conn.rollback()
