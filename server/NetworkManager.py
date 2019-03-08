@@ -1,11 +1,10 @@
-import json
-import threading
-import time
-
-import databaseServer
 import zmq
-from apscheduler.schedulers.background import BackgroundScheduler
+import json
+import time
+import threading
+import databaseServer
 from apscheduler.triggers.cron import CronTrigger
+from apscheduler.schedulers.background import BackgroundScheduler
 
 
 class NetworkManager:
