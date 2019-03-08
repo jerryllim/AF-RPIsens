@@ -75,22 +75,53 @@ class Settings:
 
 
 class DatabaseManager:
-    def __init__(self, settings, host='localhost', user='pi', password='prod93', db='test'):
+    def __init__(self, settings, host='', user='', password='', db='', port=''):
         self.settings = settings
         self.host = host
         self.user = user
         self.password = password
         self.db = db
-        # localhost, user, pass, test
+        self.port = port
 
         self.create_jam_table()
         self.create_job_table()
 
-    def create_jam_table(self):
-        db = pymysql.connect(self.host, self.user, self.password, self.db)
+    @staticmethod
+    def test_db_connection(host, port, user, password, db):
+        success = False
+        try:
+            if port.isnumeric():
+                port = int(port)
+            conn = pymysql.connect(host=host, user=user, password=password, database=db, port=port)
+            if conn.open:
+                success = True
+        except pymysql.MySQLError as error:
+            print(error)
+
+        return success
+
+    def custom_query(self, query):
+        conn = pymysql.connect(host=self.host, user=self.user, passsword=self.password,
+                               database=self.db, port=self.port)
+        return_list = []
 
         try:
-            with db.cursor() as cursor:
+            with conn.cursor() as cursor:
+                cursor.execute(query)
+                return_list = cursor.fetchall()
+        except pymysql.MySQLError as error:
+            conn.rollback()
+            print(error)
+        finally:
+            conn.close()
+            return return_list
+
+    def create_jam_table(self):
+        conn = pymysql.connect(host=self.host, user=self.user, passsword=self.password,
+                               database=self.db, port=self.port)
+
+        try:
+            with conn.cursor() as cursor:
                 # Drop table if it already exist (for testing)
                 # cursor.execute("DROP TABLE IF EXISTS jam_current_table;")
 
@@ -101,55 +132,48 @@ class DatabaseManager:
                 jo_no VARCHAR(15) NOT NULL,
                 emp VARCHAR(10) NOT NULL,
                 date_time DATETIME NOT NULL,
-                shift VARCHAR(3) DEFAULT NULL,
-                output INTEGER DEFAULT 0,
-                col1 INTEGER DEFAULT 0,
-                col2 INTEGER DEFAULT 0,
-                col3 INTEGER DEFAULT 0,
-                col4 INTEGER DEFAULT 0,
-                col5 INTEGER DEFAULT 0,
-                col6 INTEGER DEFAULT 0,
-                col7 INTEGER DEFAULT 0,
-                col8 INTEGER DEFAULT 0,
+                shift TINYINT(1) UNSIGNED DEFAULT 0,
+                output INT UNSIGNED DEFAULT 0,
+                col1 INT DEFAULT 0,
+                col2 INT DEFAULT 0,
+                col3 INT DEFAULT 0,
+                col4 INT DEFAULT 0,
+                col5 INT DEFAULT 0,
+                col6 INT DEFAULT 0,
+                col7 INT DEFAULT 0,
+                col8 INT DEFAULT 0,
                 col9 INTEGER DEFAULT 0,
-                col10 INTEGER DEFAULT 0,
+                col10 INT DEFAULT 0,
                 PRIMARY KEY(machine, jo_no, date_time, emp));'''
 
                 cursor.execute(sql)
 
-                db.commit()
+                cursor.execute('CREATE TABLE IF NOT EXIST jam_prev_table LIKE jam_current_table;')
+                cursor.execute('CREATE TABLE IF NOT EXIST jam_past_table LIKE jam_current_table;')
+
+                conn.commit()
         except pymysql.MySQLError:
-            db.rollback()
+            conn.rollback()
         finally:
-            db.close()
+            conn.close()
 
-    def insert_jam(self, ip, recv_dict=None):
-        # TODO remove recv_dict as a keyword argument
-        # if not recv_dict:
-        # 	recv_dict = {
-        # 		'A0001_Z00012345001_1459': {'S01': 100, 'S02': 125, 'S10': 1},
-        # 		'A0001_Z00012345001_1500': {'S01': 25, 'S02': 30, 'S10': 0}
-        # 	}
-
-        db = pymysql.connect(self.host, self.user, self.password, self.db)
+    def insert_jam(self, ip, recv_dict):
+        conn = pymysql.connect(host=self.host, user=self.user, passsword=self.password,
+                               database=self.db, port=self.port)
 
         try:
-            with db.cursor() as cursor:
-                # TODO change sett_dict format
-                # sett_dict = self.setting_json()
+            with conn.cursor() as cursor:
                 for recv_id, recv_info in recv_dict.items():
-                    print(recv_id)  # TODO to delete this print?
                     emp, job, time_str = recv_id.split('_', 3)
                     recv_time = datetime.strptime(time_str, '%H%M')
                     now = datetime.now()
                     date_time = now.replace(hour=recv_time.hour, minute=recv_time.minute)
                     if recv_time.time() > now.time():
                         date_time = date_time - timedelta(1)
+                    # TODO get shift base on time
 
                     for key in recv_info.keys():
-                        # values = sett_dict.get(key, None)
                         values = self.settings.get_ip_key(ip, key)
-                        # print(values)
 
                         if values:
                             query = "INSERT INTO jam_current_table (machine, jo_no, emp, date_time, " \
@@ -161,125 +185,189 @@ class DatabaseManager:
                                                                                                      "%Y-%m-%d %H:%M"),
                                                                                                  value=recv_info[key])
                             cursor.execute(query)
-                db.commit()
+                conn.commit()
         except pymysql.MySQLError as error:
-            db.rollback()
+            conn.rollback()
             print("Failed to insert record to database: {}".format(error))
         finally:
-            db.close()
+            conn.close()
+
+    def transfer_table(self):
+        conn = pymysql.connect(host=self.host, user=self.user, passsword=self.password,
+                               database=self.db, port=self.port)
+
+        try:
+            with conn.cursor() as cursor:
+                # TODO to check this sql
+                sql = "INSERT IGNORE INTO jam_past_table (machine, jo_no, emp, date_time, shift, output, col1, col2, " \
+                      "col3, col4, col5, col6, col7, col8, col9, col10) SELECT * FROM jam_current_table " \
+                      "WHERE datetime < NOW() - INTERVAL 2 WEEK;"
+                cursor.execute(sql)
+
+                conn.commit()
+        finally:
+            conn.close()
 
     def create_emp_table(self):
-        db = pymysql.connect(self.host, self.user, self.password, self.db)
+        conn = pymysql.connect(host=self.host, user=self.user, passsword=self.password,
+                               database=self.db, port=self.port)
 
         try:
-            with db.cursor() as cursor:
-                # Drop table if it already exist
-                cursor.execute("DROP TABLE IF EXISTS emp_table;")
-
+            with conn.cursor() as cursor:
+                # TODO check length of the emp_id and name
                 # create EMP table
                 sql = '''CREATE TABLE IF NOT EXISTS emp_table (
-                emp_no VARCHAR(10) PRIMARY KEY,
+                emp_id VARCHAR(10) PRIMARY KEY,
                 name VARCHAR(40),
-                last_modified TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)'''
+                last_modified TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                to_del TINYINT(1))'''
 
                 cursor.execute(sql)
-                db.commit()
+                conn.commit()
         finally:
-            db.close()
+            conn.close()
 
     def insert_emp(self, emp_id, emp_name):
-        db = pymysql.connect(self.host, self.user, self.password, self.db)
+        conn = pymysql.connect(host=self.host, user=self.user, passsword=self.password,
+                               database=self.db, port=self.port)
         try:
-            with db.cursor() as cursor:
-                sql = '''INSERT INTO emp_table (emp_no, name) VALUES (%s, %s);'''
-                cursor.execute(sql, (emp_id, emp_name))
-                db.commit()
-                self.insert_t_emp(emp_id, emp_name)
-
+            with conn.cursor() as cursor:
+                sql = 'INSERT INTO emp_table (emp_id, name) VALUES (%s, %s) ON DUPLICATE KEY ' \
+                      'UPDATE name = IF(to_del = 1, %s, name), to_del = 0;'
+                cursor.execute(sql, (emp_id, emp_name, emp_name))
+                conn.commit()
         except pymysql.MySQLError as error:
+            conn.rollback()
             print("Failed to insert record to database: {}".format(error))
-            db.rollback()
         finally:
-            db.close()
+            conn.close()
 
-    def delete_emp(self, emp_id):
-        db = pymysql.connect(self.host, self.user, self.password, self.db)
+    def insert_emps(self, emp_list):
+        conn = pymysql.connect(host=self.host, user=self.user, passsword=self.password,
+                               database=self.db, port=self.port)
         try:
-            with db.cursor() as cursor:
-                sql = '''DELETE FROM emp_table WHERE emp_no = %s'''
-                cursor.execute(sql, (emp_id,))
-                db.commit()
-                self.insert_t_emp(emp_id)
+            with conn.cursor() as cursor:
+                sql = 'INSERT IGNORE INTO emp_table (emp_id, name) VALUES (%s, %s);'
+                cursor.executemany(sql, emp_list)
 
+                conn.commit()
         except pymysql.MySQLError as error:
-            print("Failed to delete record from database: {}".format(error))
-            db.rollback()
+            conn.rollback()
+            print("Failed to insert record to database: {}".format(error))
         finally:
-            db.close()
+            conn.close()
 
-    def update_emp(self, emp_id, emp_name):
-        db = pymysql.connect(self.host, self.user, self.password, self.db)
+    def mark_to_delete_emp(self, emp_ids):
+        conn = pymysql.connect(host=self.host, user=self.user, passsword=self.password,
+                               database=self.db, port=self.port)
+        emp_str = str(tuple(emp_ids))
+
         try:
-            with db.cursor() as cursor:
-                sql = '''UPDATE emp_table SET name = %s WHERE emp_no = %s'''
-                cursor.execute(sql, (emp_name, emp_id))
-                db.commit()
-                self.insert_t_emp(emp_id, emp_name)
-
+            with conn.cursor() as cursor:
+                sql = 'UPDATE emp_table SET to_del = 1 WHERE emp_id IN ' + str(emp_str) + ';'
+                cursor.execute(sql)
+                conn.commit()
         except pymysql.MySQLError as error:
-            print("Failed to update record to database: {}".format(error))
-            db.rollback()
+            print("Failed to mark to delete records from database: {}".format(error))
+            conn.rollback()
         finally:
-            db.close()
+            conn.close()
 
-    def get_emp(self):
-        db = pymysql.connect(self.host, self.user, self.password, self.db)
-        reply_dict = {}
-        cursor = db.cursor(pymysql.cursors.DictCursor)
+    def delete_emp(self):
+        conn = pymysql.connect(host=self.host, user=self.user, passsword=self.password,
+                               database=self.db, port=self.port)
 
         try:
-            sql = '''SELECT * FROM emp_table'''
-            cursor.execute(sql)
-            reply_dict = cursor.fetchall()
-            db.commit()
+            with conn.cursor() as cursor:
+                sql = '''DELETE emp_table WHERE to_del = 1'''
+                cursor.execute(sql)
+                conn.commit()
+        except pymysql.MySQLError as error:
+            print("Failed to delete records from database: {}".format(error))
+            conn.rollback()
+        finally:
+            conn.close()
+
+    def get_emps(self):
+        conn = pymysql.connect(host=self.host, user=self.user, passsword=self.password,
+                               database=self.db, port=self.port)
+        emp_list = []
+
+        try:
+            with conn.cursor() as cursor:
+                sql = '''SELECT emp_id, name, last_modified FROM emp_table WHERE to_del = 0;'''
+                cursor.execute(sql)
+                emp_list = cursor.fetchall()
         except pymysql.MySQLError as error:
             print("Failed to select record in database: {}".format(error))
         finally:
-            db.close()
-            return reply_dict
+            conn.close()
+            return emp_list
 
-    def create_t_emp_table(self):
-        db = pymysql.connect(self.host, self.user, self.password, self.db)
-        try:
-            with db.cursor() as cursor:
-                # create temp EMP table
-                sql = '''CREATE TABLE IF NOT EXISTS t_emp_table ( emp_no VARCHAR(10) PRIMARY KEY, 
-                name VARCHAR(40), 
-                last_modified TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)'''
-                cursor.execute(sql)
-                db.commit()
-
-        except pymysql.MySQLError as error:
-            print("Failed to create table in database: {}".format(error))
-            db.rollback()
-        finally:
-            db.close()
-
-    def insert_t_emp(self, emp_id, emp_name=None):
-        self.create_t_emp_table()
-        db = pymysql.connect(self.host, self.user, self.password, self.db)
+    def get_last_modified_emp(self, timestamp=''):
+        conn = pymysql.connect(host=self.host, user=self.user, passsword=self.password,
+                               database=self.db, port=self.port)
+        emp_list = []
 
         try:
-            with db.cursor() as cursor:
-                sql = '''INSERT INTO t_emp (emp_no, name,) VALUES (%s, %s) ON DUPLICATE KEY UPDATE name = %s'''
-                cursor.execute(sql, (emp_id, emp_name, emp_name))
-                db.commit()
-
+            with conn.cursor() as cursor:
+                sql = 'SELECT emp_id, name, to_del FROM emp_table WHERE last_modified = %s'
+                cursor.execute(sql, timestamp)
+                emp_list = cursor.fetchall()
         except pymysql.MySQLError as error:
-            print("Failed to insert/update record to database: {}".format(error))
-            db.rollback()
+            print(error)
         finally:
-            db.close()
+            conn.close()
+            return emp_list
+
+
+    # def update_emp(self, emp_id, emp_name):
+    #     db = pymysql.connect(self.host, self.user, self.password, self.db)
+    #     try:
+    #         with db.cursor() as cursor:
+    #             sql = '''UPDATE emp_table SET name = %s WHERE emp_no = %s'''
+    #             cursor.execute(sql, (emp_name, emp_id))
+    #             db.commit()
+    #             self.insert_t_emp(emp_id, emp_name)
+    #
+    #     except pymysql.MySQLError as error:
+    #         print("Failed to update record to database: {}".format(error))
+    #         db.rollback()
+    #     finally:
+    #         db.close()
+
+    # def create_t_emp_table(self):
+    #     db = pymysql.connect(self.host, self.user, self.password, self.db)
+    #     try:
+    #         with db.cursor() as cursor:
+    #             # create temp EMP table
+    #             sql = '''CREATE TABLE IF NOT EXISTS t_emp_table ( emp_no VARCHAR(10) PRIMARY KEY,
+    #             name VARCHAR(40),
+    #             last_modified TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)'''
+    #             cursor.execute(sql)
+    #             db.commit()
+    #
+    #     except pymysql.MySQLError as error:
+    #         print("Failed to create table in database: {}".format(error))
+    #         db.rollback()
+    #     finally:
+    #         db.close()
+    #
+    # def insert_t_emp(self, emp_id, emp_name=None):
+    #     self.create_t_emp_table()
+    #     db = pymysql.connect(self.host, self.user, self.password, self.db)
+    #
+    #     try:
+    #         with db.cursor() as cursor:
+    #             sql = '''INSERT INTO t_emp (emp_no, name,) VALUES (%s, %s) ON DUPLICATE KEY UPDATE name = %s'''
+    #             cursor.execute(sql, (emp_id, emp_name, emp_name))
+    #             db.commit()
+    #
+    #     except pymysql.MySQLError as error:
+    #         print("Failed to insert/update record to database: {}".format(error))
+    #         db.rollback()
+    #     finally:
+    #         db.close()
 
     def create_job_table(self):
         db = pymysql.connect(self.host, self.user, self.password, self.db)
@@ -487,29 +575,176 @@ class DatabaseManager:
         finally:
             db.close()
 
-    def create_past_table(self):
-        db = pymysql.connect(self.host, self.user, self.password, self.db)
+    def create_pis_table(self):
+        conn = pymysql.connect(host=self.host, user=self.user, passsword=self.password,
+                               database=self.db, port=self.port)
 
         try:
-            with db.cursor() as cursor:
-                sql = 'CREATE TABLE IF NOT EXISTS jam_past_table LIKE jam_current_table;'
+            with conn.cursor() as cursor:
+                sql = 'CREATE TABLE IF NOT EXISTS pis_table (ip VARCHAR(15) PRIMARY KEY, nick VARCHAR(15) UNIQUE, ' \
+                      'mac VARCHAR(5), machineS01 VARCHAR(15), colnumS01 VARCHAR(6), machineS02 VARCHAR(15), ' \
+                      'colnumS02 VARCHAR(6), machineS03 VARCHAR(15), colnumS03 VARCHAR(6), machineS04 VARCHAR(15), ' \
+                      'colnumS04 VARCHAR(6), machineS05 VARCHAR(15), colnumS05 VARCHAR(6), machineS06 VARCHAR(15), ' \
+                      'colnumS06 VARCHAR(6), machineS07 VARCHAR(15), colnumS07 VARCHAR(6), machineS08 VARCHAR(15), ' \
+                      'colnumS08 VARCHAR(6), machineS09 VARCHAR(15), colnumS09 VARCHAR(6), machineS10 VARCHAR(15), ' \
+                      'colnumS10 VARCHAR(6), machineS11 VARCHAR(15), colnumS11 VARCHAR(6), machineS12 VARCHAR(15), ' \
+                      'colnumS12 VARCHAR(6), machineS13 VARCHAR(15), colnumS13 VARCHAR(6), machineS14 VARCHAR(15), ' \
+                      'colnumS14 VARCHAR(6), machineS15 VARCHAR(15), colnumS15 VARCHAR(6), machineE01 VARCHAR(15), ' \
+                      'colnumE01 VARCHAR(6), machineE02 VARCHAR(15), colnumE02 VARCHAR(6), machineE03 VARCHAR(15), ' \
+                      'colnumE03 VARCHAR(6), machineE04 VARCHAR(15), colnumE04 VARCHAR(6), machineE05 VARCHAR(15), ' \
+                      'colnumE05 VARCHAR(6));'
                 cursor.execute(sql)
-
-                db.commit()
-
+                conn.commit()
         finally:
-            db.close()
+            conn.close()
 
-    def transfer_table(self):
-        db = pymysql.connect(self.host, self.user, self.password, self.db)
+    def replace_pi(self, pi_row):
+        conn = pymysql.connect(host=self.host, user=self.user, passsword=self.password,
+                               database=self.db, port=self.port)
+        replaced = False
 
         try:
-            with db.cursor() as cursor:
-                sql = "INSERT IGNORE INTO jam_past_table (machine, jo_no, emp, date_time, shift, output, col1, col2, " \
-                      "col3, col4, col5, col6, col7, col8, col9, col10) SELECT * FROM jam_current_table " \
-                      "WHERE datetime < NOW() - INTERVAL 2 WEEK;"
+            with conn.cursor() as cursor:
+                sql = 'REPLACE INTO pis_table VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,' \
+                      '%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);'
+                cursor.execute(sql, pi_row)
+                conn.commit()
+        except pymysql.MySQLError as error:
+            conn.rollback()
+            print(error)
+        else:
+            replaced = True
+        finally:
+            conn.close()
+
+        return replaced
+
+    def delete_pi(self, ip):
+        conn = pymysql.connect(host=self.host, user=self.user, passsword=self.password,
+                               database=self.db, port=self.port)
+
+        try:
+            with conn.cursor() as cursor:
+                sql = 'DELETE pis_table WHERE ip = %s'
+                cursor.execute(sql, ip)
+                conn.commit()
+        except pymysql.MySQLError as error:
+            conn.rollback()
+            print(error)
+        finally:
+            conn.close()
+
+    def get_pis(self):
+        conn = pymysql.connect(host=self.host, user=self.user, passsword=self.password,
+                               database=self.db, port=self.port)
+        pis_dict = {}
+
+        try:
+            with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+                cursor.execute('SELECT * FROM pis_table;')
+                for row in cursor:
+                    ip = row.pop('ip')
+                    pis_dict[ip] = row
+        except pymysql.MySQLError as error:
+            conn.rollback()
+            print(error)
+        finally:
+            conn.close()
+            return pis_dict
+
+    def create_machines_table(self):
+        conn = pymysql.connect(host=self.host, user=self.user, passsword=self.password,
+                               database=self.db, port=self.port)
+
+        try:
+            with conn.cursor() as cursor:
+                sql = 'CREATE TABLE IF NOT EXISTS machines_table (machine VARCHAR(10) PRIMARY KEY, output INT ' \
+                      'UNSIGNED, col1 INT, col2 INT, col3 INT, col4 INT, col5 INT, col6 INT, col7 INT, col8 INT, ' \
+                      'col9 INT, col10 INT)'
+                cursor.execute(sql)
+                conn.commit()
+        finally:
+            conn.close()
+
+    def insert_machine(self, machine_row):
+        conn = pymysql.connect(host=self.host, user=self.user, passsword=self.password,
+                               database=self.db, port=self.port)
+
+        try:
+            with conn.cursor() as cursor:
+                sql = 'INSERT INTO machines_table VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+                cursor.execute(sql, machine_row)
+                conn.commit()
+        except pymysql.MySQLError as error:
+            print(error)
+            conn.rollback()
+        finally:
+            conn.close()
+
+    def delete_machines(self, machines):
+        conn = pymysql.connect(host=self.host, user=self.user, passsword=self.password,
+                               database=self.db, port=self.port)
+
+        try:
+            with conn.cursor() as cursor:
+                sql = 'DELETE FROM machines_table WHERE machine = %s'
+                cursor.executemany(sql, machines)
+                conn.commit()
+        except pymysql.MySQLError as error:
+            print(error)
+            conn.rollback()
+        finally:
+            conn.close()
+
+    def reinsert_machines(self, machine_rows):
+        conn = pymysql.connect(host=self.host, user=self.user, passsword=self.password,
+                               database=self.db, port=self.port)
+
+        try:
+            with conn.cursor() as cursor:
+                sql = 'TRUNCATE machines_table;'
                 cursor.execute(sql)
 
-                db.commit()
+                sql = 'INSERT INTO machines_table VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+                cursor.executemany(sql, machine_rows)
+                conn.commit()
+        except pymysql.MySQLError as error:
+            print(error)
+            conn.rollback()
         finally:
-            db.close()
+            conn.close()
+
+    def get_machines_headers(self):
+        conn = pymysql.connect(host=self.host, user=self.user, passsword=self.password,
+                               database=self.db, port=self.port)
+        headers_list = []
+
+        try:
+            with conn.cursor() as cursor:
+                sql = 'SHOW COLUMNS FROM machines_table;'
+                cursor.execute(sql)
+                for row in cursor:
+                    headers_list.append(row[0])
+        except pymysql.MySQLError as error:
+            print(error)
+            conn.rollback()
+        finally:
+            conn.close()
+            return headers_list
+
+    def get_machines(self):
+        conn = pymysql.connect(host=self.host, user=self.user, passsword=self.password,
+                               database=self.db, port=self.port)
+        machines_list = []
+
+        try:
+            with conn.cursor() as cursor:
+                sql = 'SELECT * FROM machines_table;'
+                cursor.execute(sql)
+                machines_list = cursor.fetchall()
+        except pymysql.MySQLError as error:
+            print(error)
+            conn.rollback()
+        finally:
+            conn.close()
+            return machines_list
