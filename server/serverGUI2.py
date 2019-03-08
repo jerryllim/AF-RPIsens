@@ -2,6 +2,8 @@ import csv
 import sqlite3
 import pymysql
 import datetime
+import configparser
+from server import databaseServer
 from PySide2 import QtCore, QtWidgets, QtGui
 
 
@@ -9,8 +11,8 @@ class TabPis(QtWidgets.QWidget):
     sensor_list = ['S01', 'S02', 'S03', 'S04', 'S05', 'S06', 'S07', 'S08', 'S09', 'S10', 'S11', 'S12', 'S13', 'S14',
                    'S15', 'E01', 'E02', 'E03', 'E04', 'E05']
 
-    def __init__(self):
-        QtWidgets.QWidget.__init__(self)
+    def __init__(self, parent):
+        QtWidgets.QWidget.__init__(self, parent)
 
         # Connect to save
         self.conn = sqlite3.connect('serverTest.sqlite')
@@ -76,8 +78,8 @@ class TabPis(QtWidgets.QWidget):
         detail_grid.setColumnStretch(2, 1)
 
         # TODO set this to be dynamic temp list
-        machines = ['-', 'Exia', 'Kyrios', 'Dynames', 'Virtue', 'Nadleeh']
-        columns = ['-', 'output', 'col1', 'col2', 'col3', 'col4', 'col5', 'col6', 'col7', 'col8', 'col9', 'col10']
+        machines = [None, 'Exia', 'Kyrios', 'Dynames', 'Virtue', 'Nadleeh']
+        columns = [None, 'output', 'col1', 'col2', 'col3', 'col4', 'col5', 'col6', 'col7', 'col8', 'col9', 'col10']
         self.machine_comboboxes = {}
         self.col_comboboxes = {}
         for row, id_ in enumerate(self.sensor_list):
@@ -374,7 +376,8 @@ class TabEmps(QtWidgets.QWidget):
             db.close()
 
     def import_csv(self):
-        path = QtWidgets.QFileDialog.getOpenFileName(self, 'Open CSV', None, 'CSV(*.csv)')
+        path = QtWidgets.QFileDialog.getOpenFileName(self, 'Open CSV', '', 'CSV(*.csv)')
+        print(path)
         if path[0] != '':
             with open(path[0], 'r') as csv_file:
                 csv_reader = csv.reader(csv_file)
@@ -405,10 +408,12 @@ class TabWidget(QtWidgets.QWidget):
 
         self.tabs = QtWidgets.QTabWidget()
         self.table_tab = DisplayTable()  # TODO to change
-        self.pis_tab = TabPis()
+        self.machines_tab = MachineTab()
+        self.pis_tab = TabPis(self)
         self.emp_tab = TabEmps()
         self.misc_tab = TabMisc()
         self.tabs.addTab(self.table_tab, 'Display table')
+        self.tabs.addTab(self.machines_tab, 'Machines')
         self.tabs.addTab(self.pis_tab, 'Pis')
         self.tabs.addTab(self.emp_tab, 'Employees')
         self.tabs.addTab(self.misc_tab, 'Misc')
@@ -422,6 +427,9 @@ class TabWidget(QtWidgets.QWidget):
 class TabMisc(QtWidgets.QWidget):
     def __init__(self):
         QtWidgets.QWidget.__init__(self)
+        config = configparser.ConfigParser()
+        config.read('jam.ini')
+        self.config = config
 
         # Request group
         req_box = QtWidgets.QGroupBox('Request')
@@ -431,6 +439,7 @@ class TabMisc(QtWidgets.QWidget):
         dur_spinbox = QtWidgets.QSpinBox()
         dur_spinbox.setMinimum(1)
         dur_spinbox.setMaximum(90)
+        dur_spinbox.setValue(config.getint('Request', 'duration'))
         dur_label2 = QtWidgets.QLabel('minutes')
         req_layout.addWidget(dur_label, 0, 0, QtCore.Qt.AlignRight)
         req_layout.addWidget(dur_spinbox, 0, 1)
@@ -447,8 +456,10 @@ class TabMisc(QtWidgets.QWidget):
         db_box.setLayout(db_layout)
         host_label = QtWidgets.QLabel('TCP/IP Server: ')
         host_edit = QtWidgets.QLineEdit()
+        host_edit.setText(config.get('Database', 'host'))
         port_label = QtWidgets.QLabel('Port: ')
         port_edit = QtWidgets.QLineEdit()
+        port_edit.setText(config.get('Database', 'port'))
         port_edit.setMaximumWidth(100)
         db_layout.addWidget(host_label, 0, 0, QtCore.Qt.AlignRight)
         db_layout.addWidget(host_edit, 0, 1)
@@ -456,14 +467,17 @@ class TabMisc(QtWidgets.QWidget):
         db_layout.addWidget(port_edit, 0, 3)
         user_label = QtWidgets.QLabel('User: ')
         user_edit = QtWidgets.QLineEdit()
+        user_edit.setText(config.get('Database', 'user'))
         db_layout.addWidget(user_label, 1, 0, QtCore.Qt.AlignRight)
         db_layout.addWidget(user_edit, 1 ,1)
         pass_label = QtWidgets.QLabel('Password: ')
         pass_edit = QtWidgets.QLineEdit()
+        pass_edit.setText(config.get('Database', 'password'))
         db_layout.addWidget(pass_label, 2, 0, QtCore.Qt.AlignRight)
         db_layout.addWidget(pass_edit, 2, 1)
         db_label = QtWidgets.QLabel('Database: ')
         db_edit = QtWidgets.QLineEdit()
+        db_edit.setText(config.get('Database', 'database'))
         db_layout.addWidget(db_label, 3, 0, QtCore.Qt.AlignRight)
         db_layout.addWidget(db_edit, 3, 1)
         db_test_btn = QtWidgets.QPushButton('Test')
@@ -474,29 +488,39 @@ class TabMisc(QtWidgets.QWidget):
         shift_box = QtWidgets.QGroupBox('Shifts')
         shift_layout = QtWidgets.QGridLayout()
         shift_box.setLayout(shift_layout)
-        shift_layout.addWidget(QtWidgets.QLabel('Enable'), 0, 0)
-        shift_layout.addWidget(QtWidgets.QLabel('Shift'), 0, 1)
-        shift_layout.addWidget(QtWidgets.QLabel('Start time'), 0, 2)
-        shift_layout.addWidget(QtWidgets.QLabel('End time'), 0, 3)
-        self.shift_checks = []
-        self.shift_starts = []
-        self.shift_ends = []
-        shift_labels = ['Morning shift', 'Morning Overtime', 'Night shift', 'Night Overtime']
+        shift_layout.addWidget(QtWidgets.QLabel('Shift'), 0, 0)
+        shift_layout.addWidget(QtWidgets.QLabel('Start time'), 0, 1)
+        shift_layout.addWidget(QtWidgets.QLabel('End time'), 0, 2)
+        self.shift_checks = {}
+        self.shift_starts = {}
+        self.shift_ends = {}
         for col in range(1, 5):
-            check = QtWidgets.QCheckBox()
-            check.setChecked(True)
-            check.setMaximumWidth(50)
-            check.stateChanged.connect(lambda state, idx=(col-1): self.shift_check_state(state, idx))
-            self.shift_checks.append(check)
-            label = QtWidgets.QLabel(shift_labels[col - 1])
-            start = QtWidgets.QTimeEdit(QtCore.QTime(7, 0))
-            self.shift_starts.append(start)
-            end = QtWidgets.QTimeEdit(QtCore.QTime(17, 15))
-            self.shift_ends.append(end)
+            check = QtWidgets.QCheckBox('Shift {}'.format(col), self)
+            check.setTristate(False)
+            check.setChecked(self.config.getboolean('Shift', 'shift{}_enable'.format(col)))
+            check.stateChanged.connect(lambda state, idx=col: self.shift_check_state(state, idx))
+            self.shift_checks[col] = check
+            start = QtWidgets.QTimeEdit(self)
+            start.setDisplayFormat('hh:mm')
+            start_time = QtCore.QTime.fromString(self.config.get('Shift', 'shift{}_start'.format(col)))
+            start.setTime(start_time)
+            self.shift_starts[col] = start
+            end = QtWidgets.QTimeEdit(self)
+            end.setDisplayFormat('hh:mm')
+            end_time = QtCore.QTime.fromString(self.config.get('Shift', 'shift{}_end'.format(col)))
+            end.setTime(end_time)
+            self.shift_ends[col] = end
             shift_layout.addWidget(check, col, 0)
-            shift_layout.addWidget(label, col, 1)
-            shift_layout.addWidget(start, col, 2)
-            shift_layout.addWidget(end, col, 3)
+            shift_layout.addWidget(start, col, 1)
+            shift_layout.addWidget(end, col, 2)
+            self.shift_check_state(check.checkState(), col)
+
+        # Save button at bottom right
+        save_box = QtWidgets.QHBoxLayout()
+        save_btn = QtWidgets.QPushButton('Save', self)
+        save_btn.clicked.connect(self.save_misc)
+        save_box.addStretch()
+        save_box.addWidget(save_btn)
 
         vbox_layout = QtWidgets.QVBoxLayout()
         # vbox_layout.setAlignment(QtCore.Qt.AlignHCenter)
@@ -504,12 +528,16 @@ class TabMisc(QtWidgets.QWidget):
         vbox_layout.addWidget(db_box)
         vbox_layout.addWidget(shift_box)
         vbox_layout.addStretch()
+        vbox_layout.addLayout(save_box)
         self.setLayout(vbox_layout)
         self.show()
 
     def shift_check_state(self, state, idx):
-        self.shift_starts[idx].setDisabled(not state)
-        self.shift_ends[idx].setDisabled(not state)
+        state = bool(state)
+        self.shift_starts[idx].setEnabled(state)
+        self.shift_ends[idx].setEnabled(state)
+        self.config.set('Shift', 'shift{}_enable'.format(idx), str(state))
+        print(idx, self.config.get('Shift', 'shift{}_enable'.format(idx)))
 
     @staticmethod
     def test_db_connection(host, port, user, password, db):
@@ -530,6 +558,80 @@ class TabMisc(QtWidgets.QWidget):
             msgbox.setText('Connection Failed')
             msgbox.exec_()
 
+    def save_misc(self):
+        with open('jam.ini', 'w') as configfile:
+            self.config.write(configfile)
+
+
+class MachineTab(QtWidgets.QWidget):
+    def __init__(self):
+        QtWidgets.QWidget.__init__(self)
+
+        self.machine_model = QtGui.QStandardItemModel(0, 3, self)
+        self.machine_model.itemChanged.connect(self.printing_changed)
+        self.machine_table = QtWidgets.QTableView(self)
+        self.machine_table.setModel(self.machine_model)
+        self.machine_table.setAlternatingRowColors(True)
+        v_header = self.machine_table.verticalHeader()
+        # v_header.hide()
+        # v_header.setSectionsMovable(True)
+        self.populate_table()
+
+        save_box = QtWidgets.QHBoxLayout()
+        save_box.addStretch()
+        del_btn = QtWidgets.QPushButton('Delete', self)
+        del_btn.clicked.connect(self.delete_rows)
+        save_box.addWidget(del_btn)
+        save_btn = QtWidgets.QPushButton('Save', self)
+        save_box.addWidget(save_btn)
+
+        box_layout = QtWidgets.QVBoxLayout()
+        box_layout.addWidget(self.machine_table)
+        box_layout.addLayout(save_box)
+        self.setLayout(box_layout)
+        self.show()
+
+    def populate_table(self):
+        self.machine_model.clear()
+        db = pymysql.connect('localhost', 'user', 'pass', 'test')
+        table_hheaders = []
+
+        with db.cursor() as cursor:
+            cursor.execute('SHOW COLUMNS FROM machines;')
+            for row in cursor:
+                table_hheaders.append(row[0])
+            self.machine_model.setHorizontalHeaderLabels(table_hheaders)
+
+        with db.cursor() as cursor:
+            cursor.execute("SELECT * FROM machines;")
+            machines_list = cursor.fetchall()
+
+        for idx, row in enumerate(machines_list):
+            for col, value in enumerate(row):
+                if value:
+                    item = QtGui.QStandardItem(str(value))
+                    if col == 0:
+                        item.setFlags(QtCore.Qt.ItemIsEnabled)
+                    self.machine_model.setItem(idx, col, item)
+
+    def printing_changed(self, item):
+        col = item.column()
+        row = item.row()
+        if row == (self.machine_model.rowCount() - 1) and col == 0:
+            self.machine_model.insertRow(self.machine_model.rowCount())
+
+    def save_table(self):
+        pass
+
+    def delete_rows(self):
+        rows = set()
+        for idx in self.machine_table.selectedIndexes():
+            rows.add(idx.row())
+        row = min(rows)
+        count = len(rows)
+        print(rows, row, count)
+        self.machine_model.removeRows(row, count)
+
 
 class DisplayTable(QtWidgets.QWidget):
     def __init__(self):
@@ -539,6 +641,7 @@ class DisplayTable(QtWidgets.QWidget):
 
         self.table_view = QtWidgets.QTableView()
         self.table_view.setModel(self.table_model)
+        self.table_view.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.table_view.setAlternatingRowColors(True)
         v_header = self.table_view.verticalHeader()
         v_header.hide()
