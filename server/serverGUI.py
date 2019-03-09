@@ -16,8 +16,8 @@ class MachinesTab(QtWidgets.QWidget):
         self.machine_table.setModel(self.machine_model)
         self.machine_table.setAlternatingRowColors(True)
         self.machine_table.setSortingEnabled(True)
-        v_header = self.machine_table.verticalHeader()
-        v_header.hide()
+        # v_header = self.machine_table.verticalHeader()
+        # v_header.hide()
         # v_header.setSectionsMovable(True)
         self.populate_machines()
 
@@ -81,7 +81,7 @@ class MachinesTab(QtWidgets.QWidget):
                 if item:
                     try:
                         text = int(item.data(QtCore.Qt.EditRole))
-                    except ValueError as error:
+                    except ValueError:
                         text = None
                 else:
                     text = None
@@ -161,6 +161,8 @@ class PisTab(QtWidgets.QWidget):
         detail_grid.setColumnStretch(2, 1)
 
         machines = [None] + self.database_manager.get_machine_names()
+        self.machines_model = QtCore.QStringListModel(machines, self)
+
         columns = [None]
         for row in self.database_manager.custom_query("SHOW COLUMNS FROM jam_current_table WHERE field LIKE 'col%' "
                                                      "OR field LIKE 'output%';"):
@@ -170,7 +172,7 @@ class PisTab(QtWidgets.QWidget):
         for row, id_ in enumerate(self.sensor_list):
             label = QtWidgets.QLabel(id_, detail_widget)
             machine_combo = QtWidgets.QComboBox(detail_widget)
-            machine_combo.addItems(machines)
+            machine_combo.setModel(self.machines_model)
             self.machine_comboboxes[id_] = machine_combo
             col_combo = QtWidgets.QComboBox(detail_widget)
             col_combo.insertItems(0, columns)
@@ -217,6 +219,10 @@ class PisTab(QtWidgets.QWidget):
             self.pis_model.setItem(index, 0, nick_item)
             self.pis_model.setItem(index, 1, ip_item)
             self.pis_model.setItem(index, 2, mac_item)
+
+    def update_machines_list(self):
+        machines = [None] + self.database_manager.get_machine_names()
+        self.machines_model.setStringList(machines)
 
     def set_fields(self, index):
         row = index.row()
@@ -399,17 +405,17 @@ class MiscTab(QtWidgets.QWidget):
         self.config.read('jam.ini')
 
         # Request group
-        req_box = QtWidgets.QGroupBox('Request', self)
+        req_box = QtWidgets.QGroupBox('Request polling', self)
         req_layout = QtWidgets.QGridLayout()
         req_layout.setColumnMinimumWidth(0, 100)
-        dur_label = QtWidgets.QLabel('Duration: ', req_box)
-        self.dur_spinbox = QtWidgets.QSpinBox(req_box)
-        self.dur_spinbox.setMinimum(1)
-        self.dur_spinbox.setMaximum(90)
-        self.dur_spinbox.setValue(self.config.getint('Request', 'duration'))
+        dur_label = QtWidgets.QLabel('Polling Interval: ', req_box)
+        self.poll_spinbox = QtWidgets.QSpinBox(req_box)
+        self.poll_spinbox.setMinimum(1)
+        self.poll_spinbox.setMaximum(90)
+        self.poll_spinbox.setValue(self.config.getint('Request', 'interval'))
         dur_label2 = QtWidgets.QLabel('minutes', req_box)
         req_layout.addWidget(dur_label, 0, 0, QtCore.Qt.AlignRight)
-        req_layout.addWidget(self.dur_spinbox, 0, 1)
+        req_layout.addWidget(self.poll_spinbox, 0, 1)
         req_layout.addWidget(dur_label2, 0, 2)
         req_btn = QtWidgets.QPushButton('Request now', req_box)
         req_layout.setAlignment(QtCore.Qt.AlignLeft)
@@ -457,6 +463,44 @@ class MiscTab(QtWidgets.QWidget):
         db_test_btn.clicked.connect(self.test_db)
         db_layout.addWidget(db_test_btn, 3, 3)
 
+        # Set data management configs
+        self.data_fields = {}
+        data_box = QtWidgets.QGroupBox('Data')
+        data_layout = QtWidgets.QGridLayout()
+        data_box.setLayout(data_layout)
+        data_start_label = QtWidgets.QLabel('Start week on', data_box)
+        data_start_day = QtWidgets.QComboBox(data_box)
+        data_start_day.addItems(['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'])
+        data_start_day.setCurrentText(self.config.get('Data', 'day'))
+        data_start_time = QtWidgets.QTimeEdit(QtCore.QTime.fromString(self.config.get('Data', 'time')), data_box)
+        data_start_time.setDisplayFormat('hh:mm')
+        self.data_fields['day'] = data_start_day
+        self.data_fields['time'] = data_start_time
+        data_layout.addWidget(data_start_label, 0, 0)
+        data_layout.addWidget(data_start_day, 0, 1)
+        data_layout.addWidget(data_start_time, 0, 2)
+        data_archive_label = QtWidgets.QLabel('Archive after ', data_box)
+        data_archive_spin = QtWidgets.QSpinBox(data_box)
+        data_archive_spin.setMaximum(6)
+        data_archive_spin.setMinimum(1)
+        data_archive_spin.setValue(self.config.getint('Data', 'archive'))
+        data_archive_spin.valueChanged.connect(self.set_delete_spin_min)
+        data_archive_label2 = QtWidgets.QLabel(' months', data_box)
+        self.data_fields['archive'] = data_archive_spin
+        data_layout.addWidget(data_archive_label, 1, 0)
+        data_layout.addWidget(data_archive_spin, 1, 1)
+        data_layout.addWidget(data_archive_label2, 1, 2)
+        data_delete_label = QtWidgets.QLabel('Delete archive after ', data_box)
+        data_delete_spin = QtWidgets.QSpinBox(data_box)
+        data_delete_spin.setMaximum(12)
+        data_delete_spin.setMinimum(2)
+        data_delete_spin.setValue(self.config.getint('Data', 'delete'))
+        data_delete_label2 = QtWidgets.QLabel(' months', data_box)
+        self.data_fields['delete'] = data_delete_spin
+        data_layout.addWidget(data_delete_label, 2, 0)
+        data_layout.addWidget(data_delete_spin, 2, 1)
+        data_layout.addWidget(data_delete_label2, 2, 2)
+
         # Shift group
         shift_box = QtWidgets.QGroupBox('Shifts', self)
         shift_layout = QtWidgets.QGridLayout()
@@ -497,11 +541,15 @@ class MiscTab(QtWidgets.QWidget):
         vbox_layout = QtWidgets.QVBoxLayout()
         vbox_layout.addWidget(req_box)
         vbox_layout.addWidget(db_box)
+        vbox_layout.addWidget(data_box)
         vbox_layout.addWidget(shift_box)
         vbox_layout.addStretch()
         vbox_layout.addLayout(save_box)
         self.setLayout(vbox_layout)
         self.show()
+
+    def set_delete_spin_min(self, value):
+        self.data_fields['delete'].setMinimum(value)
 
     def shift_check_state(self, state, idx):
         state = bool(state)
@@ -524,13 +572,16 @@ class MiscTab(QtWidgets.QWidget):
         for key in self.db_edits.keys():
             self.config.set('Database', key, self.db_edits[key].text())
 
+        self.config.set('Data', 'day', self.data_fields['day'].currentText())
+        for key in ['time', 'archive', 'delete']:
+            self.config.set('Data', key, str(self.data_fields[key].text()))
+
         for col in range(1, 5):
             self.config.set('Shift', 'shift{}_enable'.format(col), str(self.shift_checks[col].isChecked()))
             self.config.set('Shift', 'shift{}_start'.format(col), str(self.shift_starts[col].text()))
             self.config.set('Shift', 'shift{}_end'.format(col), str(self.shift_ends[col].text()))
-        print(self.config.items('Shift'))
 
-        self.config.set('Request', 'duration', str(self.dur_spinbox.text()))
+        self.config.set('Request', 'interval', str(self.poll_spinbox.text()))
 
         # TODO trigger reset all
         with open('jam.ini', 'w') as configfile:
@@ -560,11 +611,16 @@ class ConfigurationWidget(QtWidgets.QWidget):
         self.tab_widget.addTab(self.pis_tab, 'Pis')
         self.tab_widget.addTab(self.emp_tab, 'Employees')
         self.tab_widget.addTab(self.misc_tab, 'Miscellaneous')
+        self.tab_widget.currentChanged.connect(self.changed_tabs)
 
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(self.tab_widget)
         self.setLayout(layout)
         # self.show()
+
+    def changed_tabs(self):
+        if self.tab_widget.currentWidget() == self.pis_tab:
+            self.pis_tab.update_machines_list()
 
 
 class DisplayTable(QtWidgets.QWidget):
