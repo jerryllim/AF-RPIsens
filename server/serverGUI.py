@@ -10,12 +10,27 @@ class MachinesTab(QtWidgets.QWidget):
         QtWidgets.QWidget.__init__(self, parent)
         self.database_manager = self.parent().database_manager
 
+        # Add Top box for insert
+        self.insert_fields = {}
+        self.hheaders = self.database_manager.get_machines_headers()
+        insert_box = QtWidgets.QGridLayout()
+        for col, head in enumerate(self.hheaders):
+            label = QtWidgets.QLabel(head, self)
+            edit = QtWidgets.QLineEdit(self)
+            edit.setValidator(QtGui.QIntValidator())
+            self.insert_fields[head] = edit
+            insert_box.addWidget(label, 0, col)
+            insert_box.setAlignment(label, QtCore.Qt.AlignCenter)
+            insert_box.addWidget(edit, 1, col)
+        self.insert_fields[self.hheaders[0]].setValidator(None)
+
         # Tree View & Models for Machines
         self.machine_model = QtGui.QStandardItemModel(0, 3, self)
         self.machine_table = QtWidgets.QTableView(self)
         self.machine_table.setModel(self.machine_model)
         self.machine_table.setAlternatingRowColors(True)
         self.machine_table.setSortingEnabled(True)
+        self.machine_table.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         # v_header = self.machine_table.verticalHeader()
         # v_header.hide()
         # v_header.setSectionsMovable(True)
@@ -34,31 +49,47 @@ class MachinesTab(QtWidgets.QWidget):
         btn_box.addWidget(save_btn)
         btn_box.addStretch()
 
-        box_layout = QtWidgets.QHBoxLayout()
-        box_layout.addWidget(self.machine_table)
-        box_layout.addLayout(btn_box)
-        self.setLayout(box_layout)
+        vbox_layout = QtWidgets.QVBoxLayout()
+        vbox_layout.addLayout(insert_box)
+        hbox_layout = QtWidgets.QHBoxLayout()
+        hbox_layout.addWidget(self.machine_table)
+        hbox_layout.addLayout(btn_box)
+        vbox_layout.addLayout(hbox_layout)
+        self.setLayout(vbox_layout)
         self.show()
 
     def populate_machines(self):
         self.machine_model.clear()
         # Set horizontal headers
-        headers_list = self.database_manager.get_machines_headers()
-        self.machine_model.setHorizontalHeaderLabels(headers_list)
+        self.machine_model.setHorizontalHeaderLabels(self.hheaders)
 
         # Insert machines
         machines_list = self.database_manager.get_machines()
-        for idx, row in enumerate(machines_list):
+        item = QtGui.QStandardItem(None)
+        self.machine_model.setItem(0, 0, item)
+        self.machine_table.hideRow(0)
+
+        for id_, row in enumerate(machines_list):
+            idx = id_ + 1
             for col, value in enumerate(row):
                 if value:
                     item = QtGui.QStandardItem()
                     item.setData(value, QtCore.Qt.EditRole)
                     if col == 0:
-                        item.setFlags(QtCore.Qt.ItemIsEnabled)
+                        pass
                     self.machine_model.setItem(idx, col, item)
 
     def add_row(self):
-        self.machine_model.insertRow(self.machine_model.rowCount())
+        row = self.machine_model.rowCount()
+        if self.insert_fields[self.hheaders[0]]:
+            for col, key in enumerate(self.hheaders):
+                value = self.insert_fields[key].text()
+                if value:
+                    item = QtGui.QStandardItem()
+                    item.setData(value, QtCore.Qt.EditRole)
+                    self.machine_model.setItem(row, col, item)
+                self.insert_fields[key].clear()
+        # self.machine_model.insertRow(self.machine_model.rowCount())
 
     def delete_rows(self):
         rows = set()
@@ -66,7 +97,10 @@ class MachinesTab(QtWidgets.QWidget):
             rows.add(idx.row())
         row = min(rows)
         count = len(rows)
-        self.machine_model.removeRows(row, count)
+        choice = QtWidgets.QMessageBox.question(self, 'Delete', 'Delete {} rows?'.format(count),
+                                                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+        if choice == QtWidgets.QMessageBox.Yes:
+            self.machine_model.removeRows(row, count)
 
     def save_table(self):
         machines_list = []
@@ -92,12 +126,51 @@ class MachinesTab(QtWidgets.QWidget):
         self.database_manager.reinsert_machines(machines_list)
         self.populate_machines()
 
+    def get_machines_model(self):
+        return self.machine_model
+
+
+class PiMachineDetails(QtWidgets.QWidget):
+    def __init__(self, parent):
+        QtWidgets.QWidget.__init__(self, parent)
+        self.details = {}
+        self.machines_model = self.parent().machines_model
+        self.colnum_model = self.parent().colnum_model
+        form_layout = QtWidgets.QFormLayout()
+
+        # Machine
+        machine_field = QtWidgets.QComboBox(self)
+        machine_field.setModel(self.machines_model)
+        self.details['machine'] = machine_field
+        form_layout.addRow('Machine: ', machine_field)
+
+        # Sensors
+        for key in ['A1', 'A2', 'A3', 'A4', 'A5']:
+            combo = QtWidgets.QComboBox(self)
+            combo.setModel(self.colnum_model)
+            self.details[key] = combo
+            form_layout.addRow('{}: '.format(key), combo)
+
+        # Sensors 2
+        for key in ['B1', 'B2', 'B3', 'B4', 'B5']:
+            combo = QtWidgets.QComboBox(self)
+            combo.setModel(self.colnum_model)
+            self.details[key] = combo
+            form_layout.addRow('{}: '.format(key), combo)
+
+        self.setLayout(form_layout)
+        self.show()
+
+    def enable_combos(self, enable):
+        for combo in self.details.values():
+            combo.setEnabled(enable)
+
 
 class PisTab(QtWidgets.QWidget):
     sensor_list = ['S01', 'S02', 'S03', 'S04', 'S05', 'S06', 'S07', 'S08', 'S09', 'S10', 'S11', 'S12', 'S13', 'S14',
                    'S15', 'E01', 'E02', 'E03', 'E04', 'E05']
 
-    def __init__(self, parent):
+    def __init__(self, parent, machines_model):
         QtWidgets.QWidget.__init__(self, parent)
         self.database_manager = self.parent().database_manager
         self.pis_dict = {}
@@ -152,34 +225,20 @@ class PisTab(QtWidgets.QWidget):
         self.main_lineedits['mac'] = mac_edit
         form_layout.addRow('Mac:', mac_edit)
 
-        # Details scroll area with GridLayout
-        details = QtWidgets.QScrollArea()
-        details.setWidgetResizable(True)
-        detail_widget = QtWidgets.QWidget(self)
-        detail_grid = QtWidgets.QGridLayout(detail_widget)
-        detail_grid.setColumnStretch(1, 1)
-        detail_grid.setColumnStretch(2, 1)
-
-        machines = [None] + self.database_manager.get_machine_names()
-        self.machines_model = QtCore.QStringListModel(machines, self)
-
+        # Details tab
+        self.machines_model = machines_model
         columns = [None]
         for row in self.database_manager.custom_query("SHOW COLUMNS FROM jam_current_table WHERE field LIKE 'col%' "
                                                      "OR field LIKE 'output%';"):
             columns.append(row[0])
-        self.machine_comboboxes = {}
-        self.col_comboboxes = {}
-        for row, id_ in enumerate(self.sensor_list):
-            label = QtWidgets.QLabel(id_, detail_widget)
-            machine_combo = QtWidgets.QComboBox(detail_widget)
-            machine_combo.setModel(self.machines_model)
-            self.machine_comboboxes[id_] = machine_combo
-            col_combo = QtWidgets.QComboBox(detail_widget)
-            col_combo.insertItems(0, columns)
-            self.col_comboboxes[id_] = col_combo
-            detail_grid.addWidget(label, row, 0)
-            detail_grid.addWidget(machine_combo, row, 1)
-            detail_grid.addWidget(col_combo, row, 2)
+        self.colnum_model = QtCore.QStringListModel(self)
+        self.colnum_model.setStringList(columns)
+        self.machine_tabs = {}
+        tab_widget = QtWidgets.QTabWidget(self)
+        for idx in range(1, 4):
+            tab = PiMachineDetails(self)
+            self.machine_tabs[idx] = tab
+            tab_widget.addTab(tab, '{}'.format(idx))
 
         # Button box for details
         detail_btn_box = QtWidgets.QHBoxLayout()
@@ -192,8 +251,7 @@ class PisTab(QtWidgets.QWidget):
         detail_btn_box.addWidget(clear_btn)
 
         vbox_layout.addLayout(form_layout)
-        details.setWidget(detail_widget)
-        vbox_layout.addWidget(details)
+        vbox_layout.addWidget(tab_widget)
         vbox_layout.addLayout(detail_btn_box)
 
         hbox_layout = QtWidgets.QHBoxLayout()
@@ -219,10 +277,6 @@ class PisTab(QtWidgets.QWidget):
             self.pis_model.setItem(index, 0, nick_item)
             self.pis_model.setItem(index, 1, ip_item)
             self.pis_model.setItem(index, 2, mac_item)
-
-    def update_machines_list(self):
-        machines = [None] + self.database_manager.get_machine_names()
-        self.machines_model.setStringList(machines)
 
     def set_fields(self, index):
         row = index.row()
@@ -265,6 +319,7 @@ class PisTab(QtWidgets.QWidget):
             pi_row.append(self.col_comboboxes[key].currentText())
 
         self.database_manager.replace_pi(pi_row)
+        self.populate_pis()
 
     def set_all_enabled(self, enable, ip):
         for key, edit in self.main_lineedits.items():
@@ -273,11 +328,8 @@ class PisTab(QtWidgets.QWidget):
             else:
                 edit.setEnabled(enable)
 
-        for combo in self.machine_comboboxes.values():
-            combo.setEnabled(enable)
-
-        for combo in self.col_comboboxes.values():
-            combo.setEnabled(enable)
+        for tab in self.machine_tabs.values():
+            tab.enable_combos(enable)
 
     def clear_all(self, edits=False):
         if edits:
@@ -285,11 +337,11 @@ class PisTab(QtWidgets.QWidget):
                 edit.clear()
                 edit.setText('')
 
-        for combo in self.machine_comboboxes.values():
-            combo.setCurrentIndex(0)
-
-        for combo in self.col_comboboxes.values():
-            combo.setCurrentIndex(0)
+        # for combo in self.machine_comboboxes.values():
+        #     combo.setCurrentIndex(0)
+        #
+        # for combo in self.col_comboboxes.values():
+        #     combo.setCurrentIndex(0)
 
 
 class EmployeesTab(QtWidgets.QWidget):
@@ -383,7 +435,7 @@ class EmployeesTab(QtWidgets.QWidget):
             rows.add(idx.row())
         emp_list = [self.emp_model.item(row, 0).text() for row in rows]
 
-        self.database_manager.mark_to_delete_emp(rows, emp_list)
+        self.database_manager.mark_to_delete_emp(emp_list)
         self.populate_employees()
 
     def import_csv(self):
@@ -604,23 +656,27 @@ class ConfigurationWidget(QtWidgets.QWidget):
 
         self.tab_widget = QtWidgets.QTabWidget()
         self.machines_tab = MachinesTab(self)
-        self.pis_tab = PisTab(self)
+        machines = self.machines_tab.get_machines_model()
+        self.pis_tab = PisTab(self, machines)
         self.emp_tab = EmployeesTab(self)
         self.misc_tab = MiscTab(self)
         self.tab_widget.addTab(self.machines_tab, 'Machines')
         self.tab_widget.addTab(self.pis_tab, 'Pis')
         self.tab_widget.addTab(self.emp_tab, 'Employees')
         self.tab_widget.addTab(self.misc_tab, 'Miscellaneous')
-        self.tab_widget.currentChanged.connect(self.changed_tabs)
+
+        btn_box = QtWidgets.QHBoxLayout()
+        save_btn = QtWidgets.QPushButton('Save', self)
+        cancel_btn = QtWidgets.QPushButton('Cancel', self)
+        btn_box.addStretch()
+        btn_box.addWidget(cancel_btn)
+        btn_box.addWidget(save_btn)
 
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(self.tab_widget)
+        layout.addLayout(btn_box)
         self.setLayout(layout)
         # self.show()
-
-    def changed_tabs(self):
-        if self.tab_widget.currentWidget() == self.pis_tab:
-            self.pis_tab.update_machines_list()
 
 
 class DisplayTable(QtWidgets.QWidget):
@@ -746,6 +802,9 @@ class JamMainWindow(QtWidgets.QMainWindow):
         dialog = QtWidgets.QDialog(self)
         configurations = ConfigurationWidget(dialog)
         configurations.show()
+        dialog_layout = QtWidgets.QVBoxLayout()
+        dialog_layout.addWidget(configurations)
+        dialog.setLayout(dialog_layout)
         dialog.exec_()
 
 

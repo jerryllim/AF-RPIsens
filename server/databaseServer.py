@@ -1,77 +1,38 @@
-from datetime import datetime, timedelta
-
 import pymysql
+import configparser
+from datetime import datetime, timedelta
 
 
 class Settings:
-    setting = {"152.228.1.135": {
-                    "nickname": "SM52",
-                    "mac": 'ZF1',
-                    "S01": None,
-                    "S02": ("SM52", "col2"),
-                    "S03": ("SM52", "col3"),
-                    "S04": None,
-                    "S05": ("SM52", "col5"),
-                    "S06": None,
-                    "S07": ("SM52", "col7"),
-                    "S08": ("SM52", "col8"),
-                    "S09": None,
-                    "S10": ("SM52", "col10"),
-                    "S11": None,
-                    "S12": None,
-                    "S13": None,
-                    "S14": None,
-                    "S15": ("SM52", "output"),
-                    "E01": ("SM52", "col1"),
-                    "E02": None,
-                    "E03": None,
-                    "E04": None,
-                    "E05": None},
-                "152.228.1.192": {
-                    "nickname": "SM53",
-                    "mac": 'ZP10',
-                    "S01": None,
-                    "S02": None,
-                    "S03": None,
-                    "S04": None,
-                    "S05": ("SM53", "col5"),
-                    "S06": None,
-                    "S07": ("SM53", "col7"),
-                    "S08": ("SM53", "col8"),
-                    "S09": None,
-                    "S10": ("SM53", "col10"),
-                    "S11": None,
-                    "S12": None,
-                    "S13": None,
-                    "S14": None,
-                    "S15": ("SM53", "output"),
-                    "E01": ("SM53", "col1"),
-                    "E02": ("SM53", "col2"),
-                    "E03": ("SM53", "col3"),
-                    "E04": None,
-                    "E05": None}}
+    def __init__(self, filename='jam.ini'):
+        self.config = configparser.ConfigParser()
+        self.config.read(filename)
+        self.machine_info = {}
+
+    def get_machine_info(self):
+        database_manager = DatabaseManager(None)
 
     def get_ip_key(self, ip, key):
-        print("in class settings: ", self.setting[ip][key])
-        if self.setting.get(ip) and (self.setting.get(ip)).get(key):
-            return self.setting[ip][key]
+        print("in class settings: ", self.machine_info[ip][key])
+        if self.machine_info.get(ip) and (self.machine_info.get(ip)).get(key):
+            return self.machine_info[ip][key]
         else:
             return None
 
     def get_mac(self, ip):
-        if self.setting.get(ip):
-            return self.setting[ip]['mac']
+        if self.machine_info.get(ip):
+            return self.machine_info[ip]['mac']
         else:
             return False
 
     def get_machine(self, ip):
-        if self.setting.get(ip):
-            return self.setting[ip]['machine']
+        if self.machine_info.get(ip):
+            return self.machine_info[ip]['nickname']
         else:
             return False
 
     def get_ips(self):
-        return list(self.setting.keys())
+        return list(self.machine_info.keys())
 
 
 class DatabaseManager:
@@ -264,8 +225,7 @@ class DatabaseManager:
                                database=self.db, port=self.port)
         try:
             with conn.cursor() as cursor:
-                sql = 'INSERT INTO emp_table (emp_id, name) VALUES (%s, %s) ON DUPLICATE KEY ' \
-                      'UPDATE name = IF(to_del = 1, %s, name), to_del = 0;'
+                sql = "REPLACE INTO emp_table (emp_id, name) VALUES (%s, %s);"
                 cursor.execute(sql, (emp_id, emp_name, emp_name))
                 conn.commit()
         except pymysql.MySQLError as error:
@@ -279,7 +239,8 @@ class DatabaseManager:
                                database=self.db, port=self.port)
         try:
             with conn.cursor() as cursor:
-                sql = 'INSERT IGNORE INTO emp_table (emp_id, name) VALUES (%s, %s);'
+                sql = "REPLACE INTO emp_table (emp_id, name) VALUES (%s, %s);"
+                # new_list = [(row[0], row[1], row[1]) for row in emp_list]
                 cursor.executemany(sql, emp_list)
 
                 conn.commit()
@@ -293,6 +254,8 @@ class DatabaseManager:
         conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
         emp_str = str(tuple(emp_ids))
+        if len(emp_ids) == 1:
+            emp_str = emp_str.replace(',', '')
 
         try:
             with conn.cursor() as cursor:
@@ -336,10 +299,12 @@ class DatabaseManager:
             conn.close()
             return emp_list
 
-    def get_last_modified_emp(self, timestamp=''):
+    def get_last_modified_emp(self, timestamp=None):
         conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
         emp_list = []
+        if not timestamp:
+            timestamp = (datetime.today() - timedelta(days=1)).isoformat(timespec='minutes')
 
         try:
             with conn.cursor() as cursor:
@@ -347,7 +312,7 @@ class DatabaseManager:
                 cursor.execute(sql, timestamp)
                 emp_list = cursor.fetchall()
         except pymysql.MySQLError as error:
-            print(error)
+            print("Failed to select record in database: {}".format(error))
         finally:
             conn.close()
             return emp_list
