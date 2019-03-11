@@ -577,20 +577,64 @@ class DatabaseManager:
 
         try:
             with conn.cursor() as cursor:
-                sql = 'CREATE TABLE IF NOT EXISTS pis_table (ip VARCHAR(15) PRIMARY KEY, nick VARCHAR(15) UNIQUE, ' \
-                      'mac VARCHAR(5), machineS01 VARCHAR(15), colnumS01 VARCHAR(6), machineS02 VARCHAR(15), ' \
-                      'colnumS02 VARCHAR(6), machineS03 VARCHAR(15), colnumS03 VARCHAR(6), machineS04 VARCHAR(15), ' \
-                      'colnumS04 VARCHAR(6), machineS05 VARCHAR(15), colnumS05 VARCHAR(6), machineS06 VARCHAR(15), ' \
-                      'colnumS06 VARCHAR(6), machineS07 VARCHAR(15), colnumS07 VARCHAR(6), machineS08 VARCHAR(15), ' \
-                      'colnumS08 VARCHAR(6), machineS09 VARCHAR(15), colnumS09 VARCHAR(6), machineS10 VARCHAR(15), ' \
-                      'colnumS10 VARCHAR(6), machineS11 VARCHAR(15), colnumS11 VARCHAR(6), machineS12 VARCHAR(15), ' \
-                      'colnumS12 VARCHAR(6), machineS13 VARCHAR(15), colnumS13 VARCHAR(6), machineS14 VARCHAR(15), ' \
-                      'colnumS14 VARCHAR(6), machineS15 VARCHAR(15), colnumS15 VARCHAR(6), machineE01 VARCHAR(15), ' \
-                      'colnumE01 VARCHAR(6), machineE02 VARCHAR(15), colnumE02 VARCHAR(6), machineE03 VARCHAR(15), ' \
-                      'colnumE03 VARCHAR(6), machineE04 VARCHAR(15), colnumE04 VARCHAR(6), machineE05 VARCHAR(15), ' \
-                      'colnumE05 VARCHAR(6));'
+                sql = 'CREATE TABLE IF NOT EXISTS pis_table (' \
+                      'ip VARCHAR(15) PRIMARY KEY,' \
+                      'nick VARCHAR(15) UNIQUE,' \
+                      'mac VARCHAR(5),' \
+                      'machine1 VARCHAR(15),' \
+                      'A11 VARCHAR(6),' \
+                      'A21 VARCHAR(6),' \
+                      'A31 VARCHAR(6),' \
+                      'A41 VARCHAR(6),' \
+                      'A51 VARCHAR(6),' \
+                      'B11 VARCHAR(6),' \
+                      'B21 VARCHAR(6),' \
+                      'B31 VARCHAR(6),' \
+                      'B41 VARCHAR(6),' \
+                      'B51 VARCHAR(6),' \
+                      'machine2 VARCHAR(15),' \
+                      'A12 VARCHAR(6),' \
+                      'A22 VARCHAR(6),' \
+                      'A32 VARCHAR(6),' \
+                      'A42 VARCHAR(6),' \
+                      'A52 VARCHAR(6),' \
+                      'B12 VARCHAR(6),' \
+                      'B22 VARCHAR(6),' \
+                      'B32 VARCHAR(6),' \
+                      'B42 VARCHAR(6),' \
+                      'B52 VARCHAR(6),' \
+                      'machine3 VARCHAR(15),' \
+                      'A13 VARCHAR(6),' \
+                      'A23 VARCHAR(6),' \
+                      'A33 VARCHAR(6),' \
+                      'A43 VARCHAR(6),' \
+                      'A53 VARCHAR(6),' \
+                      'B13 VARCHAR(6),' \
+                      'B23 VARCHAR(6),' \
+                      'B33 VARCHAR(6),' \
+                      'B43 VARCHAR(6),' \
+                      'B53 VARCHAR(6)' \
+                      ');'
                 cursor.execute(sql)
                 conn.commit()
+        finally:
+            conn.close()
+            
+    def saved_all_pis(self, pis_row):
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
+                               database=self.db, port=self.port)
+        try:
+            with conn.cursor() as cursor:
+                sql = 'TRUNCATE pis_table;'
+                cursor.execute(sql)
+
+                sql = 'INSERT INTO pis_table VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,' \
+                      ' %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);'
+                cursor.executemany(sql, pis_row)
+            conn.commit()
+        except pymysql.MySQLError as error:
+            conn.rollback()
+            print(error)
         finally:
             conn.close()
 
@@ -601,8 +645,8 @@ class DatabaseManager:
 
         try:
             with conn.cursor() as cursor:
-                sql = 'REPLACE INTO pis_table VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,' \
-                      '%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);'
+                sql = 'REPLACE INTO pis_table VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,' \
+                      ' %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);'
                 cursor.execute(sql, pi_row)
                 conn.commit()
         except pymysql.MySQLError as error:

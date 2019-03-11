@@ -20,11 +20,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/server/databaseServer.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="2595">
-                  <caret line="180" column="47" selection-start-line="180" selection-start-column="47" selection-end-line="186" selection-end-column="30" />
-                  <folding>
-                    <element signature="e#0#40#0" expanded="true" />
-                  </folding>
+                <state relative-caret-position="-445">
+                  <caret line="210" column="28" selection-start-line="210" selection-start-column="25" selection-end-line="210" selection-end-column="28" />
                 </state>
               </provider>
             </entry>
@@ -42,28 +39,22 @@
             </entry>
           </file>
           <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/sensor/printingMain.py">
+            <entry file="file://$PROJECT_DIR$/server/serverGUI2.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="204">
-                  <caret line="130" column="14" selection-start-line="130" selection-start-column="14" selection-end-line="130" selection-end-column="14" />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/sensor/printingGUI.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="319">
-                  <caret line="674" lean-forward="true" selection-start-line="674" selection-end-line="674" />
+                <state relative-caret-position="125">
+                  <caret line="53" column="9" selection-start-line="53" selection-start-column="9" selection-end-line="53" selection-end-column="9" />
+                  <folding>
+                    <element signature="e#0#10#0" expanded="true" />
+                  </folding>
                 </state>
               </provider>
             </entry>
           </file>
           <file pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/server/serverGUI2.py">
+            <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="125">
-                  <caret line="53" column="9" selection-start-line="53" selection-start-column="9" selection-end-line="53" selection-end-column="9" />
+                <state relative-caret-position="316">
+                  <caret line="741" column="31" lean-forward="true" selection-start-line="741" selection-start-column="31" selection-end-line="741" selection-end-column="31" />
                   <folding>
                     <element signature="e#0#10#0" expanded="true" />
                   </folding>
@@ -88,7 +79,7 @@
             <entry file="file://$PROJECT_DIR$/server/databaseServer.py">
               <provider selected="true" editor-type-id="text-editor">
                 <state relative-caret-position="191">
-                  <caret line="712" column="8" selection-start-line="712" selection-start-column="8" selection-end-line="712" selection-end-column="8" />
+                  <caret line="252" column="42" selection-start-line="252" selection-start-column="42" selection-end-line="252" selection-end-column="42" />
                   <folding>
                     <element signature="e#1#15#0" expanded="true" />
                   </folding>
@@ -99,8 +90,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="217">
-                  <caret line="339" column="38" selection-start-line="339" selection-start-column="38" selection-end-line="343" selection-end-column="38" />
+                <state relative-caret-position="236">
+                  <caret line="505" lean-forward="true" selection-start-line="505" selection-end-line="505" />
                   <folding>
                     <element signature="e#0#10#0" expanded="true" />
                   </folding>
@@ -133,18 +124,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>exia</find>
-      <find>setHorizon</find>
-      <find>Pis</find>
-      <find>machines</find>
-      <find>machineta</find>
-      <find>passsword</find>
-      <find>passswo</find>
-      <find>result</find>
-      <find>employe</find>
-      <find>employee</find>
-      <find>pis</find>
-      <find>header</find>
       <find>print(qu</find>
       <find>populate_pi</find>
       <find>machine</find>
@@ -163,6 +142,18 @@
       <find>insert_emp</find>
       <find>form</find>
       <find>print</find>
+      <find>header</find>
+      <find>diaol</find>
+      <find>dialog</find>
+      <find>message</find>
+      <find>TRUNCATE</find>
+      <find>removero</find>
+      <find>add_emp</find>
+      <find>save_</find>
+      <find>save</find>
+      <find>save_btn</find>
+      <find>delete_</find>
+      <find>emp</find>
     </findStrings>
     <replaceStrings>
       <replace>TMessage</replace>
@@ -277,7 +268,7 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1552142785961" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1552280666399" />
     <property name="settings.editor.selected.configurable" value="preferences.lookFeel" />
   </component>
   <component name="RecentsManager">
@@ -725,13 +716,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/server/testing.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret column="4" selection-end-line="1" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/server/NetworkManager.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="158">
@@ -777,6 +761,13 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/server/testing.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret column="4" selection-end-line="1" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/server/serverGUI2.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="429">
@@ -790,7 +781,7 @@
     <entry file="file://$PROJECT_DIR$/server/databaseServer.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="191">
-          <caret line="712" column="8" selection-start-line="712" selection-start-column="8" selection-end-line="712" selection-end-column="8" />
+          <caret line="252" column="42" selection-start-line="252" selection-start-column="42" selection-end-line="252" selection-end-column="42" />
           <folding>
             <element signature="e#1#15#0" expanded="true" />
           </folding>
@@ -799,8 +790,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="217">
-          <caret line="339" column="38" selection-start-line="339" selection-start-column="38" selection-end-line="343" selection-end-column="38" />
+        <state relative-caret-position="236">
+          <caret line="505" lean-forward="true" selection-start-line="505" selection-end-line="505" />
           <folding>
             <element signature="e#0#10#0" expanded="true" />
           </folding>

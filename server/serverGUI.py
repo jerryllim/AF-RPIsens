@@ -44,9 +44,6 @@ class MachinesTab(QtWidgets.QWidget):
         del_btn = QtWidgets.QPushButton('Delete', self)
         del_btn.clicked.connect(self.delete_rows)
         btn_box.addWidget(del_btn)
-        save_btn = QtWidgets.QPushButton('Save', self)
-        save_btn.clicked.connect(self.save_table)
-        btn_box.addWidget(save_btn)
         btn_box.addStretch()
 
         vbox_layout = QtWidgets.QVBoxLayout()
@@ -89,12 +86,14 @@ class MachinesTab(QtWidgets.QWidget):
                     item.setData(value, QtCore.Qt.EditRole)
                     self.machine_model.setItem(row, col, item)
                 self.insert_fields[key].clear()
-        # self.machine_model.insertRow(self.machine_model.rowCount())
 
     def delete_rows(self):
         rows = set()
         for idx in self.machine_table.selectedIndexes():
             rows.add(idx.row())
+        if not rows:
+            return
+
         row = min(rows)
         count = len(rows)
         choice = QtWidgets.QMessageBox.question(self, 'Delete', 'Delete {} rows?'.format(count),
@@ -165,15 +164,30 @@ class PiMachineDetails(QtWidgets.QWidget):
         for combo in self.details.values():
             combo.setEnabled(enable)
 
+    def set_fields(self, idx, values):
+        for key in self.details:
+            self.details[key].setCurrentText(values.get('{0}{1}'.format(key, idx)))
+
+    def get_values(self, idx):
+        values = {}
+        for key in self.details.keys():
+            newk = '{0}{1}'.format(key, idx)
+            values[newk] = self.details[key].currentText()
+
+        return values
+
+    def clear_fields(self):
+        for field in self.details.values():
+            field.setCurrentIndex(0)
+
 
 class PisTab(QtWidgets.QWidget):
-    sensor_list = ['S01', 'S02', 'S03', 'S04', 'S05', 'S06', 'S07', 'S08', 'S09', 'S10', 'S11', 'S12', 'S13', 'S14',
-                   'S15', 'E01', 'E02', 'E03', 'E04', 'E05']
+    sensor_list = ['machine', 'A1', 'A2', 'A3', 'A4', 'A5', 'B1', 'B2', 'B3', 'B4', 'B5']
 
     def __init__(self, parent, machines_model):
         QtWidgets.QWidget.__init__(self, parent)
         self.database_manager = self.parent().database_manager
-        self.pis_dict = {}
+        self.pis_dict = self.database_manager.get_pis()
 
         # Tree View for the Pis
         self.pis_model = QtGui.QStandardItemModel(0, 3, self)
@@ -229,7 +243,7 @@ class PisTab(QtWidgets.QWidget):
         self.machines_model = machines_model
         columns = [None]
         for row in self.database_manager.custom_query("SHOW COLUMNS FROM jam_current_table WHERE field LIKE 'col%' "
-                                                     "OR field LIKE 'output%';"):
+                                                      "OR field LIKE 'output%';"):
             columns.append(row[0])
         self.colnum_model = QtCore.QStringListModel(self)
         self.colnum_model.setStringList(columns)
@@ -242,13 +256,13 @@ class PisTab(QtWidgets.QWidget):
 
         # Button box for details
         detail_btn_box = QtWidgets.QHBoxLayout()
-        save_btn = QtWidgets.QPushButton('Save', self)
-        save_btn.clicked.connect(self.save_item)
+        set_btn = QtWidgets.QPushButton('Set', self)
+        set_btn.clicked.connect(self.set_item)
         clear_btn = QtWidgets.QPushButton('Clear', self)
         clear_btn.clicked.connect(self.clear_all)
         detail_btn_box.addStretch()
-        detail_btn_box.addWidget(save_btn)
         detail_btn_box.addWidget(clear_btn)
+        detail_btn_box.addWidget(set_btn)
 
         vbox_layout.addLayout(form_layout)
         vbox_layout.addWidget(tab_widget)
@@ -266,8 +280,6 @@ class PisTab(QtWidgets.QWidget):
     def populate_pis(self):
         self.pis_model.clear()
         self.pis_model.setHorizontalHeaderLabels(['Nickname', 'IP Address', 'Mac'])
-
-        self.pis_dict = self.database_manager.get_pis()
 
         for ip in self.pis_dict.keys():
             nick_item = QtGui.QStandardItem(self.pis_dict[ip].get('nick'))
@@ -288,9 +300,8 @@ class PisTab(QtWidgets.QWidget):
         for id_ in ['nick', 'mac']:
             self.main_lineedits[id_].setText(self.pis_dict[ip][id_])
 
-        for key in self.sensor_list:
-            self.machine_comboboxes[key].setCurrentText(self.pis_dict[ip].get('machine{}'.format(key)))
-            self.col_comboboxes[key].setCurrentText(self.pis_dict[ip].get('colnum{}'.format(key)))
+        for key in self.machine_tabs:
+            self.machine_tabs[key].set_fields(key, self.pis_dict[ip])
 
     def new_item(self):
         self.clear_all(edits=True)
@@ -304,22 +315,40 @@ class PisTab(QtWidgets.QWidget):
     def delete_item(self):
         index = self.pis_treeview.selectedIndexes()[0]
         row = index.row()
+        nick = self.pis_model.item(row, 0).text()
         ip = self.pis_model.item(row, 1).text()
 
-        self.database_manager.delete_pi(ip)
+        choice = QtWidgets.QMessageBox.question(self, 'Delete', 'Delete {0} ({1})?'.format(nick, ip))
+        if choice == QtWidgets.QMessageBox.Yes:
+            self.pis_dict.pop(ip, None)
+            self.populate_pis()
+
+    def set_item(self):
+        ip = self.main_lineedits['ip'].text()
+        self.pis_dict[ip] = {}
+        for key in ['nick', 'mac']:
+            self.pis_dict[ip][key] = self.main_lineedits[key].text()
+
+        for idx in self.machine_tabs.keys():
+            self.pis_dict[ip].update(self.machine_tabs[idx].get_values(idx))
+
         self.populate_pis()
 
-    def save_item(self):
-        pi_row = []
-        for key in ['ip', 'nick', 'mac']:
-            pi_row.append(self.main_lineedits[key].text())
+    def save_items(self):
+        pis_row = []
 
-        for key in self.sensor_list:
-            pi_row.append(self.machine_comboboxes[key].currentText())
-            pi_row.append(self.col_comboboxes[key].currentText())
+        for ip, values in self.pis_dict.items():
+            pi_row = [ip]
+            for key in ['nick', 'mac']:
+                pi_row.append(values[key])
 
-        self.database_manager.replace_pi(pi_row)
-        self.populate_pis()
+            for i in range(1, 4):
+                for key in self.sensor_list:
+                    pi_row.append(values['{0}{1}'.format(key, i)])
+
+            pis_row.append(pi_row)
+
+        self.database_manager.saved_all_pis(pis_row)
 
     def set_all_enabled(self, enable, ip):
         for key, edit in self.main_lineedits.items():
@@ -337,17 +366,15 @@ class PisTab(QtWidgets.QWidget):
                 edit.clear()
                 edit.setText('')
 
-        # for combo in self.machine_comboboxes.values():
-        #     combo.setCurrentIndex(0)
-        #
-        # for combo in self.col_comboboxes.values():
-        #     combo.setCurrentIndex(0)
+            for tab in self.machine_tabs.values():
+                tab.clear_fields()
 
 
 class EmployeesTab(QtWidgets.QWidget):
     def __init__(self, parent):
         QtWidgets.QWidget.__init__(self, parent)
         self.database_manager = self.parent().database_manager
+        self.deleted_emps = set()
 
         # Insertion fields
         insert_grid = QtWidgets.QGridLayout()
@@ -393,7 +420,7 @@ class EmployeesTab(QtWidgets.QWidget):
         add_btn.clicked.connect(self.add_emp)
         buttons_box.addWidget(add_btn)
         del_btn = QtWidgets.QPushButton('Delete', self)
-        del_btn.clicked.connect(self.delete_emp)
+        del_btn.clicked.connect(self.delete_emps)
         buttons_box.addWidget(del_btn)
         import_btn = QtWidgets.QPushButton('Import', self)
         import_btn.clicked.connect(self.import_csv)
@@ -425,28 +452,59 @@ class EmployeesTab(QtWidgets.QWidget):
             id_ = self.insert_edits['id'].text()
             name = self.insert_edits['name'].text()
 
-            self.database_manager.insert_emp(id_, name)
+            self.deleted_emps.discard(id_)
+            index = self.emp_model.rowCount()
+            self.emp_model.setItem(index, 0, QtGui.QStandardItem(id_))
+            self.emp_model.setItem(index, 1, QtGui.QStandardItem(name))
+            self.emp_model.setItem(index, 2, QtGui.QStandardItem('Now'))
+            self.emp_treeview.scrollToBottom()
 
-        self.populate_employees()
+            self.insert_edits['id'].clear()
+            self.insert_edits['name'].clear()
 
-    def delete_emp(self):
+    def delete_emps(self):
         rows = set()
         for idx in self.emp_treeview.selectedIndexes():
             rows.add(idx.row())
-        emp_list = [self.emp_model.item(row, 0).text() for row in rows]
+            self.deleted_emps.add(self.emp_model.item(idx.row(), 0).text())
+        if not rows:
+            return
 
-        self.database_manager.mark_to_delete_emp(emp_list)
-        self.populate_employees()
+        row = min(rows)
+        count = len(rows)
+        choice = QtWidgets.QMessageBox.question(self, 'Delete', 'Delete {} rows?'.format(count),
+                                                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+        if choice == QtWidgets.QMessageBox.Yes:
+            self.emp_model.removeRows(row, count)
 
     def import_csv(self):
         path = QtWidgets.QFileDialog.getOpenFileName(self, 'Open CSV', '', 'CSV(*.csv)')
         if path[0] != '':
             with open(path[0], 'r') as csv_file:
                 csv_reader = csv.reader(csv_file)
-                csv_list = list(csv_reader)
-                self.database_manager.insert_emps(csv_list)
 
-            self.populate_employees()
+                for row in csv_reader:
+                    self.deleted_emps.discard(row[0])
+                    idx = self.emp_model.rowCount()
+                    self.emp_model.setItem(idx, 0, QtGui.QStandardItem(row[0]))
+                    self.emp_model.setItem(idx, 1, QtGui.QStandardItem(row[1]))
+                    self.emp_model.setItem(idx, 2, QtGui.QStandardItem('Now'))
+
+            self.emp_treeview.scrollToBottom()
+
+    def save_emp(self):
+        emp_rows = []
+
+        for row in range(self.emp_model.rowCount()):
+            emp_row = []
+            if self.emp_model.item(row, 2).text() == 'Now':
+                emp_row.append(self.emp_model.item(row, 0).text())
+                emp_row.append(self.emp_model.item(row, 1).text())
+                emp_rows.append(emp_row)
+
+        self.database_manager.insert_emps(emp_rows)
+        if self.deleted_emps:
+            self.database_manager.mark_to_delete_emp(self.deleted_emps)
 
 
 class MiscTab(QtWidgets.QWidget):
@@ -583,20 +641,12 @@ class MiscTab(QtWidgets.QWidget):
             shift_layout.addWidget(end, col, 2)
             self.shift_check_state(check.checkState(), col)
 
-        # Save button at bottom right
-        save_box = QtWidgets.QHBoxLayout()
-        save_btn = QtWidgets.QPushButton('Save', self)
-        save_btn.clicked.connect(self.save_misc)
-        save_box.addStretch()
-        save_box.addWidget(save_btn)
-
         vbox_layout = QtWidgets.QVBoxLayout()
         vbox_layout.addWidget(req_box)
         vbox_layout.addWidget(db_box)
         vbox_layout.addWidget(data_box)
         vbox_layout.addWidget(shift_box)
         vbox_layout.addStretch()
-        vbox_layout.addLayout(save_box)
         self.setLayout(vbox_layout)
         self.show()
 
@@ -667,7 +717,10 @@ class ConfigurationWidget(QtWidgets.QWidget):
 
         btn_box = QtWidgets.QHBoxLayout()
         save_btn = QtWidgets.QPushButton('Save', self)
+        save_btn.setAutoDefault(False)
+        save_btn.clicked.connect(self.save_all)
         cancel_btn = QtWidgets.QPushButton('Cancel', self)
+        cancel_btn.setAutoDefault(False)
         btn_box.addStretch()
         btn_box.addWidget(cancel_btn)
         btn_box.addWidget(save_btn)
@@ -677,6 +730,14 @@ class ConfigurationWidget(QtWidgets.QWidget):
         layout.addLayout(btn_box)
         self.setLayout(layout)
         # self.show()
+
+    def save_all(self):
+        self.pis_tab.save_items()
+        self.emp_tab.save_emp()
+        self.machines_tab.save_table()
+        self.misc_tab.save_misc()
+        self.parent().done(0)
+        # TODO trigger update Settings
 
 
 class DisplayTable(QtWidgets.QWidget):
@@ -800,6 +861,7 @@ class JamMainWindow(QtWidgets.QMainWindow):
 
     def launch_configuration(self):
         dialog = QtWidgets.QDialog(self)
+        dialog.setWindowTitle('Configurations')
         configurations = ConfigurationWidget(dialog)
         configurations.show()
         dialog_layout = QtWidgets.QVBoxLayout()
@@ -811,5 +873,6 @@ class JamMainWindow(QtWidgets.QMainWindow):
 if __name__ == '__main__':
     app = QtWidgets.QApplication([])
     window = JamMainWindow(None)
+    window.setWindowTitle('JAM')
     # window = ConfigurationWidget(None)
     app.exec_()
