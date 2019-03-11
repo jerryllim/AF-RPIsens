@@ -170,15 +170,20 @@ class PiMachineDetails(QtWidgets.QWidget):
 
     def get_values(self, idx):
         values = {}
-        for key in self.details.keys():
+        for key, value in self.details.items():
             newk = '{0}{1}'.format(key, idx)
-            values[newk] = self.details[key].currentText()
+
+            if value.currentText() == '':
+                values[newk] = None
+            else:
+                values[newk] = value.currentText()
 
         return values
 
     def clear_fields(self):
-        for field in self.details.values():
-            field.setCurrentIndex(0)
+        if self.details['machine'].isEnabled():
+            for field in self.details.values():
+                field.setCurrentIndex(0)
 
 
 class PisTab(QtWidgets.QWidget):
@@ -200,8 +205,8 @@ class PisTab(QtWidgets.QWidget):
         self.pis_treeview.activated.connect(self.set_fields)
         self.populate_pis()
         header = self.pis_treeview.header()
-        header.setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
         header.setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
 
         # Button box for New, Edit, Delete
         button_box = QtWidgets.QVBoxLayout()
@@ -241,12 +246,13 @@ class PisTab(QtWidgets.QWidget):
 
         # Details tab
         self.machines_model = machines_model
-        columns = [None]
+        self.colnum_model = QtCore.QStringListModel(self)
+        column = [None]
         for row in self.database_manager.custom_query("SHOW COLUMNS FROM jam_current_table WHERE field LIKE 'col%' "
                                                       "OR field LIKE 'output%';"):
-            columns.append(row[0])
-        self.colnum_model = QtCore.QStringListModel(self)
-        self.colnum_model.setStringList(columns)
+            column.append(row[0])
+
+        self.colnum_model.setStringList(column)
         self.machine_tabs = {}
         tab_widget = QtWidgets.QTabWidget(self)
         for idx in range(1, 4):
@@ -333,6 +339,7 @@ class PisTab(QtWidgets.QWidget):
             self.pis_dict[ip].update(self.machine_tabs[idx].get_values(idx))
 
         self.populate_pis()
+        self.clear_all(True)
 
     def save_items(self):
         pis_row = []
@@ -366,8 +373,8 @@ class PisTab(QtWidgets.QWidget):
                 edit.clear()
                 edit.setText('')
 
-            for tab in self.machine_tabs.values():
-                tab.clear_fields()
+        for tab in self.machine_tabs.values():
+            tab.clear_fields()
 
 
 class EmployeesTab(QtWidgets.QWidget):
@@ -685,7 +692,6 @@ class MiscTab(QtWidgets.QWidget):
 
         self.config.set('Request', 'interval', str(self.poll_spinbox.text()))
 
-        # TODO trigger reset all
         with open('jam.ini', 'w') as configfile:
             self.config.write(configfile)
 
@@ -721,6 +727,7 @@ class ConfigurationWidget(QtWidgets.QWidget):
         save_btn.clicked.connect(self.save_all)
         cancel_btn = QtWidgets.QPushButton('Cancel', self)
         cancel_btn.setAutoDefault(False)
+        cancel_btn.clicked.connect(self.cancel_changes)
         btn_box.addStretch()
         btn_box.addWidget(cancel_btn)
         btn_box.addWidget(save_btn)
@@ -738,6 +745,9 @@ class ConfigurationWidget(QtWidgets.QWidget):
         self.misc_tab.save_misc()
         self.parent().done(0)
         # TODO trigger update Settings
+
+    def cancel_changes(self):
+        self.parent().done(0)
 
 
 class DisplayTable(QtWidgets.QWidget):

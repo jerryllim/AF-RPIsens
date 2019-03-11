@@ -5,12 +5,21 @@ from datetime import datetime, timedelta
 
 class Settings:
     def __init__(self, filename='jam.ini'):
+        self.filename = filename
         self.config = configparser.ConfigParser()
-        self.config.read(filename)
+        self.config.read(self.filename)
         self.machine_info = {}
 
-    def get_machine_info(self):
-        database_manager = DatabaseManager(None)
+    def update(self):
+        self.config.clear()
+        self.config.read(self.filename)
+        self.machine_info.clear()
+        database_manager = DatabaseManager(None, host=self.config.get('Database', 'host'),
+                                           port=self.config.get('Database', 'port'),
+                                           user=self.config.get('Database', 'user'),
+                                           password=self.config.get('Database', 'password'),
+                                           db=self.config.get('Database', 'db'))
+        pass
 
     def get_ip_key(self, ip, key):
         print("in class settings: ", self.machine_info[ip][key])
