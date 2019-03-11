@@ -142,6 +142,9 @@ class PiMachineDetails(QtWidgets.QWidget):
         machine_field.setModel(self.machines_model)
         self.details['machine'] = machine_field
         form_layout.addRow('Machine: ', machine_field)
+        mac_field = QtWidgets.QLineEdit(self)
+        self.details['mac'] = mac_field
+        form_layout.addRow('Mac: ', mac_field)
 
         # Sensors
         for key in ['A1', 'A2', 'A3', 'A4', 'A5']:
@@ -166,7 +169,10 @@ class PiMachineDetails(QtWidgets.QWidget):
 
     def set_fields(self, idx, values):
         for key in self.details:
-            self.details[key].setCurrentText(values.get('{0}{1}'.format(key, idx)))
+            if key == 'mac':
+                self.details[key].setText(values.get('{0}{1}'.format(key, idx)))
+            else:
+                self.details[key].setCurrentText(values.get('{0}{1}'.format(key, idx)))
 
     def get_values(self, idx):
         values = {}
@@ -187,7 +193,7 @@ class PiMachineDetails(QtWidgets.QWidget):
 
 
 class PisTab(QtWidgets.QWidget):
-    sensor_list = ['machine', 'A1', 'A2', 'A3', 'A4', 'A5', 'B1', 'B2', 'B3', 'B4', 'B5']
+    sensor_list = ['machine', 'mac', 'A1', 'A2', 'A3', 'A4', 'A5', 'B1', 'B2', 'B3', 'B4', 'B5']
 
     def __init__(self, parent, machines_model):
         QtWidgets.QWidget.__init__(self, parent)
@@ -239,10 +245,6 @@ class PisTab(QtWidgets.QWidget):
         ip_edit.setValidator(ip_validator)
         self.main_lineedits['ip'] = ip_edit
         form_layout.addRow('IP:', ip_edit)
-        mac_edit = QtWidgets.QLineEdit(self)
-        mac_edit.setValidator(validator)
-        self.main_lineedits['mac'] = mac_edit
-        form_layout.addRow('Mac:', mac_edit)
 
         # Details tab
         self.machines_model = machines_model
@@ -285,16 +287,20 @@ class PisTab(QtWidgets.QWidget):
 
     def populate_pis(self):
         self.pis_model.clear()
-        self.pis_model.setHorizontalHeaderLabels(['Nickname', 'IP Address', 'Mac'])
+        self.pis_model.setHorizontalHeaderLabels(['Nickname', 'IP Address', 'Machine1', 'Machine2', 'Machine3'])
 
         for ip in self.pis_dict.keys():
             nick_item = QtGui.QStandardItem(self.pis_dict[ip].get('nick'))
             ip_item = QtGui.QStandardItem(ip)
-            mac_item = QtGui.QStandardItem(self.pis_dict[ip].get('mac'))
+            machine1_item = QtGui.QStandardItem(self.pis_dict[ip].get('machine1'))
+            machine2_item = QtGui.QStandardItem(self.pis_dict[ip].get('machine2'))
+            machine3_item = QtGui.QStandardItem(self.pis_dict[ip].get('machine3'))
             index = self.pis_model.rowCount()
             self.pis_model.setItem(index, 0, nick_item)
             self.pis_model.setItem(index, 1, ip_item)
-            self.pis_model.setItem(index, 2, mac_item)
+            self.pis_model.setItem(index, 2, machine1_item)
+            self.pis_model.setItem(index, 3, machine2_item)
+            self.pis_model.setItem(index, 4, machine3_item)
 
     def set_fields(self, index):
         row = index.row()
@@ -303,8 +309,7 @@ class PisTab(QtWidgets.QWidget):
 
         ip = self.pis_model.item(row, 1).text()
         self.main_lineedits['ip'].setText(ip)
-        for id_ in ['nick', 'mac']:
-            self.main_lineedits[id_].setText(self.pis_dict[ip][id_])
+        self.main_lineedits['nick'].setText(self.pis_dict[ip]['nick'])
 
         for key in self.machine_tabs:
             self.machine_tabs[key].set_fields(key, self.pis_dict[ip])
