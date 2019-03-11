@@ -96,17 +96,17 @@ class NetworkManager:
             deal_msg = self.request(port, msg_dict)
 
             machine_ip = deal_msg.get('ip')
-            machine = self.settings.get_machine(machine_ip)
+            # machine = self.settings.get_machine(machine_ip)
 
             jam_msg = deal_msg.pop('jam', {})
-            qc_list = deal_msg.pop('qc', [])
-
-            if qc_list:
-                self.database_manager.insert_qc(machine, qc_list)
-
-            maintenance_list = jam_msg.pop('maintenance', [])
-            if maintenance_list:
-                self.database_manager.insert_maintenance(machine, maintenance_list)
+            for idx in range(1, 4):
+                machine = self.settings.get_machine(machine_ip, idx)
+                qc_list = deal_msg.pop('qc{}'.format(idx), [])
+                if qc_list:
+                    self.database_manager.insert_qc(machine, qc_list)
+                maintenance_list = jam_msg.pop('maintenance{}'.format(idx), [])
+                if maintenance_list:
+                    self.database_manager.insert_maintenance(machine, maintenance_list)
 
             self.database_manager.insert_jam(machine_ip, jam_msg)
 
