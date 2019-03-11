@@ -8,40 +8,41 @@ class Settings:
         self.filename = filename
         self.config = configparser.ConfigParser()
         self.config.read(self.filename)
-        self.machine_info = {}
+        self.machines_info = {}
 
     def update(self):
         self.config.clear()
         self.config.read(self.filename)
-        self.machine_info.clear()
+        self.machines_info.clear()
         database_manager = DatabaseManager(None, host=self.config.get('Database', 'host'),
                                            port=self.config.get('Database', 'port'),
                                            user=self.config.get('Database', 'user'),
                                            password=self.config.get('Database', 'password'),
                                            db=self.config.get('Database', 'db'))
-        pass
+        self.machines_info = database_manager.get_pis()
 
     def get_ip_key(self, ip, key):
-        print("in class settings: ", self.machine_info[ip][key])
-        if self.machine_info.get(ip) and (self.machine_info.get(ip)).get(key):
-            return self.machine_info[ip][key]
+        machine = 'machine{}'.format(key[-1:])
+        machine_info = self.machines_info.get(ip, None)
+        if machine_info and machine_info.get(machine) and machine_info.get(key):
+            return machine_info[machine], machine_info[key]
         else:
             return None
 
-    def get_mac(self, ip):
-        if self.machine_info.get(ip):
-            return self.machine_info[ip]['mac']
+    def get_mac(self, ip, idx):
+        if self.machines_info.get(ip):
+            return self.machines_info[ip]['mac{}'.format(idx)]
         else:
-            return False
+            return None
 
-    def get_machine(self, ip):
-        if self.machine_info.get(ip):
-            return self.machine_info[ip]['nickname']
+    def get_machine(self, ip, idx):
+        if self.machines_info.get(ip):
+            return self.machines_info[ip]['machine{}'.format(idx)]
         else:
-            return False
+            return None
 
     def get_ips(self):
-        return list(self.machine_info.keys())
+        return list(self.machines_info.keys())
 
 
 class DatabaseManager:
@@ -512,7 +513,7 @@ class DatabaseManager:
 
     def insert_qc(self, machine, values):
         db = pymysql.connect(host=self.host, user=self.user, password=self.password,
-                               database=self.db, port=self.port)
+                             database=self.db, port=self.port)
 
         try:
             with db.cursor() as cursor:
