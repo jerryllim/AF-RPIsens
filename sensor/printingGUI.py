@@ -22,11 +22,12 @@ from settings_json import settings_json
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.textinput import TextInput
 from kivy.graphics.texture import Texture
+from kivy.graphics import Color, Rectangle
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.tabbedpanel import TabbedPanel
 from kivy.uix.togglebutton import ToggleButton
-from kivy.uix.screenmanager import ScreenManager, Screen
+from kivy.uix.screenmanager import ScreenManager, Screen, RiseInTransition
 from kivy.uix.settings import SettingOptions, SettingString
 from kivy.properties import NumericProperty, StringProperty
 
@@ -670,8 +671,8 @@ class PrintingGUIApp(App):
         # self.check_camera()  # TODO uncomment
 
         self.config.set('Network', 'self_add', self.get_ip_add())
-        self.controller = printingMain.RaspberryPiController(self)
-        # self.controller = FakeClass(self)  # TODO set if testing
+        # self.controller = printingMain.RaspberryPiController(self)
+        self.controller = FakeClass(self)  # TODO set if testing
 
         self.use_kivy_settings = False
         num_operators = self.config.get('General', 'num_operators')
@@ -804,6 +805,9 @@ class FakeClass:
         print(self.gui.config.get('Network', 'server_port'))
         print(self.gui.config.get('Network', 'self_add'))
         print(self.gui.config.get('Network', 'self_port'))
+
+    def add_maintenance(self, emp, start=False):
+        pass
 
 
 if __name__ == '__main__':
