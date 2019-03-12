@@ -433,7 +433,8 @@
             on_release: root.log_in_out()
 
         Label:
-            size_hint_y: None
+            size_hint_y: 0.1
+            font_size: self.height
             text: 'Main Operators: '
             text_size: self.size[0], self.size[1]
             halign: 'left'
@@ -445,14 +446,13 @@
             viewclass: 'EmpLabel'
             RecycleBoxLayout:
                 spacing: sp(5)
-                default_size: None, dp(56)
-                default_size_hint: 1, None
                 size_hint_y: None
                 height: self.minimum_height
                 orientation: 'vertical'
 
         Label:
-            size_hint_y: None
+            size_hint_y: 0.1
+            font_size: self.height
             text: 'Assistants: '
             text_size: self.size[0], self.size[1]
             halign: 'left'
@@ -464,8 +464,6 @@
             viewclass: 'EmpLabel'
             RecycleBoxLayout:
                 spacing: sp(5)
-                default_size: None, dp(56)
-                default_size_hint: 1, None
                 size_hint_y: None
                 height: self.minimum_height
                 orientation: 'vertical'

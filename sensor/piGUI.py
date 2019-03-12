@@ -164,7 +164,7 @@ class SelectPage(Screen):
     timeout = None
     machine = None
 
-    def on_enter(self, *args):
+    def on_pre_enter(self, *args):
         if self.machine is not App.get_running_app().get_current_machine():
             self.machine = App.get_running_app().get_current_machine()
             # TODO run configurations
@@ -241,7 +241,7 @@ class AdjustmentPage(Screen):
     ink_text = None
     plate_text = None
 
-    def on_enter(self, *args):
+    def on_pre_enter(self, *args):
         if self.machine is not App.get_running_app().get_current_machine():
             self.machine = App.get_running_app().get_current_machine()
             self.generate_tabs()
@@ -332,7 +332,7 @@ class EmployeePage(Screen):
     machine = None
     employee_layout = None
 
-    def on_enter(self, *args):
+    def on_pre_enter(self, *args):
         if self.machine is not App.get_running_app().get_current_machine():
             self.machine = App.get_running_app().get_current_machine()
 
@@ -353,7 +353,7 @@ class MaintenancePage(Screen):
     emp_id = None
     start = None
 
-    def on_enter(self, *args):
+    def on_pre_enter(self, *args):
         if self.machine is not App.get_running_app().get_current_machine():
             self.machine = App.get_running_app().get_current_machine()
 
@@ -383,7 +383,7 @@ class RunPage(Screen):
     run_layout = None
     wastagePopup = None
 
-    def on_enter(self, *args):
+    def on_pre_enter(self, *args):
         if self.machine is not App.get_running_app().get_current_machine():
             self.machine = App.get_running_app().get_current_machine()
             if self.run_layout is not None:
