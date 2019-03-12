@@ -446,8 +446,8 @@
             viewclass: 'EmpLabel'
             RecycleBoxLayout:
                 spacing: sp(5)
+                default_size_hint: 1, 1
                 size_hint_y: None
-                height: self.minimum_height
                 orientation: 'vertical'
 
         Label:
@@ -464,8 +464,8 @@
             viewclass: 'EmpLabel'
             RecycleBoxLayout:
                 spacing: sp(5)
+                default_size_hint: 1, 1
                 size_hint_y: None
-                height: self.minimum_height
                 orientation: 'vertical'
 
 <EmpLabel@Label>:
@@ -475,3 +475,66 @@
         Rectangle:
             size: self.size
             pos: self.pos
+
+<EmployeeScanPage>:
+    title: "Scan Employee Number"
+    size_hint: (0.9, 0.9)
+    title_label: title_label
+    employee_num: employee_num
+    cancel_button: cancel_button
+    confirm_button: confirm_button
+    alternate_button: alternate_button
+    camera_viewer: camera_viewer
+    button_box: button_box
+
+    GridLayout:
+        cols: 1
+        padding: sp(10)
+        spacing: sp(10)
+
+        BoxLayout:
+            padding: [sp(10), 0]
+
+            Label:
+                id: title_label
+                text: 'Employee number: '
+                font_size: '20sp'
+                text_size: self.size
+                halign: 'left'
+                valign: 'bottom'
+
+        BoxLayout:
+            spacing: sp(10)
+
+            TextInput:
+                id: employee_num
+                font_size: '24sp'
+                multiline: False
+
+            Button:
+                text: "Scan"
+                size_hint: (0.2, 1)
+                on_release: root.scan_barcode()
+
+        BoxLayout:
+            spacing: sp(10)
+            size_hint: (0.2, 1)
+            id: button_box
+
+            Button:
+                id: cancel_button
+                text: "Cancel"
+                on_release: root.dismiss()
+
+            Button:
+                id: confirm_button
+                text: "Confirm"
+                on_release: root.confirm()
+
+            Button:
+                id: alternate_button
+                on_release: root.confirm(alternate=True)
+
+        Image:
+            id: camera_viewer
+            size_hint: [1, 3]

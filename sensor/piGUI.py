@@ -93,8 +93,13 @@ class MachineClass:
 
         return min(self.emp_main, key=self.emp_main.get)
 
-    def add_emp(self, emp_id, role='Asst'):
-        if role == 'Main':
+    def remove_emp(self, emp_id):
+        start_time = self.emp_main.pop(emp_id)
+        # TODO insert emp into controller
+        print('{},{},{}'.format(emp_id, start_time, datetime.now()))
+
+    def add_emp(self, emp_id, asst=False):
+        if not asst:
             if len(self.emp_main) < 3:
                 self.emp_main[emp_id] = datetime.now()
                 return True
@@ -104,7 +109,7 @@ class MachineClass:
         self.emp_asst[emp_id] = datetime.now()
         return True
 
-    def emp_in_machine(self, emp_id):
+    def has_emp(self, emp_id):
         if (emp_id in self.emp_main) or (emp_id in self.emp_asst):
             return True
 
@@ -331,6 +336,7 @@ class NumPadGrid(GridLayout):
 class EmployeePage(Screen):
     machine = None
     employee_layout = None
+    emp_popup = None
 
     def on_pre_enter(self, *args):
         if self.machine is not App.get_running_app().get_current_machine():
@@ -343,8 +349,110 @@ class EmployeePage(Screen):
         self.emp_asst_view.data = list({'text': key} for key in self.machine.emp_asst.keys())
 
     def log_in_out(self):
-        # TODO launch popup to scan
-        pass
+        self.emp_popup = EmployeeScanPage(caller=self, login=True)
+        self.emp_popup.open()
+
+    def emp_login(self, emp_id, alternate=False):
+        valid = self.machine.add_emp(emp_id, asst=alternate)
+        if valid:
+            self.emp_popup.dismiss()
+            self.load_emp_list()
+
+    def emp_logout(self, emp_id, _aternate=False):
+        self.machine.remove_emp(emp_id)
+        self.emp_popup.dismiss()
+        self.load_emp_list()
+
+    def has_emp(self, emp_id):
+        return self.machine.has_emp(emp_id)
+
+    def get_parent_method(self, has_emp):
+        if has_emp:
+            return self.emp_logout
+        else:
+            return self.emp_login
+
+
+class EmployeeScanPage(Popup):
+    cam = None
+    camera_event = None
+    parent_method = None
+    timeout = None
+
+    def __init__(self, **kwargs):
+        qc = kwargs.pop('qc', False)
+        self.caller = kwargs.pop('caller', None)
+        self.login = kwargs.pop('login', False)
+        Popup.__init__(self, **kwargs)
+        if qc:
+            self.confirm_button.text = 'Fail'
+            self.alternate_button.text = 'Pass'
+        elif self.login:
+            self.button_box.remove_widget(self.confirm_button)
+            self.button_box.remove_widget(self.alternate_button)
+        else:
+            self.button_box.remove_widget(self.alternate_button)
+
+    def scan_barcode(self):
+        self.cam = cv2.VideoCapture(0)
+        self.camera_event = Clock.schedule_interval(self.check_camera, 1.0/60)
+        # Timeout
+        self.timeout = Clock.schedule_once(self.stop_checking, 10)
+
+    def check_camera(self, _dt):
+        ret, frame = self.cam.read()
+
+        if ret:
+            barcodes = pyzbar.decode(frame)
+
+            if barcodes:
+                barcode = barcodes[0]
+                barcode_data = barcode.data.decode("utf-8")
+                self.employee_num.text = barcode_data
+                self.stop_checking(0)
+                if self.login:
+                    self.login_buttons(barcode_data)
+
+            self.show_image(frame)
+
+    def stop_checking(self, dt):
+        if dt != 0:
+            self.employee_num.text = ''
+
+        self.timeout.cancel()
+        self.camera_event.cancel()
+        self.cam.release()
+
+    def show_image(self, frame):
+        frame2 = cv2.cvtColor(frame, cv2.COLOR_BGRA2RGB)
+        buf1 = cv2.flip(frame2, 0)
+        buf = buf1.tostring()
+        image_texture = Texture.create(size=(frame.shape[1], frame.shape[0]), colorfmt='rgb')
+        image_texture.blit_buffer(buf, colorfmt='rgb', bufferfmt='ubyte')
+        self.ids['camera_viewer'].texture = image_texture
+
+    def confirm(self, alternate=False):
+        if self.employee_num.text == '':
+            popup = Popup(title='No id found', content=Label(text='Please scan your employee number.'), size_hint=(0.5, 0.5))
+            popup.open()
+            return
+
+        if callable(self.parent_method):
+            self.parent_method(self.employee_num.text, alternate)
+        self.dismiss()
+
+    def login_buttons(self, emp_id):
+        logged_in = self.caller.has_emp(emp_id)
+        self.parent_method = self.caller.get_parent_method(logged_in)
+
+        if logged_in:
+            self.confirm_button.text = 'Log out'
+            self.button_box.add_widget(self.confirm_button)
+        else:
+            self.confirm_button.text = 'Main'
+            self.alternate_button.text = 'Assistant'
+            self.button_box.add_widget(self.confirm_button)
+            self.button_box.add_widget(self.alternate_button)
 
 
 class MaintenancePage(Screen):
