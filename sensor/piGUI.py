@@ -22,7 +22,7 @@ from kivy.uix.widget import Widget
 from kivy.uix.button import Button
 from kivy.core.window import Window
 from kivy.uix.dropdown import DropDown
-from settings_json import settings_json
+from settings_json import settings_main, settings_machine1
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.textinput import TextInput
 from kivy.graphics.texture import Texture
@@ -32,7 +32,7 @@ from kivy.uix.scrollview import ScrollView
 from kivy.uix.tabbedpanel import TabbedPanel
 from kivy.uix.togglebutton import ToggleButton
 from kivy.uix.screenmanager import ScreenManager, Screen, SlideTransition, RiseInTransition
-from kivy.uix.settings import SettingOptions, SettingString
+from kivy.uix.settings import SettingOptions, SettingString, SettingOptions
 from kivy.properties import NumericProperty, StringProperty, ListProperty
 
 
@@ -40,6 +40,14 @@ class State(Enum):
     SELECT = 'select_page'
     ADJUSTMENT = 'adjustment_page'
     RUN = 'run_page'
+
+
+class Colour(Enum):
+    GREEN = (46.0/255, 139.0/255, 87.0/255)  # Sea Green
+    BLUE = (65.0/255, 105.0/255, 180.0/255)  # Steel Blue
+    RED = (138.0/255, 34.0/255, 34.0/255)  # Fire Brick
+    PURPLE = (102.0/255, 51.0/255, 153.0/255)  # Rebecca Purple
+    ORANGE = (255.0/255, 140.0/255, 0/255)  # Dark Orange
 
 
 class JobClass(Widget):
@@ -748,11 +756,10 @@ class PiGUIApp(App):
         return self.machine
 
     def build_config(self, config):
-        config.setdefaults('General', {
-            'num_operators': '1',
-            'waste1_units': 'kg',
-            'waste2_units': 'kg,pcs',
-            'output_pin': 'Pin 21'})
+        config.setdefaults('Machine', {
+            'machine1_enable': True,
+            'machine2_enable': False,
+            'machine3_enable': True})
 
         ip_add = self.get_ip_add()
         config.setdefaults('Network', {
@@ -760,13 +767,31 @@ class PiGUIApp(App):
             'self_port': 8888,
             'server_add': '152.228.1.124',
             'server_port': 9999})
+        config.setdefaults('General1', {
+            'machine_name': 'Machine 1',
+            'bg_colour': 'BLUE',
+            'output_pin': 'A1',
+            'waste1_units': 'kg',
+            'waste2_units': 'kg'})
+        config.setdefaults('Adjustments1', {
+            'b1_enable': 1,
+            'b1_name': 'B1',
+            'b2_enable': 1,
+            'b2_name': 'B2',
+            'b3_enable': 1,
+            'b3_name': 'B3',
+            'b4_enable': 0,
+            'b4_name': 'B4',
+            'b5_enable': 0,
+            'b5_name': 'B5'})
 
     def build_settings(self, settings):
         settings.register_type('scroll_options', SettingScrollableOptions)
         settings.register_type('ip_string', SettingIPString)
         settings.register_type('unit_string', SettingUnitsString)
         settings.register_type('self_ip', SettingSelfIP)
-        settings.add_json_panel('Raspberry JAM', self.config, data=settings_json)
+        settings.add_json_panel('Raspberry JAM', self.config, data=settings_main)
+        settings.add_json_panel('Machine 1', self.config, data=settings_machine1)
 
     @staticmethod
     def get_ip_add():
