@@ -22,16 +22,16 @@ from kivy.uix.widget import Widget
 from kivy.uix.button import Button
 from kivy.core.window import Window
 from kivy.uix.dropdown import DropDown
-from settings_json import settings_main, settings_machine1
+from settings_json import settings_main, settings_machine1, settings_machine2, settings_machine3
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.textinput import TextInput
 from kivy.graphics.texture import Texture
-from kivy.graphics import Color, Rectangle
+from kivy.graphics import Color, Rectangle, Line
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.tabbedpanel import TabbedPanel
 from kivy.uix.togglebutton import ToggleButton
-from kivy.uix.screenmanager import ScreenManager, Screen, SlideTransition, RiseInTransition
+from kivy.uix.screenmanager import ScreenManager, Screen, SlideTransition, NoTransition
 from kivy.uix.settings import SettingOptions, SettingString, SettingOptions
 from kivy.properties import NumericProperty, StringProperty, ListProperty
 
@@ -43,11 +43,11 @@ class State(Enum):
 
 
 class Colour(Enum):
-    GREEN = (46.0/255, 139.0/255, 87.0/255)  # Sea Green
-    BLUE = (65.0/255, 105.0/255, 180.0/255)  # Steel Blue
-    RED = (138.0/255, 34.0/255, 34.0/255)  # Fire Brick
-    PURPLE = (102.0/255, 51.0/255, 153.0/255)  # Rebecca Purple
-    ORANGE = (255.0/255, 140.0/255, 0/255)  # Dark Orange
+    GREEN = (46.0/255, 139.0/255, 87.0/255, 1)  # Sea Green
+    BLUE = (65.0/255, 105.0/255, 180.0/255, 1)  # Steel Blue
+    RED = (138.0/255, 34.0/255, 34.0/255, 1)  # Fire Brick
+    PURPLE = (102.0/255, 51.0/255, 153.0/255, 1)  # Rebecca Purple
+    ORANGE = (255.0/255, 140.0/255, 0/255, 1)  # Dark Orange
 
 
 class JobClass(Widget):
@@ -82,14 +82,19 @@ class JobClass(Widget):
 
 
 class MachineClass:
-    def __init__(self, config_file='jam.ini'):
-        self.config = configparser.ConfigParser()
-        self.config.read(config_file)
+    def __init__(self, index, config):
+        self.index = index
+        self.config = {}
+        self.update_config(config)
         self.state = State.SELECT
         self.current_job = None
         self.emp_main = {}
         self.emp_asst = {}
         self.maintenance = (None, None)
+
+    def update_config(self, config):
+        self.config.update(dict(config.items('General{}'.format(self.index))))
+        self.config.update(dict(config.items('Adjustments{}'.format(self.index))))
 
     def generate_sfu(self):
         sfu = self.current_job.get_sfu()
@@ -126,7 +131,7 @@ class MachineClass:
     def emp_available(self):
         if self.emp_main:
             return True
-        return True
+        return False
 
     def get_jono(self):
         if self.current_job:
@@ -141,6 +146,12 @@ class MachineClass:
     def set_state(self, state):
         self.state = state
             # TODO add maintenance to controller
+
+    def get_page(self):
+        if any(self.maintenance):
+            return 'maintenance_page'
+        else:
+            return self.state.value
 
     def add_qc(self, emp_id, c_time, _pass):
         grade = 'Pass' if _pass else 'Fail'
@@ -176,13 +187,14 @@ class SelectPage(Screen):
     camera_event = None
     timeout = None
     machine = None
+    colour = ListProperty([0, 0, 0, 1])
 
     def on_pre_enter(self, *args):
         if self.machine is not App.get_running_app().get_current_machine():
             self.machine = App.get_running_app().get_current_machine()
-            # TODO run configurations
 
         self.machine.set_state(State.SELECT)
+        self.colour = Colour[self.machine.config['bg_colour']].value
 
     def scan_barcode(self):
         self.cam = cv2.VideoCapture(0)
@@ -253,6 +265,7 @@ class AdjustmentPage(Screen):
     size_togglebox = None
     ink_text = None
     plate_text = None
+    colour = ListProperty([0, 0, 0, 1])
 
     def on_pre_enter(self, *args):
         if self.machine is not App.get_running_app().get_current_machine():
@@ -260,6 +273,7 @@ class AdjustmentPage(Screen):
             self.generate_tabs()
 
         self.machine.set_state(State.ADJUSTMENT)
+        self.colour = Colour[self.machine.config['bg_colour']].value
 
     def generate_tabs(self):
         self.ids['jo_no'].text = 'JO No.: {}'.format(self.machine.get_jono())
@@ -345,12 +359,14 @@ class EmployeePage(Screen):
     machine = None
     employee_layout = None
     emp_popup = None
+    colour = ListProperty([0, 0, 0, 1])
 
     def on_pre_enter(self, *args):
         if self.machine is not App.get_running_app().get_current_machine():
             self.machine = App.get_running_app().get_current_machine()
 
         self.load_emp_list()
+        self.colour = Colour[self.machine.config['bg_colour']].value
 
     def load_emp_list(self):
         self.emp_main_view.data = list({'text': key} for key in self.machine.emp_main.keys())
@@ -366,7 +382,7 @@ class EmployeePage(Screen):
             self.emp_popup.dismiss()
             self.load_emp_list()
 
-    def emp_logout(self, emp_id, _aternate=False):
+    def emp_logout(self, emp_id, _alternate=False):
         self.machine.remove_emp(emp_id)
         self.emp_popup.dismiss()
         self.load_emp_list()
@@ -468,6 +484,7 @@ class MaintenancePage(Screen):
     machine = None
     emp_id = None
     start = None
+    colour = ListProperty([0, 0, 0, 1])
 
     def on_pre_enter(self, *args):
         if self.machine is not App.get_running_app().get_current_machine():
@@ -477,6 +494,7 @@ class MaintenancePage(Screen):
         self.clear_widgets()
         self.maintenance_layout = Factory.MaintenancePageLayout(self.emp_id, self.start)
         self.add_widget(self.maintenance_layout)
+        self.colour = Colour[self.machine.config['bg_colour']].value
 
     def complete(self):
         self.machine.finished_maintenance(self.emp_id, self.start)
@@ -498,6 +516,7 @@ class RunPage(Screen):
     machine = None
     run_layout = None
     wastagePopup = None
+    colour = ListProperty([0, 0, 0, 1])
 
     def on_pre_enter(self, *args):
         if self.machine is not App.get_running_app().get_current_machine():
@@ -509,6 +528,7 @@ class RunPage(Screen):
             self.machine.get_current_job().bind(output=self.run_layout.setter('counter'))
 
         self.machine.set_state(State.RUN)
+        self.colour = Colour[self.machine.config['bg_colour']].value
 
     def wastage_popup(self, key, finish=False):
         self.wastagePopup = WastagePopUp(key, self.run_layout.update_waste)
@@ -599,25 +619,43 @@ class WastagePopUp(Popup):
 class SimpleActionBar(BoxLayout):
     time = StringProperty()
 
-    def __init__(self, **kwargs):
+    def __init__(self, config, **kwargs):
         BoxLayout.__init__(self, **kwargs)
         Clock.schedule_interval(self.update_time, 1)
         self.machine_dropdown = DropDown()
         self.machine_dropdown.bind(on_select=lambda instance, x: setattr(self.machine_button, 'text', x))
-        for i in range(1, 4):
-            button = Button(text='Machine {}'.format(i), size_hint_y=None, height=44)
-            button.bind(on_release=self.machine_selected)
-            self.machine_dropdown.add_widget(button)
+        self.set_machine_dropdown(config)
 
     def update_time(self, _dt):
         self.time = time.strftime('%x %H:%M')
+
+    def set_machine_dropdown(self, config):
+        self.machine_button.text = App.get_running_app().get_current_machine().config['machine_name']
+        self.machine_dropdown.clear_widgets()
+        blayout = BoxLayout(orientation='vertical', padding=10, spacing=10, size_hint=(None, None), width='150sp')
+        for idx in range(1, 4):
+            if int(config.get('Machine', 'machine{}_enable'.format(idx))):
+                name = config.get('General{}'.format(idx), 'machine_name')
+                colour = config.get('General{}'.format(idx), 'bg_colour')
+                button = Button(text=name, size_hint_y=None, height=100, background_normal='',
+                                background_color=Colour[colour].value)
+                button.idx = idx
+                button.bind(on_release=self.machine_selected)
+
+                blayout.add_widget(button)
+        blayout.height = len(blayout.children) * 110
+        with blayout.canvas.before:
+            Color(rgba=(0, 0, 0, 1))
+            Rectangle(pos=blayout.pos, size=blayout.size)
+        self.machine_dropdown.add_widget(blayout)
 
     def select_machine(self):
         self.machine_dropdown.open(self.machine_button)
 
     def machine_selected(self, button):
         self.machine_dropdown.select(button.text)
-        # TODO other configurations
+        if button.idx is not App.get_running_app().current_index:
+            App.get_running_app().change_machine(button.idx)
 
     def select_employee(self):
         self.machine_button.disabled = not self.machine_button.disabled
@@ -629,7 +667,7 @@ class SimpleActionBar(BoxLayout):
             sm.current = 'employee_page'
         else:
             sm.transition.direction = 'down'
-            sm.current = App.get_running_app().get_current_machine().state.value
+            sm.current = App.get_running_app().get_current_machine().get_page()
 
     def select_maintenance(self):
         # TODO add pop up here
@@ -640,6 +678,10 @@ class SimpleActionBar(BoxLayout):
             sm.transition = SlideTransition()
             sm.transition.direction = 'up'
             sm.current = 'maintenance_page'
+
+
+class DropDownLayout(BoxLayout):
+    pass
 
 
 class NumPadButton(Button):
@@ -723,13 +765,16 @@ class SettingSelfIP(SettingString):
 
 
 class PiGUIApp(App):
-    machine = None
+    current_index = 1
+    machines = {}
     screen_manager = ScreenManager()
     controller = None
     action_bar = None
 
     def build(self):
         # self.check_camera()
+        for idx in range(1, 4):
+            self.machines[idx] = MachineClass(idx, self.config)
 
         self.config.set('Network', 'self_add', self.get_ip_add())
         self.controller = FakeClass(self)  # TODO set if testing
@@ -738,7 +783,6 @@ class PiGUIApp(App):
 
         Factory.register('RunPageLayout', cls=RunPageLayout)
 
-        self.machine = MachineClass()  # TODO to change
         self.screen_manager.add_widget(SelectPage(name='select_page'))
         self.screen_manager.add_widget(AdjustmentPage(name='adjustment_page'))
         self.screen_manager.add_widget(RunPage(name='run_page'))
@@ -746,20 +790,17 @@ class PiGUIApp(App):
         self.screen_manager.add_widget(EmployeePage(name='employee_page'))
 
         blayout = BoxLayout(orientation='vertical')
-        self.action_bar = SimpleActionBar()
+        self.action_bar = SimpleActionBar(self.config)
         blayout.add_widget(self.action_bar)
         blayout.add_widget(self.screen_manager)
 
         return blayout
 
-    def get_current_machine(self):
-        return self.machine
-
     def build_config(self, config):
         config.setdefaults('Machine', {
-            'machine1_enable': True,
-            'machine2_enable': False,
-            'machine3_enable': True})
+            'machine1_enable': 1,
+            'machine2_enable': 0,
+            'machine3_enable': 0})
 
         ip_add = self.get_ip_add()
         config.setdefaults('Network', {
@@ -774,11 +815,45 @@ class PiGUIApp(App):
             'waste1_units': 'kg',
             'waste2_units': 'kg'})
         config.setdefaults('Adjustments1', {
-            'b1_enable': 1,
+            'b1_enable': 0,
             'b1_name': 'B1',
-            'b2_enable': 1,
+            'b2_enable': 0,
             'b2_name': 'B2',
-            'b3_enable': 1,
+            'b3_enable': 0,
+            'b3_name': 'B3',
+            'b4_enable': 0,
+            'b4_name': 'B4',
+            'b5_enable': 0,
+            'b5_name': 'B5'})
+        config.setdefaults('General2', {
+            'machine_name': 'Machine 2',
+            'bg_colour': 'GREEN',
+            'output_pin': 'A1',
+            'waste1_units': 'kg',
+            'waste2_units': 'kg'})
+        config.setdefaults('Adjustments2', {
+            'b1_enable': 0,
+            'b1_name': 'B1',
+            'b2_enable': 0,
+            'b2_name': 'B2',
+            'b3_enable': 0,
+            'b3_name': 'B3',
+            'b4_enable': 0,
+            'b4_name': 'B4',
+            'b5_enable': 0,
+            'b5_name': 'B5'})
+        config.setdefaults('General3', {
+            'machine_name': 'Machine 3',
+            'bg_colour': 'RED',
+            'output_pin': 'A1',
+            'waste1_units': 'kg',
+            'waste2_units': 'kg'})
+        config.setdefaults('Adjustments3', {
+            'b1_enable': 0,
+            'b1_name': 'B1',
+            'b2_enable': 0,
+            'b2_name': 'B2',
+            'b3_enable': 0,
             'b3_name': 'B3',
             'b4_enable': 0,
             'b4_name': 'B4',
@@ -792,6 +867,17 @@ class PiGUIApp(App):
         settings.register_type('self_ip', SettingSelfIP)
         settings.add_json_panel('Raspberry JAM', self.config, data=settings_main)
         settings.add_json_panel('Machine 1', self.config, data=settings_machine1)
+        settings.add_json_panel('Machine 2', self.config, data=settings_machine2)
+        settings.add_json_panel('Machine 3', self.config, data=settings_machine3)
+
+    def get_current_machine(self):
+        return self.machines[self.current_index]
+
+    def change_machine(self, idx):
+        self.current_index = idx
+        self.screen_manager.transition = NoTransition()
+        self.screen_manager.current = self.get_current_machine().get_page()
+        self.screen_manager.current_screen.on_pre_enter()
 
     @staticmethod
     def get_ip_add():
@@ -813,8 +899,12 @@ class PiGUIApp(App):
     def on_config_change(self, config, section, key, value):
         if section == 'Network':
             self.controller.update_ip_ports()
-        elif section == 'General' and key == 'num_operators':
-            self.action_bar.create_employee_buttons(int(value))
+        elif section[:-1] == 'General' or section[:-1] == 'Adjustments':
+            idx = int(section[-1:])
+            self.machines[idx].update_config(config)
+            self.action_bar.set_machine_dropdown(config)
+        elif section == 'Machine':
+            self.action_bar.set_machine_dropdown(config)
 
     def update_output(self):
         # TODO update output in current_job

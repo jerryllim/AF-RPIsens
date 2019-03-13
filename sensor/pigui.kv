@@ -1,4 +1,10 @@
 <SelectPage>:
+    canvas.before:
+        Color:
+            rgba: self.colour
+        Rectangle:
+            pos: self.pos
+            size: self.size
     id: selectpage
     GridLayout:
         cols: 1
@@ -42,6 +48,12 @@
                 id: camera_viewer
 
 <AdjustmentPage>:
+    canvas.before:
+        Color:
+            rgba: self.colour
+        Rectangle:
+            pos: self.pos
+            size: self.size
     id: adjustmentpage
     BoxLayout:
         id: box_layout
@@ -121,6 +133,14 @@
     font_name: 'FreeSerif.ttf'
     bold: True
 
+<MaintenancePage>:
+    canvas.before:
+        Color:
+            rgba: self.colour
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
 
 <MaintenancePageLayout>:
     technician_label: technician_label
@@ -171,6 +191,12 @@
     BoxLayout:
 
 <RunPageLayout>:
+    canvas.before:
+        Color:
+            rgba: self.colour
+        Rectangle:
+            pos: self.pos
+            size: self.size
     padding: sp(10)
     spacing: sp(10)
     orientation: 'vertical'
@@ -415,6 +441,12 @@
         text: root.time
 
 <EmployeePage>:
+    canvas.before:
+        Color:
+            rgba: self.colour
+        Rectangle:
+            pos: self.pos
+            size: self.size
     add_button: add_button
     emp_main_view: emp_main_view
     emp_asst_view: emp_asst_view
@@ -445,9 +477,14 @@
             id: emp_main_view
             viewclass: 'EmpLabel'
             RecycleBoxLayout:
+                canvas.before:
+                    Color:
+                        rgba: (1, 1, 1, 1)
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
                 spacing: sp(5)
                 default_size_hint: 1, 1
-                size_hint_y: None
                 orientation: 'vertical'
 
         Label:
@@ -465,10 +502,11 @@
             RecycleBoxLayout:
                 spacing: sp(5)
                 default_size_hint: 1, 1
-                size_hint_y: None
                 orientation: 'vertical'
 
 <EmpLabel@Label>:
+    size_hint_y: None
+    height: sp(100)
     canvas.before:
         Color:
             rgba: (1, 1, 1, 0.5)
