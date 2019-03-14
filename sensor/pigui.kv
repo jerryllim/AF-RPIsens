@@ -475,16 +475,13 @@
 
         RecycleView:
             id: emp_main_view
+            size_hint_y: 0.8
             viewclass: 'EmpLabel'
             RecycleBoxLayout:
-                canvas.before:
-                    Color:
-                        rgba: (1, 1, 1, 1)
-                    Rectangle:
-                        pos: self.pos
-                        size: self.size
+                size_hint_y: None
+                height: self.minimum_height
                 spacing: sp(5)
-                default_size_hint: 1, 1
+                default_size_hint: 1, None
                 orientation: 'vertical'
 
         Label:
@@ -500,16 +497,17 @@
             id: emp_asst_view
             viewclass: 'EmpLabel'
             RecycleBoxLayout:
+                size_hint_y: None
+                height: self.minimum_height
                 spacing: sp(5)
-                default_size_hint: 1, 1
+                default_size_hint: 1, None
                 orientation: 'vertical'
 
 <EmpLabel@Label>:
-    size_hint_y: None
-    height: sp(100)
+    bold: True
     canvas.before:
         Color:
-            rgba: (1, 1, 1, 0.5)
+            rgba: (0, 0, 0, 1)
         Rectangle:
             size: self.size
             pos: self.pos

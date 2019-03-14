@@ -108,7 +108,9 @@ class MachineClass:
         return min(self.emp_main, key=self.emp_main.get)
 
     def remove_emp(self, emp_id):
-        start_time = self.emp_main.pop(emp_id)
+        start_time = self.emp_main.pop(emp_id, None)
+        if start_time is None:
+            start_time = self.emp_asst.pop(emp_id, None)
         # TODO insert emp into controller
         print('{},{},{}'.format(emp_id, start_time, datetime.now()))
 
@@ -379,14 +381,18 @@ class EmployeePage(Screen):
         self.emp_asst_view.data = list({'text': key} for key in self.machine.emp_asst.keys())
 
     def log_in_out(self):
-        self.emp_popup = EmployeeScanPage(caller=self, login=True)
+        self.emp_popup = EmployeeScanPage(caller=self, login=True, auto_dismiss=False)
         self.emp_popup.open()
 
     def emp_login(self, emp_id, alternate=False):
-        valid = self.machine.add_emp(emp_id, asst=alternate)
-        if valid:
+        if self.machine.add_emp(emp_id, asst=alternate):
             self.emp_popup.dismiss()
             self.load_emp_list()
+        else:
+            popup_boxlayout = BoxLayout(orientation='vertical')
+            popup_boxlayout.add_widget(Label(text=str('Maximum 3 main operators!')))
+            popup = Popup(title='Error', content=popup_boxlayout, size_hint=(0.5, 0.5))
+            popup.open()
 
     def emp_logout(self, emp_id, _alternate=False):
         self.machine.remove_emp(emp_id)
@@ -469,7 +475,6 @@ class EmployeeScanPage(Popup):
 
         if callable(self.parent_method):
             self.parent_method(self.employee_num.text, alternate)
-        self.dismiss()
 
     def login_buttons(self, emp_id):
         logged_in = self.caller.has_emp(emp_id)
