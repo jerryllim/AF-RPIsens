@@ -6,7 +6,6 @@ import sys
 import time
 import socket
 import ipaddress
-import configparser
 import printingMain
 from enum import Enum
 from kivy.app import App
@@ -26,13 +25,12 @@ from settings_json import settings_main, settings_machine1, settings_machine2, s
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.textinput import TextInput
 from kivy.graphics.texture import Texture
-from kivy.graphics import Color, Rectangle, Line
+from kivy.graphics import Color, Rectangle
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.scrollview import ScrollView
-from kivy.uix.tabbedpanel import TabbedPanel
 from kivy.uix.togglebutton import ToggleButton
 from kivy.uix.screenmanager import ScreenManager, Screen, SlideTransition, NoTransition
-from kivy.uix.settings import SettingOptions, SettingString, SettingOptions
+from kivy.uix.settings import SettingOptions, SettingString
 from kivy.properties import NumericProperty, StringProperty, ListProperty
 
 
@@ -82,6 +80,8 @@ class JobClass(Widget):
 
 
 class MachineClass:
+    permanent = 0
+
     def __init__(self, index, config):
         self.index = index
         self.config = {}
@@ -91,6 +91,7 @@ class MachineClass:
         self.emp_main = {}
         self.emp_asst = {}
         self.maintenance = (None, None)
+        # TODO set permanent
 
     def update_config(self, config):
         self.config.update(dict(config.items('General{}'.format(self.index))))
@@ -132,6 +133,11 @@ class MachineClass:
         if self.emp_main:
             return True
         return False
+
+    def get_jo_no(self):
+        if self.current_job:
+            return self.current_job.get_jo_no()
+        return ''
 
     def get_jono(self):
         if self.current_job:
@@ -878,6 +884,12 @@ class PiGUIApp(App):
         self.screen_manager.transition = NoTransition()
         self.screen_manager.current = self.get_current_machine().get_page()
         self.screen_manager.current_screen.on_pre_enter()
+
+    def update_output(self, idx):
+        machine = self.machines[idx]
+        machine.permanent += 1
+        if machine.get_current_job():
+            machine.get_current_job().output += 1
 
     @staticmethod
     def get_ip_add():
