@@ -238,7 +238,7 @@ class PiController:
 
 class DatabaseManager:
     def __init__(self):
-        self.database = 'pi_jam.sqlite'
+        self.database = 'test.sqlite'  # TODO to change
         self.create_emp_table()
         self.create_job_table()
 

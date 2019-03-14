@@ -82,8 +82,9 @@ class JobClass(Widget):
 class MachineClass:
     permanent = 0
 
-    def __init__(self, index, config):
+    def __init__(self, index, controller, config):
         self.index = index
+        self.controller = controller
         self.config = {}
         self.update_config(config)
         self.state = State.SELECT
@@ -98,6 +99,7 @@ class MachineClass:
         self.config.update(dict(config.items('Adjustments{}'.format(self.index))))
 
     def generate_sfu(self):
+        # TODO set sfu format
         sfu = self.current_job.get_sfu()
         pass
 
@@ -108,21 +110,25 @@ class MachineClass:
         return min(self.emp_main, key=self.emp_main.get)
 
     def remove_emp(self, emp_id):
-        start_time = self.emp_main.pop(emp_id, None)
-        if start_time is None:
-            start_time = self.emp_asst.pop(emp_id, None)
-        # TODO insert emp into controller
-        print('{},{},{}'.format(emp_id, start_time, datetime.now()))
+        start = self.emp_main.pop(emp_id, None)
+        if start is None:
+            start = self.emp_asst.pop(emp_id, None)
+        end = datetime.now().isoformat(timespec='minutes')
+
+        self.controller.add_employee(self.index, "{0}_{1}".format(emp_id, start.isoformat(timespec='minutes')), end=end)
 
     def add_emp(self, emp_id, asst=False):
+        start = datetime.now()
         if not asst:
             if len(self.emp_main) < 3:
-                self.emp_main[emp_id] = datetime.now()
+                self.emp_main[emp_id] = start
+                self.controller.add_employee(self.index, "{0}_{1}".format(emp_id, start.isoformat(timespec='minutes')))
                 return True
             else:
                 return False
 
-        self.emp_asst[emp_id] = datetime.now()
+        self.emp_asst[emp_id] = start
+        self.controller.add_employee(self.index, "{0}_{1}".format(emp_id, start.isoformat(timespec='minutes')))
         return True
 
     def has_emp(self, emp_id):
@@ -153,7 +159,6 @@ class MachineClass:
 
     def set_state(self, state):
         self.state = state
-            # TODO add maintenance to controller
 
     def get_page(self):
         if any(self.maintenance):
@@ -164,7 +169,7 @@ class MachineClass:
     def add_qc(self, emp_id, c_time, _pass):
         grade = 'Pass' if _pass else 'Fail'
         self.current_job.set_qc(emp_id, c_time, grade)
-        # TODO add qc to controller
+        self.controller.add_qc(self.index, "{0}_{1}_{2}_{3}".format(emp_id, self.current_job.get_jo_no(), c_time, int(_pass)))
 
     def get_qc(self):
         if self.current_job:
@@ -178,16 +183,18 @@ class MachineClass:
     def get_current_job(self):
         return self.current_job
 
-    def start_maintenance(self, emp_id, start):
+    def start_maintenance(self, emp_id):
+        start = datetime.now()
         self.maintenance = (emp_id, start)
+        self.controller.add_maintenance(self.index, "{0}_{1}".format(emp_id, start.isoformat(timespec='minutes')))
 
     def get_maintenance(self):
         return self.maintenance
 
     def finished_maintenance(self, emp_id, start):
         self.maintenance = (None, None)
-        now = datetime.now()
-        # TODO
+        now = datetime.now().isoformat(timespec='minutes')
+        self.controller.add_maintenance(self.index, "{0}_{1}".format(emp_id, start.isoformat(timespec='minutes')), now)
 
 
 class SelectPage(Screen):
@@ -527,6 +534,7 @@ class RunPage(Screen):
     machine = None
     run_layout = None
     wastagePopup = None
+    emp_popup = None
     colour = ListProperty([0, 0, 0, 1])
 
     def on_pre_enter(self, *args):
@@ -558,13 +566,19 @@ class RunPage(Screen):
         self.parent.current = 'select_page'
 
     def qc_check(self):
-        pass
+        self.emp_popup = EmployeeScanPage(qc=True)
+        self.emp_popup.parent_method = self.update_qc
+        self.emp_popup.title_label.text = 'QC No: '
+        self.emp_popup.open()
 
     def update_qc(self, emp_id, _pass=False):
-        now = time.strftime('%x %H:%M')
+        now = datetime.now()
         grade = 'Pass' if _pass else 'Fail'
-        self.machine.add_qc(emp_id, now, _pass)
-        self.run_layout.qc_label.text = 'QC Check: {} at {}, {}'.format(emp_id, now, grade)
+        self.machine.add_qc(emp_id, now.isoformat(timespec='minutes'), _pass)
+        self.run_layout.qc_label.text = 'QC Check: {} at {}, {}'.format(emp_id,
+                                                                        now.isoformat(sep=' ', timespec='minutes'),
+                                                                        grade)
+        self.emp_popup.dismiss()
 
 
 class RunPageLayout(BoxLayout):
@@ -606,7 +620,8 @@ class WastagePopUp(Popup):
             self.unit_spinner.disabled = True
             self.current_label.text = '{}'.format(self.wastage[0])
         else:
-            units = App.get_running_app().config.get('General', '{}_units'.format(self.key))
+            units = App.get_running_app().config.get('General{}'.format(App.get_running_app().current_index),
+                                                     '{}_units'.format(self.key))
             units = units.split(',')
             self.unit_spinner.text = units[0]
             self.unit_spinner.values = units
@@ -629,6 +644,7 @@ class WastagePopUp(Popup):
 
 class SimpleActionBar(BoxLayout):
     time = StringProperty()
+    emp_popup = None
 
     def __init__(self, config, **kwargs):
         BoxLayout.__init__(self, **kwargs)
@@ -681,9 +697,14 @@ class SimpleActionBar(BoxLayout):
             sm.current = App.get_running_app().get_current_machine().get_page()
 
     def select_maintenance(self):
-        # TODO add pop up here
+        self.emp_popup = EmployeeScanPage(caller=self, auto_dismiss=False)
+        self.emp_popup.parent_method = self.start_maintenance
+        self.emp_popup.open()
+
+    def start_maintenance(self, emp_id, _alternate=False):
         machine = App.get_running_app().get_current_machine()
-        machine.start_maintenance('A12345', datetime.now())
+        machine.start_maintenance(emp_id)
+        self.emp_popup.dismiss()
         sm = App.get_running_app().screen_manager
         if sm.current is not 'maintenance_page':
             sm.transition = SlideTransition()
@@ -784,11 +805,11 @@ class PiGUIApp(App):
 
     def build(self):
         # self.check_camera()
-        for idx in range(1, 4):
-            self.machines[idx] = MachineClass(idx, self.config)
-
         self.config.set('Network', 'self_add', self.get_ip_add())
         self.controller = FakeClass(self)  # TODO set if testing
+
+        for idx in range(1, 4):
+            self.machines[idx] = MachineClass(idx, self.controller, self.config)
 
         self.use_kivy_settings = False
 
@@ -977,8 +998,17 @@ class FakeClass:
         print(self.gui.config.get('Network', 'self_add'))
         print(self.gui.config.get('Network', 'self_port'))
 
-    def add_maintenance(self, emp, start=False):
-        pass
+    def add_maintenance(self, idx, emp_start, end=None):
+        key = 'M{}'.format(idx)
+        print(key, emp_start, end)
+
+    def add_employee(self, idx, emp_start, end=None):
+        key = 'E{}'.format(idx)
+        print(key, emp_start, end)
+
+    def add_qc(self, idx, string):
+        key = 'Q{}'.format(idx)
+        print(key, string)
 
 
 if __name__ == '__main__':
