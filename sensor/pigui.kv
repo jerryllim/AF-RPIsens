@@ -236,6 +236,12 @@
                 size_hint_y: 0.5
 
         Button:
+            canvas.before:
+                Color:
+                    rgba: 1, 1, 1, 1
+                Line:
+                    width: 10
+                    rectangle: self.x, self.y, self.width, self.height
             text: "[b]Stop[/b]"
             size_hint: [0.3, 1]
             markup: True

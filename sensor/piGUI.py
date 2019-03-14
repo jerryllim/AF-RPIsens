@@ -292,17 +292,18 @@ class AdjustmentPage(Screen):
 
     def generate_tabs(self):
         self.ids['jo_no'].text = 'JO No.: {}'.format(self.machine.get_jono())
-        for id_ in ['B1', 'B2', 'B3', 'B4', 'B5']:
-            # TODO get config from current machine
-            self.ids['adjustment_grid'].add_widget(AdjustmentLabel(text='{}: '.format(id_)))
-            field = AdjustmentTextInput()
-            field.bind(focus=self.set_text_input_target)
-            field.bind(text=self.check_text)
-            field.hint_text = '0'
-            field.hint_text_color = (0, 0, 0, 1)
-            field.text = '{}'.format(0)
-            self.fields[id_] = field
-            self.ids['adjustment_grid'].add_widget(field)
+        self.ids['adjustment_grid'].clear_widgets()
+        for idx in range(1, 6):
+            if int(self.machine.config['b{}_enable'.format(idx)]):
+                self.ids['adjustment_grid'].add_widget(AdjustmentLabel(text='{}'.format(self.machine.config['b{}_name'.format(idx)])))
+                field = AdjustmentTextInput()
+                field.bind(focus=self.set_text_input_target)
+                field.bind(text=self.check_text)
+                field.hint_text = '0'
+                field.hint_text_color = (0, 0, 0, 1)
+                field.text = '{}'.format(0)
+                self.fields['B{}'.format(idx)] = field
+                self.ids['adjustment_grid'].add_widget(field)
 
     def proceed_next(self):
         # TODO store B1 to B5
