@@ -60,6 +60,7 @@ class DatabaseManager:
         self.create_job_table()
         self.create_emp_table()
         self.create_maintenance_table()
+        self.create_emp_shift_table()
         self.create_qc_table()
         self.create_pis_table()
         self.create_machines_table()
@@ -221,7 +222,7 @@ class DatabaseManager:
                 # create EMP table
                 sql = '''CREATE TABLE IF NOT EXISTS emp_table (
                 emp_id VARCHAR(10) PRIMARY KEY,
-                name VARCHAR(40),
+                name VARCHAR(30),
                 last_modified TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                 to_del TINYINT(1))'''
 
@@ -518,7 +519,7 @@ class DatabaseManager:
         try:
             with db.cursor() as cursor:
                 for value in values:
-                    emp, jo_no, time_str, grade = value
+                    emp, jo_no, time_str, grade = value.split('_', 4)
                     recv_time = datetime.strptime(time_str, '%H%M')
                     now = datetime.now()
                     date_time = now.replace(hour=recv_time.hour, minute=recv_time.minute)
@@ -530,7 +531,7 @@ class DatabaseManager:
                             '{grade})'.format(emp=emp, date_time=date_time.strftime("%Y-%m-%d %H:%M"),
                                               machine=machine, jo_no=jo_no, grade=grade)
 
-                    cursor.execute(query, value)
+                    cursor.execute(query)
 
                 db.commit()
         finally:
@@ -542,40 +543,61 @@ class DatabaseManager:
 
         try:
             with db.cursor() as cursor:
-                # Drop table if it already exist
-                cursor.execute("DROP TABLE IF EXISTS maintenance_table;")
-
                 # TODO check varchar length for emp & machine.
                 query = 'CREATE TABLE IF NOT EXISTS maintenance_table (' \
                         'emp_id VARCHAR(10) NOT NULL,' \
                         'machine VARCHAR(10) NOT NULL,' \
-                        'jo_no VARCHAR(15),' \
-                        'date_time DATETIME NOT NULL,' \
-                        'start TINYINT NOT NULL);'
+                        'start DATETIME NOT NULL,' \
+                        'end DATETIME);'
                 cursor.execute(query)
                 db.commit()
         finally:
             db.close()
 
-    def insert_maintenance(self, machine, values):
+    def replace_maintenance(self, machine, values):
         db = pymysql.connect(host=self.host, user=self.user, password=self.password,
-                               database=self.db, port=self.port)
+                             database=self.db, port=self.port)
 
         try:
             with db.cursor() as cursor:
-                for value in values:
-                    emp, jo_no, time_str, start = value
-                    recv_time = datetime.strptime(time_str, '%H%M')
-                    now = datetime.now()
-                    date_time = now.replace(hour=recv_time.hour, minute=recv_time.minute)
-                    if recv_time.time() > now.time():
-                        date_time = date_time - timedelta(1)
+                for emp_start, end in values.items:
+                    emp, start = emp_start.split('_')
 
-                    query = 'INSERT INTO maintenance_table (emp_id, machine, jo_no, date_time, start) VALUES ' \
-                            '({emp}, {machine}, {jo_no}, {date_time}, ' \
-                            '{start})'.format(emp=emp, machine=machine, jo_no=jo_no,
-                                              date_time=date_time.strftime("%Y-%m-%d %H:%M"), start=start)
-                    cursor.execute(query, value)
+                    query = 'REPLACE INTO maintenance_table VALUES (?, ?, ?, ?);'
+                    cursor.execute(query, (emp, machine, start, end))
+
+                db.commit()
+        finally:
+            db.close()
+
+    def create_emp_shift_table(self):
+        db = pymysql.connect(host=self.host, user=self.user, password=self.password,
+                             database=self.db, port=self.port)
+
+        try:
+            with db.cursor() as cursor:
+                # TODO check varchar length for emp & machine.
+                query = 'CREATE TABLE IF NOT EXISTS emp_shift_table (' \
+                        'emp_id VARCHAR(10) NOT NULL,' \
+                        'machine VARCHAR(10) NOT NULL,' \
+                        'start DATETIME NOT NULL,' \
+                        'end DATETIME);'
+                cursor.execute(query)
+                db.commit()
+        finally:
+            db.close()
+
+    def replace_emp_shift(self, machine, values):
+        db = pymysql.connect(host=self.host, user=self.user, password=self.password,
+                             database=self.db, port=self.port)
+
+        try:
+            with db.cursor() as cursor:
+                for emp_start, end in values.items:
+                    emp, start = emp_start.split('_')
+
+                    query = 'REPLACE INTO emp_shift_table VALUES (?, ?, ?, ?);'
+                    cursor.execute(query, (emp, machine, start, end))
 
                 db.commit()
         finally:
