@@ -4,6 +4,7 @@ import re
 import cv2
 import sys
 import time
+import json
 import socket
 import ipaddress
 import printingMain
@@ -55,7 +56,6 @@ class JobClass(Widget):
     def __init__(self, job_info, wastage=None):
         Widget.__init__(self)
         self.job_info = job_info
-        # TODO get default waste units
         if wastage is None:
             wastage = {'waste1': (0, 'kg'), 'waste2': (0, 'kg')}
         self.wastage = wastage
@@ -71,6 +71,14 @@ class JobClass(Widget):
         sfu_dict.update(self.wastage)
         sfu_dict['output'] = self.output
         return sfu_dict
+
+    def all_info(self):
+        save_info = self.job_info.copy()
+        save_info.update(self.wastage)
+        save_info['output'] = self.output
+        save_info.update(self.adjustments)
+        save_info['qc'] = self.qc
+        return save_info
 
     def get_jono(self):
         return self.job_info['jo_no']
@@ -175,6 +183,18 @@ class MachineClass:
         if self.current_job:
             return self.current_job.qc
         return None
+
+    def publish_job(self):
+        # TODO This is called at stop job
+        self.current_job.get_sfu()
+        print(self.__dict__)
+
+    def self_info(self):
+        save_info = {'permanent': self.permanent, 'state': self.state.name, 'emp_main': self.emp_main,
+                     'emp_asst':self.emp_asst,'maintenance': self.maintenance}
+        if self.current_job:
+            save_info['job'] = self.current_job.all_info
+        return save_info
 
     def get_current_job(self):
         return self.current_job
