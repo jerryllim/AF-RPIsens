@@ -6,7 +6,7 @@ import sys
 import time
 import socket
 import ipaddress
-import printingMain
+from v4 import printingMain
 from kivy.app import App
 from pyzbar import pyzbar
 from kivy.metrics import dp
@@ -18,16 +18,15 @@ from kivy.uix.label import Label
 from kivy.uix.widget import Widget
 from kivy.uix.button import Button
 from kivy.core.window import Window
-from settings_json2 import settings_json
+from v4.settings_json import settings_json
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.textinput import TextInput
 from kivy.graphics.texture import Texture
-from kivy.graphics import Color, Rectangle
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.tabbedpanel import TabbedPanel
 from kivy.uix.togglebutton import ToggleButton
-from kivy.uix.screenmanager import ScreenManager, Screen, RiseInTransition
+from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.settings import SettingOptions, SettingString
 from kivy.properties import NumericProperty, StringProperty
 

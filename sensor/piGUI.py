@@ -4,17 +4,15 @@ import re
 import cv2
 import sys
 import time
-import json
 import socket
 import ipaddress
-import printingMain
+import piMain
 from enum import Enum
 from kivy.app import App
 from pyzbar import pyzbar
 from kivy.metrics import dp
 from kivy.clock import Clock
 from datetime import datetime
-from collections import Counter
 from kivy.factory import Factory
 from kivy.uix.popup import Popup
 from kivy.uix.label import Label
@@ -277,7 +275,7 @@ class SelectPage(Screen):
             if not self.machine.emp_available():
                 raise ValueError("Please log in.")
 
-            controller: printingMain.RaspberryPiController = App.get_running_app().controller
+            controller = App.get_running_app().controller
             job_dict = controller.get_job_info(barcode)
             if not job_dict:
                 raise ValueError("JO number ({}) was not found, please try again.")
