@@ -222,7 +222,7 @@ class DatabaseManager:
                 # create EMP table
                 sql = '''CREATE TABLE IF NOT EXISTS emp_table (
                 emp_id VARCHAR(10) PRIMARY KEY,
-                name VARCHAR(40),
+                name VARCHAR(30),
                 last_modified TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                 to_del TINYINT(1))'''
 
