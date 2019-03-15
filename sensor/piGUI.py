@@ -96,7 +96,9 @@ class MachineClass:
         self.state = State.SELECT
         self.current_job = None
         self.emp_main = {}
+        self.emp_main_names = {}
         self.emp_asst = {}
+        self.emp_asst_names = {}
         self.maintenance = (None, None)
         # TODO set permanent
 
@@ -119,6 +121,9 @@ class MachineClass:
         start = self.emp_main.pop(emp_id, None)
         if start is None:
             start = self.emp_asst.pop(emp_id, None)
+            self.emp_asst_names.pop(emp_id, None)
+        else:
+            self.emp_main_names.pop(emp_id, None)
         end = datetime.now().isoformat(timespec='minutes')
 
         self.controller.add_employee(self.index, "{0}_{1}".format(emp_id, start.isoformat(timespec='minutes')), end=end)
@@ -128,12 +133,14 @@ class MachineClass:
         if not asst:
             if len(self.emp_main) < 3:
                 self.emp_main[emp_id] = start
+                self.emp_main_names[emp_id] = self.controller.get_employee_name(emp_id)
                 self.controller.add_employee(self.index, "{0}_{1}".format(emp_id, start.isoformat(timespec='minutes')))
                 return True
             else:
                 return False
 
         self.emp_asst[emp_id] = start
+        self.emp_asst_names[emp_id] = self.controller.get_employee_name(emp_id)
         self.controller.add_employee(self.index, "{0}_{1}".format(emp_id, start.isoformat(timespec='minutes')))
         return True
 
@@ -184,8 +191,7 @@ class MachineClass:
 
     def publish_job(self):
         # TODO This is called at stop job
-        self.current_job.get_sfu()
-        print(self.__dict__)
+        print(self.current_job.get_sfu())
 
     def self_info(self):
         save_info = {'permanent': self.permanent, 'state': self.state.name, 'emp_main': self.emp_main,
@@ -404,8 +410,10 @@ class EmployeePage(Screen):
         self.colour = Colour[self.machine.config['bg_colour']].value
 
     def load_emp_list(self):
-        self.emp_main_view.data = list({'text': key} for key in self.machine.emp_main.keys())
-        self.emp_asst_view.data = list({'text': key} for key in self.machine.emp_asst.keys())
+        self.emp_main_view.data = list({'text': '{0} - {1}'.format(id_, name)} for id_, name in
+                                       self.machine.emp_main_names.items())
+        self.emp_asst_view.data = list({'text': '{0} - {1}'.format(id_, name)} for id_, name in
+                                       self.machine.emp_asst_names.items())
 
     def log_in_out(self):
         self.emp_popup = EmployeeScanPage(caller=self, login=True, auto_dismiss=False)
@@ -983,7 +991,7 @@ class FakeClass:
     database_manager = None
 
     def __init__(self, gui):
-        self.database_manager = printingMain.DatabaseManager()
+        self.database_manager = piMain.DatabaseManager()
         self.gui = gui
 
     def get_key(self, interval=5):
@@ -1000,7 +1008,7 @@ class FakeClass:
         return job_info
 
     def get_employee_name(self, emp_id):
-        return self.database_manager.get_employee_name(emp_id)
+        return self.database_manager.get_emp_name(emp_id)
 
     def request(self, req_msg):
         print(req_msg)

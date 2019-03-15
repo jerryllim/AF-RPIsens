@@ -320,10 +320,10 @@ class DatabaseManager:
         cursor = db.cursor()
         result = ''
         try:
-            cursor.execute("SELECT name FROM emp_table WHERE emp_id = ? LIMIT 1;", emp_id)
-            result = cursor.fetchone()
-            if result:
-                result = result[0]
+            cursor.execute("SELECT name FROM emp_table WHERE emp_id = ? LIMIT 1;", (emp_id,))
+            row = cursor.fetchone()
+            if row:
+                result = row[0]
             else:
                 result = emp_id
         finally:
