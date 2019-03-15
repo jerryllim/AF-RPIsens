@@ -176,12 +176,13 @@ class MachineClass:
             return self.current_job.qc
         return None
 
-    def publish_job(self):
-        pass
-        # TODO completed job
-
     def get_current_job(self):
         return self.current_job
+
+    def update_output(self):
+        self.permanent += 1
+        if self.current_job:
+            self.current_job.output += 1
 
     def start_maintenance(self, emp_id):
         start = datetime.now()
@@ -913,10 +914,7 @@ class PiGUIApp(App):
         self.screen_manager.current_screen.on_pre_enter()
 
     def update_output(self, idx):
-        machine = self.machines[idx]
-        machine.permanent += 1
-        if machine.get_current_job():
-            machine.get_current_job().output += 1
+        self.machines[idx].update_output()
 
     @staticmethod
     def get_ip_add():
@@ -944,10 +942,6 @@ class PiGUIApp(App):
             self.action_bar.set_machine_dropdown(config)
         elif section == 'Machine':
             self.action_bar.set_machine_dropdown(config)
-
-    def update_output(self):
-        # TODO update output in current_job
-        pass
 
 
 def try_int(s):
