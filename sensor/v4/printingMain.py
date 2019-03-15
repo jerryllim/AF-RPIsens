@@ -152,7 +152,6 @@ class RaspberryPiController:
         self.update_count(name, key)
 
     def output_pin_triggered(self, _pin, _level, _tick):
-        # TODO store output here? and to FeRAM?
         self.permanent += 1
         self.gui.update_output()
 

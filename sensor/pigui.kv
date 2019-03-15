@@ -1,0 +1,584 @@
+<SelectPage>:
+    canvas.before:
+        Color:
+            rgba: self.colour
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    id: selectpage
+    GridLayout:
+        cols: 1
+        padding: sp(10)
+        spacing: sp(10)
+
+        BoxLayout:
+            padding: [sp(10), 0]
+
+            Label:
+                text: "JO No. :"
+                font_size: '32sp'
+                text_size: self.size
+                halign: 'left'
+                valign: 'bottom'
+
+        BoxLayout:
+            spacing: sp(10)
+
+            TextInput:
+                id: job_entry
+                font_size: '32sp'
+                multiline: False
+                keyboard_mode: 'managed'
+
+            Button:
+                text: "Scan"
+                size_hint: (0.2, 1)
+                on_release: selectpage.scan_barcode()
+
+        BoxLayout:
+            Button:
+                text: "Start"
+                size_hint: (0.2, 1)
+                on_release: root.start_job()
+
+        BoxLayout:
+            size_hint: [1, 3]
+
+            Image:
+                id: camera_viewer
+
+<AdjustmentPage>:
+    canvas.before:
+        Color:
+            rgba: self.colour
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    id: adjustmentpage
+    BoxLayout:
+        id: box_layout
+        padding: sp(10)
+        spacing: sp(10)
+        orientation: 'vertical'
+
+        BoxLayout:
+            padding: sp(10)
+            spacing: sp(10)
+            orientation: 'horizontal'
+            size_hint_y: None
+            height: sp(75)
+
+            Label:
+                id: jo_no
+                text_size: self.size
+                halign: 'left'
+                font_size: sp(30)
+
+            Button:
+                text: 'Next'
+                size_hint_x: None
+                width: sp(200)
+                on_release: root.proceed_next()
+
+        BoxLayout:
+            orientation: 'horizontal'
+
+            ScrollView:
+                canvas.before:
+                    Color:
+                        rgba: 1, 1, 1, 0.2
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+                GridLayout:
+                    id: adjustment_grid
+                    cols: 2
+                    padding: sp(10)
+                    spacing: sp(10)
+                    orientation: 'vertical'
+                    size_hint: (1, None)
+                    height: self.minimum_height
+
+            NumPadGrid:
+                id: numpad
+
+<AdjustmentTextInput>:
+    multiline: False
+    size_hint: (1, None)
+    height: sp(50)
+    input_filter: 'int'
+    font_size: sp(25)
+
+<AdjustmentLabel>:
+    text_size: self.size
+    size_hint: (1, None)
+    height: sp(50)
+    font_size: sp(25)
+    valign: 'top'
+    halign: 'right'
+
+<NumPadGrid>:
+    cols: 3
+    padding: sp(10)
+    spacing: sp(10)
+    canvas.before:
+        Color:
+            rgba: 1, 1, 1, 0.8
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+<NumPadButton>:
+    font_size: sp(25)
+    font_name: 'FreeSerif.ttf'
+    bold: True
+
+<MaintenancePage>:
+    canvas.before:
+        Color:
+            rgba: self.colour
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+
+<MaintenancePageLayout>:
+    technician_label: technician_label
+    date_label: date_label
+    time_label: time_label
+    padding: sp(10)
+    spacing: sp(10)
+    orientation: 'vertical'
+
+    Label:
+        text: 'Maintenance'
+        font_size: '32sp'
+        text_size: self.size
+        halign: 'left'
+        size_hint_y: None
+        height: sp(60)
+
+    Label:
+        id: technician_label
+        font_size: '20sp'
+        text_size: self.size
+        halign: 'left'
+        size_hint_y: None
+        height: sp(60)
+
+    Label:
+        id: date_label
+        font_size: '20sp'
+        text_size: self.size
+        halign: 'left'
+        size_hint_y: None
+        height: sp(60)
+
+    Label:
+        id: time_label
+        font_size: '20sp'
+        text_size: self.size
+        halign: 'left'
+        size_hint_y: None
+        height: sp(60)
+
+    Button:
+        text: 'Complete'
+        size_hint_y: None
+        height: sp(60)
+        on_release: root.parent.complete()
+
+    BoxLayout:
+
+<RunPage>:
+    canvas.before:
+        Color:
+            rgba: self.colour
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+<RunPageLayout>:
+    padding: sp(10)
+    spacing: sp(10)
+    orientation: 'vertical'
+    qc_label: qc_label
+
+    BoxLayout:
+        spacing: sp(10)
+        orientation: 'horizontal'
+        size_hint_y: None
+        height: sp(150)
+
+        BoxLayout:
+            spacing: sp(10)
+            orientation: 'vertical'
+
+            Label:
+                id: jo_no
+                text_size: self.size
+                halign: 'left'
+                valign: 'top'
+                font_size: sp(30)
+
+            Label:
+                id: code
+                text_size: self.size
+                halign: 'left'
+                valign: 'top'
+                size_hint_y: 0.5
+
+            Label:
+                id: desc
+                text_size: self.size
+                halign: 'left'
+                valign: 'top'
+                size_hint_y: 0.5
+
+        Button:
+            canvas.before:
+                Color:
+                    rgba: 1, 1, 1, 1
+                Line:
+                    width: 10
+                    rectangle: self.x, self.y, self.width, self.height
+            text: "[b]Stop[/b]"
+            size_hint: [0.3, 1]
+            markup: True
+            font_size: '32sp'
+            background_normal: ''
+            background_color: 1,0,0,1
+            on_release: root.parent.wastage_popup('waste1', finish=True)
+
+    Label:
+        id: to_do
+        size_hint_y: None
+        height: sp(50)
+        text_size: self.size
+        halign: 'left'
+        font_size: sp(40)
+
+    BoxLayout:
+        spacing: sp(10)
+        orientation: 'horizontal'
+        size_hint_y: None
+        height: sp(50)
+
+        Label:
+            text: 'Counter: '
+            text_size: self.size
+            size_hint_x: None
+            width: sp(180)
+            halign: 'left'
+            font_size: sp(40)
+
+        Label:
+            text: '{}'.format(root.counter)
+            id: counter
+            text_size: self.size
+            halign: 'left'
+            font_size: sp(40)
+
+    Label:
+        id: qc_label
+        size_hint_y: None
+        height: sp(20)
+        text_size: self.size
+        halign: 'left'
+
+    BoxLayout:
+
+    BoxLayout:
+        orientation: 'horizontal'
+        padding: sp(5)
+        spacing: sp(5)
+        size_hint_y: None
+        height: sp(75)
+
+        canvas.before:
+            Color:
+                rgba: 0.25, 0.25, 0.25, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        Button:
+            text: 'Back'
+            on_release:
+                app.screen_manager.transition.direction = 'right'
+                app.screen_manager.current = 'adjustment_page'
+
+        Button:
+            text: 'QC'
+            on_release: root.parent.qc_check()
+
+        Button:
+            text: 'Waste1 \n {}'.format(root.waste1)
+            text_size: self.size
+            halign: 'center'
+            valign: 'middle'
+            on_release: root.parent.wastage_popup('waste1')
+
+        Button:
+            text: 'Waste2 \n {}'.format(root.waste2)
+            text_size: self.size
+            halign: 'center'
+            valign: 'middle'
+            on_release: root.parent.wastage_popup('waste2')
+
+<WastagePopUp>:
+    title: 'Wastage'
+    size_hint: (0.75, 0.75)
+    current_label: current_label
+    unit_spinner: unit_spinner
+    add_label: add_label
+    numpad: numpad
+
+    BoxLayout:
+        orientation: 'vertical'
+        padding: sp(10)
+        spacing: sp(10)
+
+        BoxLayout:
+            orientation: 'horizontal'
+            spacing: sp(5)
+            size_hint: (1, 0.2)
+
+            Label:
+                id: current_label
+                padding_x: 5
+                text_size: self.size
+                halign: 'right'
+                valign: 'middle'
+                color: (0, 0, 0, 1)
+                canvas.before:
+                    Color:
+                        rgb: (1, 1, 1)
+                    Rectangle:
+                        size: self.size
+                        pos: self.pos
+            Spinner:
+                id: unit_spinner
+                size_hint: (0.2, 1)
+
+        Label:
+            id: add_label
+            padding_x: 5
+            text_size: self.size
+            halign: 'right'
+            valign: 'middle'
+            size_hint: (1, 0.2)
+            color: (0, 0, 0, 1)
+            canvas.before:
+                Color:
+                    rgb: (1, 1, 1)
+                Rectangle:
+                    size: self.size
+                    pos: self.pos
+
+        NumPadGrid:
+            id: numpad
+
+        BoxLayout:
+            id: button_box
+            orientation: 'horizontal'
+            spacing: sp(10)
+            size_hint: (1, 0.2)
+
+            Button:
+                text: 'Dismiss'
+                on_release: root.save_dismiss()
+
+<SimpleActionBar>:
+    emp_button: emp_button
+    machine_button: machine_button
+    main_button: main_button
+    clock_label: clock_label
+    setting_button: setting_button
+    size_hint_y: None
+    height: 50
+    spacing: sp(10)
+    padding: [sp(10), 0]
+    orientation: 'horizontal'
+
+    Button:
+        id: machine_button
+        text: 'Select Machine'
+        text_size: None, self.size[1]
+        size_hint_x: None
+        valign: 'middle'
+        width: sp(150)
+        on_release: root.select_machine()
+
+    Button:
+        id: emp_button
+        text: 'Employees'
+        text_size: None, self.size[1]
+        size_hint_x: None
+        valign: 'middle'
+        width: self.texture_size[0] + sp(20)
+        on_release: root.select_employee()
+
+    Button:
+        id: main_button
+        text: 'Maintenance'
+        text_size: None, self.size[1]
+        size_hint_x: None
+        valign: 'middle'
+        width: self.texture_size[0] + sp(20)
+        on_release: root.select_maintenance()
+
+    Widget:
+
+    Button:
+        id: setting_button
+        text: 'Settings'
+        text_size: None, self.size[1]
+        size_hint_x: None
+        valign: 'middle'
+        width: self.texture_size[0] + sp(20)
+        on_release: app.open_settings()
+
+    Label:
+        id: clock_label
+        text_size: None, self.size[1]
+        size_hint_x: None
+        width: self.texture_size[0] + sp(20)
+        halign: 'right'
+        valign: 'middle'
+        text: root.time
+
+<EmployeePage>:
+    canvas.before:
+        Color:
+            rgba: self.colour
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    add_button: add_button
+    emp_main_view: emp_main_view
+    emp_asst_view: emp_asst_view
+    BoxLayout:
+        padding: sp(10)
+        spacing: sp(10)
+        orientation: 'vertical'
+
+        Button:
+            id: add_button
+            size_hint_y: None
+            text: 'Log In/Log Out'
+            text_size: self.size[0], self.size[1]
+            halign: 'center'
+            valign: 'middle'
+            on_release: root.log_in_out()
+
+        Label:
+            size_hint_y: 0.1
+            font_size: self.height
+            text: 'Main Operators: '
+            text_size: self.size[0], self.size[1]
+            halign: 'left'
+            valign: 'middle'
+
+
+        RecycleView:
+            id: emp_main_view
+            size_hint_y: 0.8
+            viewclass: 'EmpLabel'
+            RecycleBoxLayout:
+                size_hint_y: None
+                height: self.minimum_height
+                spacing: sp(5)
+                default_size_hint: 1, None
+                orientation: 'vertical'
+
+        Label:
+            size_hint_y: 0.1
+            font_size: self.height
+            text: 'Assistants: '
+            text_size: self.size[0], self.size[1]
+            halign: 'left'
+            valign: 'middle'
+
+
+        RecycleView:
+            id: emp_asst_view
+            viewclass: 'EmpLabel'
+            RecycleBoxLayout:
+                size_hint_y: None
+                height: self.minimum_height
+                spacing: sp(5)
+                default_size_hint: 1, None
+                orientation: 'vertical'
+
+<EmpLabel@Label>:
+    bold: True
+    canvas.before:
+        Color:
+            rgba: (0, 0, 0, 1)
+        Rectangle:
+            size: self.size
+            pos: self.pos
+
+<EmployeeScanPage>:
+    title: "Scan Employee Number"
+    size_hint: (0.9, 0.9)
+    title_label: title_label
+    employee_num: employee_num
+    cancel_button: cancel_button
+    confirm_button: confirm_button
+    alternate_button: alternate_button
+    camera_viewer: camera_viewer
+    button_box: button_box
+
+    GridLayout:
+        cols: 1
+        padding: sp(10)
+        spacing: sp(10)
+
+        BoxLayout:
+            padding: [sp(10), 0]
+
+            Label:
+                id: title_label
+                text: 'Employee number: '
+                font_size: '20sp'
+                text_size: self.size
+                halign: 'left'
+                valign: 'bottom'
+
+        BoxLayout:
+            spacing: sp(10)
+
+            TextInput:
+                id: employee_num
+                font_size: '24sp'
+                multiline: False
+
+            Button:
+                text: "Scan"
+                size_hint: (0.2, 1)
+                on_release: root.scan_barcode()
+
+        BoxLayout:
+            spacing: sp(10)
+            size_hint: (0.2, 1)
+            id: button_box
+
+            Button:
+                id: cancel_button
+                text: "Cancel"
+                on_release: root.dismiss()
+
+            Button:
+                id: confirm_button
+                text: "Confirm"
+                on_release: root.confirm()
+
+            Button:
+                id: alternate_button
+                on_release: root.confirm(alternate=True)
+
+        Image:
+            id: camera_viewer
+            size_hint: [1, 3]

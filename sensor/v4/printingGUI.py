@@ -6,7 +6,7 @@ import sys
 import time
 import socket
 import ipaddress
-import printingMain
+from v4 import printingMain
 from kivy.app import App
 from pyzbar import pyzbar
 from kivy.metrics import dp
@@ -18,7 +18,7 @@ from kivy.uix.label import Label
 from kivy.uix.widget import Widget
 from kivy.uix.button import Button
 from kivy.core.window import Window
-from settings_json import settings_json
+from v4.settings_json import settings_json
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.textinput import TextInput
 from kivy.graphics.texture import Texture
@@ -670,8 +670,8 @@ class PrintingGUIApp(App):
         # self.check_camera()  # TODO uncomment
 
         self.config.set('Network', 'self_add', self.get_ip_add())
-        self.controller = printingMain.RaspberryPiController(self)
-        # self.controller = FakeClass(self)  # TODO set if testing
+        # self.controller = printingMain.RaspberryPiController(self)
+        self.controller = FakeClass(self)  # TODO set if testing
 
         self.use_kivy_settings = False
         num_operators = self.config.get('General', 'num_operators')
@@ -804,6 +804,9 @@ class FakeClass:
         print(self.gui.config.get('Network', 'server_port'))
         print(self.gui.config.get('Network', 'self_add'))
         print(self.gui.config.get('Network', 'self_port'))
+
+    def add_maintenance(self, emp, start=False):
+        pass
 
 
 if __name__ == '__main__':
