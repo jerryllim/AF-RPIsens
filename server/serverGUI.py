@@ -213,6 +213,7 @@ class PisTab(QtWidgets.QWidget):
         header = self.pis_treeview.header()
         header.setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeToContents)
         header.setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+        header.setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeToContents)
 
         # Button box for New, Edit, Delete
         button_box = QtWidgets.QVBoxLayout()
@@ -230,7 +231,7 @@ class PisTab(QtWidgets.QWidget):
         # Right box with details
         vbox_layout = QtWidgets.QVBoxLayout()
 
-        # Top form layout for Nick, IP & Mac
+        # Top form layout for Nick, IP & Port
         self.main_lineedits = {}
         form_layout = QtWidgets.QFormLayout()
         nick_edit = QtWidgets.QLineEdit(self)
@@ -245,6 +246,9 @@ class PisTab(QtWidgets.QWidget):
         ip_edit.setValidator(ip_validator)
         self.main_lineedits['ip'] = ip_edit
         form_layout.addRow('IP:', ip_edit)
+        port_edit = QtWidgets.QLineEdit(self)
+        self.main_lineedits['port'] = port_edit
+        form_layout.addRow('Port:', port_edit)
 
         # Details tab
         self.machines_model = machines_model
@@ -275,11 +279,14 @@ class PisTab(QtWidgets.QWidget):
         vbox_layout.addLayout(form_layout)
         vbox_layout.addWidget(tab_widget)
         vbox_layout.addLayout(detail_btn_box)
+        v_widget = QtWidgets.QWidget()
+        v_widget.setLayout(vbox_layout)
+        v_widget.setMaximumWidth(300)
 
         hbox_layout = QtWidgets.QHBoxLayout()
         hbox_layout.addWidget(self.pis_treeview)
         hbox_layout.addLayout(button_box)
-        hbox_layout.addLayout(vbox_layout)
+        hbox_layout.addWidget(v_widget)
         self.setLayout(hbox_layout)
 
         self.set_all_enabled(False, False)
@@ -287,20 +294,22 @@ class PisTab(QtWidgets.QWidget):
 
     def populate_pis(self):
         self.pis_model.clear()
-        self.pis_model.setHorizontalHeaderLabels(['Nickname', 'IP Address', 'Machine1', 'Machine2', 'Machine3'])
+        self.pis_model.setHorizontalHeaderLabels(['Nickname', 'IP Address', 'Port', 'Machine1', 'Machine2', 'Machine3'])
 
         for ip in self.pis_dict.keys():
             nick_item = QtGui.QStandardItem(self.pis_dict[ip].get('nick'))
             ip_item = QtGui.QStandardItem(ip)
+            port_item = QtGui.QStandardItem(self.pis_dict[ip].get('port'))
             machine1_item = QtGui.QStandardItem(self.pis_dict[ip].get('machine1'))
             machine2_item = QtGui.QStandardItem(self.pis_dict[ip].get('machine2'))
             machine3_item = QtGui.QStandardItem(self.pis_dict[ip].get('machine3'))
             index = self.pis_model.rowCount()
             self.pis_model.setItem(index, 0, nick_item)
             self.pis_model.setItem(index, 1, ip_item)
-            self.pis_model.setItem(index, 2, machine1_item)
-            self.pis_model.setItem(index, 3, machine2_item)
-            self.pis_model.setItem(index, 4, machine3_item)
+            self.pis_model.setItem(index, 2, port_item)
+            self.pis_model.setItem(index, 3, machine1_item)
+            self.pis_model.setItem(index, 4, machine2_item)
+            self.pis_model.setItem(index, 5, machine3_item)
 
     def set_fields(self, index):
         row = index.row()
@@ -310,6 +319,7 @@ class PisTab(QtWidgets.QWidget):
         ip = self.pis_model.item(row, 1).text()
         self.main_lineedits['ip'].setText(ip)
         self.main_lineedits['nick'].setText(self.pis_dict[ip]['nick'])
+        self.main_lineedits['port'].setText(self.pis_dict[ip]['port'])
 
         for key in self.machine_tabs:
             self.machine_tabs[key].set_fields(key, self.pis_dict[ip])

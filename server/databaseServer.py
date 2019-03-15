@@ -716,6 +716,7 @@ class DatabaseManager:
                 cursor.execute('SELECT * FROM pis_table;')
                 for row in cursor:
                     ip = row.pop('ip')
+                    row['port'] = str(row['port'])
                     pis_dict[ip] = row
         except pymysql.MySQLError as error:
             conn.rollback()
