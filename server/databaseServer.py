@@ -20,6 +20,7 @@ class Settings:
                                            password=self.config.get('Database', 'password'),
                                            db=self.config.get('Database', 'db'))
         self.machines_info = database_manager.get_pis()
+        print(self.machines_info)
 
     def get_ip_key(self, ip, key):
         machine = 'machine{}'.format(key[-1:])
@@ -661,7 +662,7 @@ class DatabaseManager:
                 cursor.execute(sql)
 
                 sql = 'INSERT INTO pis_table VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,' \
-                      ' %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);'
+                      ' %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);'
                 cursor.executemany(sql, pis_row)
             conn.commit()
         except pymysql.MySQLError as error:

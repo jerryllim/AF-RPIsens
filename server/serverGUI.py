@@ -179,17 +179,26 @@ class PiMachineDetails(QtWidgets.QWidget):
         for key, value in self.details.items():
             newk = '{0}{1}'.format(key, idx)
 
-            if value.currentText() == '':
-                values[newk] = None
+            if type(value) is QtWidgets.QLineEdit:
+                if value.text() == '':
+                    values[newk] = None
+                else:
+                    values[newk] = value.text()
             else:
-                values[newk] = value.currentText()
+                if value.currentText() == '':
+                    values[newk] = None
+                else:
+                    values[newk] = value.currentText()
 
         return values
 
     def clear_fields(self):
         if self.details['machine'].isEnabled():
             for field in self.details.values():
-                field.setCurrentIndex(0)
+                if type(field) is QtWidgets.QLineEdit:
+                    field.setText('')
+                else:
+                    field.setCurrentIndex(0)
 
 
 class PisTab(QtWidgets.QWidget):
@@ -347,7 +356,7 @@ class PisTab(QtWidgets.QWidget):
     def set_item(self):
         ip = self.main_lineedits['ip'].text()
         self.pis_dict[ip] = {}
-        for key in ['nick', 'mac']:
+        for key in ['nick', 'port']:
             self.pis_dict[ip][key] = self.main_lineedits[key].text()
 
         for idx in self.machine_tabs.keys():
@@ -355,14 +364,13 @@ class PisTab(QtWidgets.QWidget):
 
         self.populate_pis()
         self.clear_all(True)
+        self.set_all_enabled(False, False)
 
     def save_items(self):
         pis_row = []
 
         for ip, values in self.pis_dict.items():
-            pi_row = [ip]
-            for key in ['nick', 'mac']:
-                pi_row.append(values[key])
+            pi_row = [ip, int(values['port']), values['nick']]
 
             for i in range(1, 4):
                 for key in self.sensor_list:
@@ -536,23 +544,31 @@ class MiscTab(QtWidgets.QWidget):
         self.config = configparser.ConfigParser()
         self.config.read('jam.ini')
 
-        # Request group
-        req_box = QtWidgets.QGroupBox('Request polling', self)
-        req_layout = QtWidgets.QGridLayout()
-        req_layout.setColumnMinimumWidth(0, 100)
-        dur_label = QtWidgets.QLabel('Polling Interval: ', req_box)
-        self.poll_spinbox = QtWidgets.QSpinBox(req_box)
-        self.poll_spinbox.setMinimum(1)
-        self.poll_spinbox.setMaximum(90)
-        self.poll_spinbox.setValue(self.config.getint('Request', 'interval'))
-        dur_label2 = QtWidgets.QLabel('minutes', req_box)
-        req_layout.addWidget(dur_label, 0, 0, QtCore.Qt.AlignRight)
-        req_layout.addWidget(self.poll_spinbox, 0, 1)
-        req_layout.addWidget(dur_label2, 0, 2)
-        req_btn = QtWidgets.QPushButton('Request now', req_box)
-        req_layout.setAlignment(QtCore.Qt.AlignLeft)
-        req_layout.addWidget(req_btn, 0, 3)
-        req_box.setLayout(req_layout)
+        # Network group
+        self.network_fields = {}
+        network_box = QtWidgets.QGroupBox('Request polling', self)
+        network_layout = QtWidgets.QGridLayout()
+        network_layout.setColumnMinimumWidth(0, 100)
+        port_label = QtWidgets.QLabel('Port: ', network_box)
+        port_edit = QtWidgets.QLineEdit(network_box)
+        port_edit.setText(self.config.get('Network', 'port'))
+        self.network_fields['port'] = port_edit
+        network_layout.addWidget(port_label, 0, 0, QtCore.Qt.AlignRight)
+        network_layout.addWidget(port_edit, 0, 1)
+        dur_label = QtWidgets.QLabel('Polling Interval: ', network_box)
+        poll_spinbox = QtWidgets.QSpinBox(network_box)
+        poll_spinbox.setMinimum(1)
+        poll_spinbox.setMaximum(90)
+        self.network_fields['interval'] = poll_spinbox
+        poll_spinbox.setValue(self.config.getint('Network', 'interval'))
+        dur_label2 = QtWidgets.QLabel('minutes', network_box)
+        network_layout.addWidget(dur_label, 1, 0, QtCore.Qt.AlignRight)
+        network_layout.addWidget(poll_spinbox, 1, 1)
+        network_layout.addWidget(dur_label2, 1, 2)
+        req_btn = QtWidgets.QPushButton('Request now', network_box)
+        network_layout.setAlignment(QtCore.Qt.AlignLeft)
+        network_layout.addWidget(req_btn, 1, 3)
+        network_box.setLayout(network_layout)
 
         # Database group
         self.db_edits = {}
@@ -664,7 +680,7 @@ class MiscTab(QtWidgets.QWidget):
             self.shift_check_state(check.checkState(), col)
 
         vbox_layout = QtWidgets.QVBoxLayout()
-        vbox_layout.addWidget(req_box)
+        vbox_layout.addWidget(network_box)
         vbox_layout.addWidget(db_box)
         vbox_layout.addWidget(data_box)
         vbox_layout.addWidget(shift_box)
@@ -705,7 +721,8 @@ class MiscTab(QtWidgets.QWidget):
             self.config.set('Shift', 'shift{}_start'.format(col), str(self.shift_starts[col].text()))
             self.config.set('Shift', 'shift{}_end'.format(col), str(self.shift_ends[col].text()))
 
-        self.config.set('Request', 'interval', str(self.poll_spinbox.text()))
+        self.config.set('Network', 'port', self.network_fields['port'].text())
+        self.config.set('Network', 'interval', str(self.network_fields['interval'].text()))
 
         with open('jam.ini', 'w') as configfile:
             self.config.write(configfile)
