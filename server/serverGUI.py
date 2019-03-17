@@ -549,6 +549,7 @@ class MiscTab(QtWidgets.QWidget):
         network_box = QtWidgets.QGroupBox('Request polling', self)
         network_layout = QtWidgets.QGridLayout()
         network_layout.setColumnMinimumWidth(0, 100)
+        network_box.setLayout(network_layout)
         port_label = QtWidgets.QLabel('Port: ', network_box)
         port_edit = QtWidgets.QLineEdit(network_box)
         port_edit.setText(self.config.get('Network', 'port'))
@@ -568,7 +569,6 @@ class MiscTab(QtWidgets.QWidget):
         req_btn = QtWidgets.QPushButton('Request now', network_box)
         network_layout.setAlignment(QtCore.Qt.AlignLeft)
         network_layout.addWidget(req_btn, 1, 3)
-        network_box.setLayout(network_layout)
 
         # Database group
         self.db_edits = {}
@@ -642,12 +642,37 @@ class MiscTab(QtWidgets.QWidget):
         data_delete_spin = QtWidgets.QSpinBox(data_box)
         data_delete_spin.setMaximum(12)
         data_delete_spin.setMinimum(2)
+        data_delete_spin.setMinimum(2)
         data_delete_spin.setValue(self.config.getint('Data', 'delete'))
         data_delete_label2 = QtWidgets.QLabel(' months', data_box)
         self.data_fields['delete'] = data_delete_spin
         data_layout.addWidget(data_delete_label, 2, 0)
         data_layout.addWidget(data_delete_spin, 2, 1)
         data_layout.addWidget(data_delete_label2, 2, 2)
+
+        # Import Export group
+        import_box = QtWidgets.QGroupBox('Import and Export', self)
+        import_layout = QtWidgets.QGridLayout()
+        import_box.setLayout(import_layout)
+        self.import_fields = {}
+        import_layout.addWidget(QtWidgets.QLabel('Import: '), 0, 0)
+        import_edit = QtWidgets.QLineEdit(self)
+        self.import_fields['import'] = import_edit
+        import_edit.setText(self.config.get('Import', 'import'))
+        import_edit.setReadOnly(True)
+        import_layout.addWidget(import_edit, 0, 1)
+        import_button = QtWidgets.QPushButton('...', self)
+        import_button.clicked.connect(self.import_from)
+        import_layout.addWidget(import_button, 0, 2)
+        import_layout.addWidget(QtWidgets.QLabel('Export: '), 1, 0)
+        export_edit = QtWidgets.QLineEdit(self)
+        self.import_fields['export'] = export_edit
+        export_edit.setText(self.config.get('Import', 'export'))
+        export_edit.setReadOnly(True)
+        import_layout.addWidget(export_edit, 1, 1)
+        export_button = QtWidgets.QPushButton('...', self)
+        export_button.clicked.connect(self.export_to)
+        import_layout.addWidget(export_button, 1, 2)
 
         # Shift group
         shift_box = QtWidgets.QGroupBox('Shifts', self)
@@ -682,6 +707,7 @@ class MiscTab(QtWidgets.QWidget):
         vbox_layout = QtWidgets.QVBoxLayout()
         vbox_layout.addWidget(network_box)
         vbox_layout.addWidget(db_box)
+        vbox_layout.addWidget(import_box)
         vbox_layout.addWidget(data_box)
         vbox_layout.addWidget(shift_box)
         vbox_layout.addStretch()
@@ -708,6 +734,16 @@ class MiscTab(QtWidgets.QWidget):
             msgbox.setText('Connection Failed')
         msgbox.exec_()
 
+    def import_from(self):
+        path = QtWidgets.QFileDialog.getOpenFileName(self, 'Select file to import', '', 'CSV(*.csv)')
+        if path[0] != '':
+            self.import_fields['import'].setText(path[0])
+
+    def export_to(self):
+        path = QtWidgets.QFileDialog.getExistingDirectory(self, 'Set export location', '')
+        if path != '':
+            self.import_fields['export'].setText(path)
+
     def save_misc(self):
         for key in self.db_edits.keys():
             self.config.set('Database', key, self.db_edits[key].text())
@@ -723,6 +759,9 @@ class MiscTab(QtWidgets.QWidget):
 
         self.config.set('Network', 'port', self.network_fields['port'].text())
         self.config.set('Network', 'interval', str(self.network_fields['interval'].text()))
+
+        for key, line_edit in self.import_fields.items():
+            self.config.set('Import', key, line_edit.text())
 
         with open('jam.ini', 'w') as configfile:
             self.config.write(configfile)

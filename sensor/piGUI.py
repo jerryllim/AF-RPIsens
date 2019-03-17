@@ -316,6 +316,7 @@ class AdjustmentPage(Screen):
         self.colour = Colour[self.machine.config['bg_colour']].value
 
     def generate_tabs(self):
+        # TODO save all info on change
         self.ids['jo_no'].text = 'JO No.: {}'.format(self.machine.get_jono())
         self.ids['adjustment_grid'].clear_widgets()
         for idx in range(1, 6):
@@ -572,8 +573,10 @@ class RunPage(Screen):
                 self.remove_widget(self.run_layout)
             self.run_layout = Factory.RunPageLayout()
             self.add_widget(self.run_layout)
-            self.machine.get_current_job().bind(output=self.run_layout.setter('counter'))
 
+        # TODO add a unbind?
+        self.run_layout.counter.unbind()
+        self.machine.get_current_job().bind(output=self.run_layout.setter('counter'))
         self.machine.set_state(State.RUN)
         self.colour = Colour[self.machine.config['bg_colour']].value
 
