@@ -656,28 +656,77 @@ class MiscTab(QtWidgets.QWidget):
         data_layout.addWidget(data_delete_label2, 2, 2)
 
         # Import Export group
-        import_box = QtWidgets.QGroupBox('Import and Export', self)
+        import_box = QtWidgets.QGroupBox('Import', self)
         import_layout = QtWidgets.QGridLayout()
         import_box.setLayout(import_layout)
         self.import_fields = {}
-        import_layout.addWidget(QtWidgets.QLabel('Import: '), 0, 0)
+        import_time = QtWidgets.QTimeEdit(import_box)
+        import_time.setDisplayFormat('hh:mm')
+        import_t = QtCore.QTime.fromString(self.config.get('Import', 'time'))
+        import_time.setTime(import_t)
+        self.import_fields['time'] = import_time
+        import_layout.addWidget(QtWidgets.QLabel('Start time: '), 0, 0)
+        import_layout.addWidget(import_time, 0, 1)
+        import_hour = QtWidgets.QSpinBox(import_box)
+        import_hour.setMinimum(0)
+        import_hour.setMaximum(23)
+        self.import_fields['hour'] = import_hour
+        import_hour.setValue(self.config.getint('Import', 'hour'))
+        import_minute = QtWidgets.QSpinBox(import_box)
+        import_minute.setMinimum(0)
+        import_minute.setMaximum(59)
+        self.import_fields['minute'] = import_minute
+        import_minute.setValue(self.config.getint('Import', 'minute'))
+        import_layout.addWidget(QtWidgets.QLabel('Repeat every: '), 1, 0)
+        import_layout.addWidget(import_hour, 1, 1)
+        import_layout.addWidget(QtWidgets.QLabel('hours'), 1, 2)
+        import_layout.addWidget(import_minute, 1, 3)
+        import_layout.addWidget(QtWidgets.QLabel('minutes'), 1, 4)
+        import_layout.addWidget(QtWidgets.QLabel('Import path: '), 2, 0)
         import_edit = QtWidgets.QLineEdit(self)
-        self.import_fields['import'] = import_edit
-        import_edit.setText(self.config.get('Import', 'import'))
+        self.import_fields['path'] = import_edit
+        import_edit.setText(self.config.get('Import', 'path'))
         import_edit.setReadOnly(True)
-        import_layout.addWidget(import_edit, 0, 1)
+        import_layout.addWidget(import_edit, 2, 1, 1, 3)
         import_button = QtWidgets.QPushButton('...', self)
         import_button.clicked.connect(self.import_from)
-        import_layout.addWidget(import_button, 0, 2)
-        import_layout.addWidget(QtWidgets.QLabel('Export: '), 1, 0)
+        import_layout.addWidget(import_button, 2, 4)
+
+        export_box = QtWidgets.QGroupBox('Export', self)
+        export_layout = QtWidgets.QGridLayout()
+        export_box.setLayout(export_layout)
+        self.export_fields = {}
+        export_time = QtWidgets.QTimeEdit(export_box)
+        export_time.setDisplayFormat('hh:mm')
+        export_t = QtCore.QTime.fromString(self.config.get('Export', 'time'))
+        export_time.setTime(export_t)
+        self.export_fields['time'] = export_time
+        export_layout.addWidget(QtWidgets.QLabel('Start time: '), 0, 0)
+        export_layout.addWidget(export_time, 0, 1)
+        export_hour = QtWidgets.QSpinBox(export_box)
+        export_hour.setMinimum(0)
+        export_hour.setMaximum(23)
+        export_hour.setValue(self.config.getint('Export', 'hour'))
+        self.export_fields['hour'] = export_hour
+        export_minute = QtWidgets.QSpinBox(export_box)
+        export_minute.setMinimum(0)
+        export_minute.setMaximum(59)
+        export_minute.setValue(self.config.getint('Export', 'minute'))
+        self.export_fields['minute'] = export_minute
+        export_layout.addWidget(QtWidgets.QLabel('Repeat every: '), 1, 0)
+        export_layout.addWidget(export_hour, 1, 1)
+        export_layout.addWidget(QtWidgets.QLabel('hours'), 1, 2)
+        export_layout.addWidget(export_minute, 1, 3)
+        export_layout.addWidget(QtWidgets.QLabel('minutes'), 1, 4)
+        export_layout.addWidget(QtWidgets.QLabel('Export: '), 2, 0)
         export_edit = QtWidgets.QLineEdit(self)
-        self.import_fields['export'] = export_edit
-        export_edit.setText(self.config.get('Import', 'export'))
+        self.export_fields['path'] = export_edit
+        export_edit.setText(self.config.get('Export', 'path'))
         export_edit.setReadOnly(True)
-        import_layout.addWidget(export_edit, 1, 1)
+        export_layout.addWidget(export_edit, 2, 1, 1, 3)
         export_button = QtWidgets.QPushButton('...', self)
         export_button.clicked.connect(self.export_to)
-        import_layout.addWidget(export_button, 1, 2)
+        export_layout.addWidget(export_button, 2, 4)
 
         # Shift group
         shift_box = QtWidgets.QGroupBox('Shifts', self)
@@ -713,10 +762,20 @@ class MiscTab(QtWidgets.QWidget):
         vbox_layout.addWidget(network_box)
         vbox_layout.addWidget(db_box)
         vbox_layout.addWidget(import_box)
+        vbox_layout.addWidget(export_box)
         vbox_layout.addWidget(data_box)
         vbox_layout.addWidget(shift_box)
         vbox_layout.addStretch()
-        self.setLayout(vbox_layout)
+
+        widget = QtWidgets.QWidget(self)
+        widget.setLayout(vbox_layout)
+        scroll_area = QtWidgets.QScrollArea(self)
+        scroll_area.setWidget(widget)
+        scroll_area.setWidgetResizable(True)
+
+        layout = QtWidgets.QVBoxLayout()
+        layout.addWidget(scroll_area)
+        self.setLayout(layout)
         self.show()
 
     def set_delete_spin_min(self, value):
@@ -767,6 +826,9 @@ class MiscTab(QtWidgets.QWidget):
 
         for key, line_edit in self.import_fields.items():
             self.config.set('Import', key, line_edit.text())
+
+        for key, line_edit in self.export_fields.items():
+            self.config.set('Export', key, line_edit.text())
 
         with open('jam.ini', 'w') as configfile:
             self.config.write(configfile)
