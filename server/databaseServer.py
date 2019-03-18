@@ -1,5 +1,6 @@
 import csv
 import pymysql
+import apscheduler
 import configparser
 from datetime import datetime, timedelta
 
@@ -10,6 +11,7 @@ class Settings:
         self.config = configparser.ConfigParser()
         self.config.read(self.filename)
         self.machines_info = {}
+        self.update()
 
     def update(self):
         self.config.clear()
@@ -21,7 +23,6 @@ class Settings:
                                            password=self.config.get('Database', 'password'),
                                            db=self.config.get('Database', 'db'))
         self.machines_info = database_manager.get_pis()
-        print(self.machines_info)
 
     def get_ip_key(self, ip, key):
         machine = 'machine{}'.format(key[-1:])
@@ -46,6 +47,14 @@ class Settings:
     def get_ips(self):
         return list(self.machines_info.keys())
 
+    def get_ips_ports(self):
+        ip_port_list = []
+        for ip in self.machines_info.keys():
+            ip_port_tuple = (ip, self.machines_info[ip].get('port', 7777))
+            ip_port_list.append(ip_port_tuple)
+
+        return ip_port_list
+
 
 class AutomateScedulers:
     def __init__(self, settings: Settings, database_manager):
@@ -61,6 +70,9 @@ class AutomateScedulers:
             self.database_manager.replace_job(csv_reader)
 
         self.database_manager.delete_completed_jobs()
+
+    def write_export_file(self):
+        pass
 
 
 class DatabaseManager:
@@ -442,7 +454,8 @@ class DatabaseManager:
         try:
             jo_no = barcode[:-3]
             jo_line = int(barcode[-3:])
-            sql = '''SELECT code, descp, to_do, ran FROM job_info_table WHERE jo_no = %s LIMIT 1 AND jo_line = %s'''
+            sql = "SELECT uno, uline, usou_no, ustk_desc1, tqty FROM jobs_table " \
+                  "WHERE jo_no = %s LIMIT 1 AND jo_line = %s"
             cursor.execute(sql, (jo_no, jo_line))
             temp = cursor.fetchone()
             reply_dict = [jo_no, jo_line] + list(temp)
@@ -459,7 +472,7 @@ class DatabaseManager:
         job_list = []
         try:
             with db.cursor() as cursor:
-                sql = '''SELECT * FROM job_info_table WHERE mac = %s'''
+                sql = '''SELECT * FROM jobs_table WHERE umachine_no = %s'''
                 cursor.execute(sql, (mac,))
                 for row in cursor:
                     job_list.append(row)
@@ -845,5 +858,6 @@ class DatabaseManager:
 
 if __name__ == '__main__':
     settings = Settings()
-    db_manager = DatabaseManager(settings, password='Lim8699', db='test')
-    AutomateScedulers(settings, db_manager).read_import_file()
+    print(settings.get_ips_ports())
+    # db_manager = DatabaseManager(settings, password='Lim8699', db='test')
+    # AutomateScedulers(settings, db_manager).read_import_file()

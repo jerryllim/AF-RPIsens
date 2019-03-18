@@ -623,6 +623,8 @@ class RunPageLayout(BoxLayout):
         self.job_info = self.machine.get_job_info()
         self.ids['jo_no'].text = 'JO No.: {}'.format(self.job_info['jo_no'])
         self.ids['to_do'].text = 'To do: {}'.format(self.job_info['to_do'])
+        bal = self.job_info['to_do'] - self.job_info['ran']
+        self.ids['bal'].text = 'Balance: {}'.format(bal)
         self.ids['code'].text = 'Code: {}'.format(self.job_info['code'])
         self.ids['desc'].text = 'Description: {}'.format(self.job_info['desc'])
         qc = self.machine.get_qc()

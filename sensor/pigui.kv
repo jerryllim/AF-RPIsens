@@ -251,7 +251,7 @@
             on_release: root.parent.wastage_popup('waste1', finish=True)
 
     Label:
-        id: to_do
+        id: bal
         size_hint_y: None
         height: sp(50)
         text_size: self.size
@@ -278,6 +278,13 @@
             text_size: self.size
             halign: 'left'
             font_size: sp(40)
+
+    Label:
+        text: 'To do: '
+        id: to_do
+        text_size: self.size
+        halign: 'left'
+        font_size: sp(40)
 
     Label:
         id: qc_label

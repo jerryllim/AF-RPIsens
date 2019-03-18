@@ -1,7 +1,7 @@
 import csv
 import datetime
 import configparser
-from server import databaseServer
+from server import databaseServer, NetworkManager
 from PySide2 import QtCore, QtWidgets, QtGui
 
 
@@ -546,16 +546,21 @@ class MiscTab(QtWidgets.QWidget):
 
         # Network group
         self.network_fields = {}
-        network_box = QtWidgets.QGroupBox('Request polling', self)
+        network_box = QtWidgets.QGroupBox('Network', self)
         network_layout = QtWidgets.QGridLayout()
         network_layout.setColumnMinimumWidth(0, 100)
         network_box.setLayout(network_layout)
+        ip_label = QtWidgets.QLineEdit(network_box)
+        ip_label.setReadOnly(True)
+        ip_label.setText(NetworkManager.NetworkManager.get_ip_add())
+        network_layout.addWidget(QtWidgets.QLabel('Server IP: ', network_box), 0, 0, QtCore.Qt.AlignRight)
+        network_layout.addWidget(ip_label, 0, 1)
         port_label = QtWidgets.QLabel('Port: ', network_box)
         port_edit = QtWidgets.QLineEdit(network_box)
         port_edit.setText(self.config.get('Network', 'port'))
         self.network_fields['port'] = port_edit
-        network_layout.addWidget(port_label, 0, 0, QtCore.Qt.AlignRight)
-        network_layout.addWidget(port_edit, 0, 1)
+        network_layout.addWidget(port_label, 1, 0, QtCore.Qt.AlignRight)
+        network_layout.addWidget(port_edit, 1, 1)
         dur_label = QtWidgets.QLabel('Polling Interval: ', network_box)
         poll_spinbox = QtWidgets.QSpinBox(network_box)
         poll_spinbox.setMinimum(1)
@@ -563,12 +568,12 @@ class MiscTab(QtWidgets.QWidget):
         self.network_fields['interval'] = poll_spinbox
         poll_spinbox.setValue(self.config.getint('Network', 'interval'))
         dur_label2 = QtWidgets.QLabel('minutes', network_box)
-        network_layout.addWidget(dur_label, 1, 0, QtCore.Qt.AlignRight)
-        network_layout.addWidget(poll_spinbox, 1, 1)
-        network_layout.addWidget(dur_label2, 1, 2)
+        network_layout.addWidget(dur_label, 2, 0, QtCore.Qt.AlignRight)
+        network_layout.addWidget(poll_spinbox, 2, 1)
+        network_layout.addWidget(dur_label2, 2, 2)
         req_btn = QtWidgets.QPushButton('Request now', network_box)
         network_layout.setAlignment(QtCore.Qt.AlignLeft)
-        network_layout.addWidget(req_btn, 1, 3)
+        network_layout.addWidget(req_btn, 2, 3)
 
         # Database group
         self.db_edits = {}

@@ -1,8 +1,8 @@
 import zmq
 import json
 import time
+import socket
 import threading
-import databaseServer
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.schedulers.background import BackgroundScheduler
 
@@ -10,19 +10,25 @@ from apscheduler.schedulers.background import BackgroundScheduler
 class NetworkManager:
     dealer = None
     router = None
+    self_add = None
     port_numbers = ["152.228.1.135:7777", "152.228.1.192:7777"]
+    scheduler = None
+    scheduler_jobs = {}
 
-    # port_number = "{}:8888".format(self.self_add)
-
-    def __init__(self):
+    def __init__(self, settings, database_manager):
+        self.self_add = self.get_ip_add()
         self.context = zmq.Context()
-        self.settings = databaseServer.Settings()
-        self.database_manager = databaseServer.DatabaseManager(self.settings)
+        self.settings = settings
+        self.database_manager = database_manager
         self.router_routine()
         self.dealer_routine()
         self.router_thread = threading.Thread(target=self.route)
         self.router_thread.daemon = True
         self.router_thread.start()
+        self.scheduler = BackgroundScheduler()
+        jam_dur = self.settings.config.getint('Network', 'interval')
+        self.schedule_jam(interval=jam_dur)
+        self.scheduler.start()
 
     def dealer_routine(self):
         self.dealer = self.context.socket(zmq.DEALER)
@@ -62,12 +68,9 @@ class NetworkManager:
         return temp_list
 
     def router_routine(self):
-        # port_number = "{}:9999".format(self.self_add)
-        port_number = "152.228.1.232:9999"
+        port_number = "{}:{}".format(self.self_add, self.settings.config.get('Network', 'port'))
         self.router = self.context.socket(zmq.ROUTER)
         self.router.bind("tcp://%s" % port_number)
-
-    # print("Successfully binded to port %s for respondent" % self.port_number)
 
     def route(self):
         while True:
@@ -91,9 +94,10 @@ class NetworkManager:
             self.router.send_json(reply_dict)
 
     def request_jam(self):
-        for port in self.port_numbers:
+        for ip, port in self.settings.get_ips_ports():
             msg_dict = {"jam": None}
-            deal_msg = self.request(port, msg_dict)
+            ip_port = '{}:{}'.format(ip, port)
+            deal_msg = self.request(ip_port, msg_dict)
 
             machine_ip = deal_msg.get('ip')
             # machine = self.settings.get_machine(machine_ip)
@@ -118,21 +122,26 @@ class NetworkManager:
         for ip in self.settings.get_ips():
             mac = self.settings.get_mac(ip)
             job_list = self.database_manager.get_jobs_for(mac)
-            self.request({'job_info': job_list})
+            self.request(ip, {'job_info': job_list})
 
-    def send_emp(self):
-        msg_dict = self.database_manager.get_emp()
-        self.request(msg_dict)
-
-    def request_schedule(self, interval=5):
-        # TODO create self.scheduler instead? So that the schedule can be changeable, to remove all jobs at change?
-        scheduler = BackgroundScheduler()
+    def schedule_jam(self, interval=5):
         cron_trigger = CronTrigger(minute='*/{}'.format(interval))
-        # TODO change id as a constant string instead of harcoded?
-        self.job = scheduler.add_job(self.request_jam, cron_trigger, id='5mins')
-        # TODO do a self.scheduler.start() outside of this function?
-        scheduler.start()
+        job_id = 'JAM'
+        if self.scheduler_jobs.get(job_id):
+            self.scheduler_jobs[job_id].remove()
+        self.scheduler_jobs[job_id] = self.scheduler.add_job(self.request_jam, cron_trigger, id=job_id,
+                                                             misfire_grace_time=30, max_instances=3)
+
+    @staticmethod
+    def get_ip_add():
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip_add = s.getsockname()[0]
+        s.close()
+
+        return ip_add
 
 
 if __name__ == '__main__':
-    NetworkManager()
+    pass
+    # NetworkManager()
