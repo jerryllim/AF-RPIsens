@@ -1,6 +1,7 @@
 import csv
 import pymysql
-import apscheduler
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
 import configparser
 from datetime import datetime, timedelta
 
@@ -60,6 +61,17 @@ class AutomateScedulers:
     def __init__(self, settings: Settings, database_manager):
         self.settings = settings
         self.database_manager = database_manager
+        self.scheduler_jobs = {}
+        self.scheduler = BackgroundScheduler()
+        self.scheduler.start()
+
+    def schedule_import(self, hour='*', minute='*'):
+        job_id = 'import'
+        cron_trigger = CronTrigger(hour=hour, minute=minute)
+        if self.scheduler_jobs.get(job_id):
+            self.scheduler_jobs[job_id].remove()
+        self.scheduler_jobs[job_id] = self.scheduler.add_job(self.read_import_file, cron_trigger, id=job_id,
+                                                             max_instances=3)
 
     def read_import_file(self):
         filepath = self.settings.config.get('Import', 'import')
@@ -71,8 +83,20 @@ class AutomateScedulers:
 
         self.database_manager.delete_completed_jobs()
 
+    def schedule_export(self, hour='*', minute='*'):
+        job_id = 'export'
+        cron_trigger = CronTrigger(hour=hour, minute=minute)
+        if self.scheduler_jobs.get(job_id):
+            self.scheduler_jobs[job_id].remove()
+        self.scheduler_jobs[job_id] = self.scheduler.add_job(self.read_import_file, cron_trigger, id=job_id,
+                                                             max_instances=3)
+
     def write_export_file(self):
-        pass
+        filepath = self.settings.config.get('Import', 'export') + 'export_jam.csv'
+        with open(filepath, 'a') as export_file:
+            csv_writer = csv.writer(export_file)
+
+            pass
 
 
 class DatabaseManager:
