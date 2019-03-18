@@ -1,3 +1,4 @@
+import csv
 import pymysql
 import configparser
 from datetime import datetime, timedelta
@@ -44,6 +45,20 @@ class Settings:
 
     def get_ips(self):
         return list(self.machines_info.keys())
+
+
+class AutomateScedulers:
+    def __init__(self, settings: Settings, database_manager):
+        self.settings = settings
+        self.database_manager = database_manager
+
+    def read_import_file(self):
+        filepath = self.settings.config.get('Import', 'import')
+        with open(filepath, 'r') as import_file:
+            csv_reader = csv.reader(import_file)
+
+            next(csv_reader)
+            self.database_manager.replace_job(csv_reader)
 
 
 class DatabaseManager:
@@ -329,80 +344,43 @@ class DatabaseManager:
             conn.close()
             return emp_list
 
-
-    # def update_emp(self, emp_id, emp_name):
-    #     db = pymysql.connect(self.host, self.user, self.password, self.db)
-    #     try:
-    #         with db.cursor() as cursor:
-    #             sql = '''UPDATE emp_table SET name = %s WHERE emp_no = %s'''
-    #             cursor.execute(sql, (emp_name, emp_id))
-    #             db.commit()
-    #             self.insert_t_emp(emp_id, emp_name)
-    #
-    #     except pymysql.MySQLError as error:
-    #         print("Failed to update record to database: {}".format(error))
-    #         db.rollback()
-    #     finally:
-    #         db.close()
-
-    # def create_t_emp_table(self):
-    #     db = pymysql.connect(self.host, self.user, self.password, self.db)
-    #     try:
-    #         with db.cursor() as cursor:
-    #             # create temp EMP table
-    #             sql = '''CREATE TABLE IF NOT EXISTS t_emp_table ( emp_no VARCHAR(10) PRIMARY KEY,
-    #             name VARCHAR(40),
-    #             last_modified TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)'''
-    #             cursor.execute(sql)
-    #             db.commit()
-    #
-    #     except pymysql.MySQLError as error:
-    #         print("Failed to create table in database: {}".format(error))
-    #         db.rollback()
-    #     finally:
-    #         db.close()
-    #
-    # def insert_t_emp(self, emp_id, emp_name=None):
-    #     self.create_t_emp_table()
-    #     db = pymysql.connect(self.host, self.user, self.password, self.db)
-    #
-    #     try:
-    #         with db.cursor() as cursor:
-    #             sql = '''INSERT INTO t_emp (emp_no, name,) VALUES (%s, %s) ON DUPLICATE KEY UPDATE name = %s'''
-    #             cursor.execute(sql, (emp_id, emp_name, emp_name))
-    #             db.commit()
-    #
-    #     except pymysql.MySQLError as error:
-    #         print("Failed to insert/update record to database: {}".format(error))
-    #         db.rollback()
-    #     finally:
-    #         db.close()
-
     def create_job_table(self):
         db = pymysql.connect(self.host, self.user, self.password, self.db)
 
         try:
             with db.cursor() as cursor:
                 # TODO check varchar length for each column
-                sql = 'CREATE TABLE IF NOT EXISTS job_info_table (' \
-                      'jo_no VARCHAR(13) PRIMARY KEY,' \
-                      'jo_line INT,' \
-                      'mac VARCHAR(5),' \
-                      'to_do INT,' \
-                      'code VARCHAR(14),' \
-                      'descp VARCHAR(50),' \
-                      'so_no VARCHAR(30),' \
-                      'edd VARCHAR(12),' \
-                      'so_qty INT,' \
-                      'so_rem VARCHAR(10),' \
-                      'ran INT);'
+                sql = 'CREATE TABLE IF NOT EXISTS jobs_table (' \
+                      'umc CHAR(4), ' \
+                      'uno CHAR(10), ' \
+                      'umachine_no CHAR(15), ' \
+                      'usch_qty DOUBLE, ' \
+                      'usou_no CHAR(10), ' \
+                      'ustk_mc CHAR(4), ' \
+                      'ustk CHAR(16), ' \
+                      'uraw_mc TEXT, ' \
+                      'uraw TEXT, ' \
+                      'uline INT UNSIGNED, ' \
+                      'uuom CHAR(4), ' \
+                      'ureq_qty TEXT, ' \
+                      'ureq_uom TEXT, ' \
+                      'udraw TEXT, ' \
+                      'urem MEDIUMTEXT, ' \
+                      'ucomplete CHAR(1), ' \
+                      'umachine_desc CHAR(40), ' \
+                      'ustk_desc1 CHAR(40), ' \
+                      'ustk_desc2 CHAR(40), ' \
+                      'mname CHAR(40), ' \
+                      'trem1 CHAR(40), ' \
+                      'tqty INT UNSIGNED, ' \
+                      'tdo_date DATE);'
 
                 cursor.execute(sql)
                 db.commit()
         finally:
             db.close()
 
-    def insert_job(self, job_list):
+    def replace_job(self, job_list):
         """
         Call to insert job from eb to database
         :param job_list: list containing tuples. A tuple will contain the job information e.g. ('job#', 'mac', ...,
@@ -410,14 +388,15 @@ class DatabaseManager:
         :return:
         """
         db = pymysql.connect(self.host, self.user, self.password, self.db)
-        column_names = ['jo_no', 'jo_line', 'mac', 'to_do', 'code', 'descp', 'so_no', 'edd', 'so_qty', 'so_rem']
-        column_names_str = ', '.join(column_names)
-        binds_str = ', '.join(['%s'] * len(column_names))
+        # column_names = ['jo_no', 'jo_line', 'mac', 'to_do', 'code', 'descp', 'so_no', 'edd', 'so_qty', 'so_rem']
+        # column_names_str = ', '.join(column_names)
+        # binds_str = ', '.join(['%s'] * len(column_names))
         try:
             with db.cursor() as cursor:
                 for job_info in job_list:
-                    query = '''INSERT INTO job_info ({col_names}) VALUES ({binds});'''.format(col_names=column_names_str
-                                                                                              , binds=binds_str)
+                    query = "REPLACE INTO jobs_table VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, " \
+                            "%s, %s, %s, %s, %s, %s, %s, %s, STR_TO_DATE(%s, %s));"
+                    job_info = job_info + ["%d/%m/%Y"]
                     cursor.execute(query, job_info)
                     db.commit()
 
@@ -862,3 +841,9 @@ class DatabaseManager:
         finally:
             conn.close()
             return targets_dict
+
+
+if __name__ == '__main__':
+    settings = Settings()
+    db_manager = DatabaseManager(settings, password='Lim8699', db='test')
+    AutomateScedulers(settings, db_manager).read_import_file()
