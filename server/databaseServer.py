@@ -60,6 +60,8 @@ class AutomateScedulers:
             next(csv_reader)
             self.database_manager.replace_job(csv_reader)
 
+        self.database_manager.delete_completed_jobs()
+
 
 class DatabaseManager:
     def __init__(self, settings, host='', user='', password='', db='', port=''):
@@ -406,14 +408,12 @@ class DatabaseManager:
         finally:
             db.close()
 
-    def update_job(self, ran_no, jo_id, jo_line):
+    def delete_completed_jobs(self):
         db = pymysql.connect(self.host, self.user, self.password, self.db)
         try:
             with db.cursor() as cursor:
-                sql = '''UPDATE job_info SET ran = %s WHERE jo_no = %s AND jo_line = %s'''
-                cursor.execute(sql, (ran_no, jo_id, jo_line))
-                self.check_complete(cursor, jo_id, jo_line)  # Check if job has been completed
-                db.commit()
+                query = "DELETE FROM job_info WHERE ucomplete = 'Y';"
+                cursor.execute(query)
         except pymysql.MySQLError as error:
             print("Failed to update record to database: {}".format(error))
         finally:
