@@ -616,45 +616,6 @@ class MiscTab(QtWidgets.QWidget):
         db_test_btn.clicked.connect(self.test_db)
         db_layout.addWidget(db_test_btn, 3, 3)
 
-        # Set data management configs
-        self.data_fields = {}
-        data_box = QtWidgets.QGroupBox('Data')
-        data_layout = QtWidgets.QGridLayout()
-        data_box.setLayout(data_layout)
-        data_start_label = QtWidgets.QLabel('Start week on', data_box)
-        data_start_day = QtWidgets.QComboBox(data_box)
-        data_start_day.addItems(['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'])
-        data_start_day.setCurrentText(self.config.get('Data', 'day'))
-        data_start_time = QtWidgets.QTimeEdit(QtCore.QTime.fromString(self.config.get('Data', 'time')), data_box)
-        data_start_time.setDisplayFormat('hh:mm')
-        self.data_fields['day'] = data_start_day
-        self.data_fields['time'] = data_start_time
-        data_layout.addWidget(data_start_label, 0, 0)
-        data_layout.addWidget(data_start_day, 0, 1)
-        data_layout.addWidget(data_start_time, 0, 2)
-        data_archive_label = QtWidgets.QLabel('Archive after ', data_box)
-        data_archive_spin = QtWidgets.QSpinBox(data_box)
-        data_archive_spin.setMaximum(6)
-        data_archive_spin.setMinimum(1)
-        data_archive_spin.setValue(self.config.getint('Data', 'archive'))
-        data_archive_spin.valueChanged.connect(self.set_delete_spin_min)
-        data_archive_label2 = QtWidgets.QLabel(' months', data_box)
-        self.data_fields['archive'] = data_archive_spin
-        data_layout.addWidget(data_archive_label, 1, 0)
-        data_layout.addWidget(data_archive_spin, 1, 1)
-        data_layout.addWidget(data_archive_label2, 1, 2)
-        data_delete_label = QtWidgets.QLabel('Delete archive after ', data_box)
-        data_delete_spin = QtWidgets.QSpinBox(data_box)
-        data_delete_spin.setMaximum(12)
-        data_delete_spin.setMinimum(2)
-        data_delete_spin.setMinimum(2)
-        data_delete_spin.setValue(self.config.getint('Data', 'delete'))
-        data_delete_label2 = QtWidgets.QLabel(' months', data_box)
-        self.data_fields['delete'] = data_delete_spin
-        data_layout.addWidget(data_delete_label, 2, 0)
-        data_layout.addWidget(data_delete_spin, 2, 1)
-        data_layout.addWidget(data_delete_label2, 2, 2)
-
         # Import Export group
         import_box = QtWidgets.QGroupBox('Import', self)
         import_layout = QtWidgets.QGridLayout()
@@ -665,7 +626,7 @@ class MiscTab(QtWidgets.QWidget):
         import_t = QtCore.QTime.fromString(self.config.get('Import', 'time'))
         import_time.setTime(import_t)
         self.import_fields['time'] = import_time
-        import_layout.addWidget(QtWidgets.QLabel('Start time: '), 0, 0)
+        import_layout.addWidget(QtWidgets.QLabel('Start time: '), 0, 0, QtCore.Qt.AlignRight)
         import_layout.addWidget(import_time, 0, 1)
         import_hour = QtWidgets.QSpinBox(import_box)
         import_hour.setMinimum(0)
@@ -677,12 +638,12 @@ class MiscTab(QtWidgets.QWidget):
         import_minute.setMaximum(59)
         self.import_fields['minute'] = import_minute
         import_minute.setValue(self.config.getint('Import', 'minute'))
-        import_layout.addWidget(QtWidgets.QLabel('Repeat every: '), 1, 0)
+        import_layout.addWidget(QtWidgets.QLabel('Repeat every: '), 1, 0, QtCore.Qt.AlignRight)
         import_layout.addWidget(import_hour, 1, 1)
         import_layout.addWidget(QtWidgets.QLabel('hours'), 1, 2)
         import_layout.addWidget(import_minute, 1, 3)
         import_layout.addWidget(QtWidgets.QLabel('minutes'), 1, 4)
-        import_layout.addWidget(QtWidgets.QLabel('Import path: '), 2, 0)
+        import_layout.addWidget(QtWidgets.QLabel('Import path: '), 2, 0, QtCore.Qt.AlignRight)
         import_edit = QtWidgets.QLineEdit(self)
         self.import_fields['path'] = import_edit
         import_edit.setText(self.config.get('Import', 'path'))
@@ -701,7 +662,7 @@ class MiscTab(QtWidgets.QWidget):
         export_t = QtCore.QTime.fromString(self.config.get('Export', 'time'))
         export_time.setTime(export_t)
         self.export_fields['time'] = export_time
-        export_layout.addWidget(QtWidgets.QLabel('Start time: '), 0, 0)
+        export_layout.addWidget(QtWidgets.QLabel('Start time: '), 0, 0, QtCore.Qt.AlignRight)
         export_layout.addWidget(export_time, 0, 1)
         export_hour = QtWidgets.QSpinBox(export_box)
         export_hour.setMinimum(0)
@@ -713,12 +674,12 @@ class MiscTab(QtWidgets.QWidget):
         export_minute.setMaximum(59)
         export_minute.setValue(self.config.getint('Export', 'minute'))
         self.export_fields['minute'] = export_minute
-        export_layout.addWidget(QtWidgets.QLabel('Repeat every: '), 1, 0)
+        export_layout.addWidget(QtWidgets.QLabel('Repeat every: '), 1, 0, QtCore.Qt.AlignRight)
         export_layout.addWidget(export_hour, 1, 1)
         export_layout.addWidget(QtWidgets.QLabel('hours'), 1, 2)
         export_layout.addWidget(export_minute, 1, 3)
         export_layout.addWidget(QtWidgets.QLabel('minutes'), 1, 4)
-        export_layout.addWidget(QtWidgets.QLabel('Export: '), 2, 0)
+        export_layout.addWidget(QtWidgets.QLabel('Export path: '), 2, 0, QtCore.Qt.AlignRight)
         export_edit = QtWidgets.QLineEdit(self)
         self.export_fields['path'] = export_edit
         export_edit.setText(self.config.get('Export', 'path'))
@@ -727,6 +688,45 @@ class MiscTab(QtWidgets.QWidget):
         export_button = QtWidgets.QPushButton('...', self)
         export_button.clicked.connect(self.export_to)
         export_layout.addWidget(export_button, 2, 4)
+
+        # Set data management configs
+        self.data_fields = {}
+        data_box = QtWidgets.QGroupBox('Data')
+        data_layout = QtWidgets.QGridLayout()
+        data_box.setLayout(data_layout)
+        data_start_label = QtWidgets.QLabel('Start week on', data_box)
+        data_start_day = QtWidgets.QComboBox(data_box)
+        data_start_day.addItems(['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'])
+        data_start_day.setCurrentText(self.config.get('Data', 'day'))
+        data_start_time = QtWidgets.QTimeEdit(QtCore.QTime.fromString(self.config.get('Data', 'time')), data_box)
+        data_start_time.setDisplayFormat('hh:mm')
+        self.data_fields['day'] = data_start_day
+        self.data_fields['time'] = data_start_time
+        data_layout.addWidget(data_start_label, 0, 0, QtCore.Qt.AlignRight)
+        data_layout.addWidget(data_start_day, 0, 1)
+        data_layout.addWidget(data_start_time, 0, 2)
+        data_archive_label = QtWidgets.QLabel('Archive after ', data_box)
+        data_archive_spin = QtWidgets.QSpinBox(data_box)
+        data_archive_spin.setMaximum(6)
+        data_archive_spin.setMinimum(1)
+        data_archive_spin.setValue(self.config.getint('Data', 'archive'))
+        data_archive_spin.valueChanged.connect(self.set_delete_spin_min)
+        data_archive_label2 = QtWidgets.QLabel(' months', data_box)
+        self.data_fields['archive'] = data_archive_spin
+        data_layout.addWidget(data_archive_label, 1, 0, QtCore.Qt.AlignRight)
+        data_layout.addWidget(data_archive_spin, 1, 1)
+        data_layout.addWidget(data_archive_label2, 1, 2)
+        data_delete_label = QtWidgets.QLabel('Delete archive after ', data_box)
+        data_delete_spin = QtWidgets.QSpinBox(data_box)
+        data_delete_spin.setMaximum(12)
+        data_delete_spin.setMinimum(2)
+        data_delete_spin.setMinimum(2)
+        data_delete_spin.setValue(self.config.getint('Data', 'delete'))
+        data_delete_label2 = QtWidgets.QLabel(' months', data_box)
+        self.data_fields['delete'] = data_delete_spin
+        data_layout.addWidget(data_delete_label, 2, 0, QtCore.Qt.AlignRight)
+        data_layout.addWidget(data_delete_spin, 2, 1)
+        data_layout.addWidget(data_delete_label2, 2, 2)
 
         # Shift group
         shift_box = QtWidgets.QGroupBox('Shifts', self)
