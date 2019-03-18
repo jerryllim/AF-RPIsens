@@ -57,13 +57,29 @@ class Settings:
         return ip_port_list
 
 
-class AutomateScedulers:
+class AutomateSchedulers:
     def __init__(self, settings: Settings, database_manager):
         self.settings = settings
         self.database_manager = database_manager
         self.scheduler_jobs = {}
         self.scheduler = BackgroundScheduler()
-        self.scheduler.start()
+        # self.scheduler.start()
+
+    def get_cron_hour_minute(self, section):
+        time = self.settings.config.get(section, 'time')
+        hour = self.settings.config.getint(section, 'hour')
+        minute = self.settings.config.getint(section, 'minute')
+        if hour:
+            hour = '*/{}'.format(hour)
+        else:
+            hour = '*'
+
+        if minute:
+            minute = '{}-59/{}'.format(time[-2:], minute)
+        else:
+            minute = '{}'.format(time[-2:])
+
+        return hour, minute
 
     def schedule_import(self, hour='*', minute='*'):
         job_id = 'import'
@@ -74,7 +90,7 @@ class AutomateScedulers:
                                                              max_instances=3)
 
     def read_import_file(self):
-        filepath = self.settings.config.get('Import', 'import')
+        filepath = self.settings.config.get('Import', 'path')
         with open(filepath, 'r') as import_file:
             csv_reader = csv.reader(import_file)
 
@@ -92,7 +108,7 @@ class AutomateScedulers:
                                                              max_instances=3)
 
     def write_export_file(self):
-        filepath = self.settings.config.get('Import', 'export') + 'export_jam.csv'
+        filepath = self.settings.config.get('Export', 'path') + 'export_jam.csv'
         with open(filepath, 'a') as export_file:
             csv_writer = csv.writer(export_file)
 
@@ -882,6 +898,6 @@ class DatabaseManager:
 
 if __name__ == '__main__':
     settings_ = Settings()
-    print(settings_.get_ips_ports())
-    # db_manager = DatabaseManager(settings, password='Lim8699', db='test')
-    # AutomateScedulers(settings, db_manager).read_import_file()
+    # print(settings_.get_ips_ports())
+    db_manager = DatabaseManager(settings_, password='Lim8699', db='test')
+    AutomateSchedulers(settings_, db_manager)
