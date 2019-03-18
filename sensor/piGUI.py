@@ -124,9 +124,9 @@ class MachineClass:
             self.emp_asst_names.pop(emp_id, None)
         else:
             self.emp_main_names.pop(emp_id, None)
-        end = datetime.now().isoformat(timespec='minutes')
+        end = datetime.now().strftime('%Y-%m-%d %H:%M')
 
-        self.controller.add_employee(self.index, "{0}_{1}".format(emp_id, start.isoformat(timespec='minutes')), end=end)
+        self.controller.add_employee(self.index, "{0}_{1}".format(emp_id, start.strftime('%Y-%m-%d %H:%M')), end=end)
 
     def add_emp(self, emp_id, asst=False):
         start = datetime.now()
@@ -134,14 +134,14 @@ class MachineClass:
             if len(self.emp_main) < 3:
                 self.emp_main[emp_id] = start
                 self.emp_main_names[emp_id] = self.controller.get_employee_name(emp_id)
-                self.controller.add_employee(self.index, "{0}_{1}".format(emp_id, start.isoformat(timespec='minutes')))
+                self.controller.add_employee(self.index, "{0}_{1}".format(emp_id, start.strftime('%Y-%m-%d %H:%M')))
                 return True
             else:
                 return False
 
         self.emp_asst[emp_id] = start
         self.emp_asst_names[emp_id] = self.controller.get_employee_name(emp_id)
-        self.controller.add_employee(self.index, "{0}_{1}".format(emp_id, start.isoformat(timespec='minutes')))
+        self.controller.add_employee(self.index, "{0}_{1}".format(emp_id, start.strftime('%Y-%m-%d %H:%M')))
         return True
 
     def has_emp(self, emp_id):
@@ -211,15 +211,15 @@ class MachineClass:
     def start_maintenance(self, emp_id):
         start = datetime.now()
         self.maintenance = (emp_id, start)
-        self.controller.add_maintenance(self.index, "{0}_{1}".format(emp_id, start.isoformat(timespec='minutes')))
+        self.controller.add_maintenance(self.index, "{0}_{1}".format(emp_id, start.strftime('%Y-%m-%d %H:%M')))
 
     def get_maintenance(self):
         return self.maintenance
 
     def finished_maintenance(self, emp_id, start):
         self.maintenance = (None, None)
-        now = datetime.now().isoformat(timespec='minutes')
-        self.controller.add_maintenance(self.index, "{0}_{1}".format(emp_id, start.isoformat(timespec='minutes')), now)
+        now = datetime.now().strftime('%Y-%m-%d %H:%M')
+        self.controller.add_maintenance(self.index, "{0}_{1}".format(emp_id, start.strftime('%Y-%m-%d %H:%M')), now)
 
 
 class SelectPage(Screen):
@@ -605,10 +605,9 @@ class RunPage(Screen):
     def update_qc(self, emp_id, _pass=False):
         now = datetime.now()
         grade = 'Pass' if _pass else 'Fail'
-        self.machine.add_qc(emp_id, now.isoformat(timespec='minutes'), _pass)
+        self.machine.add_qc(emp_id, now.strftime('%Y-%m-%d %H:%M'), _pass)
         self.run_layout.qc_label.text = 'QC Check: {} at {}, {}'.format(emp_id,
-                                                                        now.isoformat(sep=' ', timespec='minutes'),
-                                                                        grade)
+                                                                        now.strftime('%Y-%m-%d %H:%M'), grade)
         self.emp_popup.dismiss()
 
 
