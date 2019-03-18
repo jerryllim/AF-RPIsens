@@ -4,7 +4,7 @@ import tkinter as tk
 from tkinter import messagebox
 from tkinter import ttk
 
-import server.NetworkManager as NetworkManager
+import server.serverNetwork as NetworkManager
 
 
 class Settings(ttk.Frame):

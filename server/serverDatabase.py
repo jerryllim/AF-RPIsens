@@ -79,7 +79,7 @@ class AutomateScedulers:
             csv_reader = csv.reader(import_file)
 
             next(csv_reader)
-            self.database_manager.replace_job(csv_reader)
+            self.database_manager.replace_jobs(csv_reader)
 
         self.database_manager.delete_completed_jobs()
 
@@ -111,7 +111,7 @@ class DatabaseManager:
         self.port = port
 
         self.create_jam_table()
-        self.create_job_table()
+        self.create_jobs_table()
         self.create_emp_table()
         self.create_maintenance_table()
         self.create_emp_shift_table()
@@ -382,7 +382,7 @@ class DatabaseManager:
             conn.close()
             return emp_list
 
-    def create_job_table(self):
+    def create_jobs_table(self):
         db = pymysql.connect(self.host, self.user, self.password, self.db)
 
         try:
@@ -418,7 +418,7 @@ class DatabaseManager:
         finally:
             db.close()
 
-    def replace_job(self, job_list):
+    def replace_jobs(self, job_list):
         """
         Call to insert job from eb to database
         :param job_list: list containing tuples. A tuple will contain the job information e.g. ('job#', 'mac', ...,
@@ -478,7 +478,7 @@ class DatabaseManager:
         try:
             jo_no = barcode[:-3]
             jo_line = int(barcode[-3:])
-            sql = "SELECT uno, uline, usou_no, ustk_desc1, tqty FROM jobs_table " \
+            sql = "SELECT uno, uline, usou_no, ustk_desc1, usch_qty FROM jobs_table " \
                   "WHERE jo_no = %s LIMIT 1 AND jo_line = %s"
             cursor.execute(sql, (jo_no, jo_line))
             temp = cursor.fetchone()
@@ -881,7 +881,7 @@ class DatabaseManager:
 
 
 if __name__ == '__main__':
-    settings = Settings()
-    print(settings.get_ips_ports())
+    settings_ = Settings()
+    print(settings_.get_ips_ports())
     # db_manager = DatabaseManager(settings, password='Lim8699', db='test')
     # AutomateScedulers(settings, db_manager).read_import_file()

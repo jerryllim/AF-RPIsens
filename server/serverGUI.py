@@ -1,7 +1,7 @@
 import csv
 import datetime
 import configparser
-from server import databaseServer, NetworkManager
+from server import serverDatabase, serverNetwork
 from PySide2 import QtCore, QtWidgets, QtGui
 
 
@@ -552,7 +552,7 @@ class MiscTab(QtWidgets.QWidget):
         network_box.setLayout(network_layout)
         ip_label = QtWidgets.QLineEdit(network_box)
         ip_label.setReadOnly(True)
-        ip_label.setText(NetworkManager.NetworkManager.get_ip_add())
+        ip_label.setText(serverNetwork.NetworkManager.get_ip_add())
         network_layout.addWidget(QtWidgets.QLabel('Server IP: ', network_box), 0, 0, QtCore.Qt.AlignRight)
         network_layout.addWidget(ip_label, 0, 1)
         port_label = QtWidgets.QLabel('Port: ', network_box)
@@ -777,7 +777,7 @@ class ConfigurationWidget(QtWidgets.QWidget):
         QtWidgets.QWidget.__init__(self, parent)
         config = configparser.ConfigParser()
         config.read('jam.ini')
-        self.database_manager = databaseServer.DatabaseManager(None, host=config.get('Database', 'host'),
+        self.database_manager = serverDatabase.DatabaseManager(None, host=config.get('Database', 'host'),
                                                                port=config.get('Database', 'port'),
                                                                user=config.get('Database', 'user'),
                                                                password=config.get('Database', 'password'),
@@ -831,7 +831,7 @@ class DisplayTable(QtWidgets.QWidget):
         QtWidgets.QWidget.__init__(self, parent)
         config = configparser.ConfigParser()
         config.read('jam.ini')
-        self.database_manager = databaseServer.DatabaseManager(None, host=config.get('Database', 'host'),
+        self.database_manager = serverDatabase.DatabaseManager(None, host=config.get('Database', 'host'),
                                                                port=config.get('Database', 'port'),
                                                                user=config.get('Database', 'user'),
                                                                password=config.get('Database', 'password'),

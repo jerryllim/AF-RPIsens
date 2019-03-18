@@ -3,7 +3,7 @@ import sqlite3
 import pymysql
 import datetime
 import configparser
-from server import databaseServer
+from server import serverDatabase
 from PySide2 import QtCore, QtWidgets, QtGui
 
 
