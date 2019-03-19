@@ -207,7 +207,6 @@ class MachineClass:
         self.permanent += 1
         if self.current_job:
             self.current_job.output += 1
-            print(self.current_job.output)
 
     def start_maintenance(self, emp_id):
         start = datetime.now()
@@ -575,8 +574,7 @@ class RunPage(Screen):
             self.run_layout = Factory.RunPageLayout()
             self.add_widget(self.run_layout)
 
-        # TODO add a unbind?
-        # self.run_layout.counter.unbind()
+        self.run_layout.counter = self.machine.get_current_job().output.get()
         self.machine.get_current_job().bind(output=self.run_layout.setter('counter'))
         self.machine.set_state(State.RUN)
         self.colour = Colour[self.machine.config['bg_colour']].value
