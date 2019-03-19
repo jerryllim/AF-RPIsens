@@ -696,8 +696,8 @@ class MiscTab(QtWidgets.QWidget):
         data_box.setLayout(data_layout)
         data_start_label = QtWidgets.QLabel('Start week on', data_box)
         data_start_day = QtWidgets.QComboBox(data_box)
-        data_start_day.addItems(['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'])
-        data_start_day.setCurrentText(self.config.get('Data', 'day'))
+        data_start_day.addItems(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'])
+        data_start_day.setCurrentIndex(self.config.getint('Data', 'day'))
         data_start_time = QtWidgets.QTimeEdit(QtCore.QTime.fromString(self.config.get('Data', 'time')), data_box)
         data_start_time.setDisplayFormat('hh:mm')
         self.data_fields['day'] = data_start_day
@@ -812,7 +812,7 @@ class MiscTab(QtWidgets.QWidget):
         for key in self.db_edits.keys():
             self.config.set('Database', key, self.db_edits[key].text())
 
-        self.config.set('Data', 'day', self.data_fields['day'].currentText())
+        self.config.set('Data', 'day', str(self.data_fields['day'].currentIndex()))
         for key in ['time', 'archive', 'delete']:
             self.config.set('Data', key, str(self.data_fields[key].text()))
 
