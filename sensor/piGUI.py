@@ -133,7 +133,7 @@ class MachineClass:
         if not asst:
             if len(self.emp_main) < 3:
                 self.emp_main[emp_id] = start
-                self.emp_main_names[emp_id] = self.controller.get_employee_name(emp_id)
+                self.emp_main_names[emp_id] = self.controller.get_emp_name(emp_id)
                 self.controller.add_employee(self.index, "{0}_{1}".format(emp_id, start.strftime('%Y-%m-%d %H:%M')))
                 return True
             else:
@@ -1013,7 +1013,7 @@ class FakeClass:
 
         return job_info
 
-    def get_employee_name(self, emp_id):
+    def get_emp_name(self, emp_id):
         return self.database_manager.get_emp_name(emp_id)
 
     def request(self, req_msg):
