@@ -196,8 +196,7 @@ class RaspberryPiController:
 
     def respond(self):
         # routine functions begins here
-        # while not self.respondent_kill:
-        while True:
+        while not self.respondent_kill:
             # wait for next request from client
             recv_message = str(self.respondent.recv(), "utf-8")
             recv_dict = json.loads(recv_message)
