@@ -82,7 +82,7 @@ class NetworkManager:
             for key in message.keys():
                 if key == "job_info":
                     barcode = message.get("job_info", None)
-                    reply_dict = self.database_manager.get_job_info(barcode)
+                    reply_dict[barcode] = self.database_manager.get_job_info(barcode)
                 elif key == "sfu":
                     pass
                 elif key == "ink_key":

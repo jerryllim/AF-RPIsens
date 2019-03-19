@@ -1,10 +1,13 @@
 import sys
 import time
-import NetworkManager
+import serverNetwork
+import serverDatabase
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.schedulers.background import BackgroundScheduler
 
-network_manager = NetworkManager.NetworkManager()
+settings_ = serverDatabase.Settings()
+db_manager = serverDatabase.DatabaseManager(settings_, password='Lim8699', db='test')
+network_manager = serverNetwork.NetworkManager(settings_, db_manager)
 now = time.strftime("%Y-%m-%d %H:%M:%S")
 
 try:

@@ -490,22 +490,22 @@ class DatabaseManager:
     def get_job_info(self, barcode):
         db = pymysql.connect(self.host, self.user, self.password, self.db)
         cursor = db.cursor()
-        reply_dict = {}
+        reply_str = []
         try:
             jo_no = barcode[:-3]
             jo_line = int(barcode[-3:])
-            sql = "SELECT uno, uline, usou_no, ustk_desc1, usch_qty FROM jobs_table " \
+            sql = "SELECT uno, uline, usou_no, ustk_desc1, usch_qty, 0 FROM jobs_table " \
                   "WHERE jo_no = %s LIMIT 1 AND jo_line = %s"
             cursor.execute(sql, (jo_no, jo_line))
             temp = cursor.fetchone()
-            reply_dict = [jo_no, jo_line] + list(temp)
-            print("reply_dict: ", reply_dict)
+            reply_str = list(temp)
+            print("reply_str: ", reply_str)
             db.commit()
         except pymysql.MySQLError as error:
             print("Failed to select record in database: {}".format(error))
         finally:
             db.close()
-            return reply_dict
+            return reply_str
 
     def get_jobs_for(self, mac):
         db = pymysql.connect(self.host, self.user, self.password, self.db)
