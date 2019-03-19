@@ -161,8 +161,8 @@ class PiController:
         self.respondent.bind("tcp://{}".format(ip_port))
 
     def respond(self):
-        # while not self.respondent_kill:
-        while True:
+        while not self.respondent_kill:
+        # while True:
             # wait for next request from client
             recv_message = str(self.respondent.recv(), "utf-8")
             recv_dict = json.loads(recv_message)
@@ -204,8 +204,10 @@ class PiController:
     def get_job_info(self, barcode):
         job_info = self.database_manager.get_job_info(barcode)
         if job_info is None:
+            print('request')
             reply_msg = self.request({"job_info": barcode})
             if reply_msg:
+                print('blank')
                 value = reply_msg.pop(barcode)
                 if value:
                     job_info = {'jo_no': value[0], 'jo_line': value[1], 'code': value[2], 'desc': value[3],
