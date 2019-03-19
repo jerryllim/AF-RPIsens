@@ -494,8 +494,10 @@ class DatabaseManager:
         try:
             jo_no = barcode[:-3]
             jo_line = int(barcode[-3:])
+            print(jo_no, jo_line)
             sql = "SELECT uno, uline, usou_no, ustk_desc1, usch_qty, 0 FROM jobs_table " \
-                  "WHERE jo_no = %s LIMIT 1 AND jo_line = %s"
+                  "WHERE uno = %s AND uline = %s LIMIT 1"
+            print(sql)
             cursor.execute(sql, (jo_no, jo_line))
             temp = cursor.fetchone()
             reply_str = list(temp)

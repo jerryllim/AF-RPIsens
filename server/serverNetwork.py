@@ -115,6 +115,7 @@ class NetworkManager:
                 if emp_dict:
                     self.database_manager.replace_emp_shift(machine, emp_dict)
 
+            print(jam_msg)
             self.database_manager.insert_jam(machine_ip, jam_msg)
 
     def send_job_info(self):
