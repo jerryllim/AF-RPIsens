@@ -42,7 +42,8 @@ class PiController:
 
         for idx in range(1, 4):
             output_string = self.gui.config.get('General{}'.format(idx), 'output_pin')
-            output_pin = int(output_string[-2:])
+            output_pin = self.pulse_pins['{}{}'.format(output_string, idx)]
+            print(output_pin)
             self.set_output_callback(output_pin)
 
         self.update_ip_ports()
