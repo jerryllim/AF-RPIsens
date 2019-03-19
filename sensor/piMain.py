@@ -124,9 +124,11 @@ class PiController:
 
     def output_pin_triggered(self, pin, _level, _tick):
         name = self.pin_to_name.get(pin, None)
+        print(name)
         if name:
             idx = int(name[-1:])
             self.gui.update_output(idx)
+            print(idx)
 
     def set_output_callback(self, pin):
         self.pi.callback(pin, pigpio.RISING_EDGE, self.output_pin_triggered)

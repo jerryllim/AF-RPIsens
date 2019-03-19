@@ -207,6 +207,7 @@ class MachineClass:
         self.permanent += 1
         if self.current_job:
             self.current_job.output += 1
+            print(self.current_job.output)
 
     def start_maintenance(self, emp_id):
         start = datetime.now()
