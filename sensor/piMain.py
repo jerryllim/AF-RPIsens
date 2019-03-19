@@ -184,6 +184,7 @@ class PiController:
         ip_port = "{}:{}".format(self.server_add, self.server_port)
         self.dealer = self.context.socket(zmq.DEALER)
         self.dealer.connect("tcp://{}".format(ip_port))
+        print(ip_port)
 
     def request(self, msg_dict):
         timeout = 2000
