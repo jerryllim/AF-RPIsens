@@ -839,7 +839,8 @@ class PiGUIApp(App):
     def build(self):
         # self.check_camera()
         self.config.set('Network', 'self_add', self.get_ip_add())
-        self.controller = FakeClass(self)  # TODO set if testing
+        # self.controller = FakeClass(self)  # TODO set if testing
+        self.controller = piMain.PiController(self)
 
         for idx in range(1, 4):
             self.machines[idx] = MachineClass(idx, self.controller, self.config)
