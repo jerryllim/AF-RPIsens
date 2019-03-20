@@ -583,7 +583,8 @@ class DatabaseManager:
                         'emp_id VARCHAR(10) NOT NULL,' \
                         'machine VARCHAR(10) NOT NULL,' \
                         'start DATETIME NOT NULL,' \
-                        'end DATETIME);'
+                        'end DATETIME)' \
+                        'PRIMARY KEY (emp_id, machine, start);'
                 cursor.execute(query)
                 db.commit()
         finally:
@@ -595,7 +596,7 @@ class DatabaseManager:
 
         try:
             with db.cursor() as cursor:
-                for emp_start, end in values.items:
+                for emp_start, end in values.items():
                     emp, start = emp_start.split('_')
 
                     query = 'REPLACE INTO maintenance_table VALUES (?, ?, ?, ?);'
@@ -616,7 +617,8 @@ class DatabaseManager:
                         'emp_id VARCHAR(10) NOT NULL,' \
                         'machine VARCHAR(10) NOT NULL,' \
                         'start DATETIME NOT NULL,' \
-                        'end DATETIME);'
+                        'end DATETIME)' \
+                        'PRIMARY KEY (emp_id, machine, start);'
                 cursor.execute(query)
                 db.commit()
         finally:
@@ -628,10 +630,10 @@ class DatabaseManager:
 
         try:
             with db.cursor() as cursor:
-                for emp_start, end in values.items:
+                for emp_start, end in values.items():
                     emp, start = emp_start.split('_')
 
-                    query = 'REPLACE INTO emp_shift_table VALUES (?, ?, ?, ?);'
+                    query = 'REPLACE INTO emp_shift_table VALUES (%s, %s, %s, %s);'
                     cursor.execute(query, (emp, machine, start, end))
 
                 db.commit()

@@ -22,6 +22,7 @@ class NetworkManager:
         self.database_manager = database_manager
         self.router_routine()
         self.dealer_routine()
+        self.router_kill = threading.Event()
         self.router_thread = threading.Thread(target=self.route)
         self.router_thread.daemon = True
         self.router_thread.start()
@@ -73,25 +74,30 @@ class NetworkManager:
         self.router.bind("tcp://%s" % port_number)
 
     def route(self):
-        while True:
-            ident = self.router.recv()  # routing information
-            delimiter = self.router.recv()  # delimiter
-            message = self.router.recv_json()
-            reply_dict = {}
+        while not self.router_kill.is_set():
+            poller = zmq.Poller()
+            poller.register(self.router, zmq.POLLIN)
 
-            for key in message.keys():
-                if key == "job_info":
-                    barcode = message.get("job_info", None)
-                    reply_dict[barcode] = self.database_manager.get_job_info(barcode)
-                elif key == "sfu":
-                    pass
-                elif key == "ink_key":
-                    ink_key = message.get("ink_key", None)
-                    self.database_manager.replace_ink_key(ink_key)
+            poll = poller.poll(1000)  # Wait for one second
+            if poll:
+                ident = self.router.recv()  # routing information
+                delimiter = self.router.recv()  # delimiter
+                message = self.router.recv_json()
+                reply_dict = {}
 
-            self.router.send(ident, zmq.SNDMORE)
-            self.router.send(delimiter, zmq.SNDMORE)
-            self.router.send_json(reply_dict)
+                for key in message.keys():
+                    if key == "job_info":
+                        barcode = message.get("job_info", None)
+                        reply_dict[barcode] = self.database_manager.get_job_info(barcode)
+                    elif key == "sfu":
+                        pass
+                    elif key == "ink_key":
+                        ink_key = message.get("ink_key", None)
+                        self.database_manager.replace_ink_key(ink_key)
+
+                self.router.send(ident, zmq.SNDMORE)
+                self.router.send(delimiter, zmq.SNDMORE)
+                self.router.send_json(reply_dict)
 
     def request_jam(self):
         for ip, port in self.settings.get_ips_ports():
@@ -105,17 +111,16 @@ class NetworkManager:
             jam_msg = deal_msg.pop('jam', {})
             for idx in range(1, 4):
                 machine = self.settings.get_machine(machine_ip, idx)
-                qc_list = deal_msg.pop('Q{}'.format(idx), [])
+                qc_list = jam_msg.pop('Q{}'.format(idx), [])
                 if qc_list:
                     self.database_manager.insert_qc(machine, qc_list)
                 maintenance_dict = jam_msg.pop('M{}'.format(idx), {})
                 if maintenance_dict:
                     self.database_manager.replace_maintenance(machine, maintenance_dict)
-                emp_dict = deal_msg.pop('E{}'.format(idx), {})
+                emp_dict = jam_msg.pop('E{}'.format(idx), {})
                 if emp_dict:
                     self.database_manager.replace_emp_shift(machine, emp_dict)
 
-            print(jam_msg)
             self.database_manager.insert_jam(machine_ip, jam_msg)
 
     def send_job_info(self):
