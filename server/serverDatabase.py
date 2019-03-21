@@ -583,8 +583,8 @@ class DatabaseManager:
                         'emp_id VARCHAR(10) NOT NULL,' \
                         'machine VARCHAR(10) NOT NULL,' \
                         'start DATETIME NOT NULL,' \
-                        'end DATETIME)' \
-                        'PRIMARY KEY (emp_id, machine, start);'
+                        'end DATETIME, ' \
+                        'PRIMARY KEY (emp_id, machine, start));'
                 cursor.execute(query)
                 db.commit()
         finally:
@@ -617,8 +617,8 @@ class DatabaseManager:
                         'emp_id VARCHAR(10) NOT NULL,' \
                         'machine VARCHAR(10) NOT NULL,' \
                         'start DATETIME NOT NULL,' \
-                        'end DATETIME)' \
-                        'PRIMARY KEY (emp_id, machine, start);'
+                        'end DATETIME, ' \
+                        'PRIMARY KEY (emp_id, machine, start));'
                 cursor.execute(query)
                 db.commit()
         finally:
