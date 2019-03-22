@@ -734,9 +734,11 @@ class SimpleActionBar(BoxLayout):
             sm.current = App.get_running_app().get_current_machine().get_page()
 
     def select_maintenance(self):
-        self.emp_popup = EmployeeScanPage(caller=self, auto_dismiss=False)
-        self.emp_popup.parent_method = self.start_maintenance
-        self.emp_popup.open()
+        sm = App.get_running_app().screen_manager
+        if sm.current is not 'maintenance_page':
+            self.emp_popup = EmployeeScanPage(caller=self, auto_dismiss=False)
+            self.emp_popup.parent_method = self.start_maintenance
+            self.emp_popup.open()
 
     def start_maintenance(self, emp_id, _alternate=False):
         machine = App.get_running_app().get_current_machine()
