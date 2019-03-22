@@ -41,7 +41,14 @@ settings_main = json.dumps([
      'title': 'Server Port',
      'desc': 'Server Port',
      'key': 'server_port',
-     'section': "Network"}
+     'section': "Network"},
+    {'type': 'title',
+     'title': 'Settings'},
+    {'type': 'string',
+     'title': 'Admin Password',
+     'desc': 'Set the admin password for settings',
+     'key': 'password',
+     'section': 'Settings'}
 ])
 
 settings_machine1 = json.dumps([

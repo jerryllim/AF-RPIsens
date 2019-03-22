@@ -682,6 +682,7 @@ class WastagePopUp(Popup):
 class SimpleActionBar(BoxLayout):
     time = StringProperty()
     emp_popup = None
+    popup = None
 
     def __init__(self, config, **kwargs):
         BoxLayout.__init__(self, **kwargs)
@@ -749,6 +750,27 @@ class SimpleActionBar(BoxLayout):
             sm.transition = SlideTransition()
             sm.transition.direction = 'up'
             sm.current = 'maintenance_page'
+
+    def select_settings(self):
+        popup_boxlayout = BoxLayout(orientation='vertical', spacing='10sp', padding='10sp')
+        self.popup = Popup(title='Admin', content=popup_boxlayout, size_hint=(0.5, 0.5))
+        popup_boxlayout.add_widget(Label(text='Password: ', size_hint_y=0.3))
+        pass_input = TextInput()
+        popup_boxlayout.add_widget(pass_input)
+        cancel_btn = Button(text='Cancel')
+        cancel_btn.bind(on_press=self.popup.dismiss)
+        confirm_btn = Button(text='Confirm')
+        confirm_btn.bind(on_press=lambda btn: self.start_settings(pass_input.text))
+        hbox_layout = BoxLayout(orientation='horizontal', spacing='10sp', padding='10sp')
+        hbox_layout.add_widget(cancel_btn)
+        hbox_layout.add_widget(confirm_btn)
+        popup_boxlayout.add_widget(hbox_layout)
+        self.popup.open()
+
+    def start_settings(self, password):
+        self.popup.dismiss()
+        if password == App.get_running_app().config.get('Settings', 'password'):
+            App.get_running_app().open_settings()
 
 
 class DropDownLayout(BoxLayout):
@@ -880,6 +902,8 @@ class PiGUIApp(App):
             'self_port': 8888,
             'server_add': '152.228.1.124',
             'server_port': 9999})
+        config.setdefaults('Settings', {
+            'password': '123'})
         config.setdefaults('General1', {
             'machine_name': 'Machine 1',
             'bg_colour': 'BLUE',

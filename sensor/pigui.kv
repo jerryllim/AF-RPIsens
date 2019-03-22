@@ -108,6 +108,7 @@
     height: sp(50)
     input_filter: 'int'
     font_size: sp(25)
+    keyboard_mode: 'managed'
 
 <AdjustmentLabel>:
     text_size: self.size
@@ -443,7 +444,7 @@
         size_hint_x: None
         valign: 'middle'
         width: self.texture_size[0] + sp(20)
-        on_release: app.open_settings()
+        on_release: root.select_settings()
 
     Label:
         id: clock_label
@@ -560,6 +561,7 @@
                 id: employee_num
                 font_size: '24sp'
                 multiline: False
+                keyboard_mode: 'managed'
 
             Button:
                 text: "Scan"
