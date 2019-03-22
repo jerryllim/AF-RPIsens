@@ -1,3 +1,4 @@
+import sys
 import csv
 import pymysql
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -145,7 +146,7 @@ class DatabaseManager:
             if conn.open:
                 success = True
         except pymysql.MySQLError as error:
-            print(error)
+            print(sys._getframe().f_code.co_name, error)
 
         return success
 
@@ -162,8 +163,8 @@ class DatabaseManager:
                     cursor.execute(query)
                 return_list = cursor.fetchall()
         except pymysql.MySQLError as error:
+            print(sys._getframe().f_code.co_name, error)
             conn.rollback()
-            print(error)
         finally:
             conn.close()
             return return_list
@@ -204,12 +205,14 @@ class DatabaseManager:
                 cursor.execute('CREATE TABLE IF NOT EXIST jam_past_table LIKE jam_current_table;')
 
                 conn.commit()
-        except pymysql.MySQLError:
+        except pymysql.MySQLError as error:
+            print(sys._getframe().f_code.co_name, error)
             conn.rollback()
         finally:
             conn.close()
 
     def insert_jam(self, ip, recv_dict):
+        print(recv_dict)
         conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
 
@@ -239,8 +242,8 @@ class DatabaseManager:
                             cursor.execute(query)
                 conn.commit()
         except pymysql.MySQLError as error:
+            print(sys._getframe().f_code.co_name, error)
             conn.rollback()
-            print("Failed to insert record to database: {}".format(error))
         finally:
             conn.close()
 
@@ -261,8 +264,8 @@ class DatabaseManager:
                 cursor.execute(query, (start, end))
                 output_list = cursor.fetchall()
         except pymysql.MySQLError as error:
+            print(sys._getframe().f_code.co_name, error)
             conn.rollback()
-            print("Failed to insert record to database: {}".format(error))
         finally:
             conn.close()
             return output_list
@@ -279,6 +282,8 @@ class DatabaseManager:
                       "WHERE datetime < NOW() - INTERVAL 2 WEEK;"
                 cursor.execute(sql)
                 conn.commit()
+        except pymysql.MySQLError as error:
+            print(sys._getframe().f_code.co_name, error)
         finally:
             conn.close()
 
@@ -298,6 +303,8 @@ class DatabaseManager:
 
                 cursor.execute(sql)
                 conn.commit()
+        except pymysql.MySQLError as error:
+            print(sys._getframe().f_code.co_name, error)
         finally:
             conn.close()
 
@@ -310,8 +317,8 @@ class DatabaseManager:
                 cursor.execute(sql, (emp_id, emp_name, emp_name))
                 conn.commit()
         except pymysql.MySQLError as error:
+            print(sys._getframe().f_code.co_name, error)
             conn.rollback()
-            print("Failed to insert record to database: {}".format(error))
         finally:
             conn.close()
 
@@ -326,8 +333,8 @@ class DatabaseManager:
 
                 conn.commit()
         except pymysql.MySQLError as error:
+            print(sys._getframe().f_code.co_name, error)
             conn.rollback()
-            print("Failed to insert record to database: {}".format(error))
         finally:
             conn.close()
 
@@ -344,7 +351,7 @@ class DatabaseManager:
                 cursor.execute(sql)
                 conn.commit()
         except pymysql.MySQLError as error:
-            print("Failed to mark to delete records from database: {}".format(error))
+            print(sys._getframe().f_code.co_name, error)
             conn.rollback()
         finally:
             conn.close()
@@ -359,7 +366,7 @@ class DatabaseManager:
                 cursor.execute(sql)
                 conn.commit()
         except pymysql.MySQLError as error:
-            print("Failed to delete records from database: {}".format(error))
+            print(sys._getframe().f_code.co_name, error)
             conn.rollback()
         finally:
             conn.close()
@@ -375,7 +382,7 @@ class DatabaseManager:
                 cursor.execute(sql)
                 emp_list = cursor.fetchall()
         except pymysql.MySQLError as error:
-            print("Failed to select record in database: {}".format(error))
+            print(sys._getframe().f_code.co_name, error)
         finally:
             conn.close()
             return emp_list
@@ -393,7 +400,7 @@ class DatabaseManager:
                 cursor.execute(sql, timestamp)
                 emp_list = cursor.fetchall()
         except pymysql.MySQLError as error:
-            print("Failed to select record in database: {}".format(error))
+            print(sys._getframe().f_code.co_name, error)
         finally:
             conn.close()
             return emp_list
@@ -431,6 +438,8 @@ class DatabaseManager:
 
                 cursor.execute(sql)
                 db.commit()
+        except pymysql.MySQLError as error:
+            print(sys._getframe().f_code.co_name, error)
         finally:
             db.close()
 
@@ -453,9 +462,8 @@ class DatabaseManager:
                     job_info = job_info + ["%d/%m/%Y"]
                     cursor.execute(query, job_info)
                     db.commit()
-
         except pymysql.MySQLError as error:
-            print("Failed to insert record to database: {}".format(error))
+            print(sys._getframe().f_code.co_name, error)
             db.rollback()
         finally:
             db.close()
@@ -467,7 +475,7 @@ class DatabaseManager:
                 query = "DELETE FROM job_info WHERE ucomplete = 'Y';"
                 cursor.execute(query)
         except pymysql.MySQLError as error:
-            print("Failed to update record to database: {}".format(error))
+            print(sys._getframe().f_code.co_name, error)
         finally:
             db.close()
 
@@ -483,7 +491,7 @@ class DatabaseManager:
                 query = '''DELETE FROM job_info WHERE jo_no = %s AND jo_line = %s'''
                 cursor.executemany(query, jo_ids)
         except pymysql.MySQLError as error:
-            print("Failed to update record to database: {}".format(error))
+            print(sys._getframe().f_code.co_name, error)
         finally:
             db.close()
 
@@ -504,7 +512,7 @@ class DatabaseManager:
             print("reply_str: ", reply_str)
             db.commit()
         except pymysql.MySQLError as error:
-            print("Failed to select record in database: {}".format(error))
+            print(sys._getframe().f_code.co_name, error)
         finally:
             db.close()
             return reply_str
@@ -518,9 +526,8 @@ class DatabaseManager:
                 cursor.execute(sql, (mac,))
                 for row in cursor:
                     job_list.append(row)
-
         except pymysql.MySQLError as error:
-            print("Failed to select record in database: {}".format(error))
+            print(sys._getframe().f_code.co_name, error)
         finally:
             db.close()
             return job_list
@@ -544,6 +551,8 @@ class DatabaseManager:
                         'quality TINYINT UNSIGNED NOT NULL);'
                 cursor.execute(query)
                 db.commit()
+        except pymysql.MySQLError as error:
+            print(sys._getframe().f_code.co_name, error)
         finally:
             db.close()
 
@@ -569,6 +578,8 @@ class DatabaseManager:
                     cursor.execute(query)
 
                 db.commit()
+        except pymysql.MySQLError as error:
+            print(sys._getframe().f_code.co_name, error)
         finally:
             db.close()
 
@@ -587,6 +598,8 @@ class DatabaseManager:
                         'PRIMARY KEY (emp_id, machine, start));'
                 cursor.execute(query)
                 db.commit()
+        except pymysql.MySQLError as error:
+            print(sys._getframe().f_code.co_name, error)
         finally:
             db.close()
 
@@ -603,6 +616,8 @@ class DatabaseManager:
                     cursor.execute(query, (emp, machine, start, end))
 
                 db.commit()
+        except pymysql.MySQLError as error:
+            print(sys._getframe().f_code.co_name, error)
         finally:
             db.close()
 
@@ -621,6 +636,8 @@ class DatabaseManager:
                         'PRIMARY KEY (emp_id, machine, start));'
                 cursor.execute(query)
                 db.commit()
+        except pymysql.MySQLError as error:
+            print(sys._getframe().f_code.co_name, error)
         finally:
             db.close()
 
@@ -637,6 +654,8 @@ class DatabaseManager:
                     cursor.execute(query, (emp, machine, start, end))
 
                 db.commit()
+        except pymysql.MySQLError as error:
+            print(sys._getframe().f_code.co_name, error)
         finally:
             db.close()
 
@@ -686,6 +705,8 @@ class DatabaseManager:
                       ');'
                 cursor.execute(sql)
                 conn.commit()
+        except pymysql.MySQLError as error:
+            print(sys._getframe().f_code.co_name, error)
         finally:
             conn.close()
             
@@ -702,8 +723,8 @@ class DatabaseManager:
                 cursor.executemany(sql, pis_row)
             conn.commit()
         except pymysql.MySQLError as error:
+            print(sys._getframe().f_code.co_name, error)
             conn.rollback()
-            print(error)
         finally:
             conn.close()
 
@@ -719,8 +740,8 @@ class DatabaseManager:
                 cursor.execute(sql, pi_row)
                 conn.commit()
         except pymysql.MySQLError as error:
+            print(sys._getframe().f_code.co_name, error)
             conn.rollback()
-            print(error)
         else:
             replaced = True
         finally:
@@ -738,8 +759,8 @@ class DatabaseManager:
                 cursor.execute(sql, ip)
                 conn.commit()
         except pymysql.MySQLError as error:
+            print(sys._getframe().f_code.co_name, error)
             conn.rollback()
-            print(error)
         finally:
             conn.close()
 
@@ -756,8 +777,8 @@ class DatabaseManager:
                     row['port'] = str(row['port'])
                     pis_dict[ip] = row
         except pymysql.MySQLError as error:
+            print(sys._getframe().f_code.co_name, error)
             conn.rollback()
-            print(error)
         finally:
             conn.close()
             return pis_dict
@@ -773,6 +794,8 @@ class DatabaseManager:
                       'col9 INT, col10 INT)'
                 cursor.execute(sql)
                 conn.commit()
+        except pymysql.MySQLError as error:
+            print(sys._getframe().f_code.co_name, error)
         finally:
             conn.close()
 
@@ -786,7 +809,7 @@ class DatabaseManager:
                 cursor.execute(sql, machine_row)
                 conn.commit()
         except pymysql.MySQLError as error:
-            print(error)
+            print(sys._getframe().f_code.co_name, error)
             conn.rollback()
         finally:
             conn.close()
@@ -801,7 +824,7 @@ class DatabaseManager:
                 cursor.executemany(sql, machines)
                 conn.commit()
         except pymysql.MySQLError as error:
-            print(error)
+            print(sys._getframe().f_code.co_name, error)
             conn.rollback()
         finally:
             conn.close()
@@ -819,7 +842,7 @@ class DatabaseManager:
                 cursor.executemany(sql, machine_rows)
                 conn.commit()
         except pymysql.MySQLError as error:
-            print(error)
+            print(sys._getframe().f_code.co_name, error)
             conn.rollback()
         finally:
             conn.close()
@@ -836,7 +859,7 @@ class DatabaseManager:
                 for row in cursor:
                     headers_list.append(row[0])
         except pymysql.MySQLError as error:
-            print(error)
+            print(sys._getframe().f_code.co_name, error)
             conn.rollback()
         finally:
             conn.close()
@@ -853,7 +876,7 @@ class DatabaseManager:
                 cursor.execute(sql)
                 machines_list = cursor.fetchall()
         except pymysql.MySQLError as error:
-            print(error)
+            print(sys._getframe().f_code.co_name, error)
             conn.rollback()
         finally:
             conn.close()
@@ -871,7 +894,7 @@ class DatabaseManager:
                 for row in cursor:
                     machines_list.append(row[0])
         except pymysql.MySQLError as error:
-            print(error)
+            print(sys._getframe().f_code.co_name, error)
             conn.rollback()
         finally:
             conn.close()
@@ -893,8 +916,8 @@ class DatabaseManager:
                 for row in cursor:
                     targets_dict[row[0]] = row[1]
         except pymysql.MySQLError as error:
+            print(sys._getframe().f_code.co_name, error)
             conn.rollback()
-            print("Failed to insert record to database: {}".format(error))
         finally:
             conn.close()
             return targets_dict

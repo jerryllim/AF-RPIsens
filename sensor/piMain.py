@@ -82,6 +82,7 @@ class PiController:
 
     def get_key(self, idx, interval=1, emp=None):
         now = datetime.datetime.now()
+        # Floor to nearest interval (default = 5)
         now = now - datetime.timedelta(minutes=now.minute % interval)
 
         if not emp:
@@ -89,7 +90,7 @@ class PiController:
 
         jo_no = self.gui.machines[idx].get_jo_no()
 
-        return now.strftime('%H%M'), '{0}_{1}'.format(emp, jo_no)
+        return '{0}_{1}_{2}'.format(emp, jo_no, now.strftime('%H%M'))
 
     def add_qc(self, idx, string):
         key = 'Q{}'.format(idx)
@@ -119,8 +120,8 @@ class PiController:
         name = self.pin_to_name.get(pin, None)
         if name:
             idx = int(name[-1:])
-            time_, key = self.get_key(idx)
-            self.update_count(time_, key, name)
+            key = self.get_key(idx)
+            self.update_count(key, name)
 
     def output_pin_triggered(self, pin, _level, _tick):
         name = self.pin_to_name.get(pin, None)
@@ -137,14 +138,11 @@ class PiController:
         self.pi.set_glitch_filter(pin, (bounce * 1000))
         self.callbacks.append(self.pi.callback(pin, pigpio.RISING_EDGE, self.pin_triggered))
 
-    def update_count(self, time_, key, name):
+    def update_count(self, key, name):
         with self.counts_lock:
-            if self.counts.get(time_) is None:
-                self.counts[time_] = {key: Counter()}
-            elif self.counts[time_].get(key) is None:
-                self.counts[time_][key] = Counter()
-
-            self.counts[time_][key].update([name])
+            if self.counts.get(key) is None:
+                self.counts[key] = Counter()
+            self.counts[key].update([name])
 
     def get_counts(self):
         with self.counts_lock:
