@@ -140,7 +140,7 @@ class MachineClass:
                 return False
 
         self.emp_asst[emp_id] = start
-        self.emp_asst_names[emp_id] = self.controller.get_employee_name(emp_id)
+        self.emp_asst_names[emp_id] = self.controller.get_emp_name(emp_id)
         self.controller.add_employee(self.index, "{0}_{1}".format(emp_id, start.strftime('%Y-%m-%d %H:%M')))
         return True
 
@@ -516,6 +516,9 @@ class EmployeeScanPage(Popup):
             self.parent_method(self.employee_num.text, alternate)
 
     def login_buttons(self, emp_id):
+        self.button_box.remove_widget(self.confirm_button)
+        self.button_box.remove_widget(self.alternate_button)
+
         logged_in = self.caller.has_emp(emp_id)
         self.parent_method = self.caller.get_parent_method(logged_in)
 

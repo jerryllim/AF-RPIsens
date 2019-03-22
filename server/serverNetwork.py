@@ -101,7 +101,7 @@ class NetworkManager:
 
     def request_jam(self):
         for ip, port in self.settings.get_ips_ports():
-            msg_dict = {"jam": None}
+            msg_dict = {"jam": 0}
             ip_port = '{}:{}'.format(ip, port)
             deal_msg = self.request(ip_port, msg_dict)
 

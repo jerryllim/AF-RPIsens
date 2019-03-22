@@ -201,8 +201,8 @@ class DatabaseManager:
 
                 cursor.execute(sql)
 
-                cursor.execute('CREATE TABLE IF NOT EXIST jam_prev_table LIKE jam_current_table;')
-                cursor.execute('CREATE TABLE IF NOT EXIST jam_past_table LIKE jam_current_table;')
+                cursor.execute('CREATE TABLE IF NOT EXISTS jam_prev_table LIKE jam_current_table;')
+                cursor.execute('CREATE TABLE IF NOT EXISTS jam_past_table LIKE jam_current_table;')
 
                 conn.commit()
         except pymysql.MySQLError as error:
@@ -502,10 +502,8 @@ class DatabaseManager:
         try:
             jo_no = barcode[:-3]
             jo_line = int(barcode[-3:])
-            print(jo_no, jo_line)
             sql = "SELECT uno, uline, usou_no, ustk_desc1, usch_qty, 0 FROM jobs_table " \
                   "WHERE uno = %s AND uline = %s LIMIT 1"
-            print(sql)
             cursor.execute(sql, (jo_no, jo_line))
             temp = cursor.fetchone()
             reply_str = list(temp)
@@ -611,8 +609,9 @@ class DatabaseManager:
             with db.cursor() as cursor:
                 for emp_start, end in values.items():
                     emp, start = emp_start.split('_')
+                    print(emp, machine, start, end)
 
-                    query = 'REPLACE INTO maintenance_table VALUES (?, ?, ?, ?);'
+                    query = 'REPLACE INTO maintenance_table VALUES (%s, %s, %s, %s);'
                     cursor.execute(query, (emp, machine, start, end))
 
                 db.commit()
