@@ -235,6 +235,13 @@
                 valign: 'top'
                 size_hint_y: 0.5
 
+            Label:
+                id: to_do
+                text_size: self.size
+                halign: 'left'
+                valign: 'top'
+                size_hint_y: 0.5
+
         Button:
             canvas.before:
                 Color:
@@ -277,13 +284,6 @@
             text_size: self.size
             halign: 'left'
             font_size: sp(40)
-
-    Label:
-        text: 'To do: '
-        id: to_do
-        text_size: self.size
-        halign: 'left'
-        font_size: sp(40)
 
     Label:
         id: qc_label

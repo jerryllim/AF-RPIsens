@@ -282,7 +282,10 @@ class SelectPage(Screen):
                 raise ValueError("Please log in.")
 
             controller = App.get_running_app().controller
+            start = datetime.now()
             job_dict = controller.get_job_info(barcode)
+            end = datetime.now()
+            print(end-start)
             if not job_dict:
                 raise ValueError("JO number ({}) was not found, please try again.")
 

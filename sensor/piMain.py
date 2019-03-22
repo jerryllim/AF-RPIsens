@@ -204,15 +204,12 @@ class PiController:
     def get_job_info(self, barcode):
         job_info = self.database_manager.get_job_info(barcode)
         if job_info is None:
-            print('request')
             reply_msg = self.request({"job_info": barcode})
             if reply_msg:
-                print('blank')
                 value = reply_msg.pop(barcode)
                 if value:
                     job_info = {'jo_no': value[0], 'jo_line': value[1], 'code': value[2], 'desc': value[3],
                                 'to_do': value[4], 'ran': value[5]}
-
         return job_info
 
     def update_emp_info(self, emp_list):
