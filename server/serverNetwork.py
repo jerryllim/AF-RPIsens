@@ -86,7 +86,7 @@ class NetworkManager:
                         barcode = message.get("job_info", None)
                         reply_dict[barcode] = self.database_manager.get_job_info(barcode)
                     elif key == "sfu":
-                        print(message.get("sfu"), None)
+                        print(message.get("sfu", None))
                     elif key == "ink_key":
                         ink_key = message.get("ink_key", None)
                         self.database_manager.replace_ink_key(ink_key)

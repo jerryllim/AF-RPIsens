@@ -416,7 +416,7 @@ class DatabaseManager:
                 # TODO check varchar length for each column
                 sql = "CREATE TABLE IF NOT EXISTS jobs_table ( " \
                       "umc char(4) DEFAULT NULL, " \
-                      "uno char(10) DEFAULT NULL, " \
+                      "uno char(10) NOT NULL, " \
                       "umachine_no char(15) DEFAULT NULL, " \
                       "usch_qty double DEFAULT NULL, " \
                       "usou_no char(10) DEFAULT NULL, " \
@@ -424,7 +424,7 @@ class DatabaseManager:
                       "ustk char(16) DEFAULT NULL, " \
                       "uraw_mc text, " \
                       "uraw text, " \
-                      "uline int(10) unsigned DEFAULT NULL, " \
+                      "uline int(10) unsigned NOT NULL, " \
                       "uuom char(4) DEFAULT NULL, " \
                       "ureq_qty text, " \
                       "ureq_uom text, " \
@@ -437,7 +437,8 @@ class DatabaseManager:
                       "mname char(40) DEFAULT NULL, " \
                       "trem1 char(40) DEFAULT NULL, " \
                       "tqty int(10) unsigned DEFAULT NULL, " \
-                      "tdo_date date DEFAULT NULL );"
+                      "tdo_date date DEFAULT NULL, " \
+                      "PRIMARY KEY (uno,uline) );"
                 cursor.execute(sql)
                 db.commit()
         except pymysql.MySQLError as error:
@@ -934,6 +935,35 @@ class DatabaseManager:
         finally:
             conn.close()
             return targets_dict
+
+    def create_sfu_table(self):
+        db = pymysql.connect(self.host, self.user, self.password, self.db)
+
+        try:
+            with db.cursor() as cursor:
+                sql = "CREATE TABLE IF NOT EXISTS sfu_table ( " \
+                      "umc char(4) DEFAULT NULL, " \
+                      "uno char(10) NOT NULL, " \
+                      "uline int(10) unsigned NOT NULL, " \
+                      "umachine_no char(15) DEFAULT NULL, " \
+                      "usfc_qty double DEFAULT NULL, " \
+                      "usfc_emp1 char(10) DEFAULT NULL, " \
+                      "usfc_emp2 char(10) DEFAULT NULL, " \
+                      "usfc_emp3 char(10) DEFAULT NULL, " \
+                      "usfc_qty_waste1 double DEFAULT NULL, " \
+                      "usfc_qty_waste2 double DEFAULT NULL, " \
+                      "usfc_date date DEFAULT NULL, " \
+                      "usfc_time_fr time DEFAULT NULL, " \
+                      "usfc_time_to time DEFAULT NULL);"
+                cursor.execute(sql)
+                db.commit()
+        except pymysql.MySQLError as error:
+            print(sys._getframe().f_code.co_name, error)
+        finally:
+            db.close()
+
+    def insert_sfu(self, sfu):
+        pass
 
 
 if __name__ == '__main__':
