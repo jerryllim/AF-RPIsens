@@ -1,10 +1,11 @@
 import sys
 import csv
 import pymysql
-from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.triggers.cron import CronTrigger
+import warnings
 import configparser
 from datetime import datetime, timedelta
+from apscheduler.triggers.cron import CronTrigger
+from apscheduler.schedulers.background import BackgroundScheduler
 
 
 class Settings:
@@ -23,7 +24,7 @@ class Settings:
                                            port=self.config.get('Database', 'port'),
                                            user=self.config.get('Database', 'user'),
                                            password=self.config.get('Database', 'password'),
-                                           db=self.config.get('Database', 'db'))
+                                           db=self.config.get('Database', 'db'), create_tables=False)
         self.machines_info = database_manager.get_pis()
 
     def get_ip_key(self, ip, key):
@@ -82,8 +83,9 @@ class AutomateSchedulers:
 
         return hour, minute
 
-    def schedule_import(self, hour='*', minute='*'):
-        job_id = 'import'
+    def schedule_import(self):
+        job_id = 'Import'
+        hour, minute = self.get_cron_hour_minute(job_id)
         cron_trigger = CronTrigger(hour=hour, minute=minute)
         if self.scheduler_jobs.get(job_id):
             self.scheduler_jobs[job_id].remove()
@@ -100,8 +102,9 @@ class AutomateSchedulers:
 
         self.database_manager.delete_completed_jobs()
 
-    def schedule_export(self, hour='*', minute='*'):
-        job_id = 'export'
+    def schedule_export(self):
+        job_id = 'Export'
+        hour, minute = self.get_cron_hour_minute(job_id)
         cron_trigger = CronTrigger(hour=hour, minute=minute)
         if self.scheduler_jobs.get(job_id):
             self.scheduler_jobs[job_id].remove()
@@ -117,7 +120,7 @@ class AutomateSchedulers:
 
 
 class DatabaseManager:
-    def __init__(self, settings, host='', user='', password='', db='', port=''):
+    def __init__(self, settings, host='', user='', password='', db='', port='', create_tables=True):
         self.settings = settings
         self.host = host
         self.user = user
@@ -127,14 +130,17 @@ class DatabaseManager:
             port = int(port)
         self.port = port
 
-        self.create_jam_table()
-        self.create_jobs_table()
-        self.create_emp_table()
-        self.create_maintenance_table()
-        self.create_emp_shift_table()
-        self.create_qc_table()
-        self.create_pis_table()
-        self.create_machines_table()
+        if create_tables:
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore')
+                self.create_jam_table()
+                self.create_jobs_table()
+                self.create_emp_table()
+                self.create_maintenance_table()
+                self.create_emp_shift_table()
+                self.create_qc_table()
+                self.create_pis_table()
+                self.create_machines_table()
 
     @staticmethod
     def test_db_connection(host, port, user, password, db):
@@ -179,26 +185,24 @@ class DatabaseManager:
                 # cursor.execute("DROP TABLE IF EXISTS jam_current_table;")
 
                 # create JAM table
-                # TODO confirm varchar lengths
-                sql = '''CREATE TABLE IF NOT EXISTS jam_current_table (
-                machine VARCHAR(10) NOT NULL,
-                jo_no VARCHAR(15) NOT NULL,
-                emp VARCHAR(10) NOT NULL,
-                date_time DATETIME NOT NULL,
-                shift TINYINT(1) UNSIGNED DEFAULT 0,
-                output INT UNSIGNED DEFAULT 0,
-                col1 INT DEFAULT 0,
-                col2 INT DEFAULT 0,
-                col3 INT DEFAULT 0,
-                col4 INT DEFAULT 0,
-                col5 INT DEFAULT 0,
-                col6 INT DEFAULT 0,
-                col7 INT DEFAULT 0,
-                col8 INT DEFAULT 0,
-                col9 INTEGER DEFAULT 0,
-                col10 INT DEFAULT 0,
-                PRIMARY KEY(machine, jo_no, date_time, emp));'''
-
+                sql = "CREATE TABLE IF NOT EXISTS jam_current_table ( " \
+                      "machine varchar(10) NOT NULL, " \
+                      "jo_no varchar(15) NOT NULL, " \
+                      "emp varchar(10) NOT NULL, " \
+                      "date_time datetime NOT NULL, " \
+                      "shift tinyint(1) unsigned DEFAULT '0', " \
+                      "output int(10) unsigned DEFAULT '0', " \
+                      "col1 int(11) DEFAULT '0', " \
+                      "col2 int(11) DEFAULT '0', " \
+                      "col3 int(11) DEFAULT '0', " \
+                      "col4 int(11) DEFAULT '0', " \
+                      "col5 int(11) DEFAULT '0', " \
+                      "col6 int(11) DEFAULT '0', " \
+                      "col7 int(11) DEFAULT '0', " \
+                      "col8 int(11) DEFAULT '0', " \
+                      "col9 int(11) DEFAULT '0', " \
+                      "col10 int(11) DEFAULT '0', " \
+                      "PRIMARY KEY (machine,jo_no,date_time,emp) );"
                 cursor.execute(sql)
 
                 cursor.execute('CREATE TABLE IF NOT EXISTS jam_prev_table LIKE jam_current_table;')
@@ -212,7 +216,6 @@ class DatabaseManager:
             conn.close()
 
     def insert_jam(self, ip, recv_dict):
-        print(recv_dict)
         conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
 
@@ -295,12 +298,12 @@ class DatabaseManager:
             with conn.cursor() as cursor:
                 # TODO check length of the emp_id and name
                 # create EMP table
-                sql = '''CREATE TABLE IF NOT EXISTS emp_table (
-                emp_id VARCHAR(10) PRIMARY KEY,
-                name VARCHAR(30),
-                last_modified TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                to_del TINYINT(1))'''
-
+                sql = "CREATE TABLE IF NOT EXISTS emp_table ( " \
+                      "emp_id varchar(6) NOT NULL, " \
+                      "name varchar(30) DEFAULT NULL, " \
+                      "last_modified timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, " \
+                      "to_del tinyint(1) unsigned DEFAULT '0', " \
+                      "PRIMARY KEY (emp_id));"
                 cursor.execute(sql)
                 conn.commit()
         except pymysql.MySQLError as error:
@@ -411,31 +414,30 @@ class DatabaseManager:
         try:
             with db.cursor() as cursor:
                 # TODO check varchar length for each column
-                sql = 'CREATE TABLE IF NOT EXISTS jobs_table (' \
-                      'umc CHAR(4), ' \
-                      'uno CHAR(10), ' \
-                      'umachine_no CHAR(15), ' \
-                      'usch_qty DOUBLE, ' \
-                      'usou_no CHAR(10), ' \
-                      'ustk_mc CHAR(4), ' \
-                      'ustk CHAR(16), ' \
-                      'uraw_mc TEXT, ' \
-                      'uraw TEXT, ' \
-                      'uline INT UNSIGNED, ' \
-                      'uuom CHAR(4), ' \
-                      'ureq_qty TEXT, ' \
-                      'ureq_uom TEXT, ' \
-                      'udraw TEXT, ' \
-                      'urem MEDIUMTEXT, ' \
-                      'ucomplete CHAR(1), ' \
-                      'umachine_desc CHAR(40), ' \
-                      'ustk_desc1 CHAR(40), ' \
-                      'ustk_desc2 CHAR(40), ' \
-                      'mname CHAR(40), ' \
-                      'trem1 CHAR(40), ' \
-                      'tqty INT UNSIGNED, ' \
-                      'tdo_date DATE);'
-
+                sql = "CREATE TABLE IF NOT EXISTS jobs_table ( " \
+                      "umc char(4) DEFAULT NULL, " \
+                      "uno char(10) DEFAULT NULL, " \
+                      "umachine_no char(15) DEFAULT NULL, " \
+                      "usch_qty double DEFAULT NULL, " \
+                      "usou_no char(10) DEFAULT NULL, " \
+                      "ustk_mc char(4) DEFAULT NULL, " \
+                      "ustk char(16) DEFAULT NULL, " \
+                      "uraw_mc text, " \
+                      "uraw text, " \
+                      "uline int(10) unsigned DEFAULT NULL, " \
+                      "uuom char(4) DEFAULT NULL, " \
+                      "ureq_qty text, " \
+                      "ureq_uom text, " \
+                      "udraw text, " \
+                      "urem mediumtext, " \
+                      "ucomplete char(1) DEFAULT NULL, " \
+                      "umachine_desc char(40) DEFAULT NULL, " \
+                      "ustk_desc1 char(40) DEFAULT NULL, " \
+                      "ustk_desc2 char(40) DEFAULT NULL, " \
+                      "mname char(40) DEFAULT NULL, " \
+                      "trem1 char(40) DEFAULT NULL, " \
+                      "tqty int(10) unsigned DEFAULT NULL, " \
+                      "tdo_date date DEFAULT NULL );"
                 cursor.execute(sql)
                 db.commit()
         except pymysql.MySQLError as error:
@@ -507,7 +509,6 @@ class DatabaseManager:
             cursor.execute(sql, (jo_no, jo_line))
             temp = cursor.fetchone()
             reply_str = list(temp)
-            print("reply_str: ", reply_str)
             db.commit()
         except pymysql.MySQLError as error:
             print(sys._getframe().f_code.co_name, error)
@@ -541,12 +542,12 @@ class DatabaseManager:
         try:
             with db.cursor() as cursor:
                 # TODO check varchar length for emp, machine & jo_no columns
-                query = 'CREATE TABLE IF NOT EXISTS qc_table (' \
-                        'emp_id VARCHAR(10) NOT NULL,' \
-                        'date_time DATETIME NOT NULL,' \
-                        'machine VARCHAR(10) NOT NULL,' \
-                        'jo_no VARCHAR(15) NOT NULL,' \
-                        'quality TINYINT UNSIGNED NOT NULL);'
+                query = "CREATE TABLE IF NOT EXISTS qc_table ( " \
+                        "emp_id varchar(10) NOT NULL, " \
+                        "date_time datetime NOT NULL, " \
+                        "machine varchar(10) NOT NULL, " \
+                        "jo_no varchar(10) NOT NULL, " \
+                        "quality tinyint(3) unsigned NOT NULL );"
                 cursor.execute(query)
                 db.commit()
         except pymysql.MySQLError as error:
@@ -588,12 +589,12 @@ class DatabaseManager:
         try:
             with db.cursor() as cursor:
                 # TODO check varchar length for emp & machine.
-                query = 'CREATE TABLE IF NOT EXISTS maintenance_table (' \
-                        'emp_id VARCHAR(10) NOT NULL,' \
-                        'machine VARCHAR(10) NOT NULL,' \
-                        'start DATETIME NOT NULL,' \
-                        'end DATETIME, ' \
-                        'PRIMARY KEY (emp_id, machine, start));'
+                query = "CREATE TABLE IF NOT EXISTS maintenance_table ( " \
+                        "emp_id varchar(10) NOT NULL, " \
+                        "machine varchar(10) NOT NULL, " \
+                        "start datetime NOT NULL, " \
+                        "end datetime DEFAULT NULL, " \
+                        "PRIMARY KEY (emp_id, machine, start) );"
                 cursor.execute(query)
                 db.commit()
         except pymysql.MySQLError as error:
@@ -609,7 +610,6 @@ class DatabaseManager:
             with db.cursor() as cursor:
                 for emp_start, end in values.items():
                     emp, start = emp_start.split('_')
-                    print(emp, machine, start, end)
 
                     query = 'REPLACE INTO maintenance_table VALUES (%s, %s, %s, %s);'
                     cursor.execute(query, (emp, machine, start, end))
@@ -627,12 +627,12 @@ class DatabaseManager:
         try:
             with db.cursor() as cursor:
                 # TODO check varchar length for emp & machine.
-                query = 'CREATE TABLE IF NOT EXISTS emp_shift_table (' \
-                        'emp_id VARCHAR(10) NOT NULL,' \
-                        'machine VARCHAR(10) NOT NULL,' \
-                        'start DATETIME NOT NULL,' \
-                        'end DATETIME, ' \
-                        'PRIMARY KEY (emp_id, machine, start));'
+                query = 'CREATE TABLE IF NOT EXISTS emp_shift_table ( ' \
+                        'emp_id varchar(10) NOT NULL, ' \
+                        'machine varchar(10) NOT NULL, ' \
+                        'start datetime NOT NULL, ' \
+                        'end datetime DEFAULT NULL, ' \
+                        'PRIMARY KEY (emp_id,machine,start) );'
                 cursor.execute(query)
                 db.commit()
         except pymysql.MySQLError as error:
@@ -664,44 +664,47 @@ class DatabaseManager:
 
         try:
             with conn.cursor() as cursor:
-                sql = 'CREATE TABLE IF NOT EXISTS pis_table (' \
-                      'ip VARCHAR(15) PRIMARY KEY,' \
-                      'nick VARCHAR(15) UNIQUE,' \
-                      'mac VARCHAR(5),' \
-                      'machine1 VARCHAR(15),' \
-                      'A11 VARCHAR(6),' \
-                      'A21 VARCHAR(6),' \
-                      'A31 VARCHAR(6),' \
-                      'A41 VARCHAR(6),' \
-                      'A51 VARCHAR(6),' \
-                      'B11 VARCHAR(6),' \
-                      'B21 VARCHAR(6),' \
-                      'B31 VARCHAR(6),' \
-                      'B41 VARCHAR(6),' \
-                      'B51 VARCHAR(6),' \
-                      'machine2 VARCHAR(15),' \
-                      'A12 VARCHAR(6),' \
-                      'A22 VARCHAR(6),' \
-                      'A32 VARCHAR(6),' \
-                      'A42 VARCHAR(6),' \
-                      'A52 VARCHAR(6),' \
-                      'B12 VARCHAR(6),' \
-                      'B22 VARCHAR(6),' \
-                      'B32 VARCHAR(6),' \
-                      'B42 VARCHAR(6),' \
-                      'B52 VARCHAR(6),' \
-                      'machine3 VARCHAR(15),' \
-                      'A13 VARCHAR(6),' \
-                      'A23 VARCHAR(6),' \
-                      'A33 VARCHAR(6),' \
-                      'A43 VARCHAR(6),' \
-                      'A53 VARCHAR(6),' \
-                      'B13 VARCHAR(6),' \
-                      'B23 VARCHAR(6),' \
-                      'B33 VARCHAR(6),' \
-                      'B43 VARCHAR(6),' \
-                      'B53 VARCHAR(6)' \
-                      ');'
+                sql = 'CREATE TABLE IF NOT EXISTS pis_table ( ' \
+                      'ip varchar(15) NOT NULL, ' \
+                      'port smallint(2) unsigned DEFAULT NULL, ' \
+                      'nick varchar(15) DEFAULT NULL, machine1 ' \
+                      'varchar(15) DEFAULT NULL, ' \
+                      'mac1 varchar(5) DEFAULT NULL, ' \
+                      'A11 varchar(6) DEFAULT NULL, ' \
+                      'A21 varchar(6) DEFAULT NULL, ' \
+                      'A31 varchar(6) DEFAULT NULL, ' \
+                      'A41 varchar(6) DEFAULT NULL, ' \
+                      'A51 varchar(6) DEFAULT NULL, ' \
+                      'B11 varchar(6) DEFAULT NULL, ' \
+                      'B21 varchar(6) DEFAULT NULL, ' \
+                      'B31 varchar(6) DEFAULT NULL, ' \
+                      'B41 varchar(6) DEFAULT NULL, ' \
+                      'B51 varchar(6) DEFAULT NULL, ' \
+                      'machine2 varchar(15) DEFAULT NULL, ' \
+                      'mac2 varchar(5) DEFAULT NULL, ' \
+                      'A12 varchar(6) DEFAULT NULL, ' \
+                      'A22 varchar(6) DEFAULT NULL, ' \
+                      'A32 varchar(6) DEFAULT NULL, ' \
+                      'A42 varchar(6) DEFAULT NULL, ' \
+                      'A52 varchar(6) DEFAULT NULL, ' \
+                      'B12 varchar(6) DEFAULT NULL, ' \
+                      'B22 varchar(6) DEFAULT NULL, ' \
+                      'B32 varchar(6) DEFAULT NULL, ' \
+                      'B42 varchar(6) DEFAULT NULL, ' \
+                      'B52 varchar(6) DEFAULT NULL, ' \
+                      'machine3 varchar(15) DEFAULT NULL, ' \
+                      'mac3 varchar(5) DEFAULT NULL, ' \
+                      'A13 varchar(6) DEFAULT NULL, ' \
+                      'A23 varchar(6) DEFAULT NULL, ' \
+                      'A33 varchar(6) DEFAULT NULL, ' \
+                      'A43 varchar(6) DEFAULT NULL, ' \
+                      'A53 varchar(6) DEFAULT NULL, ' \
+                      'B13 varchar(6) DEFAULT NULL, ' \
+                      'B23 varchar(6) DEFAULT NULL, ' \
+                      'B33 varchar(6) DEFAULT NULL, ' \
+                      'B43 varchar(6) DEFAULT NULL, ' \
+                      'B53 varchar(6) DEFAULT NULL, ' \
+                      'PRIMARY KEY (ip) );'
                 cursor.execute(sql)
                 conn.commit()
         except pymysql.MySQLError as error:
@@ -788,9 +791,20 @@ class DatabaseManager:
 
         try:
             with conn.cursor() as cursor:
-                sql = 'CREATE TABLE IF NOT EXISTS machines_table (machine VARCHAR(10) PRIMARY KEY, output INT ' \
-                      'UNSIGNED, col1 INT, col2 INT, col3 INT, col4 INT, col5 INT, col6 INT, col7 INT, col8 INT, ' \
-                      'col9 INT, col10 INT)'
+                sql = "CREATE TABLE IF NOT EXISTS machines_table ( " \
+                      "machine varchar(10) NOT NULL, " \
+                      "output int(10) unsigned DEFAULT NULL, " \
+                      "col1 int(11) DEFAULT NULL, " \
+                      "col2 int(11) DEFAULT NULL, " \
+                      "col3 int(11) DEFAULT NULL, " \
+                      "col4 int(11) DEFAULT NULL, " \
+                      "col5 int(11) DEFAULT NULL, " \
+                      "col6 int(11) DEFAULT NULL, " \
+                      "col7 int(11) DEFAULT NULL, " \
+                      "col8 int(11) DEFAULT NULL, " \
+                      "col9 int(11) DEFAULT NULL, " \
+                      "col10 int(11) DEFAULT NULL, " \
+                      "PRIMARY KEY (machine) );"
                 cursor.execute(sql)
                 conn.commit()
         except pymysql.MySQLError as error:

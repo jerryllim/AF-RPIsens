@@ -6,7 +6,7 @@ from apscheduler.triggers.cron import CronTrigger
 from apscheduler.schedulers.background import BackgroundScheduler
 
 settings_ = serverDatabase.Settings()
-db_manager = serverDatabase.DatabaseManager(settings_, password='Lim8699', db='test')
+db_manager = serverDatabase.DatabaseManager(settings_, user='user', password='pass', db='test')
 network_manager = serverNetwork.NetworkManager(settings_, db_manager)
 now = time.strftime("%Y-%m-%d %H:%M:%S")
 
@@ -22,7 +22,8 @@ try:
 			print("requesting every 5 mins... %s" % now)
 			scheduler = BackgroundScheduler()
 			cron_trigger = CronTrigger(minute='*/5')
-			job = scheduler.add_job(network_manager.request_jam, cron_trigger, id = '5mins', misfire_grace_time=30, max_instances=3)
+			job = scheduler.add_job(network_manager.request_jam, cron_trigger, id='5mins', misfire_grace_time=30,
+									max_instances=3)
 			scheduler.start()
 
 		elif jam == "3":

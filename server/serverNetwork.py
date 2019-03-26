@@ -11,7 +11,6 @@ class NetworkManager:
     dealer = None
     router = None
     self_add = None
-    port_numbers = ["152.228.1.135:7777", "152.228.1.192:7777"]
     scheduler = None
     scheduler_jobs = {}
 
@@ -39,11 +38,9 @@ class NetworkManager:
         temp_list = {}
         now = time.strftime("%Y-%m-%d %H:%M:%S")
         self.dealer.connect("tcp://%s" % port)
-        print(port)
         msg_json = json.dumps(msg)
         self.dealer.send_string("", zmq.SNDMORE)  # delimiter
         self.dealer.send_string(msg_json)
-        print("request msg sent %s" % now)
 
         # use poll for timeouts:
         poller = zmq.Poller()
@@ -55,14 +52,13 @@ class NetworkManager:
             try:
                 self.dealer.recv()  # delimiter
                 recv_msg = self.dealer.recv_json()
-                print(recv_msg)
                 temp_list.update(recv_msg)
             except IOError as error:
                 print("Problem with socket: ", error)
             finally:
                 self.dealer.disconnect("tcp://%s" % port)
         else:
-            print("Machine is not connected")
+            print("Machine ({}) is not connected".format(port))
             self.dealer.close()
             self.dealer_routine()
 
@@ -90,7 +86,7 @@ class NetworkManager:
                         barcode = message.get("job_info", None)
                         reply_dict[barcode] = self.database_manager.get_job_info(barcode)
                     elif key == "sfu":
-                        pass
+                        print(message.get("sfu"), None)
                     elif key == "ink_key":
                         ink_key = message.get("ink_key", None)
                         self.database_manager.replace_ink_key(ink_key)

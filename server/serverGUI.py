@@ -835,15 +835,11 @@ class MiscTab(QtWidgets.QWidget):
 
 
 class ConfigurationWidget(QtWidgets.QWidget):
-    def __init__(self, parent):
+    def __init__(self, parent, database_manager):
         QtWidgets.QWidget.__init__(self, parent)
         config = configparser.ConfigParser()
         config.read('jam.ini')
-        self.database_manager = serverDatabase.DatabaseManager(None, host=config.get('Database', 'host'),
-                                                               port=config.get('Database', 'port'),
-                                                               user=config.get('Database', 'user'),
-                                                               password=config.get('Database', 'password'),
-                                                               db=config.get('Database', 'db'))
+        self.database_manager = database_manager
 
         self.setWindowTitle('Configurations')
         self.setMinimumWidth(800)
@@ -889,15 +885,11 @@ class ConfigurationWidget(QtWidgets.QWidget):
 
 
 class DisplayTable(QtWidgets.QWidget):
-    def __init__(self, parent):
+    def __init__(self, parent, database_manager):
         QtWidgets.QWidget.__init__(self, parent)
         config = configparser.ConfigParser()
         config.read('jam.ini')
-        self.database_manager = serverDatabase.DatabaseManager(None, host=config.get('Database', 'host'),
-                                                               port=config.get('Database', 'port'),
-                                                               user=config.get('Database', 'user'),
-                                                               password=config.get('Database', 'password'),
-                                                               db=config.get('Database', 'db'))
+        self.database_manager = database_manager
 
         self.table_model = QtGui.QStandardItemModel(3, 10)
 
@@ -986,7 +978,20 @@ class DisplayTable(QtWidgets.QWidget):
 class JamMainWindow(QtWidgets.QMainWindow):
     def __init__(self, parent):
         QtWidgets.QMainWindow.__init__(self, parent)
-        self.display_table = DisplayTable(self)
+        config = configparser.ConfigParser()
+        config.read('jam.ini')
+        self.settings = serverDatabase.Settings()
+        self.database_manager = serverDatabase.DatabaseManager(self.settings, host=config.get('Database', 'host'),
+                                                               port=config.get('Database', 'port'),
+                                                               user=config.get('Database', 'user'),
+                                                               password=config.get('Database', 'password'),
+                                                               db=config.get('Database', 'db'))
+        self.network_manager = serverNetwork.NetworkManager(self.settings, self.database_manager)
+        self.scheduler = serverDatabase.AutomateSchedulers(self.settings, self.database_manager)
+        self.scheduler.schedule_export()
+        self.scheduler.schedule_import()
+
+        self.display_table = DisplayTable(self, self.database_manager)
         self.setCentralWidget(self.display_table)
 
         config_action = QtWidgets.QAction('&Configuration', self)
@@ -1010,7 +1015,7 @@ class JamMainWindow(QtWidgets.QMainWindow):
     def launch_configuration(self):
         dialog = QtWidgets.QDialog(self)
         dialog.setWindowTitle('Configurations')
-        configurations = ConfigurationWidget(dialog)
+        configurations = ConfigurationWidget(self, self.database_manager)
         configurations.show()
         dialog_layout = QtWidgets.QVBoxLayout()
         dialog_layout.addWidget(configurations)
