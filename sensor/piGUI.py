@@ -53,7 +53,10 @@ class JobClass(Widget):
 
     def __init__(self, job_info, wastage=None):
         Widget.__init__(self)
+        start = datetime.now()
         self.job_info = job_info
+        self.job_info['date'] = start.strftime('%Y-%m-%d')
+        self.job_info['time_fr'] = start.strftime('%H:%M')
         if wastage is None:
             wastage = {'waste1': (0, 'kg'), 'waste2': (0, 'kg')}
         self.wastage = wastage
@@ -105,11 +108,6 @@ class MachineClass:
     def update_config(self, config):
         self.config.update(dict(config.items('General{}'.format(self.index))))
         self.config.update(dict(config.items('Adjustments{}'.format(self.index))))
-
-    def generate_sfu(self):
-        # TODO set sfu format
-        sfu = self.current_job.get_sfu()
-        pass
 
     def get_emp(self):
         if not self.emp_main:
@@ -191,7 +189,42 @@ class MachineClass:
 
     def publish_job(self):
         # TODO This is called at stop job
-        print(self.current_job.get_sfu())
+        sfu_dict = self.current_job.get_sfu()
+        sfu_str = ""
+        sfu_headers1 = ['jo_no', 'jo_line', 'complete', 'mac', 'output']
+        for header in sfu_headers1:
+            if isinstance(sfu_dict.get(header, None), str):
+                sfu_str = sfu_str + "'{}',".format(sfu_dict.get(header, ''))
+            else:
+                sfu_str = sfu_str + "{},".format(sfu_dict.get(header, ''))
+
+        emps = list(self.emp_main.keys())
+        for i in range((3-len(emps))):
+            emps.append(None)
+
+        for emp in emps:
+            if isinstance(emp, str):
+                sfu_str = sfu_str + "'{},'".format(emp)
+            else:
+                sfu_str = sfu_str + "'{}',".format(emp)
+
+        sfu_headers2 = ['waste1', 'waste2']
+        for header in sfu_headers2:
+            if isinstance(sfu_dict.get(header, None), str):
+                sfu_str = sfu_str + "'{}',".format(sfu_dict.get(header, '')[0])
+            else:
+                sfu_str = sfu_str + "{},".format(sfu_dict.get(header, '')[0])
+
+        sfu_headers3 = ['date', 'time_fr']
+        for header in sfu_headers3:
+            if isinstance(sfu_dict.get(header, None), str):
+                sfu_str = sfu_str + "'{}',".format(sfu_dict.get(header, ''))
+            else:
+                sfu_str = sfu_str + "{},".format(sfu_dict.get(header, ''))
+
+        sfu_str = sfu_str + "'{}'".format(datetime.now().strftime('%H:%M')
+
+        print(sfu_str)
 
     def self_info(self):
         save_info = {'permanent': self.permanent, 'state': self.state.name, 'emp_main': self.emp_main,
