@@ -222,7 +222,7 @@ class MachineClass:
             else:
                 sfu_str = sfu_str + "{},".format(sfu_dict.get(header, ''))
 
-        sfu_str = sfu_str + "'{}'".format(datetime.now().strftime('%H:%M')
+        sfu_str = sfu_str + "'{}'".format(datetime.now().strftime('%H:%M'))
 
         print(sfu_str)
 
