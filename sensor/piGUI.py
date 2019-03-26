@@ -224,7 +224,7 @@ class MachineClass:
 
         sfu_str = sfu_str + "'{}'".format(datetime.now().strftime('%H:%M'))
 
-        print(sfu_str)
+        self.controller.request({'sfu': sfu_str})
 
     def self_info(self):
         save_info = {'permanent': self.permanent, 'state': self.state.name, 'emp_main': self.emp_main,
