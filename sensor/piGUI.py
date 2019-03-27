@@ -20,7 +20,6 @@ from kivy.uix.widget import Widget
 from kivy.uix.button import Button
 from kivy.core.window import Window
 from kivy.uix.dropdown import DropDown
-from settings_json import settings_main, settings_machine1, settings_machine2, settings_machine3
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.textinput import TextInput
 from kivy.graphics.texture import Texture
@@ -28,9 +27,10 @@ from kivy.graphics import Color, Rectangle
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.togglebutton import ToggleButton
-from kivy.uix.screenmanager import ScreenManager, Screen, SlideTransition, NoTransition
 from kivy.uix.settings import SettingOptions, SettingString
 from kivy.properties import NumericProperty, StringProperty, ListProperty
+from kivy.uix.screenmanager import ScreenManager, Screen, SlideTransition, NoTransition
+from settings_json import settings_main, settings_machine1, settings_machine2, settings_machine3
 
 
 class State(Enum):
@@ -315,10 +315,7 @@ class SelectPage(Screen):
                 raise ValueError("Please log in.")
 
             controller = App.get_running_app().controller
-            start = datetime.now()
             job_dict = controller.get_job_info(barcode)
-            end = datetime.now()
-            print(end-start)
             if not job_dict:
                 raise ValueError("JO number ({}) was not found, please try again.")
 
@@ -685,9 +682,10 @@ class WastagePopUp(Popup):
         self.wastage = self.current_job.wastage[self.key]
         self.numpad.enter_button.text = u'\u2795'
         self.numpad.set_enter_function(self.add_wastage)
+        self.unit_spinner.disabled = True
         if self.wastage[0] != 0:
             self.unit_spinner.text = self.wastage[1]
-            self.unit_spinner.disabled = True
+            # self.unit_spinner.disabled = True
             self.current_label.text = '{}'.format(self.wastage[0])
         else:
             units = App.get_running_app().config.get('General{}'.format(App.get_running_app().current_index),
@@ -798,6 +796,7 @@ class SimpleActionBar(BoxLayout):
         hbox_layout.add_widget(cancel_btn)
         hbox_layout.add_widget(confirm_btn)
         popup_boxlayout.add_widget(hbox_layout)
+        pass_input.focus = True
         self.popup.open()
 
     def start_settings(self, password):
@@ -875,7 +874,7 @@ class SettingUnitsString(SettingString):
     def _validate(self, instance):
         self._dismiss()
 
-        if re.match("^([^,])([a-z,]*)([^,])$", self.textinput.text):
+        if re.match("^[a-zA-z]{0,3}$", self.textinput.text):
             self.value = self.textinput.text
 
 

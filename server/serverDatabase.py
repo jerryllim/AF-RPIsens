@@ -283,6 +283,7 @@ class DatabaseManager:
                 sql = "INSERT IGNORE INTO jam_past_table (machine, jo_no, emp, date_time, shift, output, col1, col2, " \
                       "col3, col4, col5, col6, col7, col8, col9, col10) SELECT * FROM jam_current_table " \
                       "WHERE datetime < NOW() - INTERVAL 2 WEEK;"
+                # TODO to delete the selects
                 cursor.execute(sql)
                 conn.commit()
         except pymysql.MySQLError as error:
@@ -963,7 +964,17 @@ class DatabaseManager:
             db.close()
 
     def insert_sfu(self, sfu):
-        pass
+        db = pymysql.connect(self.host, self.user, self.password, self.db)
+
+        try:
+            with db.cursor() as cursor:
+                sql = "INSERT INTO sfu_table VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);"
+                cursor.execute(sql, sfu)
+                db.commit()
+        except pymysql.MySQLError as error:
+            print(sys._getframe().f_code.co_name, error)
+        finally:
+            db.close()
 
 
 if __name__ == '__main__':
