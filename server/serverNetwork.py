@@ -151,7 +151,7 @@ class NetworkManager:
 
     def request_jam(self):
         print("Requesting jam at {}".format(datetime.datetime.now().isoformat()))
-        for dealer in self.dealers:
+        for dealer in self.dealers.values():
             msg_dict = {"jam": 0}
             deal_msg = self.request(dealer, msg_dict)
 
