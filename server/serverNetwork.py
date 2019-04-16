@@ -9,6 +9,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 class NetworkManager:
     dealer = None
+    dealers = {}
     router = None
     self_add = None
     scheduler = None
@@ -33,8 +34,9 @@ class NetworkManager:
     def dealer_routine(self):
         self.dealer = self.context.socket(zmq.DEALER)
         self.dealer.setsockopt(zmq.LINGER, 0)
+        self.set_up_dealers()
 
-    def request(self, port, msg):
+    def request2(self, port, msg):
         temp_dict = {}
         self.dealer.connect("tcp://{}".format(port))
         msg_json = json.dumps(msg)
@@ -61,6 +63,33 @@ class NetworkManager:
             print("{} Machine ({}) is not connected".format(now, port))
             self.dealer.close()
             self.dealer_routine()
+
+        return temp_dict
+
+    def request(self, dealer, msg):
+        temp_dict = {}
+        msg_json = json.dumps(msg)
+        dealer.send_string("", zmq.SNDMORE)  # delimiter
+        dealer.send_string(msg_json)
+
+        # use poll for timeouts:
+        poller = zmq.Poller()
+        poller.register(dealer, zmq.POLLIN)
+
+        socks = dict(poller.poll(2*1000))
+        now = datetime.datetime.now().isoformat()
+
+        if dealer in socks:
+            try:
+                dealer.recv()  # delimiter
+                recv_msg = self.dealer.recv_json()
+                temp_dict.update(recv_msg)
+            except IOError as error:
+                print("{} Problem with socket: ".format(now), error)
+        else:
+            print("{} Machine ({}) is not connected".format(now, dealer.getsockopt_string(zmq.IDENTITY)))
+            # self.dealer.close()
+            # self.dealer_routine()
 
         return temp_dict
 
@@ -95,12 +124,36 @@ class NetworkManager:
                 self.router.send(delimiter, zmq.SNDMORE)
                 self.router.send_json(reply_dict)
 
-    def request_jam(self):
+    def request_jam2(self):
         print("Requesting jam at {}".format(datetime.datetime.now().isoformat()))
         for ip, port in self.settings.get_ips_ports():
             msg_dict = {"jam": 0}
             ip_port = '{}:{}'.format(ip, port)
             deal_msg = self.request(ip_port, msg_dict)
+
+            machine_ip = deal_msg.get('ip')
+            # machine = self.settings.get_machine(machine_ip)
+
+            jam_msg = deal_msg.pop('jam', {})
+            for idx in range(1, 4):
+                machine = self.settings.get_machine(machine_ip, idx)
+                qc_list = jam_msg.pop('Q{}'.format(idx), [])
+                if qc_list:
+                    self.database_manager.insert_qc(machine, qc_list)
+                maintenance_dict = jam_msg.pop('M{}'.format(idx), {})
+                if maintenance_dict:
+                    self.database_manager.replace_maintenance(machine, maintenance_dict)
+                emp_dict = jam_msg.pop('E{}'.format(idx), {})
+                if emp_dict:
+                    self.database_manager.replace_emp_shift(machine, emp_dict)
+
+            self.database_manager.insert_jam(machine_ip, jam_msg)
+
+    def request_jam(self):
+        print("Requesting jam at {}".format(datetime.datetime.now().isoformat()))
+        for dealer in self.dealers:
+            msg_dict = {"jam": 0}
+            deal_msg = self.request(dealer, msg_dict)
 
             machine_ip = deal_msg.get('ip')
             # machine = self.settings.get_machine(machine_ip)
@@ -143,6 +196,16 @@ class NetworkManager:
         s.close()
 
         return ip_add
+
+    def set_up_dealers(self):
+        self.dealers.clear()
+
+        for ip, port in self.settings.get_ips_ports():
+            dealer = self.context.socket(zmq.DEALER)
+            dealer.setsockopt(zmq.LINGER, 0)
+            dealer.setsockopt_string(zmq.IDENTITY, "{}:{}".format(ip, port))
+            dealer.connect("tcp://{}:{}".format(ip, port))
+            self.dealers[ip] = dealer
 
 
 if __name__ == '__main__':
