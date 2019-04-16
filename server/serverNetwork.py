@@ -1,6 +1,6 @@
 import zmq
 import json
-import time
+import datetime
 import socket
 import threading
 from apscheduler.triggers.cron import CronTrigger
@@ -46,6 +46,7 @@ class NetworkManager:
         poller.register(self.dealer, zmq.POLLIN)
 
         socks = dict(poller.poll(2*1000))
+        now = datetime.datetime.now().isoformat()
 
         if self.dealer in socks:
             try:
@@ -53,11 +54,11 @@ class NetworkManager:
                 recv_msg = self.dealer.recv_json()
                 temp_dict.update(recv_msg)
             except IOError as error:
-                print("Problem with socket: ", error)
+                print("{} Problem with socket: ".format(now), error)
             finally:
                 self.dealer.disconnect("tcp://{}".format(port))
         else:
-            print("Machine ({}) is not connected".format(port))
+            print("{} Machine ({}) is not connected".format(now, port))
             self.dealer.close()
             self.dealer_routine()
 
@@ -95,6 +96,7 @@ class NetworkManager:
                 self.router.send_json(reply_dict)
 
     def request_jam(self):
+        print("Requesting jam at {}".format(datetime.datetime.now().isoformat()))
         for ip, port in self.settings.get_ips_ports():
             msg_dict = {"jam": 0}
             ip_port = '{}:{}'.format(ip, port)
