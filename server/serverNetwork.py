@@ -35,9 +35,8 @@ class NetworkManager:
         self.dealer.setsockopt(zmq.LINGER, 0)
 
     def request(self, port, msg):
-        temp_list = {}
-        now = time.strftime("%Y-%m-%d %H:%M:%S")
-        self.dealer.connect("tcp://%s" % port)
+        temp_dict = {}
+        self.dealer.connect("tcp://{}".format(port))
         msg_json = json.dumps(msg)
         self.dealer.send_string("", zmq.SNDMORE)  # delimiter
         self.dealer.send_string(msg_json)
@@ -46,23 +45,23 @@ class NetworkManager:
         poller = zmq.Poller()
         poller.register(self.dealer, zmq.POLLIN)
 
-        socks = dict(poller.poll(2 * 1000))
+        socks = dict(poller.poll(2*1000))
 
         if self.dealer in socks:
             try:
                 self.dealer.recv()  # delimiter
                 recv_msg = self.dealer.recv_json()
-                temp_list.update(recv_msg)
+                temp_dict.update(recv_msg)
             except IOError as error:
                 print("Problem with socket: ", error)
             finally:
-                self.dealer.disconnect("tcp://%s" % port)
+                self.dealer.disconnect("tcp://{}".format(port))
         else:
             print("Machine ({}) is not connected".format(port))
             self.dealer.close()
             self.dealer_routine()
 
-        return temp_list
+        return temp_dict
 
     def router_routine(self):
         port_number = "{}:{}".format(self.self_add, self.settings.config.get('Network', 'port'))
