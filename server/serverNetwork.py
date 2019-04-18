@@ -8,9 +8,8 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 
 class NetworkManager:
-    dealer = None
-    dealers = {}
-    router = None
+    router_send = None
+    router_recv = None
     self_add = None
     scheduler = None
     scheduler_jobs = {}
@@ -21,7 +20,7 @@ class NetworkManager:
         self.settings = settings
         self.database_manager = database_manager
         self.router_routine()
-        self.dealer_routine()
+        self.setup_router_send()
         self.router_kill = threading.Event()
         self.router_thread = threading.Thread(target=self.route)
         self.router_thread.daemon = True
@@ -31,83 +30,78 @@ class NetworkManager:
         self.schedule_jam(interval=jam_dur)
         self.scheduler.start()
 
-    def dealer_routine(self):
-        self.dealer = self.context.socket(zmq.DEALER)
-        self.dealer.setsockopt(zmq.LINGER, 0)
-        self.set_up_dealers()
+    def setup_router_send(self):
+        if self.router_send:
+            self.router_send.close()
+        self.router_send = self.context.socket(zmq.ROUTER)
+        self.router_send.setsockopt(zmq.LINGER, 0)
+        # connect to all the ports
+        for ip, port in self.settings.get_ips_ports():
+            self.router_send.connect("tcp://{}:{}".format(ip, port))
 
     def request2(self, port, msg):
         temp_dict = {}
-        self.dealer.connect("tcp://{}".format(port))
+        self.router_send.connect("tcp://{}".format(port))
         msg_json = json.dumps(msg)
-        self.dealer.send_string("", zmq.SNDMORE)  # delimiter
-        self.dealer.send_string(msg_json)
+        self.router_send.send_string("", zmq.SNDMORE)  # delimiter
+        self.router_send.send_string(msg_json)
 
         # use poll for timeouts:
         poller = zmq.Poller()
-        poller.register(self.dealer, zmq.POLLIN)
+        poller.register(self.router_send, zmq.POLLIN)
 
         socks = dict(poller.poll(2*1000))
         now = datetime.datetime.now().isoformat()
 
-        if self.dealer in socks:
+        if self.router_send in socks:
             try:
-                self.dealer.recv()  # delimiter
-                recv_msg = self.dealer.recv_json()
+                self.router_send.recv()  # delimiter
+                recv_msg = self.router_send.recv_json()
                 temp_dict.update(recv_msg)
             except IOError as error:
                 print("{} Problem with socket: ".format(now), error)
             finally:
-                self.dealer.disconnect("tcp://{}".format(port))
+                self.router_send.disconnect("tcp://{}".format(port))
         else:
             print("{} Machine ({}) is not connected".format(now, port))
-            self.dealer.close()
-            self.dealer_routine()
+            self.router_send.close()
+            self.setup_router_send()
 
         return temp_dict
 
-    def request(self, dealer, msg):
+    def request(self, id_, msg):
         temp_dict = {}
-        msg_json = json.dumps(msg)
-        dealer.send_string("", zmq.SNDMORE)  # delimiter
-        dealer.send_string(msg_json)
+        to_send = [id_.encode(), (json.dumps(msg)).encode()]
+        self.router_send.send_multipart(to_send)
 
-        # use poll for timeouts:
-        poller = zmq.Poller()
-        poller.register(dealer, zmq.POLLIN)
-
-        socks = dict(poller.poll(2*1000))
         now = datetime.datetime.now().isoformat()
 
-        if dealer in socks:
+        if self.router_send.poll(1000):
             try:
-                dealer.recv()  # delimiter
-                recv_msg = self.dealer.recv_json()
-                temp_dict.update(recv_msg)
+                id_, recv_bytes = self.router_send.recv_multipart()
+                temp_dict.update(json.loads(recv_bytes.decode()))
             except IOError as error:
                 print("{} Problem with socket: ".format(now), error)
         else:
-            print("{} Machine ({}) is not connected".format(now, dealer.getsockopt_string(zmq.IDENTITY)))
-            # self.dealer.close()
-            # self.dealer_routine()
+            print("{} Machine ({}) is not connected".format(now, id_))
 
         return temp_dict
 
     def router_routine(self):
         port_number = "{}:{}".format(self.self_add, self.settings.config.get('Network', 'port'))
-        self.router = self.context.socket(zmq.ROUTER)
-        self.router.bind("tcp://%s" % port_number)
+        self.router_recv = self.context.socket(zmq.ROUTER)
+        self.router_recv.bind("tcp://%s" % port_number)
 
     def route(self):
         while not self.router_kill.is_set():
             poller = zmq.Poller()
-            poller.register(self.router, zmq.POLLIN)
+            poller.register(self.router_recv, zmq.POLLIN)
 
             poll = poller.poll(1000)  # Wait for one second
             if poll:
-                ident = self.router.recv()  # routing information
-                delimiter = self.router.recv()  # delimiter
-                message = self.router.recv_json()
+                ident = self.router_recv.recv()  # routing information
+                delimiter = self.router_recv.recv()  # delimiter
+                message = self.router_recv.recv_json()
                 reply_dict = {}
 
                 for key in message.keys():
@@ -120,9 +114,9 @@ class NetworkManager:
                         ink_key = message.get("ink_key", None)
                         self.database_manager.replace_ink_key(ink_key)
 
-                self.router.send(ident, zmq.SNDMORE)
-                self.router.send(delimiter, zmq.SNDMORE)
-                self.router.send_json(reply_dict)
+                self.router_recv.send(ident, zmq.SNDMORE)
+                self.router_recv.send(delimiter, zmq.SNDMORE)
+                self.router_recv.send_json(reply_dict)
 
     def request_jam2(self):
         print("Requesting jam at {}".format(datetime.datetime.now().isoformat()))
@@ -151,9 +145,9 @@ class NetworkManager:
 
     def request_jam(self):
         print("Requesting jam at {}".format(datetime.datetime.now().isoformat()))
-        for dealer in self.dealers.values():
+        for ip, port in self.settings.get_ips_ports():
             msg_dict = {"jam": 0}
-            deal_msg = self.request(dealer, msg_dict)
+            deal_msg = self.request(ip, msg_dict)
 
             machine_ip = deal_msg.get('ip')
             # machine = self.settings.get_machine(machine_ip)
@@ -196,16 +190,6 @@ class NetworkManager:
         s.close()
 
         return ip_add
-
-    def set_up_dealers(self):
-        self.dealers.clear()
-
-        for ip, port in self.settings.get_ips_ports():
-            dealer = self.context.socket(zmq.DEALER)
-            dealer.setsockopt(zmq.LINGER, 0)
-            dealer.setsockopt_string(zmq.IDENTITY, "{}:{}".format(ip, port))
-            dealer.connect("tcp://{}:{}".format(ip, port))
-            self.dealers[ip] = dealer
 
 
 if __name__ == '__main__':

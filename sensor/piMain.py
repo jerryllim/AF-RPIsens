@@ -152,30 +152,30 @@ class PiController:
         return temp
 
     def respondent_routine(self):
-        ip_port = "{}:{}".format(self.self_add, self.self_port)
-
-        self.respondent = self.context.socket(zmq.REP)
+        self.respondent = self.context.socket(zmq.DEALER)
         self.respondent.setsockopt(zmq.LINGER, 0)
-        self.respondent.bind("tcp://{}".format(ip_port))
+        self.respondent.setsockopt_string(zmq.IDENTITY, self.self_add)
+        self.respondent.bind("tcp://{}:{}".format(self.self_add, self.self_port))
 
     def respond(self):
         while not self.respondent_kill.is_set():
-            # wait for next request from client
-            recv_message = str(self.respondent.recv(), "utf-8")
-            recv_dict = json.loads(recv_message)
-            reply_dict = {'ip': self.self_add}
+            if self.respondent.poll(10):
+                # wait for next request from client
+                recv_message = str(self.respondent.recv(), "utf-8")
+                recv_dict = json.loads(recv_message)
+                reply_dict = {'ip': self.self_add}
 
-            for key in recv_dict.keys():
-                if key == "jam":
-                    reply_dict["jam"] = self.get_counts()
-                elif key == "job_info":
-                    job_list = recv_dict.pop(key)
-                    self.database_manager.renew_jobs_table(job_list)
-                elif key == "emp":
-                    emp_list = recv_dict.pop(key)
-                    self.update_emp_info(emp_list)
+                for key in recv_dict.keys():
+                    if key == "jam":
+                        reply_dict["jam"] = self.get_counts()
+                    elif key == "job_info":
+                        job_list = recv_dict.pop(key)
+                        self.database_manager.renew_jobs_table(job_list)
+                    elif key == "emp":
+                        emp_list = recv_dict.pop(key)
+                        self.update_emp_info(emp_list)
 
-            self.respondent.send_string(json.dumps(reply_dict))
+                self.respondent.send_string(json.dumps(reply_dict))
 
     def dealer_routine(self):
         ip_port = "{}:{}".format(self.server_add, self.server_port)
