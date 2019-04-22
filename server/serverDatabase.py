@@ -229,8 +229,7 @@ class DatabaseManager:
                     now = datetime.now()
                     date_time = now.replace(day=recv_time.day, hour=recv_time.hour, minute=recv_time.minute)
                     if recv_time.day > now.day:
-                        date_time = self.monthdelta(date_time, -1)
-                    # TODO get shift base on time
+                        date_time = self.month_delta(date_time, -1)
                     shift = self.get_shift(date_time)
 
                     for key in recv_info.keys():
@@ -238,12 +237,12 @@ class DatabaseManager:
 
                         if values:
                             query = "INSERT INTO jam_current_table (machine, jo_no, emp, date_time, shift, " \
-                                    "{header}) VALUES ('{machine}', '{jo_no}', '{emp}', '{date_time}', {shift}, " \
+                                    "{header}) VALUES ('{machine}', '{jo_no}', '{emp}', '{date_time}', %s, " \
                                     "{value}) ON DUPLICATE KEY UPDATE {header} = {header} + " \
                                     "{value};".format(header=values[1], machine=values[0], jo_no=job, emp=emp,
-                                                      date_time=date_time.strftime("%Y-%m-%d %H:%M"), shift=shift,
+                                                      date_time=date_time.strftime("%Y-%m-%d %H:%M"),
                                                       value=recv_info[key])
-                            cursor.execute(query)
+                            cursor.execute(query, [shift, ])
                 conn.commit()
         except pymysql.MySQLError as error:
             print(sys._getframe().f_code.co_name, error)
@@ -252,7 +251,7 @@ class DatabaseManager:
             conn.close()
 
     @staticmethod
-    def monthdelta(date_, delta):
+    def month_delta(date_, delta):
         m, y = (date_.month + delta) % 12, date_.year + ((date_.month) + delta - 1) // 12
         if not m: m = 12
         d = min(date_.day, [31, 29 if y % 4 == 0 and not y % 400 == 0 else 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][m - 1])
@@ -267,11 +266,13 @@ class DatabaseManager:
             start_time = datetime.strptime(self.settings.config.get('Shift', 'shift{}_start'.format(col)), "%H:%M").time()
             end_time = datetime.strptime(self.settings.config.get('Shift', 'shift{}_end'.format(col)), "%H:%M").time()
             if start_time < end_time:
-                if start_time <= date_time <= end_time:
+                if start_time <= date_time.time() <= end_time:
                     return col
             else:
-                if date_time >= start_time or date_time <= end_time:
+                if date_time.time() >= start_time or date_time.time() <= end_time:
                     return col
+
+            return None
 
     def get_output(self, start, end, machines_list=None):
         conn = pymysql.connect(host=self.host, user=self.user, password=self.password,

@@ -1,7 +1,8 @@
 import zmq
 import json
-import datetime
+import time
 import socket
+import datetime
 import threading
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -50,7 +51,7 @@ class NetworkManager:
             try:
                 id_from, recv_bytes = self.router_send.recv_multipart()
                 temp_dict.update(json.loads(recv_bytes.decode()))
-                temp_dict['ip'] = id_from
+                temp_dict['ip'] = id_from.decode()
             except IOError as error:
                 print("{} Problem with socket: ".format(now), error)
         else:
@@ -90,28 +91,45 @@ class NetworkManager:
                 self.router_recv.send_json(reply_dict)
 
     def request_jam(self):
-        print("Requesting jam at {}".format(datetime.datetime.now().isoformat()))
-        for ip, port in self.settings.get_ips_ports():
-            msg_dict = {"jam": 0}
-            deal_msg = self.request(ip, msg_dict)
+        now = datetime.datetime.now().isoformat()
+        print("Requesting jam at {}".format(now))
+        ip_list = self.settings.get_ips()
+        for ip in ip_list:
+            to_send = [ip.encode(), (json.dumps({'jam': 0})).encode()]
+            self.router_send.send_multipart(to_send)
 
-            machine_ip = deal_msg.get('ip')
-            # machine = self.settings.get_machine(machine_ip)
+        time.sleep(1)
 
-            jam_msg = deal_msg.pop('jam', {})
-            for idx in range(1, 4):
-                machine = self.settings.get_machine(machine_ip, idx)
-                qc_list = jam_msg.pop('Q{}'.format(idx), [])
-                if qc_list:
-                    self.database_manager.insert_qc(machine, qc_list)
-                maintenance_dict = jam_msg.pop('M{}'.format(idx), {})
-                if maintenance_dict:
-                    self.database_manager.replace_maintenance(machine, maintenance_dict)
-                emp_dict = jam_msg.pop('E{}'.format(idx), {})
-                if emp_dict:
-                    self.database_manager.replace_emp_shift(machine, emp_dict)
+        while self.router_send.poll(1000):
+            try:
+                id_from, recv_bytes = self.router_send.recv_multipart()
+                recv_dict = json.loads(recv_bytes.decode())
+                recv_dict['ip'] = id_from.decode()
 
-            self.database_manager.insert_jam(machine_ip, jam_msg)
+                machine_ip = recv_dict.get('ip')
+                ip_list.remove(machine_ip)
+                # machine = self.settings.get_machine(machine_ip)
+
+                jam_msg = recv_dict.pop('jam', {})
+                for idx in range(1, 4):
+                    machine = self.settings.get_machine(machine_ip, idx)
+                    qc_list = jam_msg.pop('Q{}'.format(idx), [])
+                    if qc_list:
+                        self.database_manager.insert_qc(machine, qc_list)
+                    maintenance_dict = jam_msg.pop('M{}'.format(idx), {})
+                    if maintenance_dict:
+                        self.database_manager.replace_maintenance(machine, maintenance_dict)
+                    emp_dict = jam_msg.pop('E{}'.format(idx), {})
+                    if emp_dict:
+                        self.database_manager.replace_emp_shift(machine, emp_dict)
+
+                self.database_manager.insert_jam(machine_ip, jam_msg)
+
+            except IOError as error:
+                print("{} Problem with socket: ".format(now), error)
+
+        if ip_list:
+            print('{} Machine(s) {} did not reply.'.format(now, ip_list))
 
     def send_job_info(self):
         # TODO retrive mac from server settings
