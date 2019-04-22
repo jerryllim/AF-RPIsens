@@ -225,11 +225,11 @@ class DatabaseManager:
                 cursor.execute("UPDATE pis_table SET last_update = NOW() WHERE ip = '{}';".format(ip))
                 for recv_id, recv_info in recv_dict.items():
                     emp, job, time_str = recv_id.split('_', 3)
-                    recv_time = datetime.strptime(time_str, '%H%M')
+                    recv_time = datetime.strptime(time_str, '%d%H%M')
                     now = datetime.now()
-                    date_time = now.replace(hour=recv_time.hour, minute=recv_time.minute)
-                    if recv_time.time() > now.time():
-                        date_time = date_time - timedelta(1)
+                    date_time = now.replace(day=recv_time.day, hour=recv_time.hour, minute=recv_time.minute)
+                    if recv_time.day > now.day:
+                        date_time = self.monthdelta(date_time, -1)
                     # TODO get shift base on time
 
                     for key in recv_info.keys():
@@ -251,6 +251,14 @@ class DatabaseManager:
             conn.rollback()
         finally:
             conn.close()
+
+    @staticmethod
+    def monthdelta(date_, delta):
+        m, y = (date_.month + delta) % 12, date_.year + ((date_.month) + delta - 1) // 12
+        if not m: m = 12
+        d = min(date_.day, [31, 29 if y % 4 == 0 and not y % 400 == 0 else 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][m - 1])
+
+        return date_.replace(day=d, month=m, year=y)
 
     def get_output(self, start, end, machines_list=None):
         conn = pymysql.connect(host=self.host, user=self.user, password=self.password,

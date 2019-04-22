@@ -90,7 +90,7 @@ class PiController:
 
         jo_no = self.gui.machines[idx].get_jo_no()
 
-        return '{0}_{1}_{2}'.format(emp, jo_no, now.strftime('%H%M'))
+        return '{0}_{1}_{2}'.format(emp, jo_no, now.strftime('%d%H%M'))
 
     def add_qc(self, idx, string):
         key = 'Q{}'.format(idx)
