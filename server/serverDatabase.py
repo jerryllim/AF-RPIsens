@@ -231,19 +231,18 @@ class DatabaseManager:
                     if recv_time.day > now.day:
                         date_time = self.monthdelta(date_time, -1)
                     # TODO get shift base on time
+                    shift = self.get_shift(date_time)
 
                     for key in recv_info.keys():
                         values = self.settings.get_ip_key(ip, key)
 
                         if values:
-                            query = "INSERT INTO jam_current_table (machine, jo_no, emp, date_time, " \
-                                    "{header}) VALUES ('{machine}', '{jo_no}', '{emp}', '{date_time}', {value}) ON " \
-                                    "DUPLICATE KEY UPDATE {header} = {header} + {value};".format(header=values[1],
-                                                                                                 machine=values[0],
-                                                                                                 jo_no=job, emp=emp,
-                                                                                                 date_time=date_time.strftime(
-                                                                                                     "%Y-%m-%d %H:%M"),
-                                                                                                 value=recv_info[key])
+                            query = "INSERT INTO jam_current_table (machine, jo_no, emp, date_time, shift, " \
+                                    "{header}) VALUES ('{machine}', '{jo_no}', '{emp}', '{date_time}', {shift}, " \
+                                    "{value}) ON DUPLICATE KEY UPDATE {header} = {header} + " \
+                                    "{value};".format(header=values[1], machine=values[0], jo_no=job, emp=emp,
+                                                      date_time=date_time.strftime("%Y-%m-%d %H:%M"), shift=shift,
+                                                      value=recv_info[key])
                             cursor.execute(query)
                 conn.commit()
         except pymysql.MySQLError as error:
@@ -259,6 +258,20 @@ class DatabaseManager:
         d = min(date_.day, [31, 29 if y % 4 == 0 and not y % 400 == 0 else 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][m - 1])
 
         return date_.replace(day=d, month=m, year=y)
+
+    def get_shift(self, date_time):
+        for col in range(1, 5):
+            if not self.settings.config.getboolean('Shift', 'shift{}_enable'.format(col)):
+                continue
+
+            start_time = datetime.strptime(self.settings.config.get('Shift', 'shift{}_start'.format(col)), "%H:%M").time()
+            end_time = datetime.strptime(self.settings.config.get('Shift', 'shift{}_end'.format(col)), "%H:%M").time()
+            if start_time < end_time:
+                if start_time <= date_time <= end_time:
+                    return col
+            else:
+                if date_time >= start_time or date_time <= end_time:
+                    return col
 
     def get_output(self, start, end, machines_list=None):
         conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
