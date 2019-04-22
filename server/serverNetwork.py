@@ -39,51 +39,22 @@ class NetworkManager:
         for ip, port in self.settings.get_ips_ports():
             self.router_send.connect("tcp://{}:{}".format(ip, port))
 
-    def request2(self, port, msg):
+    def request(self, id_to, msg):
         temp_dict = {}
-        self.router_send.connect("tcp://{}".format(port))
-        msg_json = json.dumps(msg)
-        self.router_send.send_string("", zmq.SNDMORE)  # delimiter
-        self.router_send.send_string(msg_json)
-
-        # use poll for timeouts:
-        poller = zmq.Poller()
-        poller.register(self.router_send, zmq.POLLIN)
-
-        socks = dict(poller.poll(2*1000))
-        now = datetime.datetime.now().isoformat()
-
-        if self.router_send in socks:
-            try:
-                self.router_send.recv()  # delimiter
-                recv_msg = self.router_send.recv_json()
-                temp_dict.update(recv_msg)
-            except IOError as error:
-                print("{} Problem with socket: ".format(now), error)
-            finally:
-                self.router_send.disconnect("tcp://{}".format(port))
-        else:
-            print("{} Machine ({}) is not connected".format(now, port))
-            self.router_send.close()
-            self.setup_router_send()
-
-        return temp_dict
-
-    def request(self, id_, msg):
-        temp_dict = {}
-        to_send = [id_.encode(), (json.dumps(msg)).encode()]
+        to_send = [id_to.encode(), (json.dumps(msg)).encode()]
         self.router_send.send_multipart(to_send)
 
         now = datetime.datetime.now().isoformat()
 
-        if self.router_send.poll(1000):
+        if self.router_send.poll(2000):
             try:
-                id_, recv_bytes = self.router_send.recv_multipart()
+                id_from, recv_bytes = self.router_send.recv_multipart()
                 temp_dict.update(json.loads(recv_bytes.decode()))
+                temp_dict['ip'] = id_from
             except IOError as error:
                 print("{} Problem with socket: ".format(now), error)
         else:
-            print("{} Machine ({}) is not connected".format(now, id_))
+            print("{} Machine ({}) is not connected".format(now, id_to))
 
         return temp_dict
 
@@ -117,31 +88,6 @@ class NetworkManager:
                 self.router_recv.send(ident, zmq.SNDMORE)
                 self.router_recv.send(delimiter, zmq.SNDMORE)
                 self.router_recv.send_json(reply_dict)
-
-    def request_jam2(self):
-        print("Requesting jam at {}".format(datetime.datetime.now().isoformat()))
-        for ip, port in self.settings.get_ips_ports():
-            msg_dict = {"jam": 0}
-            ip_port = '{}:{}'.format(ip, port)
-            deal_msg = self.request(ip_port, msg_dict)
-
-            machine_ip = deal_msg.get('ip')
-            # machine = self.settings.get_machine(machine_ip)
-
-            jam_msg = deal_msg.pop('jam', {})
-            for idx in range(1, 4):
-                machine = self.settings.get_machine(machine_ip, idx)
-                qc_list = jam_msg.pop('Q{}'.format(idx), [])
-                if qc_list:
-                    self.database_manager.insert_qc(machine, qc_list)
-                maintenance_dict = jam_msg.pop('M{}'.format(idx), {})
-                if maintenance_dict:
-                    self.database_manager.replace_maintenance(machine, maintenance_dict)
-                emp_dict = jam_msg.pop('E{}'.format(idx), {})
-                if emp_dict:
-                    self.database_manager.replace_emp_shift(machine, emp_dict)
-
-            self.database_manager.insert_jam(machine_ip, jam_msg)
 
     def request_jam(self):
         print("Requesting jam at {}".format(datetime.datetime.now().isoformat()))

@@ -221,6 +221,8 @@ class DatabaseManager:
 
         try:
             with conn.cursor() as cursor:
+                # Update the 'last_update' in pis_table (to know if there's no reply from a pi
+                cursor.execute("UPDATE pis_table SET last_update = NOW() WHERE ip = '{}';".format(ip))
                 for recv_id, recv_info in recv_dict.items():
                     emp, job, time_str = recv_id.split('_', 3)
                     recv_time = datetime.strptime(time_str, '%H%M')
@@ -706,6 +708,7 @@ class DatabaseManager:
                       'B33 varchar(6) DEFAULT NULL, ' \
                       'B43 varchar(6) DEFAULT NULL, ' \
                       'B53 varchar(6) DEFAULT NULL, ' \
+                      'last_update timestamp DEFAULT NULL, ' \
                       'PRIMARY KEY (ip) );'
                 cursor.execute(sql)
                 conn.commit()
