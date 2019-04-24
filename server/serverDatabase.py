@@ -820,7 +820,7 @@ class DatabaseManager:
         try:
             with conn.cursor() as cursor:
                 sql = 'DELETE pis_table WHERE ip = %s'
-                cursor.execute(sql, [ip,])
+                cursor.execute(sql, [ip, ])
                 conn.commit()
         except pymysql.MySQLError as error:
             self.logger.error(sys._getframe().f_code.co_name, error)
