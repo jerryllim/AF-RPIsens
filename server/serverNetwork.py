@@ -25,7 +25,7 @@ class NetworkManager:
         log_format = logging.Formatter('%(asctime)s - %(threadName)s - %(levelname)s: %(module)s - %(message)s')
         file_handler.setFormatter(log_format)
         self.logger.addHandler(file_handler)
-        self.logger.info('Started logging')
+        self.logger.info('\n\nStarted logging')
 
         self.self_add = self.get_ip_add()
         self.context = zmq.Context()
@@ -104,7 +104,7 @@ class NetworkManager:
 
     def request_jam(self):
         now = datetime.datetime.now().isoformat()
-        self.logger.debug("Requesting jam at {}".format(now))
+        self.logger.debug("Requesting jam")
         ip_list = self.settings.get_ips()
         for ip in ip_list:
             to_send = [ip.encode(), (json.dumps({'jam': 0})).encode()]
@@ -116,9 +116,8 @@ class NetworkManager:
             try:
                 id_from, recv_bytes = self.router_send.recv_multipart()
                 recv_dict = json.loads(recv_bytes.decode())
-                recv_dict['ip'] = id_from.decode()
+                machine_ip = id_from.decode()
 
-                machine_ip = recv_dict.get('ip')
                 ip_list.remove(machine_ip)
                 # machine = self.settings.get_machine(machine_ip)
 
@@ -141,7 +140,7 @@ class NetworkManager:
                 self.logger.error("Problem with socket: ".format(now), error)
 
         if ip_list:
-            self.logger.info('Machine(s) {} did not reply.'.format(now, ip_list))
+            self.logger.info('Machine(s) {} did not reply.'.format(ip_list))
 
     def send_job_info(self):
         # TODO retrive mac from server settings

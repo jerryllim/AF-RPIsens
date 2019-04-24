@@ -762,7 +762,8 @@ class DatabaseManager:
                 cursor.execute(sql)
 
                 sql = 'INSERT INTO pis_table VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,' \
-                      ' %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);'
+                      ' %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, ' \
+                      'last_update);'
                 cursor.executemany(sql, pis_row)
             conn.commit()
         except pymysql.MySQLError as error:
