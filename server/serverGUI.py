@@ -1,4 +1,5 @@
 import csv
+import logging
 import datetime
 import configparser
 from server import serverDatabase, serverNetwork
@@ -978,6 +979,8 @@ class DisplayTable(QtWidgets.QWidget):
 class JamMainWindow(QtWidgets.QMainWindow):
     def __init__(self, parent):
         QtWidgets.QMainWindow.__init__(self, parent)
+        self.logger = logging.getLogger('jamSERVER')
+
         config = configparser.ConfigParser()
         config.read('jam.ini')
         self.settings = serverDatabase.Settings()
@@ -1010,6 +1013,7 @@ class JamMainWindow(QtWidgets.QMainWindow):
         file_menu.addAction(config_action)
         file_menu.addAction(quit_action)
 
+        self.logger.info('Completed JamMainWindow __init__')
         self.show()
 
     def launch_configuration(self):

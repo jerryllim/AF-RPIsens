@@ -2,6 +2,7 @@ import zmq
 import json
 import time
 import socket
+import logging
 import datetime
 import threading
 from apscheduler.triggers.cron import CronTrigger
@@ -16,6 +17,16 @@ class NetworkManager:
     scheduler_jobs = {}
 
     def __init__(self, settings, database_manager):
+        # Logger setup
+        self.logger = logging.getLogger('jamSERVER')
+        self.logger.setLevel(logging.DEBUG)
+        file_handler = logging.FileHandler('jamSERVER.log')
+        file_handler.setLevel(logging.DEBUG)
+        log_format = logging.Formatter('%(asctime)s - %(threadName)s - %(levelname)s: %(module)s - %(message)s')
+        file_handler.setFormatter(log_format)
+        self.logger.addHandler(file_handler)
+        self.logger.info('Started logging')
+
         self.self_add = self.get_ip_add()
         self.context = zmq.Context()
         self.settings = settings
@@ -30,6 +41,7 @@ class NetworkManager:
         jam_dur = self.settings.config.getint('Network', 'interval')
         self.schedule_jam(interval=jam_dur)
         self.scheduler.start()
+        self.logger.info('Completed serverNetwork __init__')
 
     def setup_router_send(self):
         if self.router_send:
@@ -92,7 +104,7 @@ class NetworkManager:
 
     def request_jam(self):
         now = datetime.datetime.now().isoformat()
-        print("Requesting jam at {}".format(now))
+        self.logger.debug("Requesting jam at {}".format(now))
         ip_list = self.settings.get_ips()
         for ip in ip_list:
             to_send = [ip.encode(), (json.dumps({'jam': 0})).encode()]
@@ -126,10 +138,10 @@ class NetworkManager:
                 self.database_manager.insert_jam(machine_ip, jam_msg)
 
             except IOError as error:
-                print("{} Problem with socket: ".format(now), error)
+                self.logger.error("Problem with socket: ".format(now), error)
 
         if ip_list:
-            print('{} Machine(s) {} did not reply.'.format(now, ip_list))
+            self.logger.info('Machine(s) {} did not reply.'.format(now, ip_list))
 
     def send_job_info(self):
         # TODO retrive mac from server settings
