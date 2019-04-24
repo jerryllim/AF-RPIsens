@@ -3,6 +3,7 @@ import zmq
 import time
 import json
 import pigpio
+import logging
 import sqlite3
 import datetime
 import threading
@@ -26,6 +27,16 @@ class PiController:
     self_port = None
 
     def __init__(self, gui, filename='pin_dict.json'):
+        # Logger setup
+        self.logger = logging.getLogger('JAM')
+        self.logger.setLevel(logging.DEBUG)
+        file_handler = logging.FileHandler('jam.log')
+        file_handler.setLevel(logging.DEBUG)
+        log_format = logging.Formatter('%(asctime)s - %(threadName)s - %(levelname)s: %(module)s - %(message)s')
+        file_handler.setFormatter(log_format)
+        self.logger.addHandler(file_handler)
+        self.logger.info('Started logging')
+
         self.filename = filename
         self.callbacks = []
         self.counts_lock = threading.Lock()
@@ -56,12 +67,14 @@ class PiController:
         self.respondent_thread = threading.Thread(target=self.respond)
         self.respondent_thread.daemon = True
         self.respondent_thread.start()
+        self.logger.info('Completed PiController __init__')
 
     def update_ip_ports(self):
         self.server_add = self.gui.config.get('Network', 'server_add')
         self.server_port = self.gui.config.get('Network', 'server_port')
         self.self_add = self.gui.config.get('Network', 'self_add')
         self.self_port = self.gui.config.get('Network', 'self_port')
+        self.logger.info('Updating ports')
 
     def load_pin_dict(self):
         try:
@@ -70,7 +83,7 @@ class PiController:
                 self.pulse_pins = temp["pins"]
                 self.pin_to_name = self.lookup_pin_name()
         except FileNotFoundError:
-            print("File not found, ", self.filename)
+            self.logger.error("File not found, ", self.filename)
             raise SystemExit
 
     def lookup_pin_name(self):
@@ -164,6 +177,7 @@ class PiController:
                 recv_message = str(self.respondent.recv(), "utf-8")
                 recv_dict = json.loads(recv_message)
                 reply_dict = {'ip': self.self_add}
+                self.logger.debug('Replying to server')
 
                 for key in recv_dict.keys():
                     if key == "jam":
@@ -188,6 +202,8 @@ class PiController:
         msg_dict['ip'] = self.self_add
         recv_msg = None
         # Try 3 times, each waiting for 2 seconds for reply from server
+        self.logger.debug('Sending request to server')
+
         for i in range(3):
             self.dealer.send_string("", zmq.SNDMORE)
             self.dealer.send_json(msg_dict)
@@ -195,6 +211,7 @@ class PiController:
             if self.dealer.poll(timeout):
                 self.dealer.recv()
                 recv_msg = self.dealer.recv_json()
+                self.logger.debug('Received reply from server on try {}'.format(i))
                 break
 
         return recv_msg
@@ -244,9 +261,12 @@ class PiController:
 
 class DatabaseManager:
     def __init__(self):
+        self.logger = logging.getLogger('JAM')
+
         self.database = 'test.sqlite'  # TODO to change
         self.create_emp_table()
         self.create_job_table()
+        self.logger.info('Completed DatabaseManager __init__')
 
     def create_emp_table(self):
         db = sqlite3.connect(self.database)

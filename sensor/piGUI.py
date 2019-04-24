@@ -5,8 +5,9 @@ import cv2
 import sys
 import time
 import socket
-import ipaddress
 import piMain
+import logging
+import ipaddress
 from enum import Enum
 from kivy.app import App
 from pyzbar import pyzbar
@@ -261,6 +262,7 @@ class SelectPage(Screen):
     timeout = None
     machine = None
     colour = ListProperty([0, 0, 0, 1])
+    logger = logging.getLogger('JAM')
 
     def on_pre_enter(self, *args):
         if self.machine is not App.get_running_app().get_current_machine():
@@ -307,6 +309,7 @@ class SelectPage(Screen):
 
     def start_job(self):
         barcode = self.ids.job_entry.text
+        self.logger.debug('Check for job with barcode {}'.format(barcode))
         try:
             if not barcode:
                 raise ValueError('Please scan barcode')
@@ -324,6 +327,7 @@ class SelectPage(Screen):
             self.parent.transition = SlideTransition()
             self.parent.transition.direction = 'left'
             self.parent.current = 'adjustment_page'
+            self.logger.debug('Starting job with barcode {}'.format(barcode))
 
         except ValueError as err_msg:
             popup_boxlayout = BoxLayout(orientation='vertical')
@@ -435,6 +439,7 @@ class EmployeePage(Screen):
     employee_layout = None
     emp_popup = None
     colour = ListProperty([0, 0, 0, 1])
+    logger = logging.getLogger('JAM')
 
     def on_pre_enter(self, *args):
         if self.machine is not App.get_running_app().get_current_machine():
@@ -457,6 +462,7 @@ class EmployeePage(Screen):
         if self.machine.add_emp(emp_id, asst=alternate):
             self.emp_popup.dismiss()
             self.load_emp_list()
+            self.logger.debug('Employee {} has logged in'.format(emp_id))
         else:
             popup_boxlayout = BoxLayout(orientation='vertical')
             popup_boxlayout.add_widget(Label(text=str('Maximum 3 main operators!')))
@@ -467,6 +473,7 @@ class EmployeePage(Screen):
         self.machine.remove_emp(emp_id)
         self.emp_popup.dismiss()
         self.load_emp_list()
+        self.logger.debug('Employee {} has logged out'.format(emp_id))
 
     def has_emp(self, emp_id):
         return self.machine.has_emp(emp_id)
@@ -714,6 +721,7 @@ class SimpleActionBar(BoxLayout):
     time = StringProperty()
     emp_popup = None
     popup = None
+    logger = logging.getLogger('JAM')
 
     def __init__(self, config, **kwargs):
         BoxLayout.__init__(self, **kwargs)
@@ -752,6 +760,7 @@ class SimpleActionBar(BoxLayout):
         self.machine_dropdown.select(button.text)
         if button.idx is not App.get_running_app().current_index:
             App.get_running_app().change_machine(button.idx)
+            self.logger.debug("Selected index {}".format(button.idx))
 
     def select_employee(self):
         self.machine_button.disabled = not self.machine_button.disabled
@@ -774,6 +783,7 @@ class SimpleActionBar(BoxLayout):
 
     def start_maintenance(self, emp_id, _alternate=False):
         machine = App.get_running_app().get_current_machine()
+        self.logger.debug("Starting maintenance for machine {}".format(machine.index))
         machine.start_maintenance(emp_id)
         self.emp_popup.dismiss()
         sm = App.get_running_app().screen_manager
@@ -802,6 +812,7 @@ class SimpleActionBar(BoxLayout):
     def start_settings(self, password):
         self.popup.dismiss()
         if password == App.get_running_app().config.get('Settings', 'password'):
+            self.logger.debug("Password is correct, opening settings")
             App.get_running_app().open_settings()
 
 
@@ -895,8 +906,10 @@ class PiGUIApp(App):
     screen_manager = ScreenManager()
     controller = None
     action_bar = None
+    logger = None
 
     def build(self):
+        self.logger = logging.getLogger('JAM')
         # self.check_camera()
         self.config.set('Network', 'self_add', self.get_ip_add())
         # self.controller = FakeClass(self)  # TODO set if testing
@@ -920,6 +933,7 @@ class PiGUIApp(App):
         blayout.add_widget(self.action_bar)
         blayout.add_widget(self.screen_manager)
 
+        self.logger.info('Returning blayout build')
         return blayout
 
     def build_config(self, config):
