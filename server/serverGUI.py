@@ -224,6 +224,7 @@ class PisTab(QtWidgets.QWidget):
         header.setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeToContents)
         header.setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
         header.setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(6, QtWidgets.QHeaderView.ResizeToContents)
 
         # Button box for New, Edit, Delete
         button_box = QtWidgets.QVBoxLayout()
@@ -304,7 +305,8 @@ class PisTab(QtWidgets.QWidget):
 
     def populate_pis(self):
         self.pis_model.clear()
-        self.pis_model.setHorizontalHeaderLabels(['Nickname', 'IP Address', 'Port', 'Machine1', 'Machine2', 'Machine3'])
+        self.pis_model.setHorizontalHeaderLabels(['Nickname', 'IP Address', 'Port', 'Machine1', 'Machine2', 'Machine3',
+                                                  'last updated'])
 
         for ip in self.pis_dict.keys():
             nick_item = QtGui.QStandardItem(self.pis_dict[ip].get('nick'))
@@ -313,6 +315,8 @@ class PisTab(QtWidgets.QWidget):
             machine1_item = QtGui.QStandardItem(self.pis_dict[ip].get('machine1'))
             machine2_item = QtGui.QStandardItem(self.pis_dict[ip].get('machine2'))
             machine3_item = QtGui.QStandardItem(self.pis_dict[ip].get('machine3'))
+            last_update_item = QtGui.QStandardItem(self.parent().database_manager.
+                                                   get_last_updates(ip)[0].strftime("%d/%m/%y %H:%M"))
             index = self.pis_model.rowCount()
             self.pis_model.setItem(index, 0, nick_item)
             self.pis_model.setItem(index, 1, ip_item)
@@ -320,6 +324,7 @@ class PisTab(QtWidgets.QWidget):
             self.pis_model.setItem(index, 3, machine1_item)
             self.pis_model.setItem(index, 4, machine2_item)
             self.pis_model.setItem(index, 5, machine3_item)
+            self.pis_model.setItem(index, 6, last_update_item)
 
     def set_fields(self, index):
         row = index.row()
@@ -760,6 +765,9 @@ class MiscTab(QtWidgets.QWidget):
             shift_layout.addWidget(end, col, 2)
             self.shift_check_state(check.checkState(), col)
 
+        # Log group
+        # TODO add log group - log level & file name
+
         vbox_layout = QtWidgets.QVBoxLayout()
         vbox_layout.addWidget(network_box)
         vbox_layout.addWidget(db_box)
@@ -880,7 +888,7 @@ class ConfigurationWidget(QtWidgets.QWidget):
         self.machines_tab.save_table()
         self.misc_tab.save_misc()
         self.parent().done(0)
-        # TODO trigger update Settings
+        self.parent().parent().settings.update()
 
     def cancel_changes(self):
         self.parent().done(0)

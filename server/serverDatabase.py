@@ -30,6 +30,7 @@ class Settings:
                                            password=self.config.get('Database', 'password'),
                                            db=self.config.get('Database', 'db'), create_tables=False)
         self.machines_info = database_manager.get_pis()
+        self.logger.debug("Updated Settings")
 
     def get_ip_key(self, ip, key):
         machine = 'machine{}'.format(key[-1:])
@@ -793,6 +794,25 @@ class DatabaseManager:
 
         return replaced
 
+    def get_last_updates(self, ip):
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
+                               database=self.db, port=self.port)
+        last_update = None
+
+        try:
+            with conn.cursor() as cursor:
+                sql = 'SELECT last_update FROM pis_table WHERE ip = %s'
+                cursor.execute(sql, [ip, ])
+                last_update = cursor.fetchone()
+            conn.commit()
+        except pymysql.MySQLError as error:
+            self.logger.error(sys._getframe().f_code.co_name, error)
+            conn.rollback()
+        finally:
+            conn.close()
+
+        return last_update
+
     def delete_pi(self, ip):
         conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
@@ -800,7 +820,7 @@ class DatabaseManager:
         try:
             with conn.cursor() as cursor:
                 sql = 'DELETE pis_table WHERE ip = %s'
-                cursor.execute(sql, ip)
+                cursor.execute(sql, [ip,])
                 conn.commit()
         except pymysql.MySQLError as error:
             self.logger.error(sys._getframe().f_code.co_name, error)
