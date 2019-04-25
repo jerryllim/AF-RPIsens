@@ -69,7 +69,6 @@ class JobClass(Widget):
         return "{jo_no}{jo_line:03d}".format(**self.job_info)
 
     def get_sfu(self):
-        # TODO format sfu dict
         sfu_dict = self.job_info.copy()
         sfu_dict.update(self.wastage)
         sfu_dict['output'] = self.output
@@ -190,7 +189,6 @@ class MachineClass:
         return None
 
     def publish_job(self):
-        # TODO This is called at stop job
         sfu_dict = self.current_job.get_sfu()
         sfu_list = []
         sfu_headers1 = ['jo_no', 'jo_line', 'complete', 'mac', 'output']
@@ -350,28 +348,29 @@ class AdjustmentPage(Screen):
             if int(self.machine.config['b{}_enable'.format(idx)]):
                 self.ids['adjustment_grid'].add_widget(AdjustmentLabel(text='{}'.format(self.machine.config['b{}_name'.format(idx)])))
                 field = AdjustmentTextInput()
-                field.bind(focus=self.set_text_input_target)
+                field.touch_function = self.set_text_input_target
+                field.name = 'B{}'.format(idx)
                 field.bind(text=self.check_text)
                 field.hint_text = '0'
                 field.hint_text_color = (0, 0, 0, 1)
-                field.text = '{}'.format(0)
+                field.text = '{}'.format(self.machine.current_job.adjustments['B{}'.format(idx)])
                 self.fields['B{}'.format(idx)] = field
                 self.ids['adjustment_grid'].add_widget(field)
 
     def proceed_next(self):
-        # TODO store B1 to B5
         self.parent.transition = SlideTransition()
         self.parent.transition.direction = 'left'
         self.parent.current = 'run_page'
 
-    def set_text_input_target(self, text_input, focus):
-        if focus:
-            self.ids['numpad'].set_target(text_input)
+    def set_text_input_target(self, text_input):
+        self.ids['numpad'].set_target(text_input)
 
-    @staticmethod
-    def check_text(text_input, value):
+    def check_text(self, text_input, value):
         if value.lstrip("0") == '':
             text_input.text = ''
+            self.machine.current_job.adjustments[text_input.name] = 0
+        else:
+            self.machine.current_job.adjustments[text_input.name] = int(value)
 
 
 class NumPadGrid(GridLayout):
@@ -819,7 +818,13 @@ class AdjustmentLabel(Label):
 
 
 class AdjustmentTextInput(TextInput):
-    pass
+    touch_function = None
+    name = ''
+
+    def on_touch_down(self, touch):
+        if self.collide_point(touch.x, touch.y):
+            if callable(self.touch_function):
+                self.touch_function(self)
 
 
 class SettingScrollableOptions(SettingOptions):
@@ -902,8 +907,8 @@ class PiGUIApp(App):
         self.logger = logging.getLogger('JAM')
         # self.check_camera()
         self.config.set('Network', 'self_add', self.get_ip_add())
-        # self.controller = FakeClass(self)  # TODO set if testing
-        self.controller = piMain.PiController(self)
+        self.controller = FakeClass(self)  # TODO set if testing
+        # self.controller = piMain.PiController(self)
 
         for idx in range(1, 4):
             self.machines[idx] = MachineClass(idx, self.controller, self.config)
@@ -1071,12 +1076,13 @@ class FakeClass:
 
     def get_job_info(self, barcode):
         job_info = self.database_manager.get_job_info(barcode)
-        # if job_info is None:
-        #     reply_msg = self.request({"job_info": barcode})
-        #     value = reply_msg.pop(barcode)
-        #     job_info = {'jo_no': value[0], 'jo_line': value[1], 'code': value[2], 'desc': value[3], 'to_do': value[4],
-        #                 'ran': value[5]}
-
+        if job_info is None:
+            reply_msg = self.request({"job_info": barcode})
+            if reply_msg:
+                value = reply_msg.pop(barcode)
+                if value:
+                    job_info = {'jo_no': value[0], 'jo_line': value[1], 'code': value[2], 'desc': value[3],
+                                'to_do': value[4], 'ran': value[5]}
         return job_info
 
     def get_emp_name(self, emp_id):
