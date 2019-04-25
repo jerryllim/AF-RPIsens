@@ -4,6 +4,7 @@ import re
 import cv2
 import sys
 import time
+import json
 import socket
 import piMain
 import logging
@@ -191,45 +192,34 @@ class MachineClass:
     def publish_job(self):
         # TODO This is called at stop job
         sfu_dict = self.current_job.get_sfu()
-        sfu_str = ""
+        sfu_list = []
         sfu_headers1 = ['jo_no', 'jo_line', 'complete', 'mac', 'output']
         for header in sfu_headers1:
-            if isinstance(sfu_dict.get(header, None), str):
-                sfu_str = sfu_str + "'{}',".format(sfu_dict.get(header, ''))
-            else:
-                sfu_str = sfu_str + "{},".format(sfu_dict.get(header, ''))
+            sfu_list.append(sfu_dict.get(header, None))
 
         emps = list(self.emp_main.keys())
         for i in range((3-len(emps))):
             emps.append(None)
 
         for emp in emps:
-            if isinstance(emp, str):
-                sfu_str = sfu_str + "'{},'".format(emp)
-            else:
-                sfu_str = sfu_str + "'{}',".format(emp)
+            sfu_list.append(emp)
 
         sfu_headers2 = ['waste1', 'waste2']
         for header in sfu_headers2:
-            if isinstance(sfu_dict.get(header, None), str):
-                sfu_str = sfu_str + "'{}',".format(sfu_dict.get(header, '')[0])
-            else:
-                sfu_str = sfu_str + "{},".format(sfu_dict.get(header, '')[0])
+            sfu_list.append(sfu_dict.get(header, (0, None))[0])
 
         sfu_headers3 = ['date', 'time_fr']
         for header in sfu_headers3:
-            if isinstance(sfu_dict.get(header, None), str):
-                sfu_str = sfu_str + "'{}',".format(sfu_dict.get(header, ''))
-            else:
-                sfu_str = sfu_str + "{},".format(sfu_dict.get(header, ''))
+            sfu_list.append(sfu_dict.get(header, None))
 
-        sfu_str = sfu_str + "'{}'".format(datetime.now().strftime('%H:%M'))
+        sfu_list.append(datetime.now().strftime('%H:%M'))
+        sfu_str = json.dumps(sfu_list).replace(" ", "")
 
         self.controller.request({'sfu': sfu_str})
 
     def self_info(self):
         save_info = {'permanent': self.permanent, 'state': self.state.name, 'emp_main': self.emp_main,
-                     'emp_asst':self.emp_asst,'maintenance': self.maintenance}
+                     'emp_asst': self.emp_asst, 'maintenance': self.maintenance}
         if self.current_job:
             save_info['job'] = self.current_job.all_info
         return save_info
