@@ -449,10 +449,10 @@ class DatabaseManager:
             return emp_list
 
     def create_jobs_table(self):
-        db = pymysql.connect(self.host, self.user, self.password, self.db)
+        conn = pymysql.connect(self.host, self.user, self.password, self.db)
 
         try:
-            with db.cursor() as cursor:
+            with conn.cursor() as cursor:
                 # TODO check varchar length for each column
                 sql = "CREATE TABLE IF NOT EXISTS jobs_table ( " \
                       "umc char(4) DEFAULT NULL, " \
@@ -480,11 +480,11 @@ class DatabaseManager:
                       "tdo_date date DEFAULT NULL, " \
                       "PRIMARY KEY (uno,uline) );"
                 cursor.execute(sql)
-                db.commit()
+                conn.commit()
         except pymysql.MySQLError as error:
             self.logger.error(sys._getframe().f_code.co_name, error)
         finally:
-            db.close()
+            conn.close()
 
     def replace_jobs(self, job_list):
         """
@@ -493,34 +493,34 @@ class DatabaseManager:
         'so_rem')
         :return:
         """
-        db = pymysql.connect(self.host, self.user, self.password, self.db)
+        conn = pymysql.connect(self.host, self.user, self.password, self.db)
         # column_names = ['jo_no', 'jo_line', 'mac', 'to_do', 'code', 'descp', 'so_no', 'edd', 'so_qty', 'so_rem']
         # column_names_str = ', '.join(column_names)
         # binds_str = ', '.join(['%s'] * len(column_names))
         try:
-            with db.cursor() as cursor:
+            with conn.cursor() as cursor:
                 for job_info in job_list:
                     query = "REPLACE INTO jobs_table VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, " \
                             "%s, %s, %s, %s, %s, %s, %s, %s, STR_TO_DATE(%s, %s));"
                     job_info = job_info + ["%d/%m/%Y"]
                     cursor.execute(query, job_info)
-                    db.commit()
+                    conn.commit()
         except pymysql.MySQLError as error:
             self.logger.error(sys._getframe().f_code.co_name, error)
-            db.rollback()
+            conn.rollback()
         finally:
-            db.close()
+            conn.close()
 
     def delete_completed_jobs(self):
-        db = pymysql.connect(self.host, self.user, self.password, self.db)
+        conn = pymysql.connect(self.host, self.user, self.password, self.db)
         try:
-            with db.cursor() as cursor:
+            with conn.cursor() as cursor:
                 query = "DELETE FROM job_info WHERE ucomplete = 'Y';"
                 cursor.execute(query)
         except pymysql.MySQLError as error:
             self.logger.error(sys._getframe().f_code.co_name, error)
         finally:
-            db.close()
+            conn.close()
 
     def delete_job(self, jo_ids):
         """
@@ -528,40 +528,56 @@ class DatabaseManager:
         :param jo_ids: List of jo_no & jo_line
         :return:
         """
-        db = pymysql.connect(self.host, self.user, self.password, self.db)
+        conn = pymysql.connect(self.host, self.user, self.password, self.db)
         try:
-            with db.cursor() as cursor:
+            with conn.cursor() as cursor:
                 query = '''DELETE FROM job_info WHERE jo_no = %s AND jo_line = %s'''
                 cursor.executemany(query, jo_ids)
         except pymysql.MySQLError as error:
             self.logger.error(sys._getframe().f_code.co_name, error)
         finally:
-            db.close()
+            conn.close()
 
     def get_job_info(self, barcode):
-        db = pymysql.connect(self.host, self.user, self.password, self.db)
-        cursor = db.cursor()
+        conn = pymysql.connect(self.host, self.user, self.password, self.db)
+        cursor = conn.cursor()
         reply_str = []
         try:
             jo_no = barcode[:-3]
             jo_line = int(barcode[-3:])
             sql = "SELECT uno, uline, usou_no, ustk_desc1, usch_qty, 0 FROM jobs_table " \
-                  "WHERE uno = %s AND uline = %s LIMIT 1"
+                  "WHERE uno = %s AND uline = %s LIMIT 1;"
             cursor.execute(sql, (jo_no, jo_line))
             temp = cursor.fetchone()
             reply_str = list(temp)
-            db.commit()
+            conn.commit()
         except pymysql.MySQLError as error:
             self.logger.error(sys._getframe().f_code.co_name, error)
         finally:
-            db.close()
+            conn.close()
             return reply_str
 
+    def get_umc_for(self, uno, uline):
+        conn = pymysql.connect(self.host, self.user, self.password, self.db)
+        umc = ''
+
+        try:
+            with conn.cursor() as cursor:
+                sql = "SELECT umc FROM job_info WHERE uno = %s AND uline = %s;"
+                cursor.execute(sql, [uno, uline])
+                umc = cursor.fetchone()
+        except pymysql.MySQLError as error:
+            self.logger.error(sys._getframe().f_code.co_name, error)
+        finally:
+            conn.close()
+
+        return umc
+
     def get_jobs_for(self, mac):
-        db = pymysql.connect(self.host, self.user, self.password, self.db)
+        conn = pymysql.connect(self.host, self.user, self.password, self.db)
         job_list = []
         try:
-            with db.cursor() as cursor:
+            with conn.cursor() as cursor:
                 sql = '''SELECT * FROM jobs_table WHERE umachine_no = %s'''
                 cursor.execute(sql, (mac,))
                 for row in cursor:
@@ -569,7 +585,7 @@ class DatabaseManager:
         except pymysql.MySQLError as error:
             self.logger.error(sys._getframe().f_code.co_name, error)
         finally:
-            db.close()
+            conn.close()
             return job_list
 
     @staticmethod
@@ -578,10 +594,10 @@ class DatabaseManager:
         cursor.execute(query, (jo_id, jo_line))
 
     def create_qc_table(self):
-        db = pymysql.connect(self.host, self.user, self.password, self.db)
+        conn = pymysql.connect(self.host, self.user, self.password, self.db)
 
         try:
-            with db.cursor() as cursor:
+            with conn.cursor() as cursor:
                 # TODO check varchar length for emp, machine & jo_no columns
                 query = "CREATE TABLE IF NOT EXISTS qc_table ( " \
                         "emp_id varchar(10) NOT NULL, " \
@@ -590,18 +606,18 @@ class DatabaseManager:
                         "jo_no varchar(10) NOT NULL, " \
                         "quality tinyint(3) unsigned NOT NULL );"
                 cursor.execute(query)
-                db.commit()
+                conn.commit()
         except pymysql.MySQLError as error:
             self.logger.error(sys._getframe().f_code.co_name, error)
         finally:
-            db.close()
+            conn.close()
 
     def insert_qc(self, machine, values):
-        db = pymysql.connect(host=self.host, user=self.user, password=self.password,
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                              database=self.db, port=self.port)
 
         try:
-            with db.cursor() as cursor:
+            with conn.cursor() as cursor:
                 for value in values:
                     emp, jo_no, time_str, grade = value.split('_', 4)
                     recv_time = datetime.strptime(time_str, '%H%M')
@@ -617,18 +633,18 @@ class DatabaseManager:
 
                     cursor.execute(query)
 
-                db.commit()
+                conn.commit()
         except pymysql.MySQLError as error:
             self.logger.error(sys._getframe().f_code.co_name, error)
         finally:
-            db.close()
+            conn.close()
 
     def create_maintenance_table(self):
-        db = pymysql.connect(host=self.host, user=self.user, password=self.password,
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
 
         try:
-            with db.cursor() as cursor:
+            with conn.cursor() as cursor:
                 # TODO check varchar length for emp & machine.
                 query = "CREATE TABLE IF NOT EXISTS maintenance_table ( " \
                         "emp_id varchar(10) NOT NULL, " \
@@ -637,36 +653,36 @@ class DatabaseManager:
                         "end datetime DEFAULT NULL, " \
                         "PRIMARY KEY (emp_id, machine, start) );"
                 cursor.execute(query)
-                db.commit()
+                conn.commit()
         except pymysql.MySQLError as error:
             self.logger.error(sys._getframe().f_code.co_name, error)
         finally:
-            db.close()
+            conn.close()
 
     def replace_maintenance(self, machine, values):
-        db = pymysql.connect(host=self.host, user=self.user, password=self.password,
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                              database=self.db, port=self.port)
 
         try:
-            with db.cursor() as cursor:
+            with conn.cursor() as cursor:
                 for emp_start, end in values.items():
                     emp, start = emp_start.split('_')
 
                     query = 'REPLACE INTO maintenance_table VALUES (%s, %s, %s, %s);'
                     cursor.execute(query, (emp, machine, start, end))
 
-                db.commit()
+                conn.commit()
         except pymysql.MySQLError as error:
             self.logger.error(sys._getframe().f_code.co_name, error)
         finally:
-            db.close()
+            conn.close()
 
     def create_emp_shift_table(self):
-        db = pymysql.connect(host=self.host, user=self.user, password=self.password,
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                              database=self.db, port=self.port)
 
         try:
-            with db.cursor() as cursor:
+            with conn.cursor() as cursor:
                 # TODO check varchar length for emp & machine.
                 query = 'CREATE TABLE IF NOT EXISTS emp_shift_table ( ' \
                         'emp_id varchar(10) NOT NULL, ' \
@@ -675,29 +691,29 @@ class DatabaseManager:
                         'end datetime DEFAULT NULL, ' \
                         'PRIMARY KEY (emp_id,machine,start) );'
                 cursor.execute(query)
-                db.commit()
+                conn.commit()
         except pymysql.MySQLError as error:
             self.logger.error(sys._getframe().f_code.co_name, error)
         finally:
-            db.close()
+            conn.close()
 
     def replace_emp_shift(self, machine, values):
-        db = pymysql.connect(host=self.host, user=self.user, password=self.password,
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                              database=self.db, port=self.port)
 
         try:
-            with db.cursor() as cursor:
+            with conn.cursor() as cursor:
                 for emp_start, end in values.items():
                     emp, start = emp_start.split('_')
 
                     query = 'REPLACE INTO emp_shift_table VALUES (%s, %s, %s, %s);'
                     cursor.execute(query, (emp, machine, start, end))
 
-                db.commit()
+                conn.commit()
         except pymysql.MySQLError as error:
             self.logger.error(sys._getframe().f_code.co_name, error)
         finally:
-            db.close()
+            conn.close()
 
     def create_pis_table(self):
         conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
@@ -998,10 +1014,10 @@ class DatabaseManager:
             return targets_dict
 
     def create_sfu_table(self):
-        db = pymysql.connect(self.host, self.user, self.password, self.db)
+        conn = pymysql.connect(self.host, self.user, self.password, self.db)
 
         try:
-            with db.cursor() as cursor:
+            with conn.cursor() as cursor:
                 sql = "CREATE TABLE IF NOT EXISTS sfu_table ( " \
                       "umc char(4) DEFAULT NULL, " \
                       "uno char(10) NOT NULL, " \
@@ -1017,24 +1033,24 @@ class DatabaseManager:
                       "usfc_time_fr time DEFAULT NULL, " \
                       "usfc_time_to time DEFAULT NULL);"
                 cursor.execute(sql)
-                db.commit()
+                conn.commit()
         except pymysql.MySQLError as error:
             self.logger.error(sys._getframe().f_code.co_name, error)
         finally:
-            db.close()
+            conn.close()
 
     def insert_sfu(self, sfu):
-        db = pymysql.connect(self.host, self.user, self.password, self.db)
+        conn = pymysql.connect(self.host, self.user, self.password, self.db)
 
         try:
-            with db.cursor() as cursor:
+            with conn.cursor() as cursor:
                 sql = "INSERT INTO sfu_table VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);"
                 cursor.execute(sql, sfu)
-                db.commit()
+                conn.commit()
         except pymysql.MySQLError as error:
             self.logger.error(sys._getframe().f_code.co_name, error)
         finally:
-            db.close()
+            conn.close()
 
 
 if __name__ == '__main__':
