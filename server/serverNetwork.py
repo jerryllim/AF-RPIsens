@@ -78,11 +78,7 @@ class NetworkManager:
 
     def route(self):
         while not self.router_kill.is_set():
-            poller = zmq.Poller()
-            poller.register(self.router_recv, zmq.POLLIN)
-
-            poll = poller.poll(1000)  # Wait for one second
-            if poll:
+            if self.router_recv.poll(1000):
                 ident = self.router_recv.recv()  # routing information
                 delimiter = self.router_recv.recv()  # delimiter
                 message = self.router_recv.recv_json()
@@ -93,7 +89,9 @@ class NetworkManager:
                         barcode = message.get("job_info", None)
                         reply_dict[barcode] = self.database_manager.get_job_info(barcode)
                     elif key == "sfu":
-                        print(message.get("sfu", None))
+                        sfu_str = message.get("sfu", None)
+                        if sfu_str:
+                            self.insert_sfu(sfu_str)
                     elif key == "ink_key":
                         ink_key = message.get("ink_key", None)
                         self.database_manager.replace_ink_key(ink_key)
@@ -101,6 +99,13 @@ class NetworkManager:
                 self.router_recv.send(ident, zmq.SNDMORE)
                 self.router_recv.send(delimiter, zmq.SNDMORE)
                 self.router_recv.send_json(reply_dict)
+
+    def insert_sfu(self, sfu_str):
+        sfu_list = json.loads(sfu_str)
+        umc = self.database_manager.get_umc_for(sfu_list[0], sfu_list[1])
+        sfu_list = [umc] + sfu_list
+
+        self.database_manager.insert_sfu(sfu_list)
 
     def request_jam(self):
         now = datetime.datetime.now().isoformat()
