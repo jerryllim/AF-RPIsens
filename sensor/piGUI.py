@@ -341,7 +341,6 @@ class AdjustmentPage(Screen):
         self.colour = Colour[self.machine.config['bg_colour']].value
 
     def generate_tabs(self):
-        # TODO save all info on change
         self.ids['jo_no'].text = 'JO No.: {}'.format(self.machine.get_jono())
         self.ids['adjustment_grid'].clear_widgets()
         for idx in range(1, 6):
