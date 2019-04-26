@@ -176,7 +176,8 @@ class PiController:
                 # wait for next request from client
                 recv_message = str(self.respondent.recv(), "utf-8")
                 recv_dict = json.loads(recv_message)
-                reply_dict = {'ip': self.self_add}
+                # reply_dict = {'ip': self.self_add}
+                reply_dict = {}
                 self.logger.debug('Replying to server')
 
                 for key in recv_dict.keys():
