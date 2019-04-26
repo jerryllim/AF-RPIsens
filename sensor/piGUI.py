@@ -221,7 +221,29 @@ class MachineClass:
 
         self.controller.request({'sfu': sfu_str})
 
-    def self_info(self):
+        # TODO test pickle (to remove)
+        import pickle
+        start = datetime.now()
+
+        with open("test.pickle", 'wb') as pickle_file:
+            pickle.dump(self, pickle_file)
+
+        end1 = datetime.now()
+
+        with open("test2.pickle", 'wb') as pickle_file2:
+            pickle.dump(self.current_job, pickle_file2)
+
+        end2 = datetime.now()
+
+        pickle.dumps(self)
+
+        end3 = datetime.now()
+
+        print("First: ", end1 - start)
+        print("Second: ", end2 - end1)
+        print("Third: ", end3 - end2)
+
+def self_info(self):
         save_info = {'permanent': self.permanent, 'state': self.state.name, 'emp_main': self.emp_main,
                      'emp_asst': self.emp_asst, 'maintenance': self.maintenance}
         if self.current_job:
