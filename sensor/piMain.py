@@ -157,6 +157,12 @@ class PiController:
                 self.counts[key] = Counter()
             self.counts[key].update([name])
 
+    def update_adjustments(self, key, name, value):
+        with self.counts_lock:
+            if self.counts.get(key) is None:
+                self.counts[key] = Counter()
+            self.counts[key][name] = value
+
     def get_counts(self):
         with self.counts_lock:
             temp = self.counts.copy()
