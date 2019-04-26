@@ -213,7 +213,6 @@ class MachineClass:
         sfu_list.append(datetime.now().strftime('%H:%M'))
         sfu_str = json.dumps(sfu_list).replace(" ", "")
 
-        # TODO jam part (Adjustments)
         key = self.controller.get_key(self.index)
         for name in ['B1', 'B2', 'B3', 'B4', 'B5']:
             if self.current_job.adjustments[name]:
