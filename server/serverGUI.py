@@ -2,6 +2,7 @@ import csv
 import logging
 import datetime
 import configparser
+from sys import exit
 import serverDatabase, serverNetwork
 from PySide2 import QtCore, QtWidgets, QtGui
 
