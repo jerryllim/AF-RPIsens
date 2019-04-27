@@ -123,7 +123,9 @@ class NetworkManager:
                 recv_dict = json.loads(recv_bytes.decode())
                 machine_ip = id_from.decode()
 
-                ip_list.remove(machine_ip)
+                if machine_ip in ip_list:  # Otherwise raises ValueError
+                    ip_list.remove(machine_ip)
+
                 # machine = self.settings.get_machine(machine_ip)
 
                 jam_msg = recv_dict.pop('jam', {})

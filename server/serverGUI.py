@@ -315,8 +315,11 @@ class PisTab(QtWidgets.QWidget):
             machine1_item = QtGui.QStandardItem(self.pis_dict[ip].get('machine1'))
             machine2_item = QtGui.QStandardItem(self.pis_dict[ip].get('machine2'))
             machine3_item = QtGui.QStandardItem(self.pis_dict[ip].get('machine3'))
-            last_update_item = QtGui.QStandardItem(self.parent().database_manager.
-                                                   get_last_updates(ip)[0].strftime("%d/%m/%y %H:%M"))
+            last_update_time = self.parent().database_manager.get_last_updates(ip)[0]
+            if last_update_time:
+                last_update_item = QtGui.QStandardItem(last_update_time.strftime("%d/%m/%y %H:%M"))
+            else:
+                last_update_item = QtGui.QStandardItem('-')
             index = self.pis_model.rowCount()
             self.pis_model.setItem(index, 0, nick_item)
             self.pis_model.setItem(index, 1, ip_item)

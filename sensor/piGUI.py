@@ -243,7 +243,7 @@ class MachineClass:
         print("Second: ", end2 - end1)
         print("Third: ", end3 - end2)
 
-def self_info(self):
+    def self_info(self):
         save_info = {'permanent': self.permanent, 'state': self.state.name, 'emp_main': self.emp_main,
                      'emp_asst': self.emp_asst, 'maintenance': self.maintenance}
         if self.current_job:
