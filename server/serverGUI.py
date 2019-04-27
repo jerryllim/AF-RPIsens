@@ -992,6 +992,7 @@ class DisplayTable(QtWidgets.QWidget):
 class JamMainWindow(QtWidgets.QMainWindow):
     def __init__(self, parent):
         QtWidgets.QMainWindow.__init__(self, parent)
+        self.setWindowIcon(QtGui.QIcon('jam_icon.png'))
         self.logger = logging.getLogger('jamSERVER')
 
         config = configparser.ConfigParser()
