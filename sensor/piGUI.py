@@ -75,12 +75,8 @@ class JobClass(Widget):
         return sfu_dict
 
     def all_info(self):
-        save_info = self.job_info.copy()
-        save_info.update(self.wastage)
-        save_info['output'] = self.output
-        save_info.update(self.adjustments)
-        save_info['qc'] = self.qc
-        return save_info
+        return {'job_info': self.job_info.copy(), 'wastage': self.wastage.copy(), 'output': self.output.get(),
+                'adjustments': self.adjustments.copy(), 'qc': self.qc}
 
     def get_jono(self):
         return self.job_info['jo_no']
@@ -221,33 +217,11 @@ class MachineClass:
 
         self.controller.request({'sfu': sfu_str})
 
-        # TODO test pickle (to remove)
-        import pickle
-        start = datetime.now()
-
-        with open("test.pickle", 'wb') as pickle_file:
-            pickle.dump(self, pickle_file)
-
-        end1 = datetime.now()
-
-        with open("test2.pickle", 'wb') as pickle_file2:
-            pickle.dump(self.current_job, pickle_file2)
-
-        end2 = datetime.now()
-
-        pickle.dumps(self)
-
-        end3 = datetime.now()
-
-        print("First: ", end1 - start)
-        print("Second: ", end2 - end1)
-        print("Third: ", end3 - end2)
-
-    def self_info(self):
-        save_info = {'permanent': self.permanent, 'state': self.state.name, 'emp_main': self.emp_main,
-                     'emp_asst': self.emp_asst, 'maintenance': self.maintenance}
+    def all_info(self):
+        save_info = {'permanent': self.permanent, 'state': self.state.name, 'emp_main': self.emp_main.copy(),
+                     'emp_asst': self.emp_asst.copy(), 'maintenance': self.maintenance}
         if self.current_job:
-            save_info['job'] = self.current_job.all_info
+            save_info['current_job'] = self.current_job.all_info()
         return save_info
 
     def get_current_job(self):
@@ -935,8 +909,8 @@ class PiGUIApp(App):
         self.logger = logging.getLogger('JAM')
         # self.check_camera()
         self.config.set('Network', 'self_add', self.get_ip_add())
-        # self.controller = FakeClass(self)  # TODO set if testing
-        self.controller = piMain.PiController(self)
+        self.controller = FakeClass(self)  # TODO set if testing
+        # self.controller = piMain.PiController(self)
 
         for idx in range(1, 4):
             self.machines[idx] = MachineClass(idx, self.controller, self.config)

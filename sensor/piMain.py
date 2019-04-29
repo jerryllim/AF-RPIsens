@@ -258,9 +258,9 @@ class PiController:
         os.system('sudo shutdown -h now')
 
     def save_machines(self, filename='jam_machine.json'):
-        machines_save = {}
+        machines_save = {'save_time': datetime.datetime.now()}
         for key, machine in self.gui.machines.items():
-            machines_save[key] = machine.self_info()
+            machines_save[key] = machine.all_info()
 
         with open(filename, 'w') as write_file:
             json.dump(machines_save, write_file)
