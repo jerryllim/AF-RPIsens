@@ -2,6 +2,7 @@ import csv
 import logging
 import datetime
 import configparser
+from sys import exit
 import serverDatabase, serverNetwork
 from PySide2 import QtCore, QtWidgets, QtGui
 
@@ -315,8 +316,11 @@ class PisTab(QtWidgets.QWidget):
             machine1_item = QtGui.QStandardItem(self.pis_dict[ip].get('machine1'))
             machine2_item = QtGui.QStandardItem(self.pis_dict[ip].get('machine2'))
             machine3_item = QtGui.QStandardItem(self.pis_dict[ip].get('machine3'))
-            last_update_item = QtGui.QStandardItem(self.parent().database_manager.
-                                                   get_last_updates(ip)[0].strftime("%d/%m/%y %H:%M"))
+            last_update_time = self.parent().database_manager.get_last_updates(ip)[0]
+            if last_update_time:
+                last_update_item = QtGui.QStandardItem(last_update_time.strftime("%d/%m/%y %H:%M"))
+            else:
+                last_update_item = QtGui.QStandardItem('-')
             index = self.pis_model.rowCount()
             self.pis_model.setItem(index, 0, nick_item)
             self.pis_model.setItem(index, 1, ip_item)
@@ -550,38 +554,6 @@ class MiscTab(QtWidgets.QWidget):
         self.config = configparser.ConfigParser()
         self.config.read('jam.ini')
 
-        # Network group
-        self.network_fields = {}
-        network_box = QtWidgets.QGroupBox('Network', self)
-        network_layout = QtWidgets.QGridLayout()
-        network_layout.setColumnMinimumWidth(0, 100)
-        network_box.setLayout(network_layout)
-        ip_label = QtWidgets.QLineEdit(network_box)
-        ip_label.setReadOnly(True)
-        ip_label.setText(serverNetwork.NetworkManager.get_ip_add())
-        network_layout.addWidget(QtWidgets.QLabel('Server IP: ', network_box), 0, 0, QtCore.Qt.AlignRight)
-        network_layout.addWidget(ip_label, 0, 1)
-        port_label = QtWidgets.QLabel('Port: ', network_box)
-        port_edit = QtWidgets.QLineEdit(network_box)
-        port_edit.setText(self.config.get('Network', 'port'))
-        self.network_fields['port'] = port_edit
-        network_layout.addWidget(port_label, 1, 0, QtCore.Qt.AlignRight)
-        network_layout.addWidget(port_edit, 1, 1)
-        dur_label = QtWidgets.QLabel('Polling Interval: ', network_box)
-        poll_spinbox = QtWidgets.QSpinBox(network_box)
-        poll_spinbox.setMinimum(1)
-        poll_spinbox.setMaximum(90)
-        self.network_fields['interval'] = poll_spinbox
-        poll_spinbox.setValue(self.config.getint('Network', 'interval'))
-        dur_label2 = QtWidgets.QLabel('minutes', network_box)
-        network_layout.addWidget(dur_label, 2, 0, QtCore.Qt.AlignRight)
-        network_layout.addWidget(poll_spinbox, 2, 1)
-        network_layout.addWidget(dur_label2, 2, 2)
-        req_btn = QtWidgets.QPushButton('Request now', network_box)
-        req_btn.clicked.connect(self.parent().parent().network_manager.request_jam)
-        network_layout.setAlignment(QtCore.Qt.AlignLeft)
-        network_layout.addWidget(req_btn, 2, 3)
-
         # Database group
         self.db_edits = {}
         db_box = QtWidgets.QGroupBox('Database', self)
@@ -623,158 +595,11 @@ class MiscTab(QtWidgets.QWidget):
         db_test_btn.clicked.connect(self.test_db)
         db_layout.addWidget(db_test_btn, 3, 3)
 
-        # Import Export group
-        import_box = QtWidgets.QGroupBox('Import', self)
-        import_layout = QtWidgets.QGridLayout()
-        import_box.setLayout(import_layout)
-        self.import_fields = {}
-        import_time = QtWidgets.QTimeEdit(import_box)
-        import_time.setDisplayFormat('hh:mm')
-        import_t = QtCore.QTime.fromString(self.config.get('Import', 'time'))
-        import_time.setTime(import_t)
-        self.import_fields['time'] = import_time
-        import_layout.addWidget(QtWidgets.QLabel('Start time: '), 0, 0, QtCore.Qt.AlignRight)
-        import_layout.addWidget(import_time, 0, 1)
-        import_hour = QtWidgets.QSpinBox(import_box)
-        import_hour.setMinimum(0)
-        import_hour.setMaximum(23)
-        self.import_fields['hour'] = import_hour
-        import_hour.setValue(self.config.getint('Import', 'hour'))
-        import_minute = QtWidgets.QSpinBox(import_box)
-        import_minute.setMinimum(0)
-        import_minute.setMaximum(59)
-        self.import_fields['minute'] = import_minute
-        import_minute.setValue(self.config.getint('Import', 'minute'))
-        import_layout.addWidget(QtWidgets.QLabel('Repeat every: '), 1, 0, QtCore.Qt.AlignRight)
-        import_layout.addWidget(import_hour, 1, 1)
-        import_layout.addWidget(QtWidgets.QLabel('hours'), 1, 2)
-        import_layout.addWidget(import_minute, 1, 3)
-        import_layout.addWidget(QtWidgets.QLabel('minutes'), 1, 4)
-        import_layout.addWidget(QtWidgets.QLabel('Import path: '), 2, 0, QtCore.Qt.AlignRight)
-        import_edit = QtWidgets.QLineEdit(self)
-        self.import_fields['path'] = import_edit
-        import_edit.setText(self.config.get('Import', 'path'))
-        import_edit.setReadOnly(True)
-        import_layout.addWidget(import_edit, 2, 1, 1, 3)
-        import_button = QtWidgets.QPushButton('...', self)
-        import_button.clicked.connect(self.import_from)
-        import_layout.addWidget(import_button, 2, 4)
-
-        export_box = QtWidgets.QGroupBox('Export', self)
-        export_layout = QtWidgets.QGridLayout()
-        export_box.setLayout(export_layout)
-        self.export_fields = {}
-        export_time = QtWidgets.QTimeEdit(export_box)
-        export_time.setDisplayFormat('hh:mm')
-        export_t = QtCore.QTime.fromString(self.config.get('Export', 'time'))
-        export_time.setTime(export_t)
-        self.export_fields['time'] = export_time
-        export_layout.addWidget(QtWidgets.QLabel('Start time: '), 0, 0, QtCore.Qt.AlignRight)
-        export_layout.addWidget(export_time, 0, 1)
-        export_hour = QtWidgets.QSpinBox(export_box)
-        export_hour.setMinimum(0)
-        export_hour.setMaximum(23)
-        export_hour.setValue(self.config.getint('Export', 'hour'))
-        self.export_fields['hour'] = export_hour
-        export_minute = QtWidgets.QSpinBox(export_box)
-        export_minute.setMinimum(0)
-        export_minute.setMaximum(59)
-        export_minute.setValue(self.config.getint('Export', 'minute'))
-        self.export_fields['minute'] = export_minute
-        export_layout.addWidget(QtWidgets.QLabel('Repeat every: '), 1, 0, QtCore.Qt.AlignRight)
-        export_layout.addWidget(export_hour, 1, 1)
-        export_layout.addWidget(QtWidgets.QLabel('hours'), 1, 2)
-        export_layout.addWidget(export_minute, 1, 3)
-        export_layout.addWidget(QtWidgets.QLabel('minutes'), 1, 4)
-        export_layout.addWidget(QtWidgets.QLabel('Export path: '), 2, 0, QtCore.Qt.AlignRight)
-        export_edit = QtWidgets.QLineEdit(self)
-        self.export_fields['path'] = export_edit
-        export_edit.setText(self.config.get('Export', 'path'))
-        export_edit.setReadOnly(True)
-        export_layout.addWidget(export_edit, 2, 1, 1, 3)
-        export_button = QtWidgets.QPushButton('...', self)
-        export_button.clicked.connect(self.export_to)
-        export_layout.addWidget(export_button, 2, 4)
-
-        # Set data management configs
-        self.data_fields = {}
-        data_box = QtWidgets.QGroupBox('Data')
-        data_layout = QtWidgets.QGridLayout()
-        data_box.setLayout(data_layout)
-        data_start_label = QtWidgets.QLabel('Start week on', data_box)
-        data_start_day = QtWidgets.QComboBox(data_box)
-        data_start_day.addItems(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'])
-        data_start_day.setCurrentIndex(self.config.getint('Data', 'day'))
-        data_start_time = QtWidgets.QTimeEdit(QtCore.QTime.fromString(self.config.get('Data', 'time')), data_box)
-        data_start_time.setDisplayFormat('hh:mm')
-        self.data_fields['day'] = data_start_day
-        self.data_fields['time'] = data_start_time
-        data_layout.addWidget(data_start_label, 0, 0, QtCore.Qt.AlignRight)
-        data_layout.addWidget(data_start_day, 0, 1)
-        data_layout.addWidget(data_start_time, 0, 2)
-        data_archive_label = QtWidgets.QLabel('Archive after ', data_box)
-        data_archive_spin = QtWidgets.QSpinBox(data_box)
-        data_archive_spin.setMaximum(6)
-        data_archive_spin.setMinimum(1)
-        data_archive_spin.setValue(self.config.getint('Data', 'archive'))
-        data_archive_spin.valueChanged.connect(self.set_delete_spin_min)
-        data_archive_label2 = QtWidgets.QLabel(' months', data_box)
-        self.data_fields['archive'] = data_archive_spin
-        data_layout.addWidget(data_archive_label, 1, 0, QtCore.Qt.AlignRight)
-        data_layout.addWidget(data_archive_spin, 1, 1)
-        data_layout.addWidget(data_archive_label2, 1, 2)
-        data_delete_label = QtWidgets.QLabel('Delete archive after ', data_box)
-        data_delete_spin = QtWidgets.QSpinBox(data_box)
-        data_delete_spin.setMaximum(12)
-        data_delete_spin.setMinimum(2)
-        data_delete_spin.setMinimum(2)
-        data_delete_spin.setValue(self.config.getint('Data', 'delete'))
-        data_delete_label2 = QtWidgets.QLabel(' months', data_box)
-        self.data_fields['delete'] = data_delete_spin
-        data_layout.addWidget(data_delete_label, 2, 0, QtCore.Qt.AlignRight)
-        data_layout.addWidget(data_delete_spin, 2, 1)
-        data_layout.addWidget(data_delete_label2, 2, 2)
-
-        # Shift group
-        shift_box = QtWidgets.QGroupBox('Shifts', self)
-        shift_layout = QtWidgets.QGridLayout()
-        shift_box.setLayout(shift_layout)
-        shift_layout.addWidget(QtWidgets.QLabel('Shift'), 0, 0)
-        shift_layout.addWidget(QtWidgets.QLabel('Start time'), 0, 1)
-        shift_layout.addWidget(QtWidgets.QLabel('End time'), 0, 2)
-        self.shift_checks = {}
-        self.shift_starts = {}
-        self.shift_ends = {}
-        for col in range(1, 5):
-            check = QtWidgets.QCheckBox('Shift {}'.format(col), shift_box)
-            check.setChecked(self.config.getboolean('Shift', 'shift{}_enable'.format(col)))
-            check.stateChanged.connect(lambda state, idx=col: self.shift_check_state(state, idx))
-            self.shift_checks[col] = check
-            start = QtWidgets.QTimeEdit(shift_box)
-            start.setDisplayFormat('hh:mm')
-            start_time = QtCore.QTime.fromString(self.config.get('Shift', 'shift{}_start'.format(col)))
-            start.setTime(start_time)
-            self.shift_starts[col] = start
-            end = QtWidgets.QTimeEdit(shift_box)
-            end.setDisplayFormat('hh:mm')
-            end_time = QtCore.QTime.fromString(self.config.get('Shift', 'shift{}_end'.format(col)))
-            end.setTime(end_time)
-            self.shift_ends[col] = end
-            shift_layout.addWidget(check, col, 0)
-            shift_layout.addWidget(start, col, 1)
-            shift_layout.addWidget(end, col, 2)
-            self.shift_check_state(check.checkState(), col)
-
         # Log group
         # TODO add log group - log level & file name
 
         vbox_layout = QtWidgets.QVBoxLayout()
-        vbox_layout.addWidget(network_box)
         vbox_layout.addWidget(db_box)
-        vbox_layout.addWidget(import_box)
-        vbox_layout.addWidget(export_box)
-        vbox_layout.addWidget(data_box)
-        vbox_layout.addWidget(shift_box)
         vbox_layout.addStretch()
 
         widget = QtWidgets.QWidget(self)
@@ -822,24 +647,6 @@ class MiscTab(QtWidgets.QWidget):
         for key in self.db_edits.keys():
             self.config.set('Database', key, self.db_edits[key].text())
 
-        self.config.set('Data', 'day', str(self.data_fields['day'].currentIndex()))
-        for key in ['time', 'archive', 'delete']:
-            self.config.set('Data', key, str(self.data_fields[key].text()))
-
-        for col in range(1, 5):
-            self.config.set('Shift', 'shift{}_enable'.format(col), str(self.shift_checks[col].isChecked()))
-            self.config.set('Shift', 'shift{}_start'.format(col), str(self.shift_starts[col].text()))
-            self.config.set('Shift', 'shift{}_end'.format(col), str(self.shift_ends[col].text()))
-
-        self.config.set('Network', 'port', self.network_fields['port'].text())
-        self.config.set('Network', 'interval', str(self.network_fields['interval'].text()))
-
-        for key, line_edit in self.import_fields.items():
-            self.config.set('Import', key, line_edit.text())
-
-        for key, line_edit in self.export_fields.items():
-            self.config.set('Export', key, line_edit.text())
-
         with open('jam.ini', 'w') as configfile:
             self.config.write(configfile)
 
@@ -865,6 +672,10 @@ class ConfigurationWidget(QtWidgets.QWidget):
         self.tab_widget.addTab(self.emp_tab, 'Employees')
         self.tab_widget.addTab(self.misc_tab, 'Miscellaneous')
 
+        self.machines_tab.setDisabled(True)
+        self.pis_tab.setDisabled(True)
+        self.emp_tab.setDisabled(True)
+
         btn_box = QtWidgets.QHBoxLayout()
         save_btn = QtWidgets.QPushButton('Save', self)
         save_btn.setAutoDefault(False)
@@ -887,7 +698,7 @@ class ConfigurationWidget(QtWidgets.QWidget):
         self.emp_tab.save_emp()
         self.machines_tab.save_table()
         self.misc_tab.save_misc()
-        self.parent().done(0)
+        self.parent().accept()
         self.parent().parent().settings.update()
 
     def cancel_changes(self):
@@ -988,10 +799,24 @@ class DisplayTable(QtWidgets.QWidget):
 class JamMainWindow(QtWidgets.QMainWindow):
     def __init__(self, parent):
         QtWidgets.QMainWindow.__init__(self, parent)
+        self.setWindowIcon(QtGui.QIcon('jam_icon.png'))
         self.logger = logging.getLogger('jamSERVER')
 
         config = configparser.ConfigParser()
         config.read('jam.ini')
+        success = serverDatabase.DatabaseManager.test_db_connection( host=config.get('Database', 'host'),
+                                                                     port=config.get('Database', 'port'),
+                                                                     user=config.get('Database', 'user'),
+                                                                     password=config.get('Database', 'password'),
+                                                                     db=config.get('Database', 'db'))
+        if not success:
+            result = self.setup_database()
+            if result:
+                config = configparser.ConfigParser()
+                config.read('jam.ini')
+            else:
+                exit()
+
         self.settings = serverDatabase.Settings()
         self.database_manager = serverDatabase.DatabaseManager(self.settings, host=config.get('Database', 'host'),
                                                                port=config.get('Database', 'port'),
@@ -1028,12 +853,100 @@ class JamMainWindow(QtWidgets.QMainWindow):
     def launch_configuration(self):
         dialog = QtWidgets.QDialog(self)
         dialog.setWindowTitle('Configurations')
+        dialog.setWindowIcon(QtGui.QIcon('jam_server.png'))
         configurations = ConfigurationWidget(self, self.database_manager)
         configurations.show()
         dialog_layout = QtWidgets.QVBoxLayout()
         dialog_layout.addWidget(configurations)
         dialog.setLayout(dialog_layout)
         dialog.exec_()
+
+    def setup_database(self):
+        dialog = DatabaseSetup(self)
+        # dialog = QtWidgets.QDialog(self)
+        dialog.setWindowIcon(QtGui.QIcon('jam_server.png'))
+        dialog.setWindowTitle('Setup Database')
+        # database_setup = DatabaseSetup(dialog)
+        # database_setup.show()
+        # dialog_layout = QtWidgets.QVBoxLayout()
+        # dialog_layout.addWidget(database_setup)
+        # dialog.setLayout(dialog_layout)
+        dialog.exec_()
+
+        return dialog.result()
+
+
+class DatabaseSetup(QtWidgets.QDialog):
+    def __init__(self, parent):
+        QtWidgets.QDialog.__init__(self, parent)
+        self.config = configparser.ConfigParser()
+        self.config.read('jam.ini')
+
+        # Database group
+        self.db_edits = {}
+        db_box = QtWidgets.QGroupBox('Database', self)
+        db_layout = QtWidgets.QGridLayout()
+        db_layout.setColumnMinimumWidth(0, 100)
+        db_box.setLayout(db_layout)
+        host_label = QtWidgets.QLabel('TCP/IP Server: ', db_box)
+        host_edit = QtWidgets.QLineEdit(db_box)
+        self.db_edits['host'] = host_edit
+        host_edit.setText(self.config.get('Database', 'host'))
+        port_label = QtWidgets.QLabel('Port: ', db_box)
+        port_edit = QtWidgets.QLineEdit(db_box)
+        self.db_edits['port'] = port_edit
+        port_edit.setText(self.config.get('Database', 'port'))
+        port_edit.setMaximumWidth(100)
+        db_layout.addWidget(host_label, 0, 0, QtCore.Qt.AlignRight)
+        db_layout.addWidget(host_edit, 0, 1)
+        db_layout.addWidget(port_label, 0, 2, QtCore.Qt.AlignRight)
+        db_layout.addWidget(port_edit, 0, 3)
+        user_label = QtWidgets.QLabel('User: ', db_box)
+        user_edit = QtWidgets.QLineEdit(db_box)
+        self.db_edits['user'] = user_edit
+        user_edit.setText(self.config.get('Database', 'user'))
+        db_layout.addWidget(user_label, 1, 0, QtCore.Qt.AlignRight)
+        db_layout.addWidget(user_edit, 1 ,1)
+        pass_label = QtWidgets.QLabel('Password: ', db_box)
+        pass_edit = QtWidgets.QLineEdit(db_box)
+        self.db_edits['password'] = pass_edit
+        pass_edit.setText(self.config.get('Database', 'password'))
+        db_layout.addWidget(pass_label, 2, 0, QtCore.Qt.AlignRight)
+        db_layout.addWidget(pass_edit, 2, 1)
+        db_label = QtWidgets.QLabel('Database: ', db_box)
+        db_edit = QtWidgets.QLineEdit(db_box)
+        self.db_edits['db'] = db_edit
+        db_edit.setText(self.config.get('Database', 'db'))
+        db_layout.addWidget(db_label, 3, 0, QtCore.Qt.AlignRight)
+        db_layout.addWidget(db_edit, 3, 1)
+        db_test_btn = QtWidgets.QPushButton('Test and Save', db_box)
+        db_test_btn.clicked.connect(self.test_db)
+        db_layout.addWidget(db_test_btn, 3, 3)
+
+        vbox_layout = QtWidgets.QVBoxLayout()
+        vbox_layout.addWidget(db_box)
+        self.setLayout(vbox_layout)
+
+    def test_db(self):
+        success = serverDatabase.DatabaseManager.test_db_connection(self.db_edits['host'].text(), self.db_edits['port'].text(),
+                                                           self.db_edits['user'].text(),
+                                                           self.db_edits['password'].text(), self.db_edits['db'].text())
+        msgbox = QtWidgets.QMessageBox()
+        msgbox.setMinimumWidth(500)
+        if success:
+            msgbox.setText('Connection Successful')
+        else:
+            msgbox.setText('Connection Failed')
+        msgbox.exec_()
+
+        if success:
+            for key in self.db_edits.keys():
+                self.config.set('Database', key, self.db_edits[key].text())
+
+            with open('jam.ini', 'w') as configfile:
+                self.config.write(configfile)
+
+            self.accept()
 
 
 if __name__ == '__main__':
