@@ -801,7 +801,15 @@ class JamMainWindow(QtWidgets.QMainWindow):
     def __init__(self, parent):
         QtWidgets.QMainWindow.__init__(self, parent)
         self.setWindowIcon(QtGui.QIcon('jam_icon.png'))
-        self.logger = logging.getLogger('jamSERVER')
+        # Logger setup
+        self.logger = logging.getLogger('jamVIEWER')
+        self.logger.setLevel(logging.DEBUG)
+        file_handler = logging.FileHandler('jamVIEWER.log')
+        file_handler.setLevel(logging.DEBUG)
+        log_format = logging.Formatter('%(asctime)s - %(threadName)s - %(levelname)s: %(module)s - %(message)s')
+        file_handler.setFormatter(log_format)
+        self.logger.addHandler(file_handler)
+        self.logger.info('\n\nStarted logging')
 
         config = configparser.ConfigParser()
         config.read('jam.ini')

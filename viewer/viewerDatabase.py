@@ -11,7 +11,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 class Settings:
     def __init__(self, filename='jam.ini'):
-        self.logger = logging.getLogger('jamSERVER')
+        self.logger = logging.getLogger('jamVIEWER')
 
         self.filename = filename
         self.config = configparser.ConfigParser()
@@ -64,74 +64,9 @@ class Settings:
         return ip_port_list
 
 
-class AutomateSchedulers:
-    def __init__(self, settings: Settings, database_manager):
-        self.logger = logging.getLogger('jamSERVER')
-
-        self.settings = settings
-        self.database_manager = database_manager
-        self.scheduler_jobs = {}
-        self.scheduler = BackgroundScheduler()
-        # self.scheduler.start()
-
-    def get_cron_hour_minute(self, section):
-        time = self.settings.config.get(section, 'time')
-        hour = self.settings.config.getint(section, 'hour')
-        minute = self.settings.config.getint(section, 'minute')
-        if hour:
-            hour = '*/{}'.format(hour)
-        else:
-            hour = '*'
-
-        if minute:
-            minute = '{}-59/{}'.format(time[-2:], minute)
-        else:
-            minute = '{}'.format(time[-2:])
-
-        return hour, minute
-
-    def schedule_import(self):
-        job_id = 'Import'
-        hour, minute = self.get_cron_hour_minute(job_id)
-        cron_trigger = CronTrigger(hour=hour, minute=minute)
-        if self.scheduler_jobs.get(job_id):
-            self.scheduler_jobs[job_id].remove()
-        self.scheduler_jobs[job_id] = self.scheduler.add_job(self.read_import_file, cron_trigger, id=job_id,
-                                                             max_instances=3)
-
-    def read_import_file(self):
-        filepath = self.settings.config.get('Import', 'path')
-        with open(filepath, 'r') as import_file:
-            csv_reader = csv.reader(import_file)
-
-            next(csv_reader)
-            self.database_manager.replace_jobs(csv_reader)
-
-        self.database_manager.delete_completed_jobs()
-        self.logger.debug('Read import file')
-
-    def schedule_export(self):
-        job_id = 'Export'
-        hour, minute = self.get_cron_hour_minute(job_id)
-        cron_trigger = CronTrigger(hour=hour, minute=minute)
-        if self.scheduler_jobs.get(job_id):
-            self.scheduler_jobs[job_id].remove()
-        self.scheduler_jobs[job_id] = self.scheduler.add_job(self.read_import_file, cron_trigger, id=job_id,
-                                                             max_instances=3)
-
-    def write_export_file(self):
-        filepath = self.settings.config.get('Export', 'path') + 'export_jam.csv'
-        with open(filepath, 'a') as export_file:
-            csv_writer = csv.writer(export_file)
-
-            pass
-
-        self.logger.debug('Wrote export file')
-
-
 class DatabaseManager:
     def __init__(self, settings, host='', user='', password='', db='', port='', create_tables=True):
-        self.logger = logging.getLogger('jamSERVER')
+        self.logger = logging.getLogger('jamVIEWER')
         self.settings = settings
         self.host = host
         self.user = user
@@ -174,7 +109,7 @@ class DatabaseManager:
             if conn.open:
                 success = True
         except pymysql.MySQLError as error:
-            logger = logging.getLogger('jamSERVER')
+            logger = logging.getLogger('jamVIEWER')
             logger.error("{}, {}".format(sys._getframe().f_code.co_name, error))
 
         return success
