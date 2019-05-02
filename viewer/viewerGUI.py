@@ -832,8 +832,6 @@ class JamMainWindow(QtWidgets.QMainWindow):
                                                                user=config.get('Database', 'user'),
                                                                password=config.get('Database', 'password'),
                                                                db=config.get('Database', 'db'))
-        self.scheduler.schedule_export()
-        self.scheduler.schedule_import()
 
         self.display_table = DisplayTable(self, self.database_manager)
         self.setCentralWidget(self.display_table)
