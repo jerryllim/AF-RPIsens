@@ -3,7 +3,7 @@ import logging
 import datetime
 import configparser
 from sys import exit
-import serverDatabase, serverNetwork
+import viewerDatabase
 from PySide2 import QtCore, QtWidgets, QtGui
 
 
@@ -700,6 +700,7 @@ class ConfigurationWidget(QtWidgets.QWidget):
         self.misc_tab.save_misc()
         self.parent().accept()
         self.parent().parent().settings.update()
+        self.parent().parent().database_manager.update()
 
     def cancel_changes(self):
         self.parent().done(0)
@@ -804,7 +805,7 @@ class JamMainWindow(QtWidgets.QMainWindow):
 
         config = configparser.ConfigParser()
         config.read('jam.ini')
-        success = serverDatabase.DatabaseManager.test_db_connection( host=config.get('Database', 'host'),
+        success = viewerDatabase.DatabaseManager.test_db_connection( host=config.get('Database', 'host'),
                                                                      port=config.get('Database', 'port'),
                                                                      user=config.get('Database', 'user'),
                                                                      password=config.get('Database', 'password'),
@@ -817,14 +818,12 @@ class JamMainWindow(QtWidgets.QMainWindow):
             else:
                 exit()
 
-        self.settings = serverDatabase.Settings()
-        self.database_manager = serverDatabase.DatabaseManager(self.settings, host=config.get('Database', 'host'),
+        self.settings = viewerDatabase.Settings()
+        self.database_manager = viewerDatabase.DatabaseManager(self.settings, host=config.get('Database', 'host'),
                                                                port=config.get('Database', 'port'),
                                                                user=config.get('Database', 'user'),
                                                                password=config.get('Database', 'password'),
                                                                db=config.get('Database', 'db'))
-        self.network_manager = serverNetwork.NetworkManager(self.settings, self.database_manager)
-        self.scheduler = serverDatabase.AutomateSchedulers(self.settings, self.database_manager)
         self.scheduler.schedule_export()
         self.scheduler.schedule_import()
 
@@ -928,7 +927,7 @@ class DatabaseSetup(QtWidgets.QDialog):
         self.setLayout(vbox_layout)
 
     def test_db(self):
-        success = serverDatabase.DatabaseManager.test_db_connection(self.db_edits['host'].text(), self.db_edits['port'].text(),
+        success = viewerDatabase.DatabaseManager.test_db_connection(self.db_edits['host'].text(), self.db_edits['port'].text(),
                                                            self.db_edits['user'].text(),
                                                            self.db_edits['password'].text(), self.db_edits['db'].text())
         msgbox = QtWidgets.QMessageBox()

@@ -891,8 +891,9 @@ class ConfigurationWidget(QtWidgets.QWidget):
         self.emp_tab.save_emp()
         self.machines_tab.save_table()
         self.misc_tab.save_misc()
-        self.parent().done(0)
+        self.parent().accept()
         self.parent().parent().settings.update()
+        self.parent().parent().database_manager.update()
 
     def cancel_changes(self):
         self.parent().done(0)

@@ -155,6 +155,15 @@ class DatabaseManager:
 
         self.logger.info('Complated DatabaseManager __init__')
 
+    def update(self):
+        self.host = self.settings.config.get('Database', 'host')
+        self.user = self.settings.config.get('Database', 'user')
+        self.password = self.settings.config.get('Database', 'password')
+        self.db = self.settings.config.get('Database', 'db')
+        port = self.settings.config.get('Database', 'port')
+        if port.isnumeric():
+            self.port = int(port)
+
     @staticmethod
     def test_db_connection(host, port, user, password, db):
         success = False
