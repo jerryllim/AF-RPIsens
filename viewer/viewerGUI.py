@@ -869,7 +869,7 @@ class JamMainWindow(QtWidgets.QMainWindow):
     def setup_database(self):
         dialog = DatabaseSetup(self)
         # dialog = QtWidgets.QDialog(self)
-        dialog.setWindowIcon(QtGui.QIcon('jam_server.png'))
+        dialog.setWindowIcon(QtGui.QIcon('jam_icon.png'))
         dialog.setWindowTitle('Setup Database')
         # database_setup = DatabaseSetup(dialog)
         # database_setup.show()

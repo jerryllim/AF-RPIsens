@@ -1041,6 +1041,87 @@ class JamMainWindow(QtWidgets.QMainWindow):
         dialog.setLayout(dialog_layout)
         dialog.exec_()
 
+    def setup_database(self):
+        dialog = DatabaseSetup(self)
+        dialog.setWindowIcon(QtGui.QIcon('jam_icon.png'))
+        dialog.setWindowTitle('Setup Database')
+        dialog.exec_()
+
+        return dialog.result()
+
+
+class DatabaseSetup(QtWidgets.QDialog):
+    def __init__(self, parent):
+        QtWidgets.QDialog.__init__(self, parent)
+        self.config = configparser.ConfigParser()
+        self.config.read('jam.ini')
+
+        # Database group
+        self.db_edits = {}
+        db_box = QtWidgets.QGroupBox('Database', self)
+        db_layout = QtWidgets.QGridLayout()
+        db_layout.setColumnMinimumWidth(0, 100)
+        db_box.setLayout(db_layout)
+        host_label = QtWidgets.QLabel('TCP/IP Server: ', db_box)
+        host_edit = QtWidgets.QLineEdit(db_box)
+        self.db_edits['host'] = host_edit
+        host_edit.setText(self.config.get('Database', 'host'))
+        port_label = QtWidgets.QLabel('Port: ', db_box)
+        port_edit = QtWidgets.QLineEdit(db_box)
+        self.db_edits['port'] = port_edit
+        port_edit.setText(self.config.get('Database', 'port'))
+        port_edit.setMaximumWidth(100)
+        db_layout.addWidget(host_label, 0, 0, QtCore.Qt.AlignRight)
+        db_layout.addWidget(host_edit, 0, 1)
+        db_layout.addWidget(port_label, 0, 2, QtCore.Qt.AlignRight)
+        db_layout.addWidget(port_edit, 0, 3)
+        user_label = QtWidgets.QLabel('User: ', db_box)
+        user_edit = QtWidgets.QLineEdit(db_box)
+        self.db_edits['user'] = user_edit
+        user_edit.setText(self.config.get('Database', 'user'))
+        db_layout.addWidget(user_label, 1, 0, QtCore.Qt.AlignRight)
+        db_layout.addWidget(user_edit, 1 ,1)
+        pass_label = QtWidgets.QLabel('Password: ', db_box)
+        pass_edit = QtWidgets.QLineEdit(db_box)
+        self.db_edits['password'] = pass_edit
+        pass_edit.setText(self.config.get('Database', 'password'))
+        db_layout.addWidget(pass_label, 2, 0, QtCore.Qt.AlignRight)
+        db_layout.addWidget(pass_edit, 2, 1)
+        db_label = QtWidgets.QLabel('Database: ', db_box)
+        db_edit = QtWidgets.QLineEdit(db_box)
+        self.db_edits['db'] = db_edit
+        db_edit.setText(self.config.get('Database', 'db'))
+        db_layout.addWidget(db_label, 3, 0, QtCore.Qt.AlignRight)
+        db_layout.addWidget(db_edit, 3, 1)
+        db_test_btn = QtWidgets.QPushButton('Test and Save', db_box)
+        db_test_btn.clicked.connect(self.test_db)
+        db_layout.addWidget(db_test_btn, 3, 3)
+
+        vbox_layout = QtWidgets.QVBoxLayout()
+        vbox_layout.addWidget(db_box)
+        self.setLayout(vbox_layout)
+
+    def test_db(self):
+        success = serverDatabase.DatabaseManager.test_db_connection(self.db_edits['host'].text(), self.db_edits['port'].text(),
+                                                                    self.db_edits['user'].text(),
+                                                                    self.db_edits['password'].text(), self.db_edits['db'].text())
+        msgbox = QtWidgets.QMessageBox()
+        msgbox.setMinimumWidth(500)
+        if success:
+            msgbox.setText('Connection Successful')
+        else:
+            msgbox.setText('Connection Failed')
+        msgbox.exec_()
+
+        if success:
+            for key in self.db_edits.keys():
+                self.config.set('Database', key, self.db_edits[key].text())
+
+            with open('jam.ini', 'w') as configfile:
+                self.config.write(configfile)
+
+            self.accept()
+
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication([])

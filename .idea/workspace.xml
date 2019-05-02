@@ -106,8 +106,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/viewer/viewerGUI.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="169">
-                  <caret line="833" column="95" selection-start-line="833" selection-start-column="95" selection-end-line="833" selection-end-column="95" />
+                <state relative-caret-position="185">
+                  <caret line="871" column="50" selection-start-line="871" selection-start-column="50" selection-end-line="871" selection-end-column="50" />
                   <folding>
                     <element signature="e#0#10#0" expanded="true" />
                   </folding>
@@ -179,7 +179,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>pis</find>
       <find>jobs_</find>
       <find>insert_sfu</find>
       <find>sfu</find>
@@ -209,6 +208,7 @@
       <find>serverDatabase</find>
       <find>serverNetwork</find>
       <find>jamSERVER</find>
+      <find>scheduler</find>
     </findStrings>
     <replaceStrings>
       <replace>TMessage</replace>
@@ -710,7 +710,7 @@
       <window_info anchor="bottom" id="Inspection Results" order="0" weight="0.32896176" />
       <window_info anchor="bottom" id="Message" order="1" />
       <window_info anchor="bottom" id="Find" order="2" weight="0.29839572" />
-      <window_info anchor="bottom" id="Run" order="3" sideWeight="0.493895" weight="0.32513368" />
+      <window_info active="true" anchor="bottom" id="Run" order="3" sideWeight="0.493895" visible="true" weight="0.32513368" />
       <window_info anchor="bottom" id="Debug" order="4" weight="0.3989305" />
       <window_info anchor="bottom" id="TODO" order="5" weight="0.32834226" />
       <window_info anchor="bottom" id="Cvs" order="6" weight="0.25" />
@@ -718,7 +718,7 @@
       <window_info anchor="bottom" id="Inspection" order="8" weight="0.4" />
       <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.50305253" side_tool="true" weight="0.3272727" />
       <window_info anchor="bottom" id="Version Control" order="10" weight="0.32834226" />
-      <window_info active="true" anchor="bottom" id="Terminal" order="11" sideWeight="0.4969475" visible="true" weight="0.3272727" />
+      <window_info anchor="bottom" id="Terminal" order="11" sideWeight="0.4969475" weight="0.3272727" />
       <window_info anchor="bottom" id="Dependency Viewer" order="12" weight="0.32896176" />
       <window_info anchor="bottom" id="Messages" order="13" weight="0.32941177" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
@@ -1104,8 +1104,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/viewer/viewerGUI.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="169">
-          <caret line="833" column="95" selection-start-line="833" selection-start-column="95" selection-end-line="833" selection-end-column="95" />
+        <state relative-caret-position="185">
+          <caret line="871" column="50" selection-start-line="871" selection-start-column="50" selection-end-line="871" selection-end-column="50" />
           <folding>
             <element signature="e#0#10#0" expanded="true" />
           </folding>
