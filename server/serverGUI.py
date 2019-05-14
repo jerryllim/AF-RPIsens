@@ -5,11 +5,14 @@ import configparser
 from sys import exit
 import serverDatabase, serverNetwork
 from PySide2 import QtCore, QtWidgets, QtGui
+from apscheduler.triggers.cron import CronTrigger
+from apscheduler.schedulers.background import BackgroundScheduler
 
 
 class MachinesTab(QtWidgets.QWidget):
     def __init__(self, parent):
         QtWidgets.QWidget.__init__(self, parent)
+        self.configuration_parent = parent
         self.database_manager = self.parent().database_manager
 
         # Add Top box for insert
@@ -33,9 +36,8 @@ class MachinesTab(QtWidgets.QWidget):
         self.machine_table.setAlternatingRowColors(True)
         self.machine_table.setSortingEnabled(True)
         self.machine_table.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
-        # v_header = self.machine_table.verticalHeader()
-        # v_header.hide()
-        # v_header.setSectionsMovable(True)
+        self.machine_table.doubleClicked.connect(self.set_value)
+
         self.populate_machines()
 
         # Add, Delete, Save button on right
@@ -64,12 +66,9 @@ class MachinesTab(QtWidgets.QWidget):
 
         # Insert machines
         machines_list = self.database_manager.get_machines()
-        item = QtGui.QStandardItem(None)
-        self.machine_model.setItem(0, 0, item)
-        self.machine_table.hideRow(0)
 
         for id_, row in enumerate(machines_list):
-            idx = id_ + 1
+            idx = id_
             for col, value in enumerate(row):
                 if value:
                     item = QtGui.QStandardItem()
@@ -80,7 +79,7 @@ class MachinesTab(QtWidgets.QWidget):
 
     def add_row(self):
         row = self.machine_model.rowCount()
-        if self.insert_fields[self.hheaders[0]]:
+        if self.insert_fields[self.hheaders[0]].text():
             for col, key in enumerate(self.hheaders):
                 value = self.insert_fields[key].text()
                 if value:
@@ -95,6 +94,16 @@ class MachinesTab(QtWidgets.QWidget):
             rows.add(idx.row())
         if not rows:
             return
+
+        for row in rows:
+            machine = self.machine_model.item(row, 0).data(QtCore.Qt.EditRole)
+            pi = self.configuration_parent.machine_in_use(machine)
+            if pi:
+                QtWidgets.QMessageBox.critical(self, 'Unable to delete',
+                                               '{} is currently in use by {}. '
+                                               'Please remove and try again.'.format(machine, pi),
+                                               QtWidgets.QMessageBox.Close)
+                return
 
         row = min(rows)
         count = len(rows)
@@ -129,6 +138,73 @@ class MachinesTab(QtWidgets.QWidget):
 
     def get_machines_model(self):
         return self.machine_model
+
+    def set_value(self):
+        idx = self.machine_table.selectedIndexes()[0]
+        col = self.hheaders[idx.column()]
+        if col == 'machine':
+            return
+        machine = self.machine_model.item(idx.row(), 0).data(QtCore.Qt.EditRole)
+        item = self.machine_model.item(idx.row(), idx.column())
+        if item:
+            current = item.data(QtCore.Qt.EditRole)
+        else:
+            current = 0
+
+        value, result = TargetInputDialog.get_value(self, machine, col, current)
+        if result:
+            item = self.machine_model.itemFromIndex(idx)
+            item.setData(value, QtCore.Qt.EditRole)
+
+
+class TargetInputDialog(QtWidgets.QDialog):
+    def __init__(self, parent, title, label, value):
+        QtWidgets.QDialog.__init__(self, parent)
+        self.setWindowTitle('Set target for {}'.format(title))
+        self.label = QtWidgets.QLabel('{}: '.format(label), self)
+        self.spin_box = QtWidgets.QSpinBox(self)
+        self.spin_box.setMinimum(-50000)
+        self.spin_box.setMaximum(50000)
+        self.spin_box.setValue(value)
+        self.layout = QtWidgets.QVBoxLayout()
+        self.results = (value, False)
+
+        # Buttons
+        ok_btn = QtWidgets.QPushButton('OK', self)
+        ok_btn.clicked.connect(self.ok_clicked)
+        cancel_btn = QtWidgets.QPushButton('Cancel', self)
+        cancel_btn.clicked.connect(self.cancel_clicked)
+        remove_btn = QtWidgets.QPushButton('Remove', self)
+        remove_btn.clicked.connect(self.remove_clicked)
+        btn_layout = QtWidgets.QHBoxLayout()
+        btn_layout.addWidget(remove_btn)
+        btn_layout.addStretch()
+        btn_layout.addWidget(cancel_btn)
+        btn_layout.addWidget(ok_btn)
+
+        self.layout.addWidget(self.label)
+        self.layout.addWidget(self.spin_box)
+        self.layout.addLayout(btn_layout)
+        self.setLayout(self.layout)
+
+    def ok_clicked(self):
+        self.results = (self.spin_box.value(), True)
+        self.accept()
+
+    def cancel_clicked(self):
+        self.results = (self.spin_box.value(), False)
+        self.reject()
+
+    def remove_clicked(self):
+        self.results = (None, True)
+        self.accept()
+
+    @staticmethod
+    def get_value(parent, title, label, value):
+        dialog = TargetInputDialog(parent, title, label, value)
+        dialog.exec_()
+
+        return dialog.results
 
 
 class PiMachineDetails(QtWidgets.QWidget):
@@ -316,7 +392,7 @@ class PisTab(QtWidgets.QWidget):
             machine1_item = QtGui.QStandardItem(self.pis_dict[ip].get('machine1'))
             machine2_item = QtGui.QStandardItem(self.pis_dict[ip].get('machine2'))
             machine3_item = QtGui.QStandardItem(self.pis_dict[ip].get('machine3'))
-            last_update_time = self.parent().database_manager.get_last_updates(ip)[0]
+            last_update_time = self.database_manager.get_last_updates(ip)
             if last_update_time:
                 last_update_item = QtGui.QStandardItem(last_update_time.strftime("%d/%m/%y %H:%M"))
             else:
@@ -329,6 +405,14 @@ class PisTab(QtWidgets.QWidget):
             self.pis_model.setItem(index, 4, machine2_item)
             self.pis_model.setItem(index, 5, machine3_item)
             self.pis_model.setItem(index, 6, last_update_item)
+
+    def machine_in_use(self, machine):
+        for ip in self.pis_dict.keys():
+            for i in range(1, 4):
+                if self.pis_dict[ip].get('machine{}'.format(i)) == machine:
+                    return ip
+
+        return False
 
     def set_fields(self, index):
         row = index.row()
@@ -886,6 +970,9 @@ class ConfigurationWidget(QtWidgets.QWidget):
         self.setLayout(layout)
         # self.show()
 
+    def machine_in_use(self, machine):
+        return self.pis_tab.machine_in_use(machine)
+
     def save_all(self):
         self.pis_tab.save_items()
         self.emp_tab.save_emp()
@@ -900,11 +987,16 @@ class ConfigurationWidget(QtWidgets.QWidget):
 
 
 class DisplayTable(QtWidgets.QWidget):
+    scheduler_jobs = {}
+
     def __init__(self, parent, database_manager):
         QtWidgets.QWidget.__init__(self, parent)
         config = configparser.ConfigParser()
         config.read('jam.ini')
         self.database_manager = database_manager
+        self.scheduler = BackgroundScheduler()
+        jam_dur = config.getint('Network', 'interval')
+        self.schedule_jam(interval=jam_dur)
 
         self.table_model = QtGui.QStandardItemModel(3, 10)
 
@@ -926,6 +1018,7 @@ class DisplayTable(QtWidgets.QWidget):
         self.hour_spin = QtWidgets.QSpinBox()
         self.hour_spin.setMinimum(1)
         self.hour_spin.setMaximum(24)
+        self.hour_spin.setValue(12)
         populate_btn = QtWidgets.QPushButton('Refresh')
         populate_btn.clicked.connect(self.populate_table)
         hbox.addWidget(date_label)
@@ -941,6 +1034,8 @@ class DisplayTable(QtWidgets.QWidget):
         box_layout.addWidget(self.table_view)
         self.setLayout(box_layout)
         self.show()
+        self.populate_table()
+        self.scheduler.start()
 
     def populate_table(self):
         self.table_model.clear()
@@ -989,6 +1084,23 @@ class DisplayTable(QtWidgets.QWidget):
                 self.table_model.setItem(idx, col, item)
             self.table_model.setItem(idx, 1, QtGui.QStandardItem(str(sum(row))))
 
+    def schedule_jam(self, interval=5):
+        cron_trigger = CronTrigger(second='30', minute='1-59/{}'.format(interval))
+        job_id = 'REFRESH'
+        if self.scheduler_jobs.get(job_id):
+            self.scheduler_jobs[job_id].remove()
+        self.scheduler_jobs[job_id] = self.scheduler.add_job(self.update_table, cron_trigger, id=job_id,
+                                                             misfire_grace_time=30, max_instances=3)
+
+    def update_table(self):
+        now = datetime.datetime.now()
+        self.date_spin.setDate(QtCore.QDate.currentDate())
+        if now.hour > 19:
+            self.start_spin.setTime(QtCore.QTime(19, 0))
+
+        # Repopulate table
+        self.populate_table()
+
 
 class JamMainWindow(QtWidgets.QMainWindow):
     def __init__(self, parent):
@@ -1034,6 +1146,7 @@ class JamMainWindow(QtWidgets.QMainWindow):
     def launch_configuration(self):
         dialog = QtWidgets.QDialog(self)
         dialog.setWindowTitle('Configurations')
+        dialog.setWindowIcon(QtGui.QIcon('jam_server.png'))
         configurations = ConfigurationWidget(self, self.database_manager)
         configurations.show()
         dialog_layout = QtWidgets.QVBoxLayout()
