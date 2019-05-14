@@ -784,12 +784,16 @@ class DatabaseManager:
                                database=self.db, port=self.port)
         try:
             with conn.cursor() as cursor:
+                for row in pis_row:
+                    last = self.get_last_updates(row[0])
+                    row.append(last)
+
                 sql = 'TRUNCATE pis_table;'
                 cursor.execute(sql)
 
                 sql = 'INSERT INTO pis_table VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,' \
                       ' %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, ' \
-                      'last_update);'
+                      '%s);'
                 cursor.executemany(sql, pis_row)
             conn.commit()
         except pymysql.MySQLError as error:
@@ -828,7 +832,7 @@ class DatabaseManager:
             with conn.cursor() as cursor:
                 sql = 'SELECT last_update FROM pis_table WHERE ip = %s'
                 cursor.execute(sql, [ip, ])
-                last_update = cursor.fetchone()
+                last_update = cursor.fetchone()[0]
             conn.commit()
         except pymysql.MySQLError as error:
             self.logger.error(sys._getframe().f_code.co_name, error)
@@ -1066,4 +1070,3 @@ if __name__ == '__main__':
     settings_ = Settings()
     # print(settings_.get_ips_ports())
     db_manager = DatabaseManager(settings_, password='Lim8699', db='test')
-    AutomateSchedulers(settings_, db_manager)
