@@ -4,9 +4,11 @@ import re
 import cv2
 import sys
 import time
+import json
 import socket
-import ipaddress
 import piMain
+import logging
+import ipaddress
 from enum import Enum
 from kivy.app import App
 from pyzbar import pyzbar
@@ -67,19 +69,14 @@ class JobClass(Widget):
         return "{jo_no}{jo_line:03d}".format(**self.job_info)
 
     def get_sfu(self):
-        # TODO format sfu dict
         sfu_dict = self.job_info.copy()
         sfu_dict.update(self.wastage)
         sfu_dict['output'] = self.output
         return sfu_dict
 
     def all_info(self):
-        save_info = self.job_info.copy()
-        save_info.update(self.wastage)
-        save_info['output'] = self.output
-        save_info.update(self.adjustments)
-        save_info['qc'] = self.qc
-        return save_info
+        return {'job_info': self.job_info.copy(), 'wastage': self.wastage.copy(), 'output': self.output.get(),
+                'adjustments': self.adjustments.copy(), 'qc': self.qc}
 
     def get_jono(self):
         return self.job_info['jo_no']
@@ -188,49 +185,43 @@ class MachineClass:
         return None
 
     def publish_job(self):
-        # TODO This is called at stop job
         sfu_dict = self.current_job.get_sfu()
-        sfu_str = ""
+        sfu_list = []
         sfu_headers1 = ['jo_no', 'jo_line', 'complete', 'mac', 'output']
         for header in sfu_headers1:
-            if isinstance(sfu_dict.get(header, None), str):
-                sfu_str = sfu_str + "'{}',".format(sfu_dict.get(header, ''))
-            else:
-                sfu_str = sfu_str + "{},".format(sfu_dict.get(header, ''))
+            sfu_list.append(sfu_dict.get(header, None))
 
         emps = list(self.emp_main.keys())
         for i in range((3-len(emps))):
             emps.append(None)
 
         for emp in emps:
-            if isinstance(emp, str):
-                sfu_str = sfu_str + "'{},'".format(emp)
-            else:
-                sfu_str = sfu_str + "'{}',".format(emp)
+            sfu_list.append(emp)
 
         sfu_headers2 = ['waste1', 'waste2']
         for header in sfu_headers2:
-            if isinstance(sfu_dict.get(header, None), str):
-                sfu_str = sfu_str + "'{}',".format(sfu_dict.get(header, '')[0])
-            else:
-                sfu_str = sfu_str + "{},".format(sfu_dict.get(header, '')[0])
+            sfu_list.append(sfu_dict.get(header, (0, None))[0])
 
         sfu_headers3 = ['date', 'time_fr']
         for header in sfu_headers3:
-            if isinstance(sfu_dict.get(header, None), str):
-                sfu_str = sfu_str + "'{}',".format(sfu_dict.get(header, ''))
-            else:
-                sfu_str = sfu_str + "{},".format(sfu_dict.get(header, ''))
+            sfu_list.append(sfu_dict.get(header, None))
 
-        sfu_str = sfu_str + "'{}'".format(datetime.now().strftime('%H:%M'))
+        sfu_list.append(datetime.now().strftime('%H:%M'))
+        sfu_str = json.dumps(sfu_list).replace(" ", "")
+
+        key = self.controller.get_key(self.index)
+        for name in ['B1', 'B2', 'B3', 'B4', 'B5']:
+            if self.current_job.adjustments[name]:
+                self.controller.update_adjustments(key, '{}{}'.format(name, self.index),
+                                                   self.current_job.adjustments[name])
 
         self.controller.request({'sfu': sfu_str})
 
-    def self_info(self):
-        save_info = {'permanent': self.permanent, 'state': self.state.name, 'emp_main': self.emp_main,
-                     'emp_asst':self.emp_asst,'maintenance': self.maintenance}
+    def all_info(self):
+        save_info = {'permanent': self.permanent, 'state': self.state.name, 'emp_main': self.emp_main.copy(),
+                     'emp_asst': self.emp_asst.copy(), 'maintenance': self.maintenance}
         if self.current_job:
-            save_info['job'] = self.current_job.all_info
+            save_info['current_job'] = self.current_job.all_info()
         return save_info
 
     def get_current_job(self):
@@ -261,6 +252,7 @@ class SelectPage(Screen):
     timeout = None
     machine = None
     colour = ListProperty([0, 0, 0, 1])
+    logger = logging.getLogger('JAM')
 
     def on_pre_enter(self, *args):
         if self.machine is not App.get_running_app().get_current_machine():
@@ -307,6 +299,7 @@ class SelectPage(Screen):
 
     def start_job(self):
         barcode = self.ids.job_entry.text
+        self.logger.debug('Check for job with barcode {}'.format(barcode))
         try:
             if not barcode:
                 raise ValueError('Please scan barcode')
@@ -324,6 +317,7 @@ class SelectPage(Screen):
             self.parent.transition = SlideTransition()
             self.parent.transition.direction = 'left'
             self.parent.current = 'adjustment_page'
+            self.logger.debug('Starting job with barcode {}'.format(barcode))
 
         except ValueError as err_msg:
             popup_boxlayout = BoxLayout(orientation='vertical')
@@ -349,35 +343,35 @@ class AdjustmentPage(Screen):
         self.colour = Colour[self.machine.config['bg_colour']].value
 
     def generate_tabs(self):
-        # TODO save all info on change
         self.ids['jo_no'].text = 'JO No.: {}'.format(self.machine.get_jono())
         self.ids['adjustment_grid'].clear_widgets()
         for idx in range(1, 6):
             if int(self.machine.config['b{}_enable'.format(idx)]):
                 self.ids['adjustment_grid'].add_widget(AdjustmentLabel(text='{}'.format(self.machine.config['b{}_name'.format(idx)])))
                 field = AdjustmentTextInput()
-                field.bind(focus=self.set_text_input_target)
+                field.touch_function = self.set_text_input_target
+                field.name = 'B{}'.format(idx)
                 field.bind(text=self.check_text)
                 field.hint_text = '0'
                 field.hint_text_color = (0, 0, 0, 1)
-                field.text = '{}'.format(0)
+                field.text = '{}'.format(self.machine.current_job.adjustments['B{}'.format(idx)])
                 self.fields['B{}'.format(idx)] = field
                 self.ids['adjustment_grid'].add_widget(field)
 
     def proceed_next(self):
-        # TODO store B1 to B5
         self.parent.transition = SlideTransition()
         self.parent.transition.direction = 'left'
         self.parent.current = 'run_page'
 
-    def set_text_input_target(self, text_input, focus):
-        if focus:
-            self.ids['numpad'].set_target(text_input)
+    def set_text_input_target(self, text_input):
+        self.ids['numpad'].set_target(text_input)
 
-    @staticmethod
-    def check_text(text_input, value):
+    def check_text(self, text_input, value):
         if value.lstrip("0") == '':
             text_input.text = ''
+            self.machine.current_job.adjustments[text_input.name] = 0
+        else:
+            self.machine.current_job.adjustments[text_input.name] = int(value)
 
 
 class NumPadGrid(GridLayout):
@@ -435,6 +429,7 @@ class EmployeePage(Screen):
     employee_layout = None
     emp_popup = None
     colour = ListProperty([0, 0, 0, 1])
+    logger = logging.getLogger('JAM')
 
     def on_pre_enter(self, *args):
         if self.machine is not App.get_running_app().get_current_machine():
@@ -457,6 +452,7 @@ class EmployeePage(Screen):
         if self.machine.add_emp(emp_id, asst=alternate):
             self.emp_popup.dismiss()
             self.load_emp_list()
+            self.logger.debug('Employee {} has logged in'.format(emp_id))
         else:
             popup_boxlayout = BoxLayout(orientation='vertical')
             popup_boxlayout.add_widget(Label(text=str('Maximum 3 main operators!')))
@@ -467,6 +463,7 @@ class EmployeePage(Screen):
         self.machine.remove_emp(emp_id)
         self.emp_popup.dismiss()
         self.load_emp_list()
+        self.logger.debug('Employee {} has logged out'.format(emp_id))
 
     def has_emp(self, emp_id):
         return self.machine.has_emp(emp_id)
@@ -614,6 +611,7 @@ class RunPage(Screen):
         self.machine.get_current_job().bind(output=self.run_layout.setter('counter'))
         self.machine.set_state(State.RUN)
         self.colour = Colour[self.machine.config['bg_colour']].value
+        # TODO set wastage value. Need last QC?
 
     def wastage_popup(self, key, finish=False):
         self.wastagePopup = WastagePopUp(key, self.run_layout.update_waste)
@@ -714,6 +712,7 @@ class SimpleActionBar(BoxLayout):
     time = StringProperty()
     emp_popup = None
     popup = None
+    logger = logging.getLogger('JAM')
 
     def __init__(self, config, **kwargs):
         BoxLayout.__init__(self, **kwargs)
@@ -752,6 +751,7 @@ class SimpleActionBar(BoxLayout):
         self.machine_dropdown.select(button.text)
         if button.idx is not App.get_running_app().current_index:
             App.get_running_app().change_machine(button.idx)
+            self.logger.debug("Selected index {}".format(button.idx))
 
     def select_employee(self):
         self.machine_button.disabled = not self.machine_button.disabled
@@ -774,6 +774,7 @@ class SimpleActionBar(BoxLayout):
 
     def start_maintenance(self, emp_id, _alternate=False):
         machine = App.get_running_app().get_current_machine()
+        self.logger.debug("Starting maintenance for machine {}".format(machine.index))
         machine.start_maintenance(emp_id)
         self.emp_popup.dismiss()
         sm = App.get_running_app().screen_manager
@@ -802,6 +803,7 @@ class SimpleActionBar(BoxLayout):
     def start_settings(self, password):
         self.popup.dismiss()
         if password == App.get_running_app().config.get('Settings', 'password'):
+            self.logger.debug("Password is correct, opening settings")
             App.get_running_app().open_settings()
 
 
@@ -818,7 +820,13 @@ class AdjustmentLabel(Label):
 
 
 class AdjustmentTextInput(TextInput):
-    pass
+    touch_function = None
+    name = ''
+
+    def on_touch_down(self, touch):
+        if self.collide_point(touch.x, touch.y):
+            if callable(self.touch_function):
+                self.touch_function(self)
 
 
 class SettingScrollableOptions(SettingOptions):
@@ -895,12 +903,14 @@ class PiGUIApp(App):
     screen_manager = ScreenManager()
     controller = None
     action_bar = None
+    logger = None
 
     def build(self):
+        self.logger = logging.getLogger('JAM')
         # self.check_camera()
         self.config.set('Network', 'self_add', self.get_ip_add())
-        # self.controller = FakeClass(self)  # TODO set if testing
-        self.controller = piMain.PiController(self)
+        self.controller = FakeClass(self)  # TODO set if testing
+        # self.controller = piMain.PiController(self)
 
         for idx in range(1, 4):
             self.machines[idx] = MachineClass(idx, self.controller, self.config)
@@ -920,6 +930,7 @@ class PiGUIApp(App):
         blayout.add_widget(self.action_bar)
         blayout.add_widget(self.screen_manager)
 
+        self.logger.info('Returning blayout build')
         return blayout
 
     def build_config(self, config):
@@ -1067,12 +1078,13 @@ class FakeClass:
 
     def get_job_info(self, barcode):
         job_info = self.database_manager.get_job_info(barcode)
-        # if job_info is None:
-        #     reply_msg = self.request({"job_info": barcode})
-        #     value = reply_msg.pop(barcode)
-        #     job_info = {'jo_no': value[0], 'jo_line': value[1], 'code': value[2], 'desc': value[3], 'to_do': value[4],
-        #                 'ran': value[5]}
-
+        if job_info is None:
+            reply_msg = self.request({"job_info": barcode})
+            if reply_msg:
+                value = reply_msg.pop(barcode)
+                if value:
+                    job_info = {'jo_no': value[0], 'jo_line': value[1], 'code': value[2], 'desc': value[3],
+                                'to_do': value[4], 'ran': value[5]}
         return job_info
 
     def get_emp_name(self, emp_id):

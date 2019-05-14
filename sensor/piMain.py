@@ -3,6 +3,7 @@ import zmq
 import time
 import json
 import pigpio
+import logging
 import sqlite3
 import datetime
 import threading
@@ -26,6 +27,16 @@ class PiController:
     self_port = None
 
     def __init__(self, gui, filename='pin_dict.json'):
+        # Logger setup
+        self.logger = logging.getLogger('JAM')
+        self.logger.setLevel(logging.DEBUG)
+        file_handler = logging.FileHandler('jam.log')
+        file_handler.setLevel(logging.DEBUG)
+        log_format = logging.Formatter('%(asctime)s - %(threadName)s - %(levelname)s: %(module)s - %(message)s')
+        file_handler.setFormatter(log_format)
+        self.logger.addHandler(file_handler)
+        self.logger.info('Started logging')
+
         self.filename = filename
         self.callbacks = []
         self.counts_lock = threading.Lock()
@@ -56,12 +67,14 @@ class PiController:
         self.respondent_thread = threading.Thread(target=self.respond)
         self.respondent_thread.daemon = True
         self.respondent_thread.start()
+        self.logger.info('Completed PiController __init__')
 
     def update_ip_ports(self):
         self.server_add = self.gui.config.get('Network', 'server_add')
         self.server_port = self.gui.config.get('Network', 'server_port')
         self.self_add = self.gui.config.get('Network', 'self_add')
         self.self_port = self.gui.config.get('Network', 'self_port')
+        self.logger.info('Updating ports')
 
     def load_pin_dict(self):
         try:
@@ -70,7 +83,7 @@ class PiController:
                 self.pulse_pins = temp["pins"]
                 self.pin_to_name = self.lookup_pin_name()
         except FileNotFoundError:
-            print("File not found, ", self.filename)
+            self.logger.error("File not found, ", self.filename)
             raise SystemExit
 
     def lookup_pin_name(self):
@@ -90,7 +103,7 @@ class PiController:
 
         jo_no = self.gui.machines[idx].get_jo_no()
 
-        return '{0}_{1}_{2}'.format(emp, jo_no, now.strftime('%H%M'))
+        return '{0}_{1}_{2}'.format(emp, jo_no, now.strftime('%d%H%M'))
 
     def add_qc(self, idx, string):
         key = 'Q{}'.format(idx)
@@ -144,6 +157,12 @@ class PiController:
                 self.counts[key] = Counter()
             self.counts[key].update([name])
 
+    def update_adjustments(self, key, name, value):
+        with self.counts_lock:
+            if self.counts.get(key) is None:
+                self.counts[key] = Counter()
+            self.counts[key][name] = value
+
     def get_counts(self):
         with self.counts_lock:
             temp = self.counts.copy()
@@ -152,30 +171,32 @@ class PiController:
         return temp
 
     def respondent_routine(self):
-        ip_port = "{}:{}".format(self.self_add, self.self_port)
-
-        self.respondent = self.context.socket(zmq.REP)
+        self.respondent = self.context.socket(zmq.DEALER)
         self.respondent.setsockopt(zmq.LINGER, 0)
-        self.respondent.bind("tcp://{}".format(ip_port))
+        self.respondent.setsockopt_string(zmq.IDENTITY, self.self_add)
+        self.respondent.bind("tcp://{}:{}".format(self.self_add, self.self_port))
 
     def respond(self):
         while not self.respondent_kill.is_set():
-            # wait for next request from client
-            recv_message = str(self.respondent.recv(), "utf-8")
-            recv_dict = json.loads(recv_message)
-            reply_dict = {'ip': self.self_add}
+            if self.respondent.poll(10):
+                # wait for next request from client
+                recv_message = str(self.respondent.recv(), "utf-8")
+                recv_dict = json.loads(recv_message)
+                # reply_dict = {'ip': self.self_add}
+                reply_dict = {}
+                self.logger.debug('Replying to server')
 
-            for key in recv_dict.keys():
-                if key == "jam":
-                    reply_dict["jam"] = self.get_counts()
-                elif key == "job_info":
-                    job_list = recv_dict.pop(key)
-                    self.database_manager.renew_jobs_table(job_list)
-                elif key == "emp":
-                    emp_list = recv_dict.pop(key)
-                    self.update_emp_info(emp_list)
+                for key in recv_dict.keys():
+                    if key == "jam":
+                        reply_dict["jam"] = self.get_counts()
+                    elif key == "job_info":
+                        job_list = recv_dict.pop(key)
+                        self.database_manager.renew_jobs_table(job_list)
+                    elif key == "emp":
+                        emp_list = recv_dict.pop(key)
+                        self.update_emp_info(emp_list)
 
-            self.respondent.send_string(json.dumps(reply_dict))
+                self.respondent.send_string(json.dumps(reply_dict))
 
     def dealer_routine(self):
         ip_port = "{}:{}".format(self.server_add, self.server_port)
@@ -188,6 +209,8 @@ class PiController:
         msg_dict['ip'] = self.self_add
         recv_msg = None
         # Try 3 times, each waiting for 2 seconds for reply from server
+        self.logger.debug('Sending request to server')
+
         for i in range(3):
             self.dealer.send_string("", zmq.SNDMORE)
             self.dealer.send_json(msg_dict)
@@ -195,6 +218,7 @@ class PiController:
             if self.dealer.poll(timeout):
                 self.dealer.recv()
                 recv_msg = self.dealer.recv_json()
+                self.logger.debug('Received reply from server on try {}'.format(i))
                 break
 
         return recv_msg
@@ -234,9 +258,9 @@ class PiController:
         os.system('sudo shutdown -h now')
 
     def save_machines(self, filename='jam_machine.json'):
-        machines_save = {}
+        machines_save = {'save_time': datetime.datetime.now()}
         for key, machine in self.gui.machines.items():
-            machines_save[key] = machine.self_info()
+            machines_save[key] = machine.all_info()
 
         with open(filename, 'w') as write_file:
             json.dump(machines_save, write_file)
@@ -244,9 +268,12 @@ class PiController:
 
 class DatabaseManager:
     def __init__(self):
+        self.logger = logging.getLogger('JAM')
+
         self.database = 'test.sqlite'  # TODO to change
         self.create_emp_table()
         self.create_job_table()
+        self.logger.info('Completed DatabaseManager __init__')
 
     def create_emp_table(self):
         db = sqlite3.connect(self.database)

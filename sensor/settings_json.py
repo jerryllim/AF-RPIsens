@@ -1,7 +1,5 @@
 import json
 
-# TODO change output_pin, get them from printingMain?
-
 settings_main = json.dumps([
     {'type': 'title',
      'title': 'Machine'},
