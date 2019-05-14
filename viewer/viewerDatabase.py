@@ -1,5 +1,5 @@
 import sys
-import csv
+import sqlite3
 import logging
 import pymysql
 import warnings
@@ -65,7 +65,8 @@ class Settings:
 
 
 class DatabaseManager:
-    def __init__(self, settings, host='', user='', password='', db='', port='', create_tables=True):
+    def __init__(self, settings, host='', user='', password='', db='', port='', lite_db='machine.sqlite',
+                 create_tables=True):
         self.logger = logging.getLogger('jamVIEWER')
         self.settings = settings
         self.host = host
@@ -75,6 +76,7 @@ class DatabaseManager:
         if port.isnumeric():
             port = int(port)
         self.port = port
+        self.lite_db = lite_db
 
         if create_tables:
             with warnings.catch_warnings():
@@ -173,42 +175,6 @@ class DatabaseManager:
         finally:
             conn.close()
 
-    def insert_jam(self, ip, recv_dict):
-        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
-                               database=self.db, port=self.port)
-
-        try:
-            with conn.cursor() as cursor:
-                # Update the 'last_update' in pis_table (to know if there's no reply from a pi)
-                cursor.execute("UPDATE pis_table SET last_update = NOW() WHERE ip = '{}';".format(ip))
-                for recv_id, recv_info in recv_dict.items():
-                    emp, job, time_str = recv_id.split('_', 3)
-                    recv_time = datetime.strptime(time_str, '%d%H%M')
-                    now = datetime.now()
-                    date_time = now.replace(day=recv_time.day, hour=recv_time.hour, minute=recv_time.minute)
-                    if recv_time.day > now.day:
-                        date_time = self.month_delta(date_time, -1)
-                    shift = self.get_shift(date_time)
-
-                    for key in recv_info.keys():
-                        values = self.settings.get_ip_key(ip, key)
-
-                        if values:
-                            query = "INSERT INTO jam_current_table (machine, jo_no, emp, date_time, shift, " \
-                                    "{header}) VALUES ('{machine}', '{jo_no}', '{emp}', '{date_time}', %s, " \
-                                    "{value}) ON DUPLICATE KEY UPDATE {header} = {header} + " \
-                                    "{value};".format(header=values[1], machine=values[0], jo_no=job, emp=emp,
-                                                      date_time=date_time.strftime("%Y-%m-%d %H:%M"),
-                                                      value=recv_info[key])
-                            cursor.execute(query, [shift, ])
-                conn.commit()
-                self.logger.debug('Inserted jam for {}'.format(ip))
-        except pymysql.MySQLError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
-            conn.rollback()
-        finally:
-            conn.close()
-
     @staticmethod
     def month_delta(date_, delta):
         m, y = (date_.month + delta) % 12, date_.year + ((date_.month) + delta - 1) // 12
@@ -256,24 +222,6 @@ class DatabaseManager:
             conn.close()
             return output_list
 
-    def transfer_table(self):
-        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
-                               database=self.db, port=self.port)
-
-        try:
-            with conn.cursor() as cursor:
-                # TODO to check this sql
-                sql = "INSERT IGNORE INTO jam_past_table (machine, jo_no, emp, date_time, shift, output, col1, col2, " \
-                      "col3, col4, col5, col6, col7, col8, col9, col10) SELECT * FROM jam_current_table " \
-                      "WHERE datetime < NOW() - INTERVAL 2 WEEK;"
-                # TODO to delete the selects
-                cursor.execute(sql)
-                conn.commit()
-        except pymysql.MySQLError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
-        finally:
-            conn.close()
-
     def create_emp_table(self):
         conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
@@ -292,69 +240,6 @@ class DatabaseManager:
                 conn.commit()
         except pymysql.MySQLError as error:
             self.logger.error(sys._getframe().f_code.co_name, error)
-        finally:
-            conn.close()
-
-    def insert_emp(self, emp_id, emp_name):
-        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
-                               database=self.db, port=self.port)
-        try:
-            with conn.cursor() as cursor:
-                sql = "REPLACE INTO emp_table (emp_id, name) VALUES (%s, %s);"
-                cursor.execute(sql, (emp_id, emp_name, emp_name))
-                conn.commit()
-        except pymysql.MySQLError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
-            conn.rollback()
-        finally:
-            conn.close()
-
-    def insert_emps(self, emp_list):
-        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
-                               database=self.db, port=self.port)
-        try:
-            with conn.cursor() as cursor:
-                sql = "REPLACE INTO emp_table (emp_id, name) VALUES (%s, %s);"
-                # new_list = [(row[0], row[1], row[1]) for row in emp_list]
-                cursor.executemany(sql, emp_list)
-
-                conn.commit()
-        except pymysql.MySQLError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
-            conn.rollback()
-        finally:
-            conn.close()
-
-    def mark_to_delete_emp(self, emp_ids):
-        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
-                               database=self.db, port=self.port)
-        emp_str = str(tuple(emp_ids))
-        if len(emp_ids) == 1:
-            emp_str = emp_str.replace(',', '')
-
-        try:
-            with conn.cursor() as cursor:
-                sql = 'UPDATE emp_table SET to_del = 1 WHERE emp_id IN ' + str(emp_str) + ';'
-                cursor.execute(sql)
-                conn.commit()
-        except pymysql.MySQLError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
-            conn.rollback()
-        finally:
-            conn.close()
-
-    def delete_emp(self):
-        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
-                               database=self.db, port=self.port)
-
-        try:
-            with conn.cursor() as cursor:
-                sql = '''DELETE emp_table WHERE to_del = 1'''
-                cursor.execute(sql)
-                conn.commit()
-        except pymysql.MySQLError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
-            conn.rollback()
         finally:
             conn.close()
 
@@ -430,113 +315,6 @@ class DatabaseManager:
         finally:
             conn.close()
 
-    def replace_jobs(self, job_list):
-        """
-        Call to insert job from eb to database
-        :param job_list: list containing tuples. A tuple will contain the job information e.g. ('job#', 'mac', ...,
-        'so_rem')
-        :return:
-        """
-        conn = pymysql.connect(self.host, self.user, self.password, self.db)
-        # column_names = ['jo_no', 'jo_line', 'mac', 'to_do', 'code', 'descp', 'so_no', 'edd', 'so_qty', 'so_rem']
-        # column_names_str = ', '.join(column_names)
-        # binds_str = ', '.join(['%s'] * len(column_names))
-        try:
-            with conn.cursor() as cursor:
-                for job_info in job_list:
-                    query = "REPLACE INTO jobs_table VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, " \
-                            "%s, %s, %s, %s, %s, %s, %s, %s, STR_TO_DATE(%s, %s));"
-                    job_info = job_info + ["%d/%m/%Y"]
-                    cursor.execute(query, job_info)
-                    conn.commit()
-        except pymysql.MySQLError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
-            conn.rollback()
-        finally:
-            conn.close()
-
-    def delete_completed_jobs(self):
-        conn = pymysql.connect(self.host, self.user, self.password, self.db)
-        try:
-            with conn.cursor() as cursor:
-                query = "DELETE FROM job_info WHERE ucomplete = 'Y';"
-                cursor.execute(query)
-        except pymysql.MySQLError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
-        finally:
-            conn.close()
-
-    def delete_job(self, jo_ids):
-        """
-        Delete multiple jobs
-        :param jo_ids: List of jo_no & jo_line
-        :return:
-        """
-        conn = pymysql.connect(self.host, self.user, self.password, self.db)
-        try:
-            with conn.cursor() as cursor:
-                query = '''DELETE FROM job_info WHERE jo_no = %s AND jo_line = %s'''
-                cursor.executemany(query, jo_ids)
-        except pymysql.MySQLError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
-        finally:
-            conn.close()
-
-    def get_job_info(self, barcode):
-        conn = pymysql.connect(self.host, self.user, self.password, self.db)
-        cursor = conn.cursor()
-        reply_str = []
-        try:
-            jo_no = barcode[:-3]
-            jo_line = int(barcode[-3:])
-            sql = "SELECT uno, uline, usou_no, ustk_desc1, usch_qty, 0 FROM jobs_table " \
-                  "WHERE uno = %s AND uline = %s LIMIT 1;"
-            cursor.execute(sql, (jo_no, jo_line))
-            temp = cursor.fetchone()
-            reply_str = list(temp)
-            conn.commit()
-        except pymysql.MySQLError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
-        finally:
-            conn.close()
-            return reply_str
-
-    def get_umc_for(self, uno, uline):
-        conn = pymysql.connect(self.host, self.user, self.password, self.db)
-        umc = ''
-
-        try:
-            with conn.cursor() as cursor:
-                sql = "SELECT umc FROM job_info WHERE uno = %s AND uline = %s;"
-                cursor.execute(sql, [uno, uline])
-                umc = cursor.fetchone()
-        except pymysql.MySQLError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
-        finally:
-            conn.close()
-
-        return umc
-
-    def get_jobs_for(self, mac):
-        conn = pymysql.connect(self.host, self.user, self.password, self.db)
-        job_list = []
-        try:
-            with conn.cursor() as cursor:
-                sql = '''SELECT * FROM jobs_table WHERE umachine_no = %s'''
-                cursor.execute(sql, (mac,))
-                for row in cursor:
-                    job_list.append(row)
-        except pymysql.MySQLError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
-        finally:
-            conn.close()
-            return job_list
-
-    @staticmethod
-    def check_complete(cursor, jo_id, jo_line):
-        query = '''DELETE FROM job_info WHERE jo_no = %s AND jo_line = %s AND ran >= to_do'''
-        cursor.execute(query, (jo_id, jo_line))
-
     def create_qc_table(self):
         conn = pymysql.connect(self.host, self.user, self.password, self.db)
 
@@ -550,33 +328,6 @@ class DatabaseManager:
                         "jo_no varchar(10) NOT NULL, " \
                         "quality tinyint(3) unsigned NOT NULL );"
                 cursor.execute(query)
-                conn.commit()
-        except pymysql.MySQLError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
-        finally:
-            conn.close()
-
-    def insert_qc(self, machine, values):
-        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
-                             database=self.db, port=self.port)
-
-        try:
-            with conn.cursor() as cursor:
-                for value in values:
-                    emp, jo_no, time_str, grade = value.split('_', 4)
-                    recv_time = datetime.strptime(time_str, '%H%M')
-                    now = datetime.now()
-                    date_time = now.replace(hour=recv_time.hour, minute=recv_time.minute)
-                    if recv_time.time() > now.time():
-                        date_time = date_time - timedelta(1)
-
-                    query = 'INSERT INTO qc_table (emp_id, date_time, machine, jo_no, quality) VALUES ({emp}, ' \
-                            '{date_time}, {machine}, {jo_no}, ' \
-                            '{grade})'.format(emp=emp, date_time=date_time.strftime("%Y-%m-%d %H:%M"),
-                                              machine=machine, jo_no=jo_no, grade=grade)
-
-                    cursor.execute(query)
-
                 conn.commit()
         except pymysql.MySQLError as error:
             self.logger.error(sys._getframe().f_code.co_name, error)
@@ -603,24 +354,6 @@ class DatabaseManager:
         finally:
             conn.close()
 
-    def replace_maintenance(self, machine, values):
-        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
-                             database=self.db, port=self.port)
-
-        try:
-            with conn.cursor() as cursor:
-                for emp_start, end in values.items():
-                    emp, start = emp_start.split('_')
-
-                    query = 'REPLACE INTO maintenance_table VALUES (%s, %s, %s, %s);'
-                    cursor.execute(query, (emp, machine, start, end))
-
-                conn.commit()
-        except pymysql.MySQLError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
-        finally:
-            conn.close()
-
     def create_emp_shift_table(self):
         conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                              database=self.db, port=self.port)
@@ -635,24 +368,6 @@ class DatabaseManager:
                         'end datetime DEFAULT NULL, ' \
                         'PRIMARY KEY (emp_id,machine,start) );'
                 cursor.execute(query)
-                conn.commit()
-        except pymysql.MySQLError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
-        finally:
-            conn.close()
-
-    def replace_emp_shift(self, machine, values):
-        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
-                             database=self.db, port=self.port)
-
-        try:
-            with conn.cursor() as cursor:
-                for emp_start, end in values.items():
-                    emp, start = emp_start.split('_')
-
-                    query = 'REPLACE INTO emp_shift_table VALUES (%s, %s, %s, %s);'
-                    cursor.execute(query, (emp, machine, start, end))
-
                 conn.commit()
         except pymysql.MySQLError as error:
             self.logger.error(sys._getframe().f_code.co_name, error)
@@ -713,46 +428,6 @@ class DatabaseManager:
             self.logger.error(sys._getframe().f_code.co_name, error)
         finally:
             conn.close()
-            
-    def saved_all_pis(self, pis_row):
-        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
-                               database=self.db, port=self.port)
-        try:
-            with conn.cursor() as cursor:
-                sql = 'TRUNCATE pis_table;'
-                cursor.execute(sql)
-
-                sql = 'INSERT INTO pis_table VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,' \
-                      ' %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, ' \
-                      'last_update);'
-                cursor.executemany(sql, pis_row)
-            conn.commit()
-        except pymysql.MySQLError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
-            conn.rollback()
-        finally:
-            conn.close()
-
-    def replace_pi(self, pi_row):
-        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
-                               database=self.db, port=self.port)
-        replaced = False
-
-        try:
-            with conn.cursor() as cursor:
-                sql = 'REPLACE INTO pis_table VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,' \
-                      ' %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);'
-                cursor.execute(sql, pi_row)
-                conn.commit()
-        except pymysql.MySQLError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
-            conn.rollback()
-        else:
-            replaced = True
-        finally:
-            conn.close()
-
-        return replaced
 
     def get_last_updates(self, ip):
         conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
@@ -763,7 +438,7 @@ class DatabaseManager:
             with conn.cursor() as cursor:
                 sql = 'SELECT last_update FROM pis_table WHERE ip = %s'
                 cursor.execute(sql, [ip, ])
-                last_update = cursor.fetchone()
+                last_update = cursor.fetchone()[0]
             conn.commit()
         except pymysql.MySQLError as error:
             self.logger.error(sys._getframe().f_code.co_name, error)
@@ -772,21 +447,6 @@ class DatabaseManager:
             conn.close()
 
         return last_update
-
-    def delete_pi(self, ip):
-        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
-                               database=self.db, port=self.port)
-
-        try:
-            with conn.cursor() as cursor:
-                sql = 'DELETE pis_table WHERE ip = %s'
-                cursor.execute(sql, [ip, ])
-                conn.commit()
-        except pymysql.MySQLError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
-            conn.rollback()
-        finally:
-            conn.close()
 
     def get_pis(self):
         conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
@@ -808,14 +468,14 @@ class DatabaseManager:
             return pis_dict
 
     def create_machines_table(self):
-        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
-                               database=self.db, port=self.port)
+        conn = sqlite3.connect(self.lite_db)
 
         try:
-            with conn.cursor() as cursor:
+            cursor = conn.cursor()
+            if cursor:
                 sql = "CREATE TABLE IF NOT EXISTS machines_table ( " \
                       "machine varchar(10) NOT NULL, " \
-                      "output int(10) unsigned DEFAULT NULL, " \
+                      "output int(10) DEFAULT NULL, " \
                       "col1 int(11) DEFAULT NULL, " \
                       "col2 int(11) DEFAULT NULL, " \
                       "col3 int(11) DEFAULT NULL, " \
@@ -829,71 +489,71 @@ class DatabaseManager:
                       "PRIMARY KEY (machine) );"
                 cursor.execute(sql)
                 conn.commit()
-        except pymysql.MySQLError as error:
+        except sqlite3.Error as error:
             self.logger.error(sys._getframe().f_code.co_name, error)
         finally:
             conn.close()
 
     def insert_machine(self, machine_row):
-        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
-                               database=self.db, port=self.port)
+        conn = sqlite3.connect(self.lite_db)
 
         try:
-            with conn.cursor() as cursor:
+            cursor = conn.cursor()
+            if cursor:
                 sql = 'INSERT INTO machines_table VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
                 cursor.execute(sql, machine_row)
                 conn.commit()
-        except pymysql.MySQLError as error:
+        except sqlite3.Error as error:
             self.logger.error(sys._getframe().f_code.co_name, error)
             conn.rollback()
         finally:
             conn.close()
 
     def delete_machines(self, machines):
-        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
-                               database=self.db, port=self.port)
+        conn = sqlite3.connect(self.lite_db)
 
         try:
-            with conn.cursor() as cursor:
+            cursor = conn.cursor()
+            if cursor:
                 sql = 'DELETE FROM machines_table WHERE machine = %s'
                 cursor.executemany(sql, machines)
                 conn.commit()
-        except pymysql.MySQLError as error:
+        except sqlite3.Error as error:
             self.logger.error(sys._getframe().f_code.co_name, error)
             conn.rollback()
         finally:
             conn.close()
 
     def reinsert_machines(self, machine_rows):
-        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
-                               database=self.db, port=self.port)
+        conn = sqlite3.connect(self.lite_db)
 
         try:
-            with conn.cursor() as cursor:
-                sql = 'TRUNCATE machines_table;'
+            cursor = conn.cursor()
+            if cursor:
+                sql = 'DELETE FROM machines_table;'
                 cursor.execute(sql)
 
-                sql = 'INSERT INTO machines_table VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+                sql = 'INSERT INTO machines_table VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
                 cursor.executemany(sql, machine_rows)
                 conn.commit()
-        except pymysql.MySQLError as error:
+        except sqlite3.Error as error:
             self.logger.error(sys._getframe().f_code.co_name, error)
             conn.rollback()
         finally:
             conn.close()
 
     def get_machines_headers(self):
-        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
-                               database=self.db, port=self.port)
+        conn = sqlite3.connect(self.lite_db)
         headers_list = []
 
         try:
-            with conn.cursor() as cursor:
-                sql = 'SHOW COLUMNS FROM machines_table;'
+            cursor = conn.cursor()
+            if cursor:
+                sql = 'PRAGMA table_info(machines_table);'
                 cursor.execute(sql)
                 for row in cursor:
-                    headers_list.append(row[0])
-        except pymysql.MySQLError as error:
+                    headers_list.append(row[1])
+        except sqlite3.Error as error:
             self.logger.error(sys._getframe().f_code.co_name, error)
             conn.rollback()
         finally:
@@ -901,16 +561,16 @@ class DatabaseManager:
             return headers_list
 
     def get_machines(self):
-        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
-                               database=self.db, port=self.port)
+        conn = sqlite3.connect(self.lite_db)
         machines_list = []
 
         try:
-            with conn.cursor() as cursor:
+            cursor = conn.cursor()
+            if cursor:
                 sql = 'SELECT * FROM machines_table;'
                 cursor.execute(sql)
                 machines_list = cursor.fetchall()
-        except pymysql.MySQLError as error:
+        except sqlite3.Error as error:
             self.logger.error(sys._getframe().f_code.co_name, error)
             conn.rollback()
         finally:
@@ -918,17 +578,17 @@ class DatabaseManager:
             return machines_list
 
     def get_machine_names(self):
-        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
-                               database=self.db, port=self.port)
+        conn = sqlite3.connect(self.lite_db)
         machines_list = []
 
         try:
-            with conn.cursor() as cursor:
+            cursor = conn.cursor()
+            if cursor:
                 sql = 'SELECT machine FROM machines_table;'
                 cursor.execute(sql)
                 for row in cursor:
                     machines_list.append(row[0])
-        except pymysql.MySQLError as error:
+        except sqlite3.Error as error:
             self.logger.error(sys._getframe().f_code.co_name, error)
             conn.rollback()
         finally:
@@ -936,11 +596,11 @@ class DatabaseManager:
             return machines_list
 
     def get_machine_targets(self, col, machines_list=None):
-        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
-                               database=self.db, port=self.port)
+        conn = sqlite3.connect(self.lite_db)
         targets_dict = {}
         try:
-            with conn.cursor() as cursor:
+            cursor = conn.cursor()
+            if cursor:
                 query = "SELECT machine, "+ col +" FROM machines_table"
                 if machines_list:
                     machines_str = str(tuple(machines_list))
@@ -950,7 +610,7 @@ class DatabaseManager:
                 cursor.execute(query)
                 for row in cursor:
                     targets_dict[row[0]] = row[1]
-        except pymysql.MySQLError as error:
+        except sqlite3.Error as error:
             self.logger.error(sys._getframe().f_code.co_name, error)
             conn.rollback()
         finally:
@@ -983,22 +643,8 @@ class DatabaseManager:
         finally:
             conn.close()
 
-    def insert_sfu(self, sfu):
-        conn = pymysql.connect(self.host, self.user, self.password, self.db)
-
-        try:
-            with conn.cursor() as cursor:
-                sql = "INSERT INTO sfu_table VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);"
-                cursor.execute(sql, sfu)
-                conn.commit()
-        except pymysql.MySQLError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
-        finally:
-            conn.close()
-
 
 if __name__ == '__main__':
     settings_ = Settings()
     # print(settings_.get_ips_ports())
     db_manager = DatabaseManager(settings_, password='Lim8699', db='test')
-    AutomateSchedulers(settings_, db_manager)
