@@ -26,6 +26,9 @@ class NetworkManager:
         file_handler.setFormatter(log_format)
         self.logger.addHandler(file_handler)
         self.logger.info('\n\nStarted logging')
+        ap_logger = logging.getLogger('apscheduler')
+        ap_logger.setLevel(logging.DEBUG)
+        ap_logger.addHandler(file_handler)
 
         self.self_add = self.get_ip_add()
         self.context = zmq.Context()
