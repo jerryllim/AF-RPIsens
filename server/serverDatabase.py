@@ -152,6 +152,7 @@ class DatabaseManager:
                 self.create_qc_table()
                 self.create_pis_table()
                 self.create_machines_table()
+                self.create_sfu_table()
 
         self.logger.info('Complated DatabaseManager __init__')
 
@@ -524,7 +525,7 @@ class DatabaseManager:
         conn = pymysql.connect(self.host, self.user, self.password, self.db)
         try:
             with conn.cursor() as cursor:
-                query = "DELETE FROM job_info WHERE ucomplete = 'Y';"
+                query = "DELETE FROM jobs_table WHERE ucomplete = 'Y';"
                 cursor.execute(query)
         except pymysql.MySQLError as error:
             self.logger.error(sys._getframe().f_code.co_name, error)
@@ -540,7 +541,7 @@ class DatabaseManager:
         conn = pymysql.connect(self.host, self.user, self.password, self.db)
         try:
             with conn.cursor() as cursor:
-                query = '''DELETE FROM job_info WHERE jo_no = %s AND jo_line = %s'''
+                query = '''DELETE FROM jobs_table WHERE jo_no = %s AND jo_line = %s'''
                 cursor.executemany(query, jo_ids)
         except pymysql.MySQLError as error:
             self.logger.error(sys._getframe().f_code.co_name, error)
@@ -572,9 +573,9 @@ class DatabaseManager:
 
         try:
             with conn.cursor() as cursor:
-                sql = "SELECT umc FROM job_info WHERE uno = %s AND uline = %s;"
+                sql = "SELECT umc FROM jobs_table WHERE uno = %s AND uline = %s;"
                 cursor.execute(sql, [uno, uline])
-                umc = cursor.fetchone()
+                umc = cursor.fetchone()[0]
         except pymysql.MySQLError as error:
             self.logger.error(sys._getframe().f_code.co_name, error)
         finally:
@@ -599,7 +600,7 @@ class DatabaseManager:
 
     @staticmethod
     def check_complete(cursor, jo_id, jo_line):
-        query = '''DELETE FROM job_info WHERE jo_no = %s AND jo_line = %s AND ran >= to_do'''
+        query = '''DELETE FROM jobs_table WHERE jo_no = %s AND jo_line = %s AND ran >= to_do'''
         cursor.execute(query, (jo_id, jo_line))
 
     def create_qc_table(self):
