@@ -628,7 +628,7 @@ class JamMainWindow(QtWidgets.QMainWindow):
     def launch_configuration(self):
         dialog = QtWidgets.QDialog(self)
         dialog.setWindowTitle('Configurations')
-        dialog.setWindowIcon(QtGui.QIcon('jam_server.png'))
+        dialog.setWindowIcon(QtGui.QIcon('jam_icon.png'))
         configurations = ConfigurationWidget(self, self.database_manager)
         configurations.show()
         dialog_layout = QtWidgets.QVBoxLayout()
