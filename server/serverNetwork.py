@@ -82,9 +82,12 @@ class NetworkManager:
     def route(self):
         while not self.router_kill.is_set():
             if self.router_recv.poll(1000):
-                ident = self.router_recv.recv()  # routing information
-                delimiter = self.router_recv.recv()  # delimiter
-                message = self.router_recv.recv_json()
+                id_from, recv_msg = self.router_recv.recv_multipart()
+                ip = id_from.decode()
+                message = json.loads(recv_msg.decode())
+                # ident = self.router_recv.recv_string()  # routing information
+                # delimiter = self.router_recv.recv()  # delimiter
+                # message = self.router_recv.recv_json()
                 reply_dict = {}
 
                 for key in message.keys():
@@ -94,18 +97,21 @@ class NetworkManager:
                     elif key == "sfu":
                         sfu_str = message.get("sfu", None)
                         if sfu_str:
-                            self.insert_sfu(sfu_str)
+                            self.insert_sfu(ip, sfu_str)
                     elif key == "ink_key":
                         ink_key = message.get("ink_key", None)
                         self.database_manager.replace_ink_key(ink_key)
 
-                self.router_recv.send(ident, zmq.SNDMORE)
-                self.router_recv.send(delimiter, zmq.SNDMORE)
-                self.router_recv.send_json(reply_dict)
+                self.router_recv.send_multipart([ip.encode(), (json.dumps(reply_dict)).encode()])
+                # self.router_recv.send(ident, zmq.SNDMORE)
+                # self.router_recv.send(delimiter, zmq.SNDMORE)
+                # self.router_recv.send_json(reply_dict)
 
-    def insert_sfu(self, sfu_str):
+    def insert_sfu(self, ip, sfu_str):
         sfu_list = json.loads(sfu_str)
         umc = self.database_manager.get_umc_for(sfu_list[0], sfu_list[1])
+        idx = sfu_list[2]
+        sfu_list[2] = self.settings.get_mac(ip, idx)
         sfu_list = [umc] + sfu_list
 
         self.database_manager.insert_sfu(sfu_list)
