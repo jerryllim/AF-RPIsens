@@ -794,7 +794,7 @@ class SimpleActionBar(BoxLayout):
         self.popup = Popup(title='Admin', content=popup_boxlayout, size_hint=(0.5, 0.5))
         popup_boxlayout.add_widget(Label(text='Password: ', size_hint_y=0.3))
         pass_input = TextInput()
-        pass_input.keyboard_mode = 'dock'
+        pass_input.keyboard_mode = 'auto'
         pass_input.password = True
         popup_boxlayout.add_widget(pass_input)
         cancel_btn = Button(text='Cancel')
