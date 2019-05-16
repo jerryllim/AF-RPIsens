@@ -612,6 +612,8 @@ class RunPage(Screen):
             self.add_widget(self.run_layout)
 
         self.run_layout.counter = self.machine.get_current_job().output
+        self.run_layout.waste1 = self.machine.get_current_job().wastage['waste1'][0]
+        self.run_layout.waste2 = self.machine.get_current_job().wastage['waste2'][0]
         self.machine.get_current_job().bind(output=self.run_layout.setter('counter'))
         self.machine.set_state(State.RUN)
         self.colour = Colour[self.machine.config['bg_colour']].value
