@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="8c4eab11-9431-48ea-8992-fef6a6e722be" name="Default" comment="Reduced labels (populate in init) &amp; created NumericProperty for counter">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="8c4eab11-9431-48ea-8992-fef6a6e722be" name="Default" comment="Reduced labels (populate in init) &amp; created NumericProperty for counter" />
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -57,8 +55,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/sensor/piGUI.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="11584">
-                  <caret line="790" lean-forward="true" selection-start-line="790" selection-end-line="790" />
+                <state relative-caret-position="13618">
+                  <caret line="934" column="21" selection-start-line="934" selection-start-column="17" selection-end-line="934" selection-end-column="21" />
                 </state>
               </provider>
             </entry>
@@ -146,10 +144,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>exit</find>
-      <find>Fake</find>
-      <find>print</find>
-      <find>machines_model</find>
       <find>test_db</find>
       <find>sys</find>
       <find>serverDatabase</find>
@@ -176,6 +170,10 @@
       <find>insert_emp</find>
       <find>shift</find>
       <find>focus</find>
+      <find>config</find>
+      <find>config.set</find>
+      <find>kivy.config</find>
+      <find>kivy</find>
     </findStrings>
     <replaceStrings>
       <replace>TMessage</replace>
@@ -1074,8 +1072,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/sensor/piGUI.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="11584">
-          <caret line="790" lean-forward="true" selection-start-line="790" selection-end-line="790" />
+        <state relative-caret-position="13618">
+          <caret line="934" column="21" selection-start-line="934" selection-start-column="17" selection-end-line="934" selection-end-column="21" />
         </state>
       </provider>
     </entry>

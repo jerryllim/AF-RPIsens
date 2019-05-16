@@ -792,12 +792,6 @@ class SimpleActionBar(BoxLayout):
             sm.current = 'maintenance_page'
 
     def select_settings(self):
-        def close_keyboard():
-            keyboard.unbind(on_key_down=_key_down)
-
-        def _key_down(_keyboard, _keycode, _text, _modifiers):
-            print(_keycode)
-
         popup_boxlayout = BoxLayout(orientation='vertical', spacing='10sp', padding='10sp')
         self.popup = Popup(title='Admin', content=popup_boxlayout, size_hint=(0.5, 0.5))
         popup_boxlayout.add_widget(Label(text='Password: ', size_hint_y=0.3))
@@ -811,10 +805,7 @@ class SimpleActionBar(BoxLayout):
         hbox_layout.add_widget(cancel_btn)
         hbox_layout.add_widget(confirm_btn)
         popup_boxlayout.add_widget(hbox_layout)
-        keyboard = Window.request_keyboard(close_keyboard, pass_input)
-        print(keyboard)
         pass_input.focus = True
-        keyboard.bind(on_key_down=_key_down)
         self.popup.open()
 
     def start_settings(self, password):
@@ -932,7 +923,7 @@ class PiGUIApp(App):
         for idx in range(1, 4):
             self.machines[idx] = MachineClass(idx, self.controller, self.config)
 
-        self.use_kivy_settings = False
+        self.use_kivy_settings = True
 
         Factory.register('RunPageLayout', cls=RunPageLayout)
 
