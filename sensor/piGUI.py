@@ -15,7 +15,6 @@ from pyzbar import pyzbar
 from kivy.metrics import dp
 from kivy.clock import Clock
 from datetime import datetime
-from kivy.config import Config
 from kivy.factory import Factory
 from kivy.uix.popup import Popup
 from kivy.uix.label import Label
@@ -35,7 +34,6 @@ from kivy.properties import NumericProperty, StringProperty, ListProperty
 from kivy.uix.screenmanager import ScreenManager, Screen, SlideTransition, NoTransition
 from settings_json import settings_main, settings_machine1, settings_machine2, settings_machine3
 
-Config.set('kivy', 'keyboard_mode', 'systemandmulti')
 
 class State(Enum):
     SELECT = 'select_page'
@@ -796,6 +794,8 @@ class SimpleActionBar(BoxLayout):
         self.popup = Popup(title='Admin', content=popup_boxlayout, size_hint=(0.5, 0.5))
         popup_boxlayout.add_widget(Label(text='Password: ', size_hint_y=0.3))
         pass_input = TextInput()
+        pass_input.keyboard_mode = 'dock'
+        pass_input.password = True
         popup_boxlayout.add_widget(pass_input)
         cancel_btn = Button(text='Cancel')
         cancel_btn.bind(on_press=self.popup.dismiss)
@@ -805,7 +805,7 @@ class SimpleActionBar(BoxLayout):
         hbox_layout.add_widget(cancel_btn)
         hbox_layout.add_widget(confirm_btn)
         popup_boxlayout.add_widget(hbox_layout)
-        pass_input.focus = True
+        # pass_input.focus = True
         self.popup.open()
 
     def start_settings(self, password):
@@ -923,7 +923,7 @@ class PiGUIApp(App):
         for idx in range(1, 4):
             self.machines[idx] = MachineClass(idx, self.controller, self.config)
 
-        self.use_kivy_settings = True
+        self.use_kivy_settings = False
 
         Factory.register('RunPageLayout', cls=RunPageLayout)
 
