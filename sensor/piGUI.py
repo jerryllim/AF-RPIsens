@@ -187,7 +187,7 @@ class MachineClass:
     def publish_job(self):
         sfu_dict = self.current_job.get_sfu()
         sfu_list = []
-        sfu_headers1 = ['jo_no', 'jo_line', 'complete', 'mac', 'output']
+        sfu_headers1 = ['jo_no', 'jo_line', 'mac', 'output']
         for header in sfu_headers1:
             sfu_list.append(sfu_dict.get(header, None))
 
@@ -784,6 +784,12 @@ class SimpleActionBar(BoxLayout):
             sm.current = 'maintenance_page'
 
     def select_settings(self):
+        def close_keyboard():
+            keyboard.unbind(on_key_down=_key_down)
+
+        def _key_down(_keyboard, _keycode, _text, _modifiers):
+            print(_keycode)
+
         popup_boxlayout = BoxLayout(orientation='vertical', spacing='10sp', padding='10sp')
         self.popup = Popup(title='Admin', content=popup_boxlayout, size_hint=(0.5, 0.5))
         popup_boxlayout.add_widget(Label(text='Password: ', size_hint_y=0.3))
@@ -798,6 +804,8 @@ class SimpleActionBar(BoxLayout):
         hbox_layout.add_widget(confirm_btn)
         popup_boxlayout.add_widget(hbox_layout)
         pass_input.focus = True
+        keyboard = Window.request_keyboard(close_keyboard, pass_input)
+        keyboard.bind(on_key_down=_key_down)
         self.popup.open()
 
     def start_settings(self, password):
