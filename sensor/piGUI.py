@@ -15,6 +15,7 @@ from pyzbar import pyzbar
 from kivy.metrics import dp
 from kivy.clock import Clock
 from datetime import datetime
+from kivy.config import Config
 from kivy.factory import Factory
 from kivy.uix.popup import Popup
 from kivy.uix.label import Label
@@ -34,6 +35,7 @@ from kivy.properties import NumericProperty, StringProperty, ListProperty
 from kivy.uix.screenmanager import ScreenManager, Screen, SlideTransition, NoTransition
 from settings_json import settings_main, settings_machine1, settings_machine2, settings_machine3
 
+Config.set('kivy', 'keyboard_mode', 'systemandmulti')
 
 class State(Enum):
     SELECT = 'select_page'
