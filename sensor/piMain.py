@@ -215,7 +215,6 @@ class PiController:
             self.dealer.send_json(msg_dict)
 
             if self.dealer.poll(timeout):
-                self.dealer.recv()
                 recv_msg = json.loads(str(self.dealer.recv(), "utf-8"))
                 self.logger.debug('Received reply from server on try {}'.format(i))
                 break
