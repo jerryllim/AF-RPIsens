@@ -203,22 +203,20 @@ class PiController:
         self.dealer = self.context.socket(zmq.DEALER)
         self.dealer.setsockopt_string(zmq.IDENTITY, self.self_add)
         self.dealer.connect("tcp://{}".format(ip_port))
-        print(ip_port)
 
     def request(self, msg_dict):
         timeout = 2000
-        msg_dict['ip'] = self.self_add
+        # msg_dict['ip'] = self.self_add
         recv_msg = None
         # Try 3 times, each waiting for 2 seconds for reply from server
         self.logger.debug('Sending request to server')
 
         for i in range(3):
-            self.dealer.send_string("", zmq.SNDMORE)
             self.dealer.send_json(msg_dict)
 
             if self.dealer.poll(timeout):
                 self.dealer.recv()
-                recv_msg = self.dealer.recv_json()
+                recv_msg = json.loads(str(self.dealer.recv(), "utf-8"))
                 self.logger.debug('Received reply from server on try {}'.format(i))
                 break
 
