@@ -187,9 +187,13 @@ class MachineClass:
     def publish_job(self):
         sfu_dict = self.current_job.get_sfu()
         sfu_list = []
-        sfu_headers1 = ['jo_no', 'jo_line', 'mac', 'output']
+        sfu_headers1 = ['jo_no', 'jo_line']
         for header in sfu_headers1:
             sfu_list.append(sfu_dict.get(header, None))
+
+        # Instead of mac insert machine number to retrieve mac by server
+        sfu_list.append(self.index)
+        sfu_list.append(sfu_dict.get('output', None))
 
         emps = list(self.emp_main.keys())
         for i in range((3-len(emps))):
