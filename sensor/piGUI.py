@@ -809,8 +809,9 @@ class SimpleActionBar(BoxLayout):
         hbox_layout.add_widget(cancel_btn)
         hbox_layout.add_widget(confirm_btn)
         popup_boxlayout.add_widget(hbox_layout)
-        pass_input.focus = True
         keyboard = Window.request_keyboard(close_keyboard, pass_input)
+        print(keyboard)
+        pass_input.focus = True
         keyboard.bind(on_key_down=_key_down)
         self.popup.open()
 
