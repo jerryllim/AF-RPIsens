@@ -3,7 +3,8 @@ import logging
 import datetime
 import configparser
 from sys import exit
-import serverDatabase, serverNetwork
+import serverNetwork
+import serverDatabase
 from PySide2 import QtCore, QtWidgets, QtGui
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.schedulers.background import BackgroundScheduler

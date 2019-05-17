@@ -5,8 +5,6 @@ import pymysql
 import warnings
 import configparser
 from datetime import datetime, timedelta
-from apscheduler.triggers.cron import CronTrigger
-from apscheduler.schedulers.background import BackgroundScheduler
 
 
 class Settings:

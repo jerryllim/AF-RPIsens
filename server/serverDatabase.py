@@ -1,7 +1,7 @@
-import sys
 import csv
-import logging
+import sys
 import pymysql
+import logging
 import warnings
 import configparser
 from datetime import datetime, timedelta
@@ -279,7 +279,8 @@ class DatabaseManager:
     def month_delta(date_, delta):
         m, y = (date_.month + delta) % 12, date_.year + ((date_.month) + delta - 1) // 12
         if not m: m = 12
-        d = min(date_.day, [31, 29 if y % 4 == 0 and not y % 400 == 0 else 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][m - 1])
+        d = min(date_.day,
+                [31, 29 if y % 4 == 0 and not y % 400 == 0 else 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][m - 1])
 
         return date_.replace(day=d, month=m, year=y)
 
@@ -288,7 +289,8 @@ class DatabaseManager:
             if not self.settings.config.getboolean('Shift', 'shift{}_enable'.format(col)):
                 continue
 
-            start_time = datetime.strptime(self.settings.config.get('Shift', 'shift{}_start'.format(col)), "%H:%M").time()
+            start_time = datetime.strptime(self.settings.config.get('Shift', 'shift{}_start'.format(col)),
+                                           "%H:%M").time()
             end_time = datetime.strptime(self.settings.config.get('Shift', 'shift{}_end'.format(col)), "%H:%M").time()
             if start_time < end_time:
                 if start_time <= date_time.time() <= end_time:
@@ -624,7 +626,7 @@ class DatabaseManager:
 
     def insert_qc(self, machine, values):
         conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
-                             database=self.db, port=self.port)
+                               database=self.db, port=self.port)
 
         try:
             with conn.cursor() as cursor:
@@ -671,7 +673,7 @@ class DatabaseManager:
 
     def replace_maintenance(self, machine, values):
         conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
-                             database=self.db, port=self.port)
+                               database=self.db, port=self.port)
 
         try:
             with conn.cursor() as cursor:
@@ -689,7 +691,7 @@ class DatabaseManager:
 
     def create_emp_shift_table(self):
         conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
-                             database=self.db, port=self.port)
+                               database=self.db, port=self.port)
 
         try:
             with conn.cursor() as cursor:
@@ -709,7 +711,7 @@ class DatabaseManager:
 
     def replace_emp_shift(self, machine, values):
         conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
-                             database=self.db, port=self.port)
+                               database=self.db, port=self.port)
         if not machine:
             return
 
@@ -781,7 +783,7 @@ class DatabaseManager:
             self.logger.error(sys._getframe().f_code.co_name, error)
         finally:
             conn.close()
-            
+
     def saved_all_pis(self, pis_row):
         conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
@@ -1013,7 +1015,7 @@ class DatabaseManager:
         targets_dict = {}
         try:
             with conn.cursor() as cursor:
-                query = "SELECT machine, "+ col +" FROM machines_table"
+                query = "SELECT machine, " + col + " FROM machines_table"
                 if machines_list:
                     machines_str = str(tuple(machines_list))
                     query = query + " WHERE machine IN " + machines_str
