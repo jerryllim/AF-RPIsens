@@ -299,10 +299,11 @@ class PisTab(QtWidgets.QWidget):
         self.pis_treeview.activated.connect(self.set_fields)
         self.populate_pis()
         header = self.pis_treeview.header()
-        header.setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeToContents)
-        header.setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
-        header.setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeToContents)
-        header.setSectionResizeMode(6, QtWidgets.QHeaderView.ResizeToContents)
+        header.setStretchLastSection(False)
+        # header.setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+        # header.setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeToContents)
+        # header.setSectionResizeMode(6, QtWidgets.QHeaderView.ResizeToContents)
 
         # Button box for New, Edit, Delete
         button_box = QtWidgets.QVBoxLayout()
@@ -1098,6 +1099,9 @@ class DisplayTable(QtWidgets.QWidget):
         self.date_spin.setDate(QtCore.QDate.currentDate())
         if now.hour > 19:
             self.start_spin.setTime(QtCore.QTime(19, 0))
+        else:
+            self.start_spin.setTime(QtCore.QTime(7, 0))
+        self.hour_spin.setValue(12)
 
         # Repopulate table
         self.populate_table()
