@@ -1032,7 +1032,8 @@ class DatabaseManager:
             return targets_dict
 
     def create_sfu_table(self):
-        conn = pymysql.connect(self.host, self.user, self.password, self.db)
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
+                               database=self.db, port=self.port)
 
         try:
             with conn.cursor() as cursor:
@@ -1058,7 +1059,8 @@ class DatabaseManager:
             conn.close()
 
     def insert_sfu(self, sfu):
-        conn = pymysql.connect(self.host, self.user, self.password, self.db)
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
+                               database=self.db, port=self.port)
 
         try:
             with conn.cursor() as cursor:
@@ -1069,6 +1071,53 @@ class DatabaseManager:
             self.logger.error(sys._getframe().f_code.co_name, error)
         finally:
             conn.close()
+
+    def get_sfu_headers(self):
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
+                               database=self.db, port=self.port)
+        headers_list = []
+
+        try:
+            with conn.cursor() as cursor:
+                query = "SHOW COLUMNS FROM sfu_table;"
+                cursor.execute(query)
+                for row in cursor:
+                    headers_list.append(row[0])
+        except pymysql.DatabaseError as error:
+            self.logger.error(sys._getframe().f_code.co_name, error)
+            conn.rollback()
+        finally:
+            conn.close()
+            return headers_list
+
+    def get_sfus(self, date=None, time_fr=None, time_to=None, machines_list=None):
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
+                               database=self.db, port=self.port)
+        sfu_list = []
+
+        try:
+            with conn.cursor() as cursor:
+                query = "SELECT * FROM sfu_table"
+                conditions = []
+                if date:
+                    conditions.append("usfc_date = '{}'".format(date))
+                if time_fr:
+                    conditions.append("usfc_time_fr > '{}'".format(time_fr))
+                if time_to:
+                    conditions.append("usfc_time_to < '{}'".format(time_to))
+                if machines_list:
+                    machines_str = str(tuple(machines_list))
+                    conditions.append("machine IN ".format(machines_str))
+
+                query = query + ' WHERE ' + ' AND '.join(conditions)
+                cursor.execute(query)
+                sfu_list = cursor.fetchall()
+        except pymysql.DatabaseError as error:
+            self.logger.error(sys._getframe().f_code.co_name, error)
+            conn.rollback()
+        finally:
+            conn.close()
+            return sfu_list
 
 
 if __name__ == '__main__':
