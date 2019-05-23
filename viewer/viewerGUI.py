@@ -214,10 +214,10 @@ class PisTab(QtWidgets.QWidget):
         self.pis_treeview.setSortingEnabled(True)
         self.populate_pis()
         header = self.pis_treeview.header()
-        header.setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeToContents)
-        header.setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
-        header.setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeToContents)
-        header.setSectionResizeMode(6, QtWidgets.QHeaderView.ResizeToContents)
+        # header.setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+        # header.setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeToContents)
+        # header.setSectionResizeMode(6, QtWidgets.QHeaderView.ResizeToContents)
 
         hbox_layout = QtWidgets.QHBoxLayout()
         hbox_layout.addWidget(self.pis_treeview)
@@ -771,8 +771,8 @@ class DatabaseSetup(QtWidgets.QDialog):
 
     def test_db(self):
         success = viewerDatabase.DatabaseManager.test_db_connection(self.db_edits['host'].text(), self.db_edits['port'].text(),
-                                                           self.db_edits['user'].text(),
-                                                           self.db_edits['password'].text(), self.db_edits['db'].text())
+                                                                    self.db_edits['user'].text(),
+                                                                    self.db_edits['password'].text(), self.db_edits['db'].text())
         msgbox = QtWidgets.QMessageBox()
         msgbox.setMinimumWidth(500)
         if success:

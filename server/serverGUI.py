@@ -1073,7 +1073,7 @@ class DisplayTable(QtWidgets.QWidget):
         targets_dict = self.database_manager.get_machine_targets('output')
 
         for idx, row in enumerate(output_list):
-            target = targets_dict[table_vheaders[idx]]
+            target = targets_dict.get(table_vheaders[idx], None)
             for col, value in enumerate(row):
                 if col < 2:
                     continue
@@ -1181,6 +1181,19 @@ class JamMainWindow(QtWidgets.QMainWindow):
 
         config = configparser.ConfigParser()
         config.read('jam.ini')
+        success = serverDatabase.DatabaseManager.test_db_connection(host=config.get('Database', 'host'),
+                                                                    port=config.get('Database', 'port'),
+                                                                    user=config.get('Database', 'user'),
+                                                                    password=config.get('Database', 'password'),
+                                                                    db=config.get('Database', 'db'))
+        if not success:
+            result = self.setup_database()
+            if result:
+                config = configparser.ConfigParser()
+                config.read('jam.ini')
+            else:
+                exit()
+
         self.settings = serverDatabase.Settings()
         self.database_manager = serverDatabase.DatabaseManager(self.settings, host=config.get('Database', 'host'),
                                                                port=config.get('Database', 'port'),
