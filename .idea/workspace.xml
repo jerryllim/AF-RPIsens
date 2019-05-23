@@ -2,16 +2,29 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="8c4eab11-9431-48ea-8992-fef6a6e722be" name="Default" comment="Reduced labels (populate in init) &amp; created NumericProperty for counter">
-      <change afterPath="$PROJECT_DIR$/server/icon.ico" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/server/jam_icon.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/viewer/icon.ico" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/viewer/machine.sqlite" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/serverGUI.py" beforeDir="false" afterPath="$PROJECT_DIR$/server/serverGUI.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/serverMain.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/viewer/jam.ini" beforeDir="false" afterPath="$PROJECT_DIR$/viewer/jam.ini" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/viewer/jam2.ini" beforeDir="false" afterPath="$PROJECT_DIR$/viewer/jam3.ini" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/viewer/viewerGUI.py" beforeDir="false" afterPath="$PROJECT_DIR$/viewer/viewerGUI.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sensor/jam.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sensor/piGUI.py" beforeDir="false" afterPath="$PROJECT_DIR$/sensor/piGUI.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sensor/v1/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sensor/v1/numeric_keypad.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sensor/v1/printingGUI.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sensor/v1/sensorGUI.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sensor/v1/sensorGlobal v1.1" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sensor/v1/sensorGlobal.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sensor/v1/sensorInfo.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sensor/v1/sensorReading.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sensor/v1/settings.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sensor/v2/adjust_icon.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sensor/v2/printingKivy_20181227.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sensor/v2/printinggui_20181227.kv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sensor/v3/readme.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sensor/v3/v3.zip" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sensor/v4/pin_dict.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sensor/v4/printingGUI.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sensor/v4/printingMain.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sensor/v4/printinggui.ini" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sensor/v4/printinggui.kv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sensor/v4/settings_json.py" beforeDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -45,20 +58,20 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="true">
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="320">
+                <state relative-caret-position="586">
                   <caret line="1212" column="46" selection-start-line="1212" selection-start-column="46" selection-end-line="1212" selection-end-column="46" />
                 </state>
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="false">
+          <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/sensor/piGUI.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="12255">
-                  <caret line="817" column="32" selection-start-line="817" selection-start-column="32" selection-end-line="817" selection-end-column="32" />
+                <state relative-caret-position="455">
+                  <caret line="38" column="51" selection-start-line="38" selection-start-column="51" selection-end-line="38" selection-end-column="51" />
                 </state>
               </provider>
             </entry>
@@ -78,8 +91,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/sensor/pigui.kv">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="8445">
-                  <caret line="563" column="39" selection-start-line="563" selection-start-column="39" selection-end-line="563" selection-end-column="39" />
+                <state relative-caret-position="192">
+                  <caret line="563" column="29" selection-start-line="563" selection-start-column="16" selection-end-line="563" selection-end-column="29" />
                 </state>
               </provider>
             </entry>
@@ -118,7 +131,7 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/viewer/viewerGUI.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="530">
+                <state relative-caret-position="171">
                   <caret line="680" selection-start-line="680" selection-end-line="680" />
                   <folding>
                     <element signature="e#0#14#0" expanded="true" />
@@ -152,21 +165,16 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>request</find>
-      <find>waste</find>
       <find>numeric</find>
       <find>MySQLError</find>
       <find>insert_emp</find>
       <find>shift</find>
       <find>focus</find>
-      <find>config</find>
       <find>config.set</find>
       <find>kivy.config</find>
-      <find>keyboard_mode</find>
       <find>keyboard</find>
       <find>set</find>
       <find>setting</find>
-      <find>managed</find>
       <find>text_input</find>
       <find>input</find>
       <find>kivy</find>
@@ -182,6 +190,11 @@
       <find>tabs</find>
       <find>tab</find>
       <find>_tab</find>
+      <find>config</find>
+      <find>managed</find>
+      <find>keyboard_mode</find>
+      <find>auto</find>
+      <find>auto'</find>
     </findStrings>
     <replaceStrings>
       <replace>TMessage</replace>
@@ -259,12 +272,12 @@
         <option value="$PROJECT_DIR$/sensor/piMain.py" />
         <option value="$PROJECT_DIR$/wishlist.md" />
         <option value="$PROJECT_DIR$/server/serverNetwork.py" />
-        <option value="$PROJECT_DIR$/sensor/piGUI.py" />
         <option value="$PROJECT_DIR$/viewer/viewerDatabase.py" />
         <option value="$PROJECT_DIR$/server/serverDatabase.py" />
         <option value="$PROJECT_DIR$/server/serverGUI.py" />
         <option value="$PROJECT_DIR$/viewer/viewerGUI.py" />
         <option value="$PROJECT_DIR$/viewer/jam.ini" />
+        <option value="$PROJECT_DIR$/sensor/piGUI.py" />
       </list>
     </option>
   </component>
@@ -343,7 +356,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.viewerGUI">
+  <component name="RunManager" selected="Python.piGUI">
     <configuration default="true" type="Applet">
       <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
       <method v="2">
@@ -637,9 +650,9 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.piGUI" />
         <item itemvalue="Python.viewerGUI" />
         <item itemvalue="Python.serverGUI" />
-        <item itemvalue="Python.piGUI" />
         <item itemvalue="Python.testing" />
         <item itemvalue="Python.databaseServer" />
       </list>
@@ -676,8 +689,9 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1680" height="1027" extended-state="0" />
+    <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.23443224" />
+      <window_info content_ui="combo" id="Project" order="0" weight="0.23443224" />
       <window_info id="Structure" order="1" weight="0.24908425" />
       <window_info id="Image Layers" order="2" />
       <window_info id="Capture Tool" order="3" />
@@ -687,7 +701,7 @@
       <window_info anchor="bottom" id="Inspection Results" order="0" weight="0.32896176" />
       <window_info anchor="bottom" id="Message" order="1" />
       <window_info anchor="bottom" id="Find" order="2" weight="0.29839572" />
-      <window_info anchor="bottom" id="Run" order="3" sideWeight="0.493895" weight="0.32513368" />
+      <window_info active="true" anchor="bottom" id="Run" order="3" sideWeight="0.493895" visible="true" weight="0.32513368" />
       <window_info anchor="bottom" id="Debug" order="4" weight="0.3989305" />
       <window_info anchor="bottom" id="TODO" order="5" weight="0.32834226" />
       <window_info anchor="bottom" id="Cvs" order="6" weight="0.25" />
@@ -695,7 +709,7 @@
       <window_info anchor="bottom" id="Inspection" order="8" weight="0.4" />
       <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.50305253" side_tool="true" weight="0.3272727" />
       <window_info anchor="bottom" id="Version Control" order="10" weight="0.32834226" />
-      <window_info anchor="bottom" id="Terminal" order="11" sideWeight="0.4969475" visible="true" weight="0.3272727" />
+      <window_info anchor="bottom" id="Terminal" order="11" sideWeight="0.4969475" weight="0.3272727" />
       <window_info anchor="bottom" id="Dependency Viewer" order="12" weight="0.32896176" />
       <window_info anchor="bottom" id="Messages" order="13" weight="0.32941177" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
@@ -750,9 +764,6 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/server/test_ini.ini" />
-    <entry file="file://$PROJECT_DIR$/server/test_jam.ini" />
-    <entry file="file://$PROJECT_DIR$/server/v3/__init__.py" />
     <entry file="file://$USER_HOME$/Library/Caches/IdeaIC2018.3/python_stubs/-1199943126/builtins.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="202">
@@ -825,13 +836,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sensor/pigui.ini">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="855">
-          <caret line="57" column="18" selection-start-line="57" selection-start-column="18" selection-end-line="57" selection-end-column="18" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/sensor/v1/printingGUI.py">
       <provider selected="true" editor-type-id="text-editor">
         <state>
@@ -901,13 +905,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sensor/settings_json.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="15">
-          <caret line="1" selection-start-line="1" selection-end-line="1" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/sensor/__init__.py">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
@@ -927,13 +924,6 @@
     <entry file="file://$PROJECT_DIR$/pi3_gpio.png">
       <provider selected="true" editor-type-id="images" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/sensor/pin_dict.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret column="59" selection-start-column="59" selection-end-column="59" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/viewer/__init__.py">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
@@ -941,13 +931,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="202">
           <caret line="146" selection-start-line="146" selection-end-line="146" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/.gitignore">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="105">
-          <caret line="7" column="5" lean-forward="true" selection-start-line="7" selection-start-column="5" selection-end-line="7" selection-end-column="5" />
         </state>
       </provider>
     </entry>
@@ -986,13 +969,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sensor/piGUI.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="12255">
-          <caret line="817" column="32" selection-start-line="817" selection-start-column="32" selection-end-line="817" selection-end-column="32" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/sensor/piMain.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="3210">
@@ -1003,31 +979,24 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sensor/pigui.kv">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="8445">
-          <caret line="563" column="39" selection-start-line="563" selection-start-column="39" selection-end-line="563" selection-end-column="39" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/server/serverNetwork.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1530">
-          <caret line="110" selection-start-line="110" selection-end-line="110" />
+        <state relative-caret-position="1455">
+          <caret line="105" column="50" selection-start-line="105" selection-start-column="50" selection-end-line="105" selection-end-column="50" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="75">
-          <caret line="5" column="20" selection-start-line="5" selection-start-column="20" selection-end-line="5" selection-end-column="20" />
+        <state relative-caret-position="586">
+          <caret line="1212" column="46" selection-start-line="1212" selection-start-column="46" selection-end-line="1212" selection-end-column="46" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/server/serverDatabase.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="16245">
-          <caret line="1091" selection-start-line="1091" selection-end-line="1091" />
+        <state relative-caret-position="4650">
+          <caret line="318" column="47" selection-start-line="318" selection-start-column="47" selection-end-line="324" selection-end-column="30" />
         </state>
       </provider>
     </entry>
@@ -1066,13 +1035,64 @@
     <entry file="file://$PROJECT_DIR$/server_settings.json">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
+    <entry file="file://$PROJECT_DIR$/schedule.md">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sensorInfo.json">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sensor/settings_json.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="15">
+          <caret line="1" selection-start-line="1" selection-end-line="1" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sensor/jam.log">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sensor/pigui.ini">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="574">
+          <caret line="57" column="18" selection-start-line="57" selection-start-column="18" selection-end-line="57" selection-end-column="18" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sensor/pin_dict.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret column="59" selection-start-column="59" selection-end-column="59" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.gitignore">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="105">
+          <caret line="7" column="5" lean-forward="true" selection-start-line="7" selection-start-column="5" selection-end-line="7" selection-end-column="5" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/viewer/viewerGUI.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="530">
+        <state relative-caret-position="171">
           <caret line="680" selection-start-line="680" selection-end-line="680" />
           <folding>
             <element signature="e#0#14#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sensor/pigui.kv">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="192">
+          <caret line="563" column="29" selection-start-line="563" selection-start-column="16" selection-end-line="563" selection-end-column="29" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sensor/piGUI.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="455">
+          <caret line="38" column="51" selection-start-line="38" selection-start-column="51" selection-end-line="38" selection-end-column="51" />
         </state>
       </provider>
     </entry>
