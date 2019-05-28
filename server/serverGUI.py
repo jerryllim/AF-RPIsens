@@ -932,7 +932,8 @@ class MiscTab(QtWidgets.QWidget):
         for key, line_edit in self.export_fields.items():
             self.config.set('Export', key, line_edit.text())
 
-        with open('jam.ini', 'w') as configfile:
+        path = os.path.expanduser('~/Documents/JAM/JAMserver/jam.ini')
+        with open(path, 'w') as configfile:
             self.config.write(configfile)
 
 
@@ -1326,8 +1327,9 @@ class DatabaseSetup(QtWidgets.QDialog):
             for key in self.db_edits.keys():
                 self.config.set('Database', key, self.db_edits[key].text())
 
-            with open('jam.ini', 'w') as configfile:
-                self.config.write(configfile)
+        path = os.path.expanduser('~/Documents/JAM/JAMserver/jam.ini')
+        with open(path, 'w') as configfile:
+            self.config.write(configfile)
 
             self.accept()
 
