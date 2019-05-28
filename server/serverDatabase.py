@@ -557,7 +557,7 @@ class DatabaseManager:
         try:
             jo_no = barcode[:-3]
             jo_line = int(barcode[-3:])
-            sql = "SELECT uno, uline, usou_no, ustk_desc1, usch_qty, 0 FROM jobs_table " \
+            sql = "SELECT uno, uline, ustk, ustk_desc1, usch_qty, 0 FROM jobs_table " \
                   "WHERE uno = %s AND uline = %s LIMIT 1;"
             cursor.execute(sql, (jo_no, jo_line))
             temp = cursor.fetchone()
