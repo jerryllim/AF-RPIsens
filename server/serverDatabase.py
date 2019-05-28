@@ -16,7 +16,7 @@ class Settings:
 
         self.filename = filename
         self.config = configparser.ConfigParser()
-        path = os.path.expanduser('~/Documents/JAM/JAMserver/' + filename)
+        path = os.path.expanduser('~/Documents/JAM/JAMserver/' + self.filename)
         self.config.read(path)
         self.machines_info = {}
         self.update()
@@ -24,7 +24,8 @@ class Settings:
 
     def update(self):
         self.config.clear()
-        self.config.read(self.filename)
+        path = os.path.expanduser('~/Documents/JAM/JAMserver/' + self.filename)
+        self.config.read(path)
         self.machines_info.clear()
         database_manager = DatabaseManager(None, host=self.config.get('Database', 'host'),
                                            port=self.config.get('Database', 'port'),
