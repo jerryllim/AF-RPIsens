@@ -1,3 +1,4 @@
+import os
 import zmq
 import json
 import time
@@ -20,7 +21,8 @@ class NetworkManager:
         # Logger setup
         self.logger = logging.getLogger('jamSERVER')
         self.logger.setLevel(logging.DEBUG)
-        file_handler = logging.FileHandler('jamSERVER.log')
+        path = os.path.expanduser('~/Documents/JAM/JAMserver/jamSERVER.log')
+        file_handler = logging.FileHandler(path)
         file_handler.setLevel(logging.DEBUG)
         log_format = logging.Formatter('%(asctime)s - %(threadName)s - %(levelname)s: %(module)s - %(message)s')
         file_handler.setFormatter(log_format)

@@ -1,3 +1,4 @@
+import os
 import csv
 import sys
 import pymysql
@@ -15,7 +16,8 @@ class Settings:
 
         self.filename = filename
         self.config = configparser.ConfigParser()
-        self.config.read(self.filename)
+        path = os.path.expanduser('~/Documents/JAM/JAMserver/' + filename)
+        self.config.read(path)
         self.machines_info = {}
         self.update()
         self.logger.info('Completed Settings __init__')

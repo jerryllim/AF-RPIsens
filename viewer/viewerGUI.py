@@ -1,3 +1,4 @@
+import os
 import logging
 import datetime
 import configparser
@@ -297,7 +298,8 @@ class MiscTab(QtWidgets.QWidget):
         QtWidgets.QWidget.__init__(self, parent)
         self.database_manager = self.parent().database_manager
         self.config = configparser.ConfigParser()
-        self.config.read('jam.ini')
+        path = os.path.expanduser('~/Documents/JAM/JAMserver/jam.ini')
+        self.config.read(path)
 
         # Database group
         self.db_edits = {}
@@ -400,7 +402,8 @@ class ConfigurationWidget(QtWidgets.QWidget):
     def __init__(self, parent, database_manager):
         QtWidgets.QWidget.__init__(self, parent)
         config = configparser.ConfigParser()
-        config.read('jam.ini')
+        path = os.path.expanduser('~/Documents/JAM/JAMserver/jam.ini')
+        self.config.read(path)
         self.database_manager = database_manager
 
         self.setWindowTitle('Configurations')
@@ -451,7 +454,8 @@ class DisplayTable(QtWidgets.QWidget):
     def __init__(self, parent, database_manager):
         QtWidgets.QWidget.__init__(self, parent)
         config = configparser.ConfigParser()
-        config.read('jam.ini')
+        path = os.path.expanduser('~/Documents/JAM/JAMserver/jam.ini')
+        config.read(path)
         self.database_manager = database_manager
         self.scheduler = BackgroundScheduler()
         jam_dur = config.getint('Network', 'interval')
@@ -576,7 +580,8 @@ class SFUDisplayTable(QtWidgets.QWidget):
     def __init__(self, parent, database_manager):
         QtWidgets.QWidget.__init__(self, parent)
         config = configparser.ConfigParser()
-        config.read('jam.ini')
+        path = os.path.expanduser('~/Documents/JAM/JAMserver/jam.ini')
+        config.read(path)
         self.database_manager = database_manager
 
         self.sfu_model = QtGui.QStandardItemModel(3, 10)
@@ -643,7 +648,8 @@ class JamMainWindow(QtWidgets.QMainWindow):
         # Logger setup
         self.logger = logging.getLogger('jamVIEWER')
         self.logger.setLevel(logging.DEBUG)
-        file_handler = logging.FileHandler('jamVIEWER.log')
+        path = os.path.expanduser('~/Documents/JAM/JAMserver/jamVIEWER.log')
+        file_handler = logging.FileHandler(path)
         file_handler.setLevel(logging.DEBUG)
         log_format = logging.Formatter('%(asctime)s - %(threadName)s - %(levelname)s: %(module)s - %(message)s')
         file_handler.setFormatter(log_format)
@@ -651,7 +657,8 @@ class JamMainWindow(QtWidgets.QMainWindow):
         self.logger.info('\n\nStarted logging')
 
         config = configparser.ConfigParser()
-        config.read('jam.ini')
+        path = os.path.expanduser('~/Documents/JAM/JAMserver/jam.ini')
+        config.read(path)
         success = viewerDatabase.DatabaseManager.test_db_connection(host=config.get('Database', 'host'),
                                                                     port=config.get('Database', 'port'),
                                                                     user=config.get('Database', 'user'),
@@ -661,7 +668,8 @@ class JamMainWindow(QtWidgets.QMainWindow):
             result = self.setup_database()
             if result:
                 config = configparser.ConfigParser()
-                config.read('jam.ini')
+                path = os.path.expanduser('~/Documents/JAM/JAMserver/jam.ini')
+                config.read(path)
             else:
                 exit()
 
@@ -722,7 +730,8 @@ class DatabaseSetup(QtWidgets.QDialog):
     def __init__(self, parent):
         QtWidgets.QDialog.__init__(self, parent)
         self.config = configparser.ConfigParser()
-        self.config.read('jam.ini')
+        path = os.path.expanduser('~/Documents/JAM/JAMserver/jam.ini')
+        self.config.read(path)
 
         # Database group
         self.db_edits = {}
