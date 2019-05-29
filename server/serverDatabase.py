@@ -557,7 +557,7 @@ class DatabaseManager:
     def get_job_info(self, barcode):
         conn = pymysql.connect(self.host, self.user, self.password, self.db)
         cursor = conn.cursor()
-        reply_str = []
+        reply_list = []
         try:
             jo_no = barcode[:-3]
             jo_line = int(barcode[-3:])
@@ -565,13 +565,14 @@ class DatabaseManager:
                   "WHERE uno = %s AND uline = %s LIMIT 1;"
             cursor.execute(sql, (jo_no, jo_line))
             temp = cursor.fetchone()
-            reply_str = list(temp)
+            reply_list = list(temp)
+            self.logger.debug("Reply is " + str(reply_list))
             conn.commit()
         except pymysql.DatabaseError as error:
             self.logger.error(sys._getframe().f_code.co_name, error)
         finally:
             conn.close()
-            return reply_str
+            return reply_list
 
     def get_umc_for(self, uno, uline):
         conn = pymysql.connect(self.host, self.user, self.password, self.db)

@@ -87,6 +87,7 @@ class NetworkManager:
                 id_from, recv_msg = self.router_recv.recv_multipart()
                 ip = id_from.decode()
                 message = json.loads(recv_msg.decode())
+                self.logger.debug("Received message {} from {}".format(message, ip))
                 # ident = self.router_recv.recv_string()  # routing information
                 # delimiter = self.router_recv.recv()  # delimiter
                 # message = self.router_recv.recv_json()
