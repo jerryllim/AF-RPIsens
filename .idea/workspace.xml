@@ -2,9 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="8c4eab11-9431-48ea-8992-fef6a6e722be" name="Default" comment="Reduced labels (populate in init) &amp; created NumericProperty for counter">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/serverDatabase.py" beforeDir="false" afterPath="$PROJECT_DIR$/server/serverDatabase.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/serverNetwork.py" beforeDir="false" afterPath="$PROJECT_DIR$/server/serverNetwork.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/serverGUI.py" beforeDir="false" afterPath="$PROJECT_DIR$/server/serverGUI.py" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -54,19 +52,19 @@
       </split-first>
       <split-second>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file pinned="false" current-in-tab="false">
+          <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="9345">
-                  <caret line="633" column="38" selection-start-line="633" selection-start-column="38" selection-end-line="633" selection-end-column="38" />
+                <state relative-caret-position="340">
+                  <caret line="76" lean-forward="true" selection-start-line="76" selection-end-line="76" />
                 </state>
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="true">
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/server/serverDatabase.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="337">
+                <state relative-caret-position="461">
                   <caret line="567" column="35" lean-forward="true" selection-start-line="567" selection-start-column="35" selection-end-line="567" selection-end-column="35" />
                 </state>
               </provider>
@@ -75,8 +73,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/server/serverNetwork.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="244">
-                  <caret line="98" column="89" lean-forward="true" selection-start-line="98" selection-start-column="89" selection-end-line="98" selection-end-column="89" />
+                <state relative-caret-position="349">
+                  <caret line="105" column="70" lean-forward="true" selection-start-line="105" selection-start-column="70" selection-end-line="105" selection-end-column="70" />
                 </state>
               </provider>
             </entry>
@@ -115,7 +113,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>pis_</find>
       <find>DIS</find>
       <find>enumer</find>
       <find>tabs</find>
@@ -145,6 +142,7 @@
       <find>employee</find>
       <find>JAMserver</find>
       <find>repl</find>
+      <find>pis_tab</find>
     </findStrings>
     <replaceStrings>
       <replace>TMessage</replace>
@@ -224,11 +222,11 @@
         <option value="$PROJECT_DIR$/wishlist.md" />
         <option value="$PROJECT_DIR$/viewer/jam.ini" />
         <option value="$PROJECT_DIR$/sensor/piGUI.py" />
-        <option value="$PROJECT_DIR$/server/serverGUI.py" />
         <option value="$PROJECT_DIR$/viewer/viewerGUI.py" />
         <option value="$PROJECT_DIR$/viewer/viewerDatabase.py" />
         <option value="$PROJECT_DIR$/server/serverNetwork.py" />
         <option value="$PROJECT_DIR$/server/serverDatabase.py" />
+        <option value="$PROJECT_DIR$/server/serverGUI.py" />
       </list>
     </option>
   </component>
@@ -640,6 +638,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1680" height="1027" extended-state="0" />
+    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" weight="0.23443224" />
       <window_info id="Structure" order="1" weight="0.24908425" />
@@ -651,7 +650,7 @@
       <window_info anchor="bottom" id="Inspection Results" order="0" weight="0.32896176" />
       <window_info anchor="bottom" id="Message" order="1" />
       <window_info anchor="bottom" id="Find" order="2" weight="0.29839572" />
-      <window_info anchor="bottom" id="Run" order="3" sideWeight="0.493895" weight="0.32513368" />
+      <window_info active="true" anchor="bottom" id="Run" order="3" sideWeight="0.493895" visible="true" weight="0.32513368" />
       <window_info anchor="bottom" id="Debug" order="4" weight="0.3989305" />
       <window_info anchor="bottom" id="TODO" order="5" weight="0.32834226" />
       <window_info anchor="bottom" id="Cvs" order="6" weight="0.25" />
@@ -659,7 +658,7 @@
       <window_info anchor="bottom" id="Inspection" order="8" weight="0.4" />
       <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.50305253" side_tool="true" weight="0.3272727" />
       <window_info anchor="bottom" id="Version Control" order="10" weight="0.32834226" />
-      <window_info active="true" anchor="bottom" id="Terminal" order="11" sideWeight="0.4969475" visible="true" weight="0.3272727" />
+      <window_info anchor="bottom" id="Terminal" order="11" sideWeight="0.4969475" weight="0.3272727" />
       <window_info anchor="bottom" id="Dependency Viewer" order="12" weight="0.32896176" />
       <window_info anchor="bottom" id="Messages" order="13" weight="0.32941177" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
@@ -918,13 +917,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="9345">
-          <caret line="633" column="38" selection-start-line="633" selection-start-column="38" selection-end-line="633" selection-end-column="38" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/viewer/viewerDatabase.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="135">
@@ -942,17 +934,24 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/server/serverNetwork.py">
+    <entry file="file://$PROJECT_DIR$/server/serverDatabase.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="244">
-          <caret line="98" column="89" lean-forward="true" selection-start-line="98" selection-start-column="89" selection-end-line="98" selection-end-column="89" />
+        <state relative-caret-position="461">
+          <caret line="567" column="35" lean-forward="true" selection-start-line="567" selection-start-column="35" selection-end-line="567" selection-end-column="35" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/server/serverDatabase.py">
+    <entry file="file://$PROJECT_DIR$/server/serverNetwork.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="337">
-          <caret line="567" column="35" lean-forward="true" selection-start-line="567" selection-start-column="35" selection-end-line="567" selection-end-column="35" />
+        <state relative-caret-position="349">
+          <caret line="105" column="70" lean-forward="true" selection-start-line="105" selection-start-column="70" selection-end-line="105" selection-end-column="70" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="340">
+          <caret line="76" lean-forward="true" selection-start-line="76" selection-end-line="76" />
         </state>
       </provider>
     </entry>

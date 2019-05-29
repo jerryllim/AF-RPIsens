@@ -65,12 +65,18 @@ class MachinesTab(QtWidgets.QWidget):
         self.machine_model.clear()
         # Set horizontal headers
         self.machine_model.setHorizontalHeaderLabels(self.hheaders)
+        self.machine_table.verticalHeader().hide()
 
         # Insert machines
         machines_list = self.database_manager.get_machines()
 
+        # Blank row and item for the machines in PisTab
+        item = QtGui.QStandardItem()
+        self.machine_model.setItem(0, 0, item)
+        self.machine_table.setRowHidden(0, True)
+
         for id_, row in enumerate(machines_list):
-            idx = id_
+            idx = id_ + 1
             for col, value in enumerate(row):
                 if value:
                     item = QtGui.QStandardItem()
