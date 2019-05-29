@@ -3,7 +3,8 @@
 * 4 machines to 1 pi
 * Mender for OTA updates
 * Remove machines.sqlite from Viewer
-
+* Add decimal point for waste
+* (Optional) Select waste1 or waste2 as final option?
 
 ### Completed
 1. Clone image for faster copying
