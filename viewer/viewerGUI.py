@@ -404,7 +404,7 @@ class ConfigurationWidget(QtWidgets.QWidget):
         QtWidgets.QWidget.__init__(self, parent)
         config = configparser.ConfigParser()
         path = os.path.expanduser('~/Documents/JAM/JAMviewer/jam.ini')
-        self.config.read(path)
+        config.read(path)
         self.database_manager = database_manager
 
         self.setWindowTitle('Configurations')
