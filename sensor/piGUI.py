@@ -379,7 +379,7 @@ class AdjustmentPage(Screen):
             text_input.text = ''
             self.machine.current_job.adjustments[text_input.name] = 0
         else:
-            self.machine.current_job.adjustments[text_input.name] = int(value)
+            self.machine.current_job.adjustments[text_input.name] = float(value)
 
 
 class NumPadGrid(GridLayout):
@@ -404,9 +404,16 @@ class NumPadGrid(GridLayout):
         self.add_widget(button)
         self.buttons.append(button)
 
+        self.decimal = NumPadButton(text='.')
+        self.decimal.bind(on_press=self.button_pressed)
+
         self.backspace_button = NumPadButton(text=u'\u232b', color=(1, 0, 0, 1))
         self.backspace_button.bind(on_press=self.button_pressed)
-        self.add_widget(self.backspace_button)
+
+        blayout = BoxLayout(orientation='horizontal')
+        blayout.add_widget(self.decimal)
+        blayout.add_widget(self.backspace_button)
+        self.add_widget(blayout)
 
     def set_target(self, target):
         self.target = target
@@ -428,7 +435,9 @@ class NumPadGrid(GridLayout):
                 self.target.text = self.target.text[:-1]
             elif instance.text.isdigit():
                 self.target.text = (self.target.text + instance.text).lstrip("0")
-            elif self.enter_function is not None:
+            elif instance is self.decimal and '.' not in self.target.text:
+                self.target.text = (self.target.text + instance.text).lstrip("0")
+            elif instance is self.enter_button and self.enter_function is not None:
                 self.enter_function()
 
 
@@ -704,18 +713,18 @@ class WastagePopUp(Popup):
             self.current_label.text = '0'
 
     def add_wastage(self):
-        new_sum = int(self.current_label.text) + self.int_text_input(self.add_label.text)
+        new_sum = float(self.current_label.text) + self.float_text_input(self.add_label.text)
         self.current_label.text = '{}'.format(new_sum)
         self.add_label.text = ''
 
     def save_dismiss(self):
-        self.current_job.wastage[self.key] = (int(self.current_label.text), self.unit_spinner.text)
+        self.current_job.wastage[self.key] = (float(self.current_label.text), self.unit_spinner.text)
         self.update_func(self.key, self.current_job.wastage[self.key][0])
         self.dismiss()
 
     @staticmethod
-    def int_text_input(value):
-        return int(value) if value else 0
+    def float_text_input(value):
+        return float(value) if value else 0
 
 
 class SimpleActionBar(BoxLayout):
