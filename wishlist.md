@@ -1,5 +1,6 @@
 ### To Dos
 * UPS using capacitor? Graceful shutdown
+* X11VNC
 * 4 machines to 1 pi
 * Mender for OTA updates
 * Remove machines.sqlite from Viewer
