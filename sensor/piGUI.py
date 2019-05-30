@@ -416,7 +416,10 @@ class NumPadGrid(GridLayout):
         self.add_widget(blayout)
 
     def set_target(self, target):
+        if self.target:
+            self.target.focus = False
         self.target = target
+        self.target.focus = True
 
     def set_enter_function(self, function):
         self.enter_function = function
@@ -426,7 +429,11 @@ class NumPadGrid(GridLayout):
             if instance is self.backspace_button:
                 self.target.do_backspace()
             elif instance is self.enter_button:
-                self.target = None
+                if self.target:
+                    self.target.focus = False
+                    self.target = None
+                if callable(self.enter_function):
+                    self.enter_function()
             else:
                 self.target.insert_text(instance.text)
 
@@ -439,6 +446,19 @@ class NumPadGrid(GridLayout):
                 self.target.text = (self.target.text + instance.text).lstrip("0")
             elif instance is self.enter_button and self.enter_function is not None:
                 self.enter_function()
+
+
+class RightAlignTextInput(TextInput):
+    touch_function = None
+    text_width = NumericProperty()
+
+    def update_padding(self):
+        self.text_width = self._get_text_width(self.text, self.tab_width, self._label_cached)
+
+    def on_touch_down(self, touch):
+        if self.collide_point(touch.x, touch.y):
+            if callable(self.touch_function):
+                self.touch_function(self)
 
 
 class EmployeePage(Screen):
@@ -693,7 +713,8 @@ class WastagePopUp(Popup):
         Popup.__init__(self, **kwargs)
         self.title = key.capitalize()
         self.update_func = update_func
-        self.ids['numpad'].set_target(self.add_label)
+        self.ids['numpad'].set_target(self.add_input)
+        self.add_input.touch_function = self.ids['numpad'].set_target
         self.current_job = App.get_running_app().get_current_machine().get_current_job()
         self.key = key
         self.wastage = self.current_job.wastage[self.key]
@@ -713,9 +734,10 @@ class WastagePopUp(Popup):
             self.current_label.text = '0'
 
     def add_wastage(self):
-        new_sum = float(self.current_label.text) + self.float_text_input(self.add_label.text)
+        new_sum = float(self.current_label.text) + self.float_text_input(self.add_input.text)
         self.current_label.text = '{}'.format(new_sum)
-        self.add_label.text = ''
+        self.add_input.text = ''
+        self.ids['numpad'].set_target(self.add_input)
 
     def save_dismiss(self):
         self.current_job.wastage[self.key] = (float(self.current_label.text), self.unit_spinner.text)
@@ -930,8 +952,8 @@ class PiGUIApp(App):
         self.logger = logging.getLogger('JAM')
         # self.check_camera()
         self.config.set('Network', 'self_add', self.get_ip_add())
-        # self.controller = FakeClass(self)  # TODO set if testing
-        self.controller = piMain.PiController(self)
+        self.controller = FakeClass(self)  # TODO set if testing
+        # self.controller = piMain.PiController(self)
 
         for idx in range(1, 4):
             self.machines[idx] = MachineClass(idx, self.controller, self.config)

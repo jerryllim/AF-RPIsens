@@ -109,6 +109,7 @@
     input_filter: 'int'
     font_size: sp(25)
     keyboard_mode: 'managed'
+    background_color: (1, 1, 1, 1) if self.focus else (0.6, 0.6, 0.6, 1)
 
 <AdjustmentLabel>:
     text_size: self.size
@@ -338,7 +339,7 @@
     size_hint: (0.75, 0.75)
     current_label: current_label
     unit_spinner: unit_spinner
-    add_label: add_label
+    add_input: add_input
     numpad: numpad
 
     BoxLayout:
@@ -368,20 +369,10 @@
                 id: unit_spinner
                 size_hint: (0.2, 1)
 
-        Label:
-            id: add_label
-            padding_x: 5
-            text_size: self.size
-            halign: 'right'
-            valign: 'middle'
+        RightAlignTextInput:
+            id: add_input
+            multiline: False
             size_hint: (1, 0.2)
-            color: (0, 0, 0, 1)
-            canvas.before:
-                Color:
-                    rgb: (1, 1, 1)
-                Rectangle:
-                    size: self.size
-                    pos: self.pos
 
         NumPadGrid:
             id: numpad
@@ -395,6 +386,13 @@
             Button:
                 text: 'Dismiss'
                 on_release: root.save_dismiss()
+
+<RightAlignTextInput@TextInput>:
+    text_size: self.size
+    keyboard_mode: 'managed'
+    input_filter: 'float'
+    padding_x: [(self.width - self.text_width - 5), 5]
+    on_text: self.update_padding()
 
 <SimpleActionBar>:
     emp_button: emp_button
