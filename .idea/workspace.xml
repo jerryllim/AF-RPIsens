@@ -4,7 +4,6 @@
     <list default="true" id="8c4eab11-9431-48ea-8992-fef6a6e722be" name="Default" comment="Reduced labels (populate in init) &amp; created NumericProperty for counter">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/sensor/piGUI.py" beforeDir="false" afterPath="$PROJECT_DIR$/sensor/piGUI.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sensor/pigui.kv" beforeDir="false" afterPath="$PROJECT_DIR$/sensor/pigui.kv" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -23,8 +22,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/sensor/piGUI.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="294">
-                  <caret line="458" column="48" lean-forward="true" selection-start-line="458" selection-start-column="48" selection-end-line="458" selection-end-column="48" />
+                <state relative-caret-position="336">
+                  <caret line="955" column="53" selection-start-line="955" selection-end-line="956" />
                 </state>
               </provider>
             </entry>
@@ -54,11 +53,11 @@
       </split-first>
       <split-second>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file pinned="false" current-in-tab="true">
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/sensor/piGUI.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="10543">
-                  <caret line="1146" column="13" selection-start-line="1146" selection-start-column="8" selection-end-line="1146" selection-end-column="13" />
+                <state relative-caret-position="343">
+                  <caret line="466" column="20" lean-forward="true" selection-start-line="466" selection-start-column="20" selection-end-line="466" selection-end-column="20" />
                 </state>
               </provider>
             </entry>
@@ -72,11 +71,11 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="false">
+          <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/sensor/pigui.kv">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="414">
-                  <caret line="344" column="31" lean-forward="true" selection-start-line="344" selection-start-column="31" selection-end-line="344" selection-end-column="31" />
+                <state relative-caret-position="502">
+                  <caret line="116" column="3" selection-start-line="116" selection-start-column="3" selection-end-line="116" selection-end-column="3" />
                 </state>
               </provider>
             </entry>
@@ -148,7 +147,6 @@
       <find>config</find>
       <find>adjustm</find>
       <find>rgba</find>
-      <find>adjustment</find>
       <find>textinput</find>
       <find>wastage</find>
       <find>wastagePop</find>
@@ -163,6 +161,7 @@
       <find>touch_func</find>
       <find>add_was</find>
       <find>print</find>
+      <find>adjustment</find>
     </findStrings>
     <replaceStrings>
       <replace>TMessage</replace>
@@ -658,6 +657,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1680" height="1027" extended-state="0" />
+    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" weight="0.23443224" />
       <window_info id="Structure" order="1" weight="0.24908425" />
@@ -905,13 +905,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/server/serverDatabase.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="461">
-          <caret line="567" column="35" lean-forward="true" selection-start-line="567" selection-start-column="35" selection-end-line="567" selection-end-column="35" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/server/serverNetwork.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="349">
@@ -958,17 +951,24 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/server/serverDatabase.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="461">
+          <caret line="567" column="35" lean-forward="true" selection-start-line="567" selection-start-column="35" selection-end-line="567" selection-end-column="35" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/sensor/pigui.kv">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="414">
-          <caret line="344" column="31" lean-forward="true" selection-start-line="344" selection-start-column="31" selection-end-line="344" selection-end-column="31" />
+        <state relative-caret-position="310">
+          <caret line="110" column="28" lean-forward="true" selection-start-line="110" selection-start-column="28" selection-end-line="110" selection-end-column="28" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/sensor/piGUI.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="10543">
-          <caret line="1146" column="13" selection-start-line="1146" selection-start-column="8" selection-end-line="1146" selection-end-column="13" />
+        <state relative-caret-position="336">
+          <caret line="955" column="53" selection-start-line="955" selection-end-line="956" />
         </state>
       </provider>
     </entry>

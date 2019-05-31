@@ -952,8 +952,10 @@ class PiGUIApp(App):
         self.logger = logging.getLogger('JAM')
         # self.check_camera()
         self.config.set('Network', 'self_add', self.get_ip_add())
-        self.controller = FakeClass(self)  # TODO set if testing
-        # self.controller = piMain.PiController(self)
+        if sys.platform.startswith('linux'):
+            self.controller = piMain.PiController(self)
+        else:
+            self.controller = FakeClass(self)  # TODO set if testing
 
         for idx in range(1, 4):
             self.machines[idx] = MachineClass(idx, self.controller, self.config)
