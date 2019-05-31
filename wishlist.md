@@ -1,10 +1,10 @@
 ### To Dos
 * UPS using capacitor? Graceful shutdown
-* X11VNC
+* x11vnc - Unable without desktop - use minimal desktop? https://www.raspberrypi.org/forums/viewtopic.php?t=133691
 * 4 machines to 1 pi
 * Mender for OTA updates
 * Remove machines.sqlite from Viewer
-* Add shutdown/reboot button
+* Add shutdown/reboot button & quit program?
 * (Optional) Select waste1 or waste2 as final option?
 
 ### Completed
