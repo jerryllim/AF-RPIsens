@@ -828,7 +828,7 @@ class SimpleActionBar(BoxLayout):
         popup_boxlayout = BoxLayout(orientation='vertical', spacing='10sp', padding='10sp')
         self.popup = Popup(title='Admin', content=popup_boxlayout, size_hint=(0.5, 0.5))
         popup_boxlayout.add_widget(Label(text='Password: ', size_hint_y=0.3))
-        pass_input = TextInput()
+        pass_input = TextInput(multiline=False)
         pass_input.keyboard_mode = 'auto'
         pass_input.password = True
         popup_boxlayout.add_widget(pass_input)
@@ -940,6 +940,24 @@ class SettingSelfIP(SettingString):
         self.value = ip_add
 
 
+class SettingQuit(SettingString):
+
+    def _create_popup(self, instance):
+        # create the popup
+        content = BoxLayout(orientation='vertical', spacing='5dp', size_hint=(1, 0.8))
+
+        quit_btn = Button(text='Quit', size_hint=(1, 0.9))
+        quit_btn.bind(on_release=App.get_running_app().stop)
+        content.add_widget(quit_btn)
+
+        popup_width = min(0.95 * Window.width, dp(500))
+        self.popup = popup = Popup(
+            content=content, title=self.title, size_hint=(None, 0.5),
+            width=popup_width)
+
+        popup.open()
+
+
 class PiGUIApp(App):
     current_index = 1
     machines = {}
@@ -991,7 +1009,8 @@ class PiGUIApp(App):
             'server_add': '152.228.1.124',
             'server_port': 9999})
         config.setdefaults('Settings', {
-            'password': '123'})
+            'password': '123',
+            'quit': ''})
         config.setdefaults('General1', {
             'machine_name': 'Machine 1',
             'bg_colour': 'BLUE',
@@ -1049,6 +1068,7 @@ class PiGUIApp(App):
         settings.register_type('ip_string', SettingIPString)
         settings.register_type('unit_string', SettingUnitsString)
         settings.register_type('self_ip', SettingSelfIP)
+        settings.register_type('quit', SettingQuit)
         settings.add_json_panel('Raspberry JAM', self.config, data=settings_main)
         settings.add_json_panel('Machine 1', self.config, data=settings_machine1)
         settings.add_json_panel('Machine 2', self.config, data=settings_machine2)

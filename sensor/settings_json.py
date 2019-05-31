@@ -46,6 +46,11 @@ settings_main = json.dumps([
      'title': 'Admin Password',
      'desc': 'Set the admin password for settings',
      'key': 'password',
+     'section': 'Settings'},
+    {'type': 'quit',
+     'title': 'Quit JAM',
+     'desc': 'Quit jam',
+     'key': 'quit',
      'section': 'Settings'}
 ])
 
