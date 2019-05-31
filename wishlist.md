@@ -5,7 +5,6 @@
 * Mender for OTA updates
 * Remove machines.sqlite from Viewer
 * Add shutdown/reboot button
-* Add automatic way of determine whether to use FakeClass (sys.platform?)
 * (Optional) Select waste1 or waste2 as final option?
 
 ### Completed
@@ -14,3 +13,4 @@
 3. Add to Server Machines Tab model to have empty first in Machine Details (Pi Tab)
 4. Add decimal point for waste
 5. Add a way to know which textinput is selected (AdjustmentScreen)
+6. Add automatic way of determine whether to use FakeClass *sys.platform.startswith('linux')*
