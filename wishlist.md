@@ -4,6 +4,8 @@
 * 4 machines to 1 pi
 * Mender for OTA updates
 * Remove machines.sqlite from Viewer
+* Add shutdown/reboot button
+* Add automatic way of determine whether to use FakeClass (sys.platform?)
 * (Optional) Select waste1 or waste2 as final option?
 
 ### Completed
