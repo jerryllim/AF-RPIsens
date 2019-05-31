@@ -1,9 +1,11 @@
 ### To Dos
 * UPS using capacitor? Graceful shutdown
+* X11VNC
 * 4 machines to 1 pi
 * Mender for OTA updates
 * Remove machines.sqlite from Viewer
-* Add a way to know which textinput is selected (AdjustmentScreen)
+* Add shutdown/reboot button
+* Add automatic way of determine whether to use FakeClass (sys.platform?)
 * (Optional) Select waste1 or waste2 as final option?
 
 ### Completed
@@ -11,3 +13,4 @@
 2. Debug log to check if server received pi requests
 3. Add to Server Machines Tab model to have empty first in Machine Details (Pi Tab)
 4. Add decimal point for waste
+5. Add a way to know which textinput is selected (AdjustmentScreen)
