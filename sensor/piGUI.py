@@ -317,8 +317,10 @@ class SelectPage(Screen):
 
             controller = App.get_running_app().controller
             job_dict = controller.get_job_info(barcode)
-            if not job_dict:
-                raise ValueError("JO number ({}) was not found, please try again.")
+            if job_dict is None:
+                raise ValueError("Server did not respond, please try again.".format(barcode))
+            elif not job_dict:
+                raise ValueError("JO number ({}) was not found, please contact Supervisor.".format(barcode))
 
             self.ids.job_entry.text = ''
             self.machine.current_job = JobClass(job_dict)

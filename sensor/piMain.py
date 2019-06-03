@@ -203,6 +203,7 @@ class PiController:
         self.dealer = self.context.socket(zmq.DEALER)
         self.dealer.setsockopt_string(zmq.IDENTITY, self.self_add)
         self.dealer.connect("tcp://{}".format(ip_port))
+        self.logger.debug('Created dealer socket for request')
 
     def request(self, msg_dict):
         timeout = 2000
@@ -218,6 +219,13 @@ class PiController:
                 recv_msg = json.loads(str(self.dealer.recv(), "utf-8"))
                 self.logger.debug('Received reply from server on try {}'.format(i))
                 break
+            else:
+                self.logger.debug('No response from server on try {}. Closing dealer socket'.format(i))
+                # No response from server. Close dealer socket
+                self.dealer.setsockopt(zmq.LINGER, 0)
+                self.dealer.close()
+                # Recreate dealer socket
+                self.dealer_routine()
 
         return recv_msg
 
@@ -230,6 +238,8 @@ class PiController:
                 if value:
                     job_info = {'jo_no': value[0], 'jo_line': value[1], 'code': value[2], 'desc': value[3],
                                 'to_do': value[4], 'ran': value[5]}
+                else:
+                    job_info = {}
         return job_info
 
     def update_emp_info(self, emp_list):
