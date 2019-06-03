@@ -563,9 +563,10 @@ class DatabaseManager:
             jo_line = int(barcode[-3:])
             sql = "SELECT uno, uline, ustk, ustk_desc1, usch_qty, usfc_qty FROM jobs_table " \
                   "WHERE uno = %s AND uline = %s LIMIT 1;"
-            cursor.execute(sql, (jo_no, jo_line))
-            temp = cursor.fetchone()
-            reply_list = list(temp)
+            if cursor.execute(sql, (jo_no, jo_line)):
+                temp = cursor.fetchone()
+                reply_list = list(temp)
+
             self.logger.debug("Reply is " + str(reply_list))
             conn.commit()
         except pymysql.DatabaseError as error:

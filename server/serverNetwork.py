@@ -83,7 +83,7 @@ class NetworkManager:
 
     def route(self):
         while not self.router_kill.is_set():
-            if self.router_recv.poll(1000):
+            if self.router_recv.poll(100):
                 id_from, recv_msg = self.router_recv.recv_multipart()
                 ip = id_from.decode()
                 message = json.loads(recv_msg.decode())
