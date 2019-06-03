@@ -4,7 +4,6 @@
 * 4 machines to 1 pi
 * Mender for OTA updates
 * Remove machines.sqlite from Viewer
-* Add shutdown/reboot button & quit program?
 * (Optional) Select waste1 or waste2 as final option?
 
 ### Completed
@@ -14,3 +13,4 @@
 4. Add decimal point for waste
 5. Add a way to know which textinput is selected (AdjustmentScreen)
 6. Add automatic way of determine whether to use FakeClass *sys.platform.startswith('linux')*
+7. Added Quit button
