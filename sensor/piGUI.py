@@ -949,8 +949,14 @@ class SettingQuit(SettingString):
         content = BoxLayout(orientation='vertical', spacing='5dp', size_hint=(1, 0.8))
 
         quit_btn = Button(text='Quit', size_hint=(1, 0.9))
-        quit_btn.bind(on_release=App.get_running_app().stop)
+        quit_btn.bind(on_release=self._stop)
         content.add_widget(quit_btn)
+        shutdown_btn = Button(text='Shutdown', size=(1, 0.9))
+        shutdown_btn.bind(on_release=self._shutdown)
+        content.add_widget(shutdown_btn)
+        reboot_btn = Button(text='Reboot', size=(1, 0.9))
+        reboot_btn.bind(on_release=self._reboot)
+        content.add_widget(reboot_btn)
 
         popup_width = min(0.95 * Window.width, dp(500))
         self.popup = popup = Popup(
@@ -958,6 +964,19 @@ class SettingQuit(SettingString):
             width=popup_width)
 
         popup.open()
+
+    @staticmethod
+    def _shutdown(_instance):
+        os.system('sudo shutdown -h now')
+
+    @staticmethod
+    def _reboot(_instance):
+        os.system('sudo reboot')
+
+    @staticmethod
+    def _stop(_instance):
+        os.system('sudo systemctl stop jam')
+        App.get_running_app().stop()
 
 
 class PiGUIApp(App):
