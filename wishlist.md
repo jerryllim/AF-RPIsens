@@ -4,7 +4,9 @@
 * 4 machines to 1 pi
 * Mender for OTA updates
 * Remove machines.sqlite from Viewer
+* EDI with ebprod & auto import export
 * (Optional) Select waste1 or waste2 as final option?
+* Server to send jobs_table to pis
 
 ### Completed
 1. Clone image for faster copying
