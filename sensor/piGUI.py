@@ -270,7 +270,7 @@ class SelectPage(Screen):
 
     def scan_barcode(self):
         self.cam = cv2.VideoCapture(0)
-        self.camera_event = Clock.schedule_interval(self.check_camera, 1.0/60)
+        self.camera_event = Clock.schedule_interval(self.check_camera, 1.0/30)
         # Timeout
         self.timeout = Clock.schedule_once(self.stop_checking, 10)
 
@@ -543,7 +543,7 @@ class EmployeeScanPage(Popup):
 
     def scan_barcode(self):
         self.cam = cv2.VideoCapture(0)
-        self.camera_event = Clock.schedule_interval(self.check_camera, 1.0/60)
+        self.camera_event = Clock.schedule_interval(self.check_camera, 1.0/30)
         # Timeout
         self.timeout = Clock.schedule_once(self.stop_checking, 10)
 
