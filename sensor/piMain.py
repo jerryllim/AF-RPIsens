@@ -129,6 +129,20 @@ class PiController:
 
             self.counts[key][emp_start] = end
 
+    def add_sfu(self, sfu_str):
+        key = 'sfu'
+        with self.counts_lock:
+            if self.counts.get(key) is None:
+                self.counts[key] = []
+
+            self.counts[key].append(sfu_str)
+
+    def publish_sfu(self, sfu_str):
+        reply = self.request({'sfu': sfu_str})
+        if reply is None:
+            self.logger.warning('Server did not respond to sfu')
+            self.add_sfu(sfu_str)
+
     def pin_triggered(self, pin, _level, _tick):
         name = self.pin_to_name.get(pin, None)
         if name:

@@ -101,9 +101,6 @@ class NetworkManager:
                         sfu_str = message.get("sfu", None)
                         if sfu_str:
                             self.insert_sfu(ip, sfu_str)
-                    elif key == "ink_key":
-                        ink_key = message.get("ink_key", None)
-                        self.database_manager.replace_ink_key(ink_key)
 
                 self.router_recv.send_multipart([ip.encode(), (json.dumps(reply_dict)).encode()])
                 # self.router_recv.send(ident, zmq.SNDMORE)
@@ -141,6 +138,10 @@ class NetworkManager:
                 # machine = self.settings.get_machine(machine_ip)
 
                 jam_msg = recv_dict.pop('jam', {})
+                sfu_list = jam_msg.pop('sfu', [])
+                for sfu_str in sfu_list:
+                    self.insert_sfu(machine_ip, sfu_str)
+
                 for idx in range(1, 4):
                     machine = self.settings.get_machine(machine_ip, idx)
                     qc_list = jam_msg.pop('Q{}'.format(idx), [])

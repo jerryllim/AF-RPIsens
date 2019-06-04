@@ -222,7 +222,7 @@ class MachineClass:
                 self.controller.update_adjustments(key, '{}{}'.format(name, self.index),
                                                    self.current_job.adjustments[name])
 
-        self.controller.request({'sfu': sfu_str})
+        self.controller.publish_sfu(sfu_str)
 
     def all_info(self):
         save_info = {'permanent': self.permanent, 'state': self.state.name, 'emp_main': self.emp_main.copy(),
