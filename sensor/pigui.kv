@@ -461,6 +461,7 @@
             pos: self.pos
             size: self.size
     add_button: add_button
+    log_all_btn: log_all_btn
     emp_main_view: emp_main_view
     emp_asst_view: emp_asst_view
     BoxLayout:
@@ -468,14 +469,27 @@
         spacing: sp(10)
         orientation: 'vertical'
 
-        Button:
-            id: add_button
-            size_hint_y: None
-            text: 'Log In/Log Out'
-            text_size: self.size[0], self.size[1]
-            halign: 'center'
-            valign: 'middle'
-            on_release: root.log_in_out()
+        BoxLayout:
+            size_hint_y: 0.5
+            padding: sp(10)
+            spacing: sp(10)
+            orientation: 'horizontal'
+
+            Button:
+                id: add_button
+                text: 'Log In/Log Out'
+                text_size: self.size[0], self.size[1]
+                halign: 'center'
+                valign: 'middle'
+                on_release: root.log_in_out()
+
+            Button:
+                id: log_all_btn
+                text: 'Log Out All'
+                text_size: self.size[0], self.size[1]
+                halign: 'center'
+                valign: 'middle'
+                on_release: root.log_out_all()
 
         Label:
             size_hint_y: 0.1

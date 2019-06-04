@@ -127,6 +127,12 @@ class MachineClass:
 
         self.controller.add_employee(self.index, "{0}_{1}".format(emp_id, start.strftime('%Y-%m-%d %H:%M')), end=end)
 
+    def log_out_all(self):
+        for emp_id in list(self.emp_main.keys()):
+            self.remove_emp(emp_id)
+        for emp_id in list(self.emp_asst.keys()):
+            self.remove_emp(emp_id)
+
     def add_emp(self, emp_id, asst=False):
         start = datetime.now()
         if not asst:
@@ -486,6 +492,10 @@ class EmployeePage(Screen):
     def log_in_out(self):
         self.emp_popup = EmployeeScanPage(caller=self, login=True, auto_dismiss=False)
         self.emp_popup.open()
+
+    def log_out_all(self):
+        self.machine.log_out_all()
+        self.load_emp_list()
 
     def emp_login(self, emp_id, alternate=False):
         if self.machine.add_emp(emp_id, asst=alternate):
