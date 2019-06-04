@@ -3,7 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="8c4eab11-9431-48ea-8992-fef6a6e722be" name="Default" comment="Reduced labels (populate in init) &amp; created NumericProperty for counter">
       <change beforePath="$PROJECT_DIR$/sensor/piGUI.py" beforeDir="false" afterPath="$PROJECT_DIR$/sensor/piGUI.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sensor/pigui.kv" beforeDir="false" afterPath="$PROJECT_DIR$/sensor/pigui.kv" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -22,8 +21,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/sensor/piGUI.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="473">
-                  <caret line="132" column="48" selection-start-line="132" selection-start-column="48" selection-end-line="132" selection-end-column="48" />
+                <state relative-caret-position="54">
+                  <caret line="141" selection-start-line="141" selection-end-line="141" />
                 </state>
               </provider>
             </entry>
@@ -65,8 +64,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/sensor/piGUI.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="207">
-                  <caret line="485" column="28" lean-forward="true" selection-start-line="485" selection-start-column="28" selection-end-line="485" selection-end-column="28" />
+                <state relative-caret-position="354">
+                  <caret line="481" column="52" selection-start-line="481" selection-start-column="52" selection-end-line="481" selection-end-column="52" />
                 </state>
               </provider>
             </entry>
@@ -74,7 +73,7 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/sensor/pigui.kv">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="1740">
+                <state relative-caret-position="34">
                   <caret line="116" column="3" selection-start-line="116" selection-start-column="3" selection-end-line="116" selection-end-column="3" />
                 </state>
               </provider>
@@ -171,9 +170,9 @@
       <find>snd</find>
       <find>employeepage</find>
       <find>employee</find>
-      <find>employeePage</find>
       <find>output</find>
       <find>sfu</find>
+      <find>employeePage</find>
     </findStrings>
     <replaceStrings>
       <replace>TMessage</replace>
@@ -669,7 +668,6 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1680" height="1027" extended-state="0" />
-    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" weight="0.23443224" />
       <window_info id="Structure" order="1" weight="0.24908425" />
@@ -999,8 +997,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/sensor/piGUI.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="473">
-          <caret line="132" column="48" selection-start-line="132" selection-start-column="48" selection-end-line="132" selection-end-column="48" />
+        <state relative-caret-position="54">
+          <caret line="141" selection-start-line="141" selection-end-line="141" />
         </state>
       </provider>
     </entry>
