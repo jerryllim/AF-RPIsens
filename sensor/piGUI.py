@@ -477,10 +477,14 @@ class EmployeePage(Screen):
         self.colour = Colour[self.machine.config['bg_colour']].value
 
     def load_emp_list(self):
-        self.emp_main_view.data = list({'text': '{0}'.format(emp_id)} for emp_id in
-                                       self.machine.emp_main.keys())
-        self.emp_asst_view.data = list({'text': '{0}'.format(emp_id)} for emp_id in
-                                       self.machine.emp_asst.keys())
+        self.emp_main_view.clear_widgets()
+        for emp_id in self.machine.emp_main.keys():
+            label = EmpLabel(text=emp_id)
+            self.emp_main_view.add_widget(label)
+        self.emp_asst_view.clear_widgets()
+        for emp_id in self.machine.emp_asst.keys():
+            label = EmpLabel(text=emp_id)
+            self.emp_asst_view.add_widget(label)
 
     def log_in_out(self):
         self.emp_popup = EmployeeScanPage(caller=self, login=True, auto_dismiss=False)
@@ -860,6 +864,10 @@ class DropDownLayout(BoxLayout):
 
 
 class NumPadButton(Button):
+    pass
+
+
+class EmpLabel(Label):
     pass
 
 

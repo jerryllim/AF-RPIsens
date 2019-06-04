@@ -499,17 +499,11 @@
             halign: 'left'
             valign: 'middle'
 
-
-        RecycleView:
+        StackLayout:
             id: emp_main_view
-            size_hint_y: 0.8
-            viewclass: 'EmpLabel'
-            RecycleBoxLayout:
-                size_hint_y: None
-                height: self.minimum_height
-                spacing: sp(5)
-                default_size_hint: 1, None
-                orientation: 'vertical'
+            size_hint_y: 1
+            spacing: sp(5)
+            padding: sp(5)
 
         Label:
             size_hint_y: 0.1
@@ -519,19 +513,16 @@
             halign: 'left'
             valign: 'middle'
 
-
-        RecycleView:
+        StackLayout:
             id: emp_asst_view
-            viewclass: 'EmpLabel'
-            RecycleBoxLayout:
-                size_hint_y: None
-                height: self.minimum_height
-                spacing: sp(5)
-                default_size_hint: 1, None
-                orientation: 'vertical'
+            size_hint_y: 1
+            spacing: sp(5)
+            padding: sp(5)
 
-<EmpLabel@Label>:
+<EmpLabel>:
     bold: True
+    size_hint: (None, None)
+    width: sp(100)
     canvas.before:
         Color:
             rgba: (0, 0, 0, 1)
