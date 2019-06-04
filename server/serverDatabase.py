@@ -337,7 +337,8 @@ class DatabaseManager:
         try:
             with conn.cursor() as cursor:
                 today = datetime.today()
-                offset = (today.isoweekday() - 7) % 7 + 7
+                dayofweek = self.settings.config.getint('Data', 'day')
+                offset = (today.isoweekday() - dayofweek) % 7 + 7
                 day_date = today - timedelta(offset)
                 query = "INSERT IGNORE INTO jam_past_table (machine, jo_no, emp, date_time, shift, output, col1, col2" \
                         ", col3, col4, col5, col6, col7, col8, col9, col10) SELECT machine, jo_no, emp, " \
@@ -362,7 +363,8 @@ class DatabaseManager:
         try:
             with conn.cursor() as cursor:
                 today = datetime.today()
-                offset = (today.isoweekday() - 7) % 7 + 7
+                dayofweek = self.settings.config.getint('Data', 'day')
+                offset = (today.isoweekday() - dayofweek) % 7 + 7
                 day_date = today - timedelta(offset)
                 query = "INSERT IGNORE INTO jam_past_table (machine, jo_no, emp, date_time, shift, output, col1, col2" \
                         ", col3, col4, col5, col6, col7, col8, col9, col10) SELECT machine, jo_no, emp, " \
