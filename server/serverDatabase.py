@@ -327,21 +327,57 @@ class DatabaseManager:
             conn.close()
             return output_list
 
-    def transfer_table(self):
+    def transfer_tables(self):
+        self.transfer_table_current_to_prev()
+        self.transfer_table_prev_to_past()
+
+    def transfer_table_current_to_prev(self):
         conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
-
         try:
             with conn.cursor() as cursor:
-                # TODO to check this sql
-                sql = "INSERT IGNORE INTO jam_past_table (machine, jo_no, emp, date_time, shift, output, col1, col2, " \
-                      "col3, col4, col5, col6, col7, col8, col9, col10) SELECT * FROM jam_current_table " \
-                      "WHERE datetime < NOW() - INTERVAL 2 WEEK;"
-                # TODO to delete the selects
-                cursor.execute(sql)
+                today = datetime.today()
+                offset = (today.isoweekday() - 7) % 7 + 7
+                day_date = today - timedelta(offset)
+                query = "INSERT IGNORE INTO jam_past_table (machine, jo_no, emp, date_time, shift, output, col1, col2" \
+                        ", col3, col4, col5, col6, col7, col8, col9, col10) SELECT machine, jo_no, emp, " \
+                        "DATE_FORMAT(date_time, '%Y-%m-%d %H:00') as new_dt, shift, SUM(output), SUM(col1), SUM(col2)" \
+                        ", SUM(col3), SUM(col4), SUM(col5), SUM(col6), SUM(col7), SUM(col8), SUM(col9), SUM(col10) " \
+                        "FROM jam_prev_table WHERE date_time < %s - INTERVAL 1 WEEK GROUP BY machine," \
+                        " jo_no, emp, new_dt, shift;"
+                cursor.execute(query, (day_date,))
+                query2 = "DELETE FROM jam_current_table WHERE date_time < %s - INTERVAL 1 WEEK;"
+                cursor.execute(query2, (day_date,))
                 conn.commit()
         except pymysql.DatabaseError as error:
             self.logger.error(sys._getframe().f_code.co_name, error)
+            conn.rollback()
+            self.logger.warning('Unable to transfer table from current to prev')
+        finally:
+            conn.close()
+
+    def transfer_table_prev_to_past(self):
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
+                               database=self.db, port=self.port)
+        try:
+            with conn.cursor() as cursor:
+                today = datetime.today()
+                offset = (today.isoweekday() - 7) % 7 + 7
+                day_date = today - timedelta(offset)
+                query = "INSERT IGNORE INTO jam_past_table (machine, jo_no, emp, date_time, shift, output, col1, col2" \
+                        ", col3, col4, col5, col6, col7, col8, col9, col10) SELECT machine, jo_no, emp, " \
+                        "DATE_FORMAT(date_time, '%Y-%m-%d %H:00') as new_dt, shift, SUM(output), SUM(col1), SUM(col2)" \
+                        ", SUM(col3), SUM(col4), SUM(col5), SUM(col6), SUM(col7), SUM(col8), SUM(col9), SUM(col10) " \
+                        "FROM jam_prev_table WHERE date_time < %s - INTERVAL 2 WEEK GROUP BY machine," \
+                        " jo_no, emp, new_dt, shift;"
+                cursor.execute(query, (day_date,))
+                query2 = "DELETE FROM jam_prev_table WHERE date_time < %s - INTERVAL 2 WEEK;"
+                cursor.execute(query2, (day_date,))
+                conn.commit()
+        except pymysql.DatabaseError as error:
+            self.logger.error(sys._getframe().f_code.co_name, error)
+            conn.rollback()
+            self.logger.warning('Unable to transfer table from prev to past')
         finally:
             conn.close()
 
