@@ -248,10 +248,43 @@ class PiController:
 
         return recv_msg
 
+    def request_barcode(self, barcode):
+        # Clear buffer by restarting the dealer socket
+        self.dealer.setsockopt(zmq.LINGER, 0)
+        self.dealer.close()
+        self.dealer_routine()
+
+        timeout = 2000
+        # msg_dict['ip'] = self.self_add
+        recv_msg = None
+        # Try 3 times, each waiting for 2 seconds for reply from server
+        self.logger.debug('Sending request to server')
+
+        for i in range(3):
+            self.dealer.send_json({"job_info": barcode})
+
+            while self.dealer.poll(timeout):
+                reply = json.loads(str(self.dealer.recv(), "utf-8"))
+                self.logger.debug('Received reply from server on try {}'.format(i))
+                if reply.get(barcode):
+                    recv_msg = reply
+                    break
+
+            if recv_msg:
+                self.logger.debug('No response from server on try {}. Closing dealer socket'.format(i))
+                # No response from server. Close dealer socket
+                self.dealer.setsockopt(zmq.LINGER, 0)
+                self.dealer.close()
+                # Recreate dealer socket
+                self.dealer_routine()
+
+        return recv_msg
+
     def get_job_info(self, barcode):
         job_info = self.database_manager.get_job_info(barcode)
         if job_info is None:
-            reply_msg = self.request({"job_info": barcode})
+            reply_msg = self.request_barcode(barcode)
+            # reply_msg = self.request({"job_info": barcode})
             if reply_msg:
                 value = reply_msg.pop(barcode)
                 if value:
