@@ -92,7 +92,7 @@ class NetworkManager:
                 # delimiter = self.router_recv.recv()  # delimiter
                 # message = self.router_recv.recv_json()
                 reply_dict = {}
-                self.logger.debug(datetime.datetime.now(), "Received message {} from {}".format(message, ip))
+                self.logger.debug("Received message {} from {}".format(message, ip))
 
                 for key in message.keys():
                     if key == "job_info":
