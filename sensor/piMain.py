@@ -217,7 +217,7 @@ class PiController:
         self.dealer = self.context.socket(zmq.DEALER)
         self.dealer.setsockopt_string(zmq.IDENTITY, self.self_add)
         self.dealer.connect("tcp://{}".format(ip_port))
-        self.logger.debug('Created dealer socket for request')
+        self.logger.debug('Created dealer socket for request {}'.format(ip_port))
 
     def request(self, msg_dict):
         # Clear buffer by restarting the dealer socket
@@ -230,60 +230,40 @@ class PiController:
         recv_msg = None
         # Try 3 times, each waiting for 2 seconds for reply from server
         self.logger.debug('Sending request to server')
+        self.logger.debug("Has keys {}".format(str(msg_dict.keys())))
+        if "job_info" in msg_dict.keys():
+            validation = msg_dict.get("job_info")
+            self.logger.debug("Has validation key {}".format(str(validation)))
+        else:
+            validation = None
 
         for i in range(3):
             self.dealer.send_json(msg_dict)
 
-            if self.dealer.poll(timeout):
-                recv_msg = json.loads(str(self.dealer.recv(), "utf-8"))
-                self.logger.debug('Received reply from server on try {}'.format(i))
-                break
-            else:
-                self.logger.debug('No response from server on try {}. Closing dealer socket'.format(i))
-                # No response from server. Close dealer socket
-                self.dealer.setsockopt(zmq.LINGER, 0)
-                self.dealer.close()
-                # Recreate dealer socket
-                self.dealer_routine()
-
-        return recv_msg
-
-    def request_barcode(self, barcode):
-        # Clear buffer by restarting the dealer socket
-        self.dealer.setsockopt(zmq.LINGER, 0)
-        self.dealer.close()
-        self.dealer_routine()
-
-        timeout = 2000
-        # msg_dict['ip'] = self.self_add
-        recv_msg = None
-        # Try 3 times, each waiting for 2 seconds for reply from server
-        self.logger.debug('Sending request to server')
-
-        for i in range(3):
-            self.dealer.send_json({"job_info": barcode})
-
             while self.dealer.poll(timeout):
                 reply = json.loads(str(self.dealer.recv(), "utf-8"))
-                self.logger.debug('Received reply from server on try {}'.format(i))
-                if reply.get(barcode):
+                if validation is None or validation in reply.keys():
                     recv_msg = reply
-                    break
+                    self.logger.debug('Received reply {} from server on try {}'.format(recv_msg, i))
+                    return recv_msg
 
-            if recv_msg:
+            if recv_msg is None:
                 self.logger.debug('No response from server on try {}. Closing dealer socket'.format(i))
                 # No response from server. Close dealer socket
                 self.dealer.setsockopt(zmq.LINGER, 0)
                 self.dealer.close()
                 # Recreate dealer socket
                 self.dealer_routine()
+            else:
+                self.logger.debug("Breaking the loop")
+                break
 
         return recv_msg
 
     def get_job_info(self, barcode):
         job_info = self.database_manager.get_job_info(barcode)
         if job_info is None:
-            reply_msg = self.request_barcode(barcode)
+            reply_msg = self.request({"job_info": barcode})
             # reply_msg = self.request({"job_info": barcode})
             if reply_msg:
                 value = reply_msg.pop(barcode)
