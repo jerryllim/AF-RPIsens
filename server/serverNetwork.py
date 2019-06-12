@@ -92,6 +92,7 @@ class NetworkManager:
                 # delimiter = self.router_recv.recv()  # delimiter
                 # message = self.router_recv.recv_json()
                 reply_dict = {}
+                print(datetime.datetime.now(), "Received message {} from {}".format(message, ip))
 
                 for key in message.keys():
                     if key == "job_info":
@@ -101,7 +102,11 @@ class NetworkManager:
                         sfu_str = message.get("sfu", None)
                         if sfu_str:
                             self.insert_sfu(ip, sfu_str)
+                    elif key == "ping":
+                        reply_dict["pong"] = 1
+                        print("ping pong with {}".format(ip))
 
+                print("Replying with,", reply_dict)
                 self.router_recv.send_multipart([ip.encode(), (json.dumps(reply_dict)).encode()])
                 # self.router_recv.send(ident, zmq.SNDMORE)
                 # self.router_recv.send(delimiter, zmq.SNDMORE)
