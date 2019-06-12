@@ -318,6 +318,8 @@ class SelectPage(Screen):
             job_dict = controller.get_job_info(barcode)
             if job_dict is None:
                 raise ValueError("Server did not respond, please try again.".format(barcode))
+            elif job_dict == 0:
+                raise ValueError("Pipe did not reply")
             elif not job_dict:
                 raise ValueError("JO number ({}) was not found, please contact Supervisor.".format(barcode))
 

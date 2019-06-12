@@ -12,6 +12,16 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 
 class PiController:
+    # Pipe variables
+    MAX_MISSED = 3  # Max missed pings
+    PING_INTERVAL = 5  # minutes
+    pipe_add = "inproc://pipe1"
+    ping_at = 0
+    last_ping = 0
+    pipe_a = None
+    pipe_b = None
+
+    TIMEOUT = 1000
     bounce = 30
     pulse_pins = {}
     pin_to_name = {}
@@ -61,12 +71,17 @@ class PiController:
         self.context = zmq.Context()
         self.respondent_routine()
         self.dealer_routine()
+        self.pipe_routine()
+        self.ping_at = time.time() + 60*self.PING_INTERVAL
         self.scheduler.start()
 
         self.respondent_kill = threading.Event()
         self.respondent_thread = threading.Thread(target=self.respond)
         self.respondent_thread.daemon = True
         self.respondent_thread.start()
+        self.pipe_thread = threading.Thread(target=self.pipe_loop)
+        self.pipe_thread.daemon = True
+        self.pipe_thread.start()
         self.logger.info('Completed PiController __init__')
 
     def update_ip_ports(self):
@@ -189,6 +204,7 @@ class PiController:
         self.respondent.setsockopt(zmq.LINGER, 0)
         self.respondent.setsockopt_string(zmq.IDENTITY, self.self_add)
         self.respondent.bind("tcp://{}:{}".format(self.self_add, self.self_port))
+        self.logger.debug('Created respondent socket for request')
 
     def respond(self):
         while not self.respondent_kill.is_set():
@@ -225,12 +241,11 @@ class PiController:
         self.dealer.close()
         self.dealer_routine()
 
-        timeout = 2000
+        timeout = self.TIMEOUT
         # msg_dict['ip'] = self.self_add
         recv_msg = None
         # Try 3 times, each waiting for 2 seconds for reply from server
         self.logger.debug('Sending request to server')
-        self.logger.debug("Has keys {}".format(str(msg_dict.keys())))
         if "job_info" in msg_dict.keys():
             validation = msg_dict.get("job_info")
             self.logger.debug("Has validation key {}".format(str(validation)))
@@ -273,6 +288,57 @@ class PiController:
                 else:
                     job_info = {}
         return job_info
+
+    def pipe_routine(self):
+        self.pipe_a = self.context.socket(zmq.PAIR)
+        self.pipe_a.setsockopt(zmq.LINGER, 0)
+        self.pipe_a.set_hwm(1)
+        self.pipe_a.bind(self.pipe_add)
+
+        self.pipe_b = self.context.socket(zmq.PAIR)
+        self.pipe_b.setsockopt(zmq.LINGER, 0)
+        self.pipe_b.set_hwm(1)
+        self.pipe_b.connect(self.pipe_add)
+        self.logger.debug('Created pipe sockets')
+
+    def pipe_talk(self, msg_dict):
+        timeout = self.TIMEOUT*3 + 100
+        self.pipe_b.send_json(msg_dict)
+        reply = 0
+
+        if self.pipe_b.poll(timeout):
+            reply = self.pipe_b.recv_json()
+
+        return reply
+
+    def pipe_loop(self):
+        while True:
+            timeout = self.ping_at - time.time()
+            if self.pipe_a.poll(1000*timeout):
+                msg_dict = self.pipe_a.recv_json()
+                self.logger.debug("Preparing to send message {}".format(msg_dict))
+
+                reply = self.request(msg_dict)
+                # Update ping if successful replied
+                if reply is not None:
+                    self.ping_at = time.time() + 60*self.PING_INTERVAL
+                self.logger.debug("Reply received from request(): {}".format(reply))
+
+                self.pipe_a.send_json(reply)
+
+            # To check if need to ping
+            self.ping()
+
+    def ping(self):
+        if time.time() > self.ping_at:
+            reply = self.request({"ping": 0})
+            if reply and reply.pop("pong", None):
+                self.last_ping = time.time()
+                self.logger.debug("Server replied ping")
+            else:
+                self.logger.debug("Server did not reply pong")
+
+            self.ping_at = time.time() + 60*self.PING_INTERVAL
 
     def update_emp_info(self, emp_list):
         self.database_manager.update_into_emp_table(emp_list)
