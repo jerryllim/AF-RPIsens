@@ -70,9 +70,9 @@ class NetworkManager:
                 temp_dict.update(json.loads(recv_bytes.decode()))
                 temp_dict['ip'] = id_from.decode()
             except IOError as error:
-                print("{} Problem with socket: ".format(now), error)
+                self.logger.debug("{} Problem with socket: ".format(now), error)
         else:
-            print("{} Machine ({}) is not connected".format(now, id_to))
+            self.logger.debug(("{} Machine ({}) is not connected".format(now, id_to))
 
         return temp_dict
 
@@ -104,7 +104,6 @@ class NetworkManager:
                             self.insert_sfu(ip, sfu_str)
                     elif key == "ping":
                         reply_dict["pong"] = 1
-                        print("ping pong with {}".format(ip))
 
                 self.logger.debug("Replying with,", reply_dict)
                 self.router_recv.send_multipart([ip.encode(), (json.dumps(reply_dict)).encode()])
