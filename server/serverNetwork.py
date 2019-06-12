@@ -72,7 +72,7 @@ class NetworkManager:
             except IOError as error:
                 self.logger.debug("{} Problem with socket: ".format(now), error)
         else:
-            self.logger.debug(("{} Machine ({}) is not connected".format(now, id_to))
+            self.logger.debug("{} Machine ({}) is not connected".format(now, id_to))
 
         return temp_dict
 
