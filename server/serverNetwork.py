@@ -119,6 +119,7 @@ class NetworkManager:
         sfu_list = [umc] + sfu_list
 
         self.database_manager.insert_sfu(sfu_list)
+        self.database_manager.update_job(sfu_list[1], sfu_list[2], sfu_list[4])
 
     def request_jam(self):
         now = datetime.datetime.now().isoformat()

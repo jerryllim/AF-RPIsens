@@ -394,7 +394,7 @@ class DatabaseManager:
                 sql = "CREATE TABLE IF NOT EXISTS emp_table ( " \
                       "emp_id varchar(6) NOT NULL, " \
                       "name varchar(30) DEFAULT NULL, " \
-                      "last_modified timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, " \
+                      "last_modified timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, " \
                       "to_del tinyint(1) unsigned DEFAULT '0', " \
                       "PRIMARY KEY (emp_id));"
                 cursor.execute(sql)
@@ -532,7 +532,8 @@ class DatabaseManager:
                       "tqty int(10) unsigned DEFAULT NULL, " \
                       "tdo_date date DEFAULT NULL, " \
                       "usfc_qty double DEFAULT NULL, " \
-                      "PRIMARY KEY (uno,uline) );"
+                      "last_modified timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, ON UPDATE CURRENT_TIMESTAMP, " \
+                      "PRIMARY KEY (uno, uline) );"
                 cursor.execute(sql)
                 conn.commit()
         except pymysql.DatabaseError as error:
@@ -554,9 +555,11 @@ class DatabaseManager:
         try:
             with conn.cursor() as cursor:
                 for job_info in job_list:
-                    query = "REPLACE INTO jobs_table VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, " \
-                            "%s, %s, %s, %s, %s, %s, %s, %s, STR_TO_DATE(%s, %s));"
-                    job_info = job_info + ["%d/%m/%Y"]
+                    query = "REPLACE INTO jobs_table (umc, uno, umachine_no, usch_qty, usou_no, ustk_mc, ustk, " \
+                            "uraw_mc, uraw, uline, uuom, ureq_qty, ureq_uom, udraw, urem, ucomplete, umachine_desc, " \
+                            "ustk_desc1, ustk_desc2, mname, trem1, tqty, tdo_date, usfc_qty)" \
+                            "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, " \
+                            "%s, %s, %s, %s, %s, %s, %s, %s, STR_TO_DATE(%s, '%d/%m/%y'), %s);"
                     cursor.execute(query, job_info)
                     conn.commit()
         except pymysql.DatabaseError as error:
@@ -567,28 +570,30 @@ class DatabaseManager:
 
     def delete_completed_jobs(self):
         conn = pymysql.connect(self.host, self.user, self.password, self.db)
+
         try:
             with conn.cursor() as cursor:
                 query = "DELETE FROM jobs_table WHERE ucomplete = 'Y';"
                 cursor.execute(query)
+                conn.commit()
         except pymysql.DatabaseError as error:
             self.logger.error(sys._getframe().f_code.co_name, error)
+            conn.rollback()
         finally:
             conn.close()
 
-    def delete_job(self, jo_ids):
-        """
-        Delete multiple jobs
-        :param jo_ids: List of jo_no & jo_line
-        :return:
-        """
+    def delete_old_jobs(self):
         conn = pymysql.connect(self.host, self.user, self.password, self.db)
+
         try:
             with conn.cursor() as cursor:
-                query = '''DELETE FROM jobs_table WHERE jo_no = %s AND jo_line = %s'''
-                cursor.executemany(query, jo_ids)
+                query = "DELETE FROM jobs_table WHERE usfc_qty >= usch_qty AND " \
+                        "last_modified > (CURDATE() - INTERVAL 2 DAY);"
+                cursor.execute(query)
+                conn.commit()
         except pymysql.DatabaseError as error:
             self.logger.error(sys._getframe().f_code.co_name, error)
+            conn.rollback()
         finally:
             conn.close()
 
@@ -605,7 +610,6 @@ class DatabaseManager:
                 temp = cursor.fetchone()
                 reply_list = list(temp)
 
-            self.logger.debug("Reply is " + str(reply_list))
             conn.commit()
         except pymysql.DatabaseError as error:
             self.logger.error(sys._getframe().f_code.co_name, error)
@@ -628,6 +632,19 @@ class DatabaseManager:
             conn.close()
 
         return umc
+
+    def update_job(self, uno, uline, usfc_qty):
+        conn = pymysql.connect(self.host, self.user, self.password, self.db)
+
+        try:
+            with conn.cursor() as cursor:
+                query = "UPDATE jobs_table SET usfc_qty = usfc_qty + %s WHERE uno = %s AND uline = %s;"
+                cursor.execute(query, (usfc_qty, uno, uline))
+        except pymysql.DatabaseError as error:
+            self.logger.error(sys._getframe().f_code.co_name, error)
+            conn.rollback()
+        finally:
+            conn.close()
 
     def get_jobs_for(self, mac):
         conn = pymysql.connect(self.host, self.user, self.password, self.db)
