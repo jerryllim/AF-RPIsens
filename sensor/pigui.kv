@@ -33,7 +33,7 @@
             Button:
                 text: "Scan"
                 size_hint: (0.2, 1)
-                on_release: selectpage.scan_barcode()
+                on_release: selectpage.scan_barcode(self)
 
         BoxLayout:
             Button:
@@ -569,7 +569,7 @@
             Button:
                 text: "Scan"
                 size_hint: (0.2, 1)
-                on_release: root.scan_barcode()
+                on_release: root.scan_barcode(self)
 
         BoxLayout:
             spacing: sp(10)

@@ -258,6 +258,7 @@ class SelectPage(Screen):
     camera_event = None
     timeout = None
     machine = None
+    scan_btn = None
     colour = ListProperty([0, 0, 0, 1])
     logger = logging.getLogger('JAM')
 
@@ -268,7 +269,12 @@ class SelectPage(Screen):
         self.machine.set_state(State.SELECT)
         self.colour = Colour[self.machine.config['bg_colour']].value
 
-    def scan_barcode(self):
+    def scan_barcode(self, instance):
+        if not self.scan_btn:
+            self.scan_btn = instance
+        self.scan_btn.disabled = True
+        App.get_running_app().action_bar.disabled = True
+
         self.cam = cv2.VideoCapture(0)
         self.camera_event = Clock.schedule_interval(self.check_camera, 1.0/30)
         # Timeout
@@ -292,16 +298,19 @@ class SelectPage(Screen):
         if dt != 0:
             self.ids.job_entry.text = ''
 
+        self.scan_btn.disabled = False
+        App.get_running_app().action_bar.disabled = False
         self.timeout.cancel()
         self.camera_event.cancel()
         self.cam.release()
 
     def show_image(self, frame):
-        frame2 = cv2.cvtColor(frame, cv2.COLOR_BGRA2RGB)
-        buf1 = cv2.flip(frame2, 0)
+        # frame2 = cv2.cvtColor(frame, cv2.COLOR_BGRA2RGB)
+        # buf1 = cv2.flip(frame2, 0)
+        buf1 = cv2.flip(frame, 0)
         buf = buf1.tostring()
-        image_texture = Texture.create(size=(frame.shape[1], frame.shape[0]), colorfmt='rgb')
-        image_texture.blit_buffer(buf, colorfmt='rgb', bufferfmt='ubyte')
+        image_texture = Texture.create(size=(frame.shape[1], frame.shape[0]), colorfmt='bgr')
+        image_texture.blit_buffer(buf, colorfmt='bgr', bufferfmt='ubyte')
         self.ids['camera_viewer'].texture = image_texture
 
     def start_job(self):
@@ -528,6 +537,7 @@ class EmployeeScanPage(Popup):
     camera_event = None
     parent_method = None
     timeout = None
+    scan_btn = None
 
     def __init__(self, **kwargs):
         qc = kwargs.pop('qc', False)
@@ -543,7 +553,11 @@ class EmployeeScanPage(Popup):
         else:
             self.button_box.remove_widget(self.alternate_button)
 
-    def scan_barcode(self):
+    def scan_barcode(self, instance):
+        if not self.scan_btn:
+            self.scan_btn = instance
+
+        self.scan_btn.disabled = True
         self.cam = cv2.VideoCapture(0)
         self.camera_event = Clock.schedule_interval(self.check_camera, 1.0/30)
         # Timeout
@@ -569,16 +583,16 @@ class EmployeeScanPage(Popup):
         if dt != 0:
             self.employee_num.text = ''
 
+        self.scan_btn.disabled = False
         self.timeout.cancel()
         self.camera_event.cancel()
         self.cam.release()
 
     def show_image(self, frame):
-        frame2 = cv2.cvtColor(frame, cv2.COLOR_BGRA2RGB)
-        buf1 = cv2.flip(frame2, 0)
+        buf1 = cv2.flip(frame, 0)
         buf = buf1.tostring()
-        image_texture = Texture.create(size=(frame.shape[1], frame.shape[0]), colorfmt='rgb')
-        image_texture.blit_buffer(buf, colorfmt='rgb', bufferfmt='ubyte')
+        image_texture = Texture.create(size=(frame.shape[1], frame.shape[0]), colorfmt='bgr')
+        image_texture.blit_buffer(buf, colorfmt='bgr', bufferfmt='ubyte')
         self.ids['camera_viewer'].texture = image_texture
 
     def confirm(self, alternate=False):
@@ -605,6 +619,11 @@ class EmployeeScanPage(Popup):
             self.alternate_button.text = 'Assistant'
             self.button_box.add_widget(self.confirm_button)
             self.button_box.add_widget(self.alternate_button)
+
+    def on_dismiss(self):
+        self.timeout.cancel()
+        self.camera_event.cancel()
+        self.cam.release()
 
 
 class MaintenancePage(Screen):
