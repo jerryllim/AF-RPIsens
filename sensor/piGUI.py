@@ -79,7 +79,7 @@ class JobClass(Widget):
         return sfu_dict
 
     def all_info(self):
-        return {'job_info': self.job_info.copy(), 'wastage': self.wastage.copy(), 'output': self.output.get(),
+        return {'job_info': self.job_info.copy(), 'wastage': self.wastage.copy(), 'output': self.output,
                 'adjustments': self.adjustments.copy(), 'qc': self.qc}
 
     def get_jono(self):
@@ -231,6 +231,16 @@ class MachineClass:
             save_info['current_job'] = self.current_job.all_info()
         return save_info
 
+    def recall_machine(self, json_dict):
+        self.permanent = json_dict.get('permanent', 0)
+        self.state = State[json_dict.get('state', "SELECT")]
+        for emp_id, start in json_dict.get("emp_main", {}).items():
+            self.emp_main['emp_id'] = start
+        for emp_id, start in json_dict.get("emp_asst", {}).items():
+            self.emp_asst['emp_id'] = start
+        self.maintenance = tuple(json_dict.get('maintenance', (None, None)))
+        self.current_job = json_dict.get('current_job', None)
+
     def get_current_job(self):
         return self.current_job
 
@@ -314,6 +324,10 @@ class SelectPage(Screen):
         self.ids['camera_viewer'].texture = image_texture
 
     def start_job(self):
+        self.timeout.cancel()
+        self.camera_event.cancel()
+        self.cam.release()
+
         barcode = self.ids.job_entry.text
         self.logger.debug('Check for job with barcode {}'.format(barcode))
         try:
@@ -685,7 +699,7 @@ class RunPage(Screen):
     def wastage_popup(self, key, finish=False):
         self.wastagePopup = WastagePopUp(key, self.run_layout.update_waste)
         if finish:
-            button = Button(text='Confirm')
+            button = Button(text='Finish')
             button.bind(on_release=self.stop_job)
             self.wastagePopup.ids['button_box'].add_widget(button)
 
@@ -1019,7 +1033,13 @@ class PiGUIApp(App):
     action_bar = None
     logger = None
 
+    def _on_key_down(self, instance, keyboard, keycode, text, modifiers):
+        if len(modifiers) > 0 and modifiers[0] == 'ctrl' and text == 'a':
+            self.controller.save_machines()
+            print('Saved')
+
     def build(self):
+        Window.bind(on_key_down=self._on_key_down)
         self.logger = logging.getLogger('JAM')
         # self.check_camera()
         self.config.set('Network', 'self_add', self.get_ip_add())
@@ -1186,6 +1206,7 @@ class FakeClass:
     counts_lock = threading.Lock()
     counts = {}
     database_manager = None
+    permanent = 0
 
     def __init__(self, gui):
         self.database_manager = piMain.DatabaseManager()
@@ -1228,6 +1249,16 @@ class FakeClass:
     def add_qc(self, idx, string):
         key = 'Q{}'.format(idx)
         print(key, string)
+
+    def save_machines(self, filename='jam_machine.json'):
+        machines_save = {'save_time': datetime.now()}
+        for key, machine in self.gui.machines.items():
+            machines_save[key] = machine.all_info()
+
+        print(json.dumps(machines_save, default=str))
+
+        with open(filename, 'w') as write_file:
+            json.dump(machines_save, write_file, default=str)
 
 
 if __name__ == '__main__':
