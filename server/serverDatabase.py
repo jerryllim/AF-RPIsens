@@ -157,6 +157,18 @@ class AutomateSchedulers:
         self.database_manager.transfer_tables()
         self.logger.debug('Transferred tables')
 
+    def schedule_delete_old_jobs(self):
+        job_id = 'Old'
+        cron_trigger = CronTrigger(hour='17', minute='35')
+        if self.scheduler_jobs.get(job_id):
+            self.scheduler_jobs[job_id].remove()
+        self.scheduler_jobs[job_id] = self.scheduler.add_job(self.delete_old_jobs, cron_trigger, id=job_id,
+                                                             max_instances=3)
+
+    def delete_old_jobs(self):
+        self.database_manager.delete_old_jobs()
+        self.logger.debug('Deleted old jobs')
+
 
 class DatabaseManager:
     def __init__(self, settings, host='', user='', password='', db='', port='', create_tables=True):
