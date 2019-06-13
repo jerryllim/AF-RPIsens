@@ -78,18 +78,29 @@ class AutomateSchedulers:
         # self.scheduler.start()
 
     def get_cron_hour_minute(self, section):
-        time = self.settings.config.get(section, 'time')
-        hour = self.settings.config.getint(section, 'hour')
-        minute = self.settings.config.getint(section, 'minute')
-        if hour:
-            hour = '*/{}'.format(hour)
+        if section in ['Export', 'Import']:
+            time = self.settings.config.get(section, 'time')
+            hour = self.settings.config.getint(section, 'hour')
+            minute = self.settings.config.getint(section, 'minute')
+            if hour:
+                hour = '*/{}'.format(hour)
+            else:
+                hour = '*'
+
+            if minute:
+                minute = '{}-59/{}'.format(time[-2:], minute)
+            else:
+                minute = '{}'.format(time[-2:])
+
+        elif section in ['Data']:
+            time = self.settings.config.get(section, 'time')
+
+            hour = '{}'.format(time[:2])
+            minute = '{}'.format(time[-2:])
+
         else:
             hour = '*'
-
-        if minute:
-            minute = '{}-59/{}'.format(time[-2:], minute)
-        else:
-            minute = '{}'.format(time[-2:])
+            minute = '*'
 
         return hour, minute
 
@@ -127,9 +138,24 @@ class AutomateSchedulers:
         with open(filepath, 'a') as export_file:
             csv_writer = csv.writer(export_file)
 
-            pass
+            csv_writer.writerow(self.database_manager.get_sfu_headers())
+            csv_writer.writerows(self.database_manager.get_sfus())
 
         self.logger.debug('Wrote export file')
+
+    def schedule_table_transfers(self):
+        job_id = 'Data'
+        hour, minute = self.get_cron_hour_minute(job_id)
+        dayofweek = self.settings.config.get(job_id, 'day')
+        cron_trigger = CronTrigger(hour=hour, minute=minute, day_of_week=dayofweek)
+        if self.scheduler_jobs.get(job_id):
+            self.scheduler_jobs[job_id].remove()
+        self.scheduler_jobs[job_id] = self.scheduler.add_job(self.table_transfers, cron_trigger, id=job_id,
+                                                             max_instances=3)
+
+    def table_transfers(self):
+        self.database_manager.transfer_tables()
+        self.logger.debug('Transferred tables')
 
 
 class DatabaseManager:
@@ -338,7 +364,7 @@ class DatabaseManager:
             with conn.cursor() as cursor:
                 today = datetime.today()
                 dayofweek = self.settings.config.getint('Data', 'day')
-                offset = (today.isoweekday() - dayofweek) % 7 + 7
+                offset = (today.isoweekday() - dayofweek) % 7
                 day_date = today - timedelta(offset)
                 query = "INSERT IGNORE INTO jam_past_table (machine, jo_no, emp, date_time, shift, output, col1, col2" \
                         ", col3, col4, col5, col6, col7, col8, col9, col10) SELECT machine, jo_no, emp, " \
@@ -532,7 +558,7 @@ class DatabaseManager:
                       "tqty int(10) unsigned DEFAULT NULL, " \
                       "tdo_date date DEFAULT NULL, " \
                       "usfc_qty double DEFAULT NULL, " \
-                      "last_modified timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, ON UPDATE CURRENT_TIMESTAMP, " \
+                      "last_modified timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, " \
                       "PRIMARY KEY (uno, uline) );"
                 cursor.execute(sql)
                 conn.commit()
