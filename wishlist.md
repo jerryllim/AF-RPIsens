@@ -6,6 +6,7 @@
 * Remove machines.sqlite from Viewer
 * EDI with ebprod & auto import export
 * (Optional) Select waste1 or waste2 as final option?
+* (Optional) Use colour picker to pick bg colour?
 * Server to send jobs_table to pis
 
 ### Completed
