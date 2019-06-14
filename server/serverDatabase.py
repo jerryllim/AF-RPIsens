@@ -684,12 +684,32 @@ class DatabaseManager:
         finally:
             conn.close()
 
-    def get_jobs_for(self, mac):
+    def get_jobs_for_in(self, macs):
         conn = pymysql.connect(self.host, self.user, self.password, self.db)
         job_list = []
+        if not isinstance(macs, list):
+            macs = [macs]
+
         try:
             with conn.cursor() as cursor:
-                sql = '''SELECT * FROM jobs_table WHERE umachine_no = %s'''
+                sql = '''SELECT * FROM jobs_table WHERE umachine_no IN %s'''
+                cursor.execute(sql, (macs,))
+                for row in cursor:
+                    job_list.append(row)
+        except pymysql.DatabaseError as error:
+            self.logger.error(sys._getframe().f_code.co_name, error)
+        finally:
+            conn.close()
+            return job_list
+
+    def get_jobs_for_like(self, mac):
+        conn = pymysql.connect(self.host, self.user, self.password, self.db)
+        job_list = []
+        mac = mac + '%'
+
+        try:
+            with conn.cursor() as cursor:
+                sql = '''SELECT * FROM jobs_table WHERE umachine_no LIKE %s'''
                 cursor.execute(sql, (mac,))
                 for row in cursor:
                     job_list.append(row)

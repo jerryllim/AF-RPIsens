@@ -171,7 +171,7 @@ class NetworkManager:
         # TODO retrive mac from server settings
         for ip in self.settings.get_ips():
             mac = self.settings.get_mac(ip)
-            job_list = self.database_manager.get_jobs_for(mac)
+            job_list = self.database_manager.get_jobs_for_in(mac)
             self.request(ip, {'job_info': job_list})
 
     def schedule_jam(self, interval=5):
