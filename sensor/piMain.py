@@ -219,7 +219,7 @@ class PiController:
                 for key in recv_dict.keys():
                     if key == "jam":
                         reply_dict["jam"] = self.get_counts()
-                    elif key == "job_info":
+                    elif key == "job_list":
                         job_list = recv_dict.pop(key)
                         self.database_manager.renew_jobs_table(job_list)
                     elif key == "emp":
