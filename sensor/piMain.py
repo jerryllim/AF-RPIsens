@@ -203,6 +203,11 @@ class PiController:
         self.respondent = self.context.socket(zmq.DEALER)
         self.respondent.setsockopt(zmq.LINGER, 0)
         self.respondent.setsockopt_string(zmq.IDENTITY, self.self_add)
+        self.respondent.setsockopt(zmq.IMMEDIATE, 1)
+        self.respondent.setsockopt(zmq.TCP_KEEPALIVE, 1)
+        self.respondent.setsockopt(zmq.TCP_KEEPALIVE_IDLE, 1)
+        self.respondent.setsockopt(zmq.TCP_KEEPALIVE_CNT, 60)
+        self.respondent.setsockopt(zmq.TCP_KEEPALIVE_INTVL, 60)
         self.respondent.bind("tcp://{}:{}".format(self.self_add, self.self_port))
         self.logger.debug('Created respondent socket for request')
 
@@ -231,7 +236,12 @@ class PiController:
     def dealer_routine(self):
         ip_port = "{}:{}".format(self.server_add, self.server_port)
         self.dealer = self.context.socket(zmq.DEALER)
-        self.dealer.setsockopt_string(zmq.IDENTITY, self.self_add)
+        # self.dealer.setsockopt_string(zmq.IDENTITY, self.self_add)
+        self.dealer.setsockopt(zmq.IMMEDIATE, 1)
+        self.dealer.setsockopt(zmq.TCP_KEEPALIVE, 1)
+        self.dealer.setsockopt(zmq.TCP_KEEPALIVE_IDLE, 1)
+        self.dealer.setsockopt(zmq.TCP_KEEPALIVE_CNT, 60)
+        self.dealer.setsockopt(zmq.TCP_KEEPALIVE_INTVL, 60)
         self.dealer.connect("tcp://{}".format(ip_port))
         self.logger.debug('Created dealer socket for request {}'.format(ip_port))
 

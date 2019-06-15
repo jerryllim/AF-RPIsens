@@ -234,7 +234,7 @@ class DatabaseManager:
                     cursor.execute(query)
                 return_list = cursor.fetchall()
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
             conn.rollback()
         finally:
             conn.close()
@@ -275,7 +275,7 @@ class DatabaseManager:
 
                 conn.commit()
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
             conn.rollback()
         finally:
             conn.close()
@@ -311,7 +311,7 @@ class DatabaseManager:
                 conn.commit()
                 self.logger.debug('Inserted jam for {}'.format(ip))
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
             conn.rollback()
         finally:
             conn.close()
@@ -359,7 +359,7 @@ class DatabaseManager:
                 cursor.execute(query, (start, end))
                 output_list = cursor.fetchall()
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
             conn.rollback()
         finally:
             conn.close()
@@ -389,7 +389,7 @@ class DatabaseManager:
                 cursor.execute(query2, (day_date,))
                 conn.commit()
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
             conn.rollback()
             self.logger.warning('Unable to transfer table from current to prev')
         finally:
@@ -415,7 +415,7 @@ class DatabaseManager:
                 cursor.execute(query2, (day_date,))
                 conn.commit()
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
             conn.rollback()
             self.logger.warning('Unable to transfer table from prev to past')
         finally:
@@ -438,7 +438,7 @@ class DatabaseManager:
                 cursor.execute(sql)
                 conn.commit()
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
         finally:
             conn.close()
 
@@ -451,7 +451,7 @@ class DatabaseManager:
                 cursor.execute(sql, (emp_id, emp_name, emp_name))
                 conn.commit()
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
             conn.rollback()
         finally:
             conn.close()
@@ -467,7 +467,7 @@ class DatabaseManager:
 
                 conn.commit()
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
             conn.rollback()
         finally:
             conn.close()
@@ -485,7 +485,7 @@ class DatabaseManager:
                 cursor.execute(sql)
                 conn.commit()
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
             conn.rollback()
         finally:
             conn.close()
@@ -500,7 +500,7 @@ class DatabaseManager:
                 cursor.execute(sql)
                 conn.commit()
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
             conn.rollback()
         finally:
             conn.close()
@@ -516,7 +516,7 @@ class DatabaseManager:
                 cursor.execute(sql)
                 emp_list = cursor.fetchall()
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
         finally:
             conn.close()
             return emp_list
@@ -534,7 +534,7 @@ class DatabaseManager:
                 cursor.execute(sql, timestamp)
                 emp_list = cursor.fetchall()
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
         finally:
             conn.close()
             return emp_list
@@ -575,7 +575,7 @@ class DatabaseManager:
                 cursor.execute(sql)
                 conn.commit()
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
         finally:
             conn.close()
 
@@ -601,7 +601,7 @@ class DatabaseManager:
                     cursor.execute(query, job_info)
                     conn.commit()
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
             conn.rollback()
         finally:
             conn.close()
@@ -615,7 +615,7 @@ class DatabaseManager:
                 cursor.execute(query)
                 conn.commit()
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
             conn.rollback()
         finally:
             conn.close()
@@ -630,7 +630,7 @@ class DatabaseManager:
                 cursor.execute(query)
                 conn.commit()
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
             conn.rollback()
         finally:
             conn.close()
@@ -650,7 +650,7 @@ class DatabaseManager:
 
             conn.commit()
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
         finally:
             conn.close()
             return reply_list
@@ -665,7 +665,7 @@ class DatabaseManager:
                 cursor.execute(sql, [uno, uline])
                 umc = cursor.fetchone()[0]
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
         finally:
             conn.close()
 
@@ -679,7 +679,7 @@ class DatabaseManager:
                 query = "UPDATE jobs_table SET usfc_qty = usfc_qty + %s WHERE uno = %s AND uline = %s;"
                 cursor.execute(query, (usfc_qty, uno, uline))
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
             conn.rollback()
         finally:
             conn.close()
@@ -697,7 +697,7 @@ class DatabaseManager:
                 for row in cursor:
                     job_list.append(row)
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
         finally:
             conn.close()
             return job_list
@@ -714,7 +714,7 @@ class DatabaseManager:
                 for row in cursor:
                     job_list.append(row)
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
         finally:
             conn.close()
             return job_list
@@ -739,7 +739,7 @@ class DatabaseManager:
                 cursor.execute(query)
                 conn.commit()
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
         finally:
             conn.close()
 
@@ -766,7 +766,7 @@ class DatabaseManager:
 
                 conn.commit()
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
         finally:
             conn.close()
 
@@ -786,7 +786,7 @@ class DatabaseManager:
                 cursor.execute(query)
                 conn.commit()
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
         finally:
             conn.close()
 
@@ -804,7 +804,7 @@ class DatabaseManager:
 
                 conn.commit()
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
         finally:
             conn.close()
 
@@ -824,7 +824,7 @@ class DatabaseManager:
                 cursor.execute(query)
                 conn.commit()
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
         finally:
             conn.close()
 
@@ -844,7 +844,7 @@ class DatabaseManager:
 
                 conn.commit()
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
         finally:
             conn.close()
 
@@ -899,7 +899,7 @@ class DatabaseManager:
                 cursor.execute(sql)
                 conn.commit()
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
         finally:
             conn.close()
 
@@ -921,7 +921,7 @@ class DatabaseManager:
                 cursor.executemany(sql, pis_row)
             conn.commit()
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
             conn.rollback()
         finally:
             conn.close()
@@ -938,7 +938,7 @@ class DatabaseManager:
                 cursor.execute(sql, pi_row)
                 conn.commit()
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
             conn.rollback()
         else:
             replaced = True
@@ -959,7 +959,7 @@ class DatabaseManager:
                 last_update = cursor.fetchone()[0]
             conn.commit()
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
             conn.rollback()
         finally:
             conn.close()
@@ -976,7 +976,7 @@ class DatabaseManager:
                 cursor.execute(sql, [ip, ])
                 conn.commit()
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
             conn.rollback()
         finally:
             conn.close()
@@ -994,7 +994,7 @@ class DatabaseManager:
                     row['port'] = str(row['port'])
                     pis_dict[ip] = row
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
             conn.rollback()
         finally:
             conn.close()
@@ -1023,7 +1023,7 @@ class DatabaseManager:
                 cursor.execute(sql)
                 conn.commit()
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
         finally:
             conn.close()
 
@@ -1037,7 +1037,7 @@ class DatabaseManager:
                 cursor.execute(sql, machine_row)
                 conn.commit()
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
             conn.rollback()
         finally:
             conn.close()
@@ -1052,7 +1052,7 @@ class DatabaseManager:
                 cursor.executemany(sql, machines)
                 conn.commit()
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
             conn.rollback()
         finally:
             conn.close()
@@ -1070,7 +1070,7 @@ class DatabaseManager:
                 cursor.executemany(sql, machine_rows)
                 conn.commit()
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
             conn.rollback()
         finally:
             conn.close()
@@ -1087,7 +1087,7 @@ class DatabaseManager:
                 for row in cursor:
                     headers_list.append(row[0])
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
             conn.rollback()
         finally:
             conn.close()
@@ -1104,7 +1104,7 @@ class DatabaseManager:
                 cursor.execute(sql)
                 machines_list = cursor.fetchall()
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
             conn.rollback()
         finally:
             conn.close()
@@ -1122,7 +1122,7 @@ class DatabaseManager:
                 for row in cursor:
                     machines_list.append(row[0])
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
             conn.rollback()
         finally:
             conn.close()
@@ -1144,7 +1144,7 @@ class DatabaseManager:
                 for row in cursor:
                     targets_dict[row[0]] = row[1]
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
             conn.rollback()
         finally:
             conn.close()
@@ -1173,7 +1173,7 @@ class DatabaseManager:
                 cursor.execute(sql)
                 conn.commit()
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
         finally:
             conn.close()
 
@@ -1187,7 +1187,7 @@ class DatabaseManager:
                 cursor.execute(sql, sfu)
                 conn.commit()
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
         finally:
             conn.close()
 
@@ -1203,7 +1203,7 @@ class DatabaseManager:
                 for row in cursor:
                     headers_list.append(row[0])
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
             conn.rollback()
         finally:
             conn.close()
@@ -1232,7 +1232,7 @@ class DatabaseManager:
                 cursor.execute(query)
                 sfu_list = cursor.fetchall()
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
             conn.rollback()
         finally:
             conn.close()

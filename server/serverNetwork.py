@@ -53,6 +53,11 @@ class NetworkManager:
             self.router_send.close()
         self.router_send = self.context.socket(zmq.ROUTER)
         self.router_send.setsockopt(zmq.LINGER, 0)
+        self.router_send.setsockopt(zmq.IMMEDIATE, 1)
+        self.router_send.setsockopt(zmq.TCP_KEEPALIVE, 1)
+        self.router_send.setsockopt(zmq.TCP_KEEPALIVE_IDLE, 1)
+        self.router_send.setsockopt(zmq.TCP_KEEPALIVE_CNT, 60)
+        self.router_send.setsockopt(zmq.TCP_KEEPALIVE_INTVL, 60)
         # connect to all the ports
         for ip, port in self.settings.get_ips_ports():
             self.router_send.connect("tcp://{}:{}".format(ip, port))
@@ -70,7 +75,7 @@ class NetworkManager:
                 temp_dict.update(json.loads(recv_bytes.decode()))
                 temp_dict['ip'] = id_from.decode()
             except IOError as error:
-                self.logger.debug("{} Problem with socket: ".format(now), error)
+                self.logger.debug("{} Problem with socket: {}".format(now, error))
         else:
             self.logger.debug("{} Machine ({}) is not connected".format(now, id_to))
 
@@ -79,13 +84,20 @@ class NetworkManager:
     def router_routine(self):
         port_number = "{}:{}".format(self.self_add, self.settings.config.get('Network', 'port'))
         self.router_recv = self.context.socket(zmq.ROUTER)
+        self.router_recv.setsockopt(zmq.IMMEDIATE, 1)
+        self.router_recv.setsockopt(zmq.TCP_KEEPALIVE, 1)
+        self.router_recv.setsockopt(zmq.TCP_KEEPALIVE_IDLE, 1)
+        self.router_recv.setsockopt(zmq.TCP_KEEPALIVE_CNT, 60)
+        self.router_recv.setsockopt(zmq.TCP_KEEPALIVE_INTVL, 60)
         self.router_recv.bind("tcp://%s" % port_number)
 
     def route(self):
         while not self.router_kill.is_set():
             if self.router_recv.poll(100):
                 id_from, recv_msg = self.router_recv.recv_multipart()
-                ip = id_from.decode()
+                print(id_from)
+                ip = "test"
+                # ip = id_from.decode()
                 message = json.loads(recv_msg.decode())
                 self.logger.debug("Received message {} from {}".format(message, ip))
                 # ident = self.router_recv.recv_string()  # routing information
@@ -105,8 +117,8 @@ class NetworkManager:
                     elif key == "ping":
                         reply_dict["pong"] = 1
 
-                self.logger.debug("Replying with,", reply_dict)
-                self.router_recv.send_multipart([ip.encode(), (json.dumps(reply_dict)).encode()])
+                self.logger.debug("Replying with {}".format(reply_dict))
+                self.router_recv.send_multipart([id_from, (json.dumps(reply_dict)).encode()])
                 # self.router_recv.send(ident, zmq.SNDMORE)
                 # self.router_recv.send(delimiter, zmq.SNDMORE)
                 # self.router_recv.send_json(reply_dict)
@@ -162,7 +174,7 @@ class NetworkManager:
                 self.database_manager.insert_jam(machine_ip, jam_msg)
 
             except IOError as error:
-                self.logger.error("Problem with socket: ".format(now), error)
+                self.logger.error("Problem with socket: {}".format(now, error))
 
         if ip_list:
             self.logger.info('Machine(s) {} did not reply.'.format(ip_list))
