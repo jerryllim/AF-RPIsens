@@ -90,6 +90,8 @@ class NetworkManager:
         self.router_recv.setsockopt(zmq.TCP_KEEPALIVE_IDLE, 1)
         self.router_recv.setsockopt(zmq.TCP_KEEPALIVE_CNT, 60)
         self.router_recv.setsockopt(zmq.TCP_KEEPALIVE_INTVL, 60)
+        self.router_recv.setsockopt(zmq.ROUTER_MANDATORY, 1)
+        self.router_recv.setsockopt(zmq.ROUTER_HANDOVER, 1)
         self.router_recv.bind("tcp://%s" % port_number)
 
     def route(self):

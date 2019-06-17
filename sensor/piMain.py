@@ -238,7 +238,7 @@ class PiController:
     def dealer_routine(self):
         ip_port = "{}:{}".format(self.server_add, self.server_port)
         self.dealer = self.context.socket(zmq.DEALER)
-        # self.dealer.setsockopt_string(zmq.IDENTITY, self.self_add)
+        self.dealer.setsockopt_string(zmq.IDENTITY, self.self_add)
         self.dealer.setsockopt(zmq.IMMEDIATE, 1)
         self.dealer.setsockopt(zmq.TCP_KEEPALIVE, 1)
         self.dealer.setsockopt(zmq.TCP_KEEPALIVE_IDLE, 1)
