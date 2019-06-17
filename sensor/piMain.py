@@ -306,7 +306,6 @@ class PiController:
                 else:
                     job_info = {}
 
-        self.logger.debug("Get job info returning {}".format(str(job_info)))
         return job_info
 
     def pipe_routine(self):
