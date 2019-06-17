@@ -1048,12 +1048,13 @@ class PiGUIApp(App):
 
         if sys.platform.startswith('linux'):
             self.controller = piMain.PiController(self)
-            self.logger.debug("Using PiController (platform: {})".format(sys.platform))
+        else:
+            self.controller = FakeClass(self)  # TODO set if testing
+
+        self.logger.debug("Using platform: {}".format(sys.platform))
 
         for idx in range(1, 4):
             self.machines[idx] = MachineClass(idx, self.controller, self.config)
-        else:
-            self.controller = FakeClass(self)  # TODO set if testing
 
         self.use_kivy_settings = False
 

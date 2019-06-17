@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="8c4eab11-9431-48ea-8992-fef6a6e722be" name="Default" comment="Reduced labels (populate in init) &amp; created NumericProperty for counter">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/sensor/piGUI.py" beforeDir="false" afterPath="$PROJECT_DIR$/sensor/piGUI.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sensor/piMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/sensor/piMain.py" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -22,8 +22,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/sensor/piGUI.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="247">
-                  <caret line="1049" column="55" lean-forward="true" selection-start-line="1049" selection-start-column="55" selection-end-line="1049" selection-end-column="55" />
+                <state relative-caret-position="226">
+                  <caret line="1052" column="12" selection-start-line="1052" selection-start-column="12" selection-end-line="1052" selection-end-column="12" />
                 </state>
               </provider>
             </entry>
@@ -65,8 +65,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/sensor/piMain.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="231">
-                  <caret line="264" column="40" selection-start-line="264" selection-start-column="40" selection-end-line="264" selection-end-column="40" />
+                <state relative-caret-position="407">
+                  <caret line="308" column="49" selection-start-line="308" selection-start-column="49" selection-end-line="308" selection-end-column="49" />
                 </state>
               </provider>
             </entry>
@@ -147,14 +147,12 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>update_job</find>
       <find>insert_em</find>
       <find>get_sfus</find>
       <find>replace_emp</find>
       <find>insert_emp</find>
       <find>emp_</find>
       <find>replace_jobs</find>
-      <find>get_</find>
       <find>get_sfu_</find>
       <find>get_cron</find>
       <find>transfer</find>
@@ -177,6 +175,8 @@
       <find>get_ke</find>
       <find>self.logger</find>
       <find>server did</find>
+      <find>get_</find>
+      <find>get_job</find>
     </findStrings>
     <replaceStrings>
       <replace>TMessage</replace>
@@ -1014,15 +1014,15 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/sensor/piMain.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="231">
-          <caret line="264" column="40" selection-start-line="264" selection-start-column="40" selection-end-line="264" selection-end-column="40" />
+        <state relative-caret-position="407">
+          <caret line="308" column="49" selection-start-line="308" selection-start-column="49" selection-end-line="308" selection-end-column="49" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/sensor/piGUI.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="247">
-          <caret line="1049" column="55" lean-forward="true" selection-start-line="1049" selection-start-column="55" selection-end-line="1049" selection-end-column="55" />
+        <state relative-caret-position="226">
+          <caret line="1052" column="12" selection-start-line="1052" selection-start-column="12" selection-end-line="1052" selection-end-column="12" />
         </state>
       </provider>
     </entry>
