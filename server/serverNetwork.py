@@ -6,6 +6,7 @@ import socket
 import logging
 import datetime
 import threading
+import serverDatabase
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.schedulers.background import BackgroundScheduler
 
@@ -17,7 +18,7 @@ class NetworkManager:
     scheduler = None
     scheduler_jobs = {}
 
-    def __init__(self, settings, database_manager):
+    def __init__(self, settings, db_dict):
         # Logger setup
         self.logger = logging.getLogger('jamSERVER')
         self.logger.setLevel(logging.DEBUG)
@@ -35,7 +36,7 @@ class NetworkManager:
         self.self_add = self.get_ip_add()
         self.context = zmq.Context()
         self.settings = settings
-        self.database_manager = database_manager
+        self.database_manager = serverDatabase.DatabaseManager(settings, **db_dict)
         self.router_routine()
         self.setup_router_send()
         self.router_kill = threading.Event()
@@ -95,16 +96,14 @@ class NetworkManager:
         while not self.router_kill.is_set():
             if self.router_recv.poll(100):
                 id_from, recv_msg = self.router_recv.recv_multipart()
-                print(id_from)
-                ip = "test"
                 # ip = id_from.decode()
                 message = json.loads(recv_msg.decode())
+                ip = message.get("ip", None)
                 self.logger.debug("Received message {} from {}".format(message, ip))
                 # ident = self.router_recv.recv_string()  # routing information
                 # delimiter = self.router_recv.recv()  # delimiter
                 # message = self.router_recv.recv_json()
                 reply_dict = {}
-                self.logger.debug("Received message {} from {}".format(message, ip))
 
                 for key in message.keys():
                     if key == "job_info":

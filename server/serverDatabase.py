@@ -68,11 +68,11 @@ class Settings:
 
 
 class AutomateSchedulers:
-    def __init__(self, settings: Settings, database_manager):
+    def __init__(self, settings: Settings, db_dict):
         self.logger = logging.getLogger('jamSERVER')
 
         self.settings = settings
-        self.database_manager = database_manager
+        self.database_manager = DatabaseManager(settings, **db_dict)
         self.scheduler_jobs = {}
         self.scheduler = BackgroundScheduler()
         # self.scheduler.start()

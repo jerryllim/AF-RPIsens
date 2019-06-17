@@ -1208,16 +1208,21 @@ class JamMainWindow(QtWidgets.QMainWindow):
             else:
                 exit()
 
+        db_dict = {}
+        for key in ['host', 'port', 'user', 'password', 'db']:
+            db_dict[key] = config.get('Database', key)
+
         self.settings = serverDatabase.Settings()
-        self.database_manager = serverDatabase.DatabaseManager(self.settings, host=config.get('Database', 'host'),
-                                                               port=config.get('Database', 'port'),
-                                                               user=config.get('Database', 'user'),
-                                                               password=config.get('Database', 'password'),
-                                                               db=config.get('Database', 'db'))
-        self.network_manager = serverNetwork.NetworkManager(self.settings, self.database_manager)
-        self.scheduler = serverDatabase.AutomateSchedulers(self.settings, self.database_manager)
-        self.scheduler.schedule_export()
-        self.scheduler.schedule_import()
+        self.database_manager = serverDatabase.DatabaseManager(self.settings, **db_dict)
+        # self.database_manager = serverDatabase.DatabaseManager(self.settings, host=config.get('Database', 'host'),
+        #                                                        port=config.get('Database', 'port'),
+        #                                                        user=config.get('Database', 'user'),
+        #                                                        password=config.get('Database', 'password'),
+        #                                                        db=config.get('Database', 'db'))
+        self.network_manager = serverNetwork.NetworkManager(self.settings, db_dict)
+        self.scheduler = serverDatabase.AutomateSchedulers(self.settings, db_dict)
+        # self.scheduler.schedule_export()
+        # self.scheduler.schedule_import()
 
         self.tab_widget = QtWidgets.QTabWidget()
         self.display_table = DisplayTable(self, self.database_manager)
