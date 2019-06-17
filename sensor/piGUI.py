@@ -1046,11 +1046,11 @@ class PiGUIApp(App):
         # self.check_camera()
         self.config.set('Network', 'self_add', self.get_ip_add())
 
-        for idx in range(1, 4):
-            self.machines[idx] = MachineClass(idx, self.controller, self.config)
-
         if sys.platform.startswith('linux'):
             self.controller = piMain.PiController(self)
+
+        for idx in range(1, 4):
+            self.machines[idx] = MachineClass(idx, self.controller, self.config)
         else:
             self.controller = FakeClass(self)  # TODO set if testing
 

@@ -115,10 +115,16 @@ class PiController:
         # Floor to nearest interval (default = 5)
         now = now - datetime.timedelta(minutes=now.minute % interval)
 
-        if not emp:
-            emp = self.gui.machines[idx].get_emp()
+        try:
+            if not emp:
+                emp = self.gui.machines[idx].get_emp()
 
-        jo_no = self.gui.machines[idx].get_jo_no()
+            jo_no = self.gui.machines[idx].get_jo_no()
+
+        except KeyError as error:
+            self.logger.warning("Key error in get_key: {}".format(error))
+            emp = None
+            jo_no = ''
 
         return '{0}_{1}_{2}'.format(emp, jo_no, now.strftime('%d%H%M'))
 
