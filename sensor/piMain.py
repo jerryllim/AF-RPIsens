@@ -40,7 +40,9 @@ class PiController:
         # Logger setup
         self.logger = logging.getLogger('JAM')
         self.logger.setLevel(logging.DEBUG)
-        file_handler = logging.FileHandler('jam.log')
+        now = datetime.datetime.now()
+        log_file = 'jam{}.log'.format(now.strftime('%y%m%d_%H%M'))
+        file_handler = logging.FileHandler(log_file)
         file_handler.setLevel(logging.DEBUG)
         log_format = logging.Formatter('%(asctime)s - %(threadName)s - %(levelname)s: %(module)s - %(message)s')
         file_handler.setFormatter(log_format)

@@ -1,3 +1,10 @@
 #!/bin/bash
+
 cd /home/pi/JAM
-/usr/bin/python3 piGUI.py
+mkdir -p "/home/pi/jam_logs"
+/usr/bin/find /home/pi/JAM -type f -name 'log*.txt' -mtime +7 -exec mv {} /home/pi/jam_logs/ \;
+/usr/bin/find /home/pi/JAM -type f -name 'jam*.log' -mtime +7 -exec mv {} /home/pi/jam_logs/ \;
+/usr/bin/find /home/pi/jam_logs/ -type f -name 'log*.txt' -mtime +30 -exec rm {} \;
+/usr/bin/find /home/pi/jam_logs/ -type f -name 'jam*.log' -mtime +30 -exec rm {} \;
+DATE=`date '+%Y%m%d_%H%M'`
+/usr/bin/python3 piGUI.py >> "log$DATE.txt" 2>&1
