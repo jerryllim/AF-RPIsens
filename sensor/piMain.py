@@ -260,7 +260,7 @@ class PiController:
         self.dealer_routine()
 
         timeout = self.TIMEOUT
-        msg_dict['ip'] = self.self_add
+        # msg_dict['ip'] = self.self_add
         recv_msg = None
         # Try 3 times, each waiting for 2 seconds for reply from server
         self.logger.debug('Sending request to server')

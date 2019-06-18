@@ -287,7 +287,7 @@ class DatabaseManager:
         try:
             with conn.cursor() as cursor:
                 # Update the 'last_update' in pis_table (to know if there's no reply from a pi)
-                cursor.execute("UPDATE pis_table SET last_update = NOW() WHERE ip = '{}';".format(ip))
+                cursor.execute("UPDATE pis_table SET ludt_to = NOW() WHERE ip = '{}';".format(ip))
                 for recv_id, recv_info in recv_dict.items():
                     emp, job, time_str = recv_id.split('_', 3)
                     recv_time = datetime.strptime(time_str, '%d%H%M')
@@ -894,7 +894,9 @@ class DatabaseManager:
                       'B33 varchar(6) DEFAULT NULL, ' \
                       'B43 varchar(6) DEFAULT NULL, ' \
                       'B53 varchar(6) DEFAULT NULL, ' \
-                      'last_update timestamp DEFAULT NULL, ' \
+                      'ludt_to timestamp DEFAULT NULL, ' \
+                      'ludt_fr timestamp DEFAULT NULL, ' \
+                      'ludt_jobs timestamp DEFAULT NULL, ' \
                       'PRIMARY KEY (ip) );'
                 cursor.execute(sql)
                 conn.commit()
@@ -999,6 +1001,21 @@ class DatabaseManager:
         finally:
             conn.close()
             return pis_dict
+
+    def update_ludt_fr(self, ip):
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
+                               database=self.db, port=self.port)
+
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute("UPDATE pis_table SET ludt_fr = NOW() WHERE ip = '{}';".format(ip))
+                conn.commit()
+        except pymysql.DatabaseError as error:
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
+            conn.rollback()
+        finally:
+            conn.close()
+
 
     def create_machines_table(self):
         conn = pymysql.connect(host=self.host, user=self.user, password=self.password,

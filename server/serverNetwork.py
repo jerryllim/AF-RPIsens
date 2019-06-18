@@ -98,13 +98,10 @@ class NetworkManager:
         while not self.router_kill.is_set():
             if self.router_recv.poll(100):
                 id_from, recv_msg = self.router_recv.recv_multipart()
-                # ip = id_from.decode()
+                ip = id_from.decode()
                 message = json.loads(recv_msg.decode())
-                ip = message.get("ip", None)
+                # ip = message.get("ip", None)
                 self.logger.debug("Received message {} from {}".format(message, ip))
-                # ident = self.router_recv.recv_string()  # routing information
-                # delimiter = self.router_recv.recv()  # delimiter
-                # message = self.router_recv.recv_json()
                 reply_dict = {}
 
                 for key in message.keys():
@@ -118,6 +115,7 @@ class NetworkManager:
                     elif key == "ping":
                         reply_dict["pong"] = 1
 
+                self.database_manager.update_ludt_fr(ip)
                 self.logger.debug("Replying with {}".format(reply_dict))
                 self.router_recv.send_multipart([id_from, (json.dumps(reply_dict)).encode()])
                 # self.router_recv.send(ident, zmq.SNDMORE)
