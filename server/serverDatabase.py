@@ -49,6 +49,15 @@ class Settings:
         else:
             return None
 
+    def get_macs(self, ip):
+        l = []
+        if self.machines_info.get(ip):
+            for idx in range(1, 4):
+                l.append(self.machines_info[ip]['mac{}'.format(idx)])
+            return l
+        else:
+            return None
+
     def get_machine(self, ip, idx):
         if self.machines_info.get(ip):
             return self.machines_info[ip]['machine{}'.format(idx)]
@@ -684,7 +693,7 @@ class DatabaseManager:
         finally:
             conn.close()
 
-    def get_jobs_for_in(self, macs):
+    def get_jobs_for_in(self, macs, dt=None):
         conn = pymysql.connect(self.host, self.user, self.password, self.db)
         job_list = []
         if not isinstance(macs, list):
@@ -692,7 +701,9 @@ class DatabaseManager:
 
         try:
             with conn.cursor() as cursor:
-                sql = '''SELECT * FROM jobs_table WHERE umachine_no IN %s'''
+                sql = "SELECT uno, uline, ustk, ustk_desc1, usch_qty, usfc_qty FROM jobs_table WHERE umachine_no IN %s"
+                if dt:
+                    sql = sql + " AND last_modified > '{}';".format(dt)
                 cursor.execute(sql, (macs,))
                 for row in cursor:
                     job_list.append(row)
@@ -702,14 +713,17 @@ class DatabaseManager:
             conn.close()
             return job_list
 
-    def get_jobs_for_like(self, mac):
+    def get_jobs_for_like(self, mac, dt=None):
         conn = pymysql.connect(self.host, self.user, self.password, self.db)
         job_list = []
         mac = mac + '%'
 
         try:
             with conn.cursor() as cursor:
-                sql = '''SELECT * FROM jobs_table WHERE umachine_no LIKE %s'''
+                sql = "SELECT uno, uline, ustk, ustk_desc1, usch_qty, usfc_qty FROM jobs_table WHERE " \
+                      "umachine_no LIKE %s"
+                if dt:
+                    sql = sql + " AND last_modified > '{}';".format(dt)
                 cursor.execute(sql, (mac,))
                 for row in cursor:
                     job_list.append(row)
@@ -910,55 +924,44 @@ class DatabaseManager:
                                database=self.db, port=self.port)
         try:
             with conn.cursor() as cursor:
+                ips = []
+
                 for row in pis_row:
+                    ips.append(row[0])
                     last = self.get_last_updates(row[0])
-                    row.append(last)
+                    if last:
+                        row.append(last[0])
+                        row.append(last[1])
+                        row.append(last[2])
+                    else:
+                        row.append(None)
+                        row.append(None)
+                        row.append(None)
 
-                sql = 'TRUNCATE pis_table;'
-                cursor.execute(sql)
-
-                sql = 'INSERT INTO pis_table VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,' \
-                      ' %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, ' \
-                      '%s);'
+                sql = 'REPLACE INTO pis_table VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, ' \
+                      '%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, ' \
+                      '%s, %s, %s);'
                 cursor.executemany(sql, pis_row)
+
+                sql = "DELETE FROM pis_table WHERE ip NOT IN %s"
+                cursor.execute(sql, (ips,))
             conn.commit()
         except pymysql.DatabaseError as error:
             self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
             conn.rollback()
         finally:
             conn.close()
-
-    def replace_pi(self, pi_row):
-        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
-                               database=self.db, port=self.port)
-        replaced = False
-
-        try:
-            with conn.cursor() as cursor:
-                sql = 'REPLACE INTO pis_table VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,' \
-                      ' %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);'
-                cursor.execute(sql, pi_row)
-                conn.commit()
-        except pymysql.DatabaseError as error:
-            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
-            conn.rollback()
-        else:
-            replaced = True
-        finally:
-            conn.close()
-
-        return replaced
 
     def get_last_updates(self, ip):
         conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
-        last_update = None
+        last_updates = None
 
         try:
             with conn.cursor() as cursor:
-                sql = 'SELECT last_update FROM pis_table WHERE ip = %s'
+                sql = 'SELECT ludt_to, ludt_fr, ludt_jobs FROM pis_table WHERE ip = %s'
                 cursor.execute(sql, [ip, ])
-                last_update = cursor.fetchone()[0]
+                last_updates = cursor.fetchone()
             conn.commit()
         except pymysql.DatabaseError as error:
             self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
@@ -966,7 +969,7 @@ class DatabaseManager:
         finally:
             conn.close()
 
-        return last_update
+        return last_updates
 
     def delete_pi(self, ip):
         conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
@@ -1016,6 +1019,19 @@ class DatabaseManager:
         finally:
             conn.close()
 
+    def update_ludt_jobs(self, ip):
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
+                               database=self.db, port=self.port)
+
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute("UPDATE pis_table SET ludt_jobs = NOW() WHERE ip = '{}';".format(ip))
+                conn.commit()
+        except pymysql.DatabaseError as error:
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
+            conn.rollback()
+        finally:
+            conn.close()
 
     def create_machines_table(self):
         conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
