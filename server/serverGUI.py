@@ -6,6 +6,7 @@ import configparser
 from sys import exit
 import serverNetwork
 import serverDatabase
+from functools import partial
 from PySide2 import QtCore, QtWidgets, QtGui
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -392,7 +393,7 @@ class PisTab(QtWidgets.QWidget):
     def populate_pis(self):
         self.pis_model.clear()
         self.pis_model.setHorizontalHeaderLabels(['Nickname', 'IP Address', 'Port', 'Machine1', 'Machine2', 'Machine3',
-                                                  'last updated'])
+                                                  'lu to', 'lu from', 'lu jobs'])
 
         for ip in self.pis_dict.keys():
             nick_item = QtGui.QStandardItem(self.pis_dict[ip].get('nick'))
@@ -401,11 +402,7 @@ class PisTab(QtWidgets.QWidget):
             machine1_item = QtGui.QStandardItem(self.pis_dict[ip].get('machine1'))
             machine2_item = QtGui.QStandardItem(self.pis_dict[ip].get('machine2'))
             machine3_item = QtGui.QStandardItem(self.pis_dict[ip].get('machine3'))
-            last_update_time = self.database_manager.get_last_updates(ip)
-            if last_update_time:
-                last_update_item = QtGui.QStandardItem(last_update_time.strftime("%d/%m/%y %H:%M"))
-            else:
-                last_update_item = QtGui.QStandardItem('-')
+            last_updates = self.database_manager.get_last_updates(ip)
             index = self.pis_model.rowCount()
             self.pis_model.setItem(index, 0, nick_item)
             self.pis_model.setItem(index, 1, ip_item)
@@ -413,7 +410,15 @@ class PisTab(QtWidgets.QWidget):
             self.pis_model.setItem(index, 3, machine1_item)
             self.pis_model.setItem(index, 4, machine2_item)
             self.pis_model.setItem(index, 5, machine3_item)
-            self.pis_model.setItem(index, 6, last_update_item)
+
+            if last_updates:
+                for idx, ludt in enumerate(last_updates[:3]):
+                    if ludt:
+                        item = QtGui.QStandardItem(ludt.strftime("%d/%m/%y %H:%M"))
+                    else:
+                        item = QtGui.QStandardItem('-')
+
+                    self.pis_model.setItem(index, (6 + idx), item)
 
     def machine_in_use(self, machine):
         for ip in self.pis_dict.keys():
@@ -676,6 +681,7 @@ class MiscTab(QtWidgets.QWidget):
         network_layout.addWidget(poll_spinbox, 2, 1)
         network_layout.addWidget(dur_label2, 2, 2)
         req_btn = QtWidgets.QPushButton('Request now', network_box)
+        # req_btn.clicked.connect(partial(self.parent().parent().network_manager.request_for, "jam", "all", "jam"))
         req_btn.clicked.connect(self.parent().parent().network_manager.request_jam)
         network_layout.setAlignment(QtCore.Qt.AlignLeft)
         network_layout.addWidget(req_btn, 2, 3)
