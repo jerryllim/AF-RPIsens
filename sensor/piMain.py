@@ -227,7 +227,6 @@ class PiController:
                 recv_dict = json.loads(recv_message)
                 # reply_dict = {'ip': self.self_add}
                 reply_dict = {}
-                self.logger.debug('Replying to server')
 
                 for key in recv_dict.keys():
                     if key == "jam":
@@ -345,7 +344,6 @@ class PiController:
                 # Update ping if successful replied
                 if reply is not None:
                     self.ping_at = time.time() + 60*self.PING_INTERVAL
-                self.logger.debug("Reply received from request(): {}".format(reply))
 
                 self.pipe_a.send_json(reply)
 
