@@ -416,13 +416,14 @@ class DatabaseManager:
         cursor = db.cursor()
         try:
             cursor.execute("CREATE TABLE IF NOT EXISTS jobs_table "
-                           "(jo_no INTEGER NOT NULL, "
-                           "jo_line INTEGER NOT NULL, "
-                           "code TEXT NOT NULL, "
-                           "desc TEXT NOT NULL, "
-                           "to_do INTEGER NOT NULL, "
-                           "ran INTEGER NOT NULL, "
-                           "PRIMARY KEY(jo_no, jo_line));")
+                           "(uno TEXT NOT NULL, "
+                           "uline INTEGER NOT NULL, "
+                           "ustk TEXT NOT NULL, "
+                           "ustk_desc1 TEXT NOT NULL, "
+                           "usch_qty INTEGER NOT NULL, "
+                           "usfc_qty INTEGER NOT NULL, "
+                           "ludt "
+                           "PRIMARY KEY(uno, uline));")
             db.commit()
         finally:
             db.close()
@@ -440,7 +441,16 @@ class DatabaseManager:
         db = sqlite3.connect(self.database)
         cursor = db.cursor()
         try:
-            cursor.executemany("REPLACE INTO jobs_table VALUES (?, ?, ?, ?, ?, ?);", jobs_list)
+            cursor.executemany("REPLACE INTO jobs_table VALUES (?, ?, ?, ?, ?, ?, datetime('now', 'localtime'));", jobs_list)
+            db.commit()
+        finally:
+            db.close()
+
+    def delete_old_jobs(self):
+        db = sqlite3.connect(self.database)
+        cursor = db.cursor()
+        try:
+            cursor.execute("DELETE FROM jobs_table WHERE ludt <= datetime('now', 'locatime', '-7 days';")
             db.commit()
         finally:
             db.close()
