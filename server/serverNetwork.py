@@ -68,7 +68,10 @@ class NetworkManager:
     def request(self, id_to, msg):
         temp_dict = {}
         to_send = [id_to.encode(), (json.dumps(msg)).encode()]
-        self.router_send.send_multipart(to_send)
+        try:
+            self.router_send.send_multipart(to_send)
+        except zmq.ZMQError as error:
+            self.logger.warning("Error {} for ip {}".format(error, id_to))
 
         now = datetime.datetime.now().isoformat()
 
@@ -81,6 +84,8 @@ class NetworkManager:
                 self.logger.debug("{} Problem with socket: {}".format(now, error))
         else:
             self.logger.debug("{} Machine ({}) is not connected".format(now, id_to))
+            port = self.settings.get_port_for(id_to)
+            self.router_send.connect("tcp://{}:{}".format(id_to, port))
 
         return temp_dict
 
@@ -140,7 +145,10 @@ class NetworkManager:
         ip_list = self.settings.get_ips()
         for ip in ip_list:
             to_send = [ip.encode(), (json.dumps({'jam': 0})).encode()]
-            self.router_send.send_multipart(to_send)
+            try:
+                self.router_send.send_multipart(to_send)
+            except zmq.ZMQError as error:
+                self.logger.warning("Error {} for ip {}".format(error, ip))
 
         time.sleep(1)
 
@@ -178,11 +186,12 @@ class NetworkManager:
                 self.logger.error("Problem with socket: {}".format(now, error))
 
         if ip_list:
-            self.logger.info('Machine(s) {} did not reply. Will try to reconnect'.format(ip_list))
+            self.logger.info('Machine(s) {} did not reply.'.format(ip_list))
 
         for ip in ip_list:
             port = self.settings.get_port_for(ip)
             self.router_send.connect("tcp://{}:{}".format(ip, port))
+            self.logger.info("Reconnecting to {}:{}".format(ip, port))
 
     def send_job_info(self):
         # TODO retrive mac from server settings
