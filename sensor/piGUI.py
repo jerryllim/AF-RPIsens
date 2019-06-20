@@ -310,9 +310,12 @@ class SelectPage(Screen):
 
         self.scan_btn.disabled = False
         App.get_running_app().action_bar.disabled = False
-        self.timeout.cancel()
-        self.camera_event.cancel()
-        self.cam.release()
+        if self.timeout:
+            self.timeout.cancel()
+        if self.camera_event:
+            self.camera_event.cancel()
+        if self.cam:
+            self.cam.release()
 
     def show_image(self, frame):
         frame2 = cv2.cvtColor(frame, cv2.COLOR_BGRA2RGB)
@@ -324,9 +327,7 @@ class SelectPage(Screen):
         self.ids['camera_viewer'].texture = image_texture
 
     def start_job(self):
-        self.timeout.cancel()
-        self.camera_event.cancel()
-        self.cam.release()
+        self.stop_checking(0)
 
         barcode = self.ids.job_entry.text
         self.logger.debug('Check for job with barcode {}'.format(barcode))
@@ -637,9 +638,12 @@ class EmployeeScanPage(Popup):
             self.button_box.add_widget(self.alternate_button)
 
     def on_dismiss(self):
-        self.timeout.cancel()
-        self.camera_event.cancel()
-        self.cam.release()
+        if self.timeout:
+            self.timeout.cancel()
+        if self.camera_event:
+            self.camera_event.cancel()
+        if self.cam:
+            self.cam.release()
 
 
 class MaintenancePage(Screen):
