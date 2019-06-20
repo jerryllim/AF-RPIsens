@@ -75,6 +75,12 @@ class Settings:
 
         return ip_port_list
 
+    def get_port_for(self, ip):
+        if self.machines_info.get(ip, None):
+            return self.machines_info[ip].get('port', 7777)
+
+        return 7777
+
 
 class AutomateSchedulers:
     def __init__(self, settings: Settings, db_dict):

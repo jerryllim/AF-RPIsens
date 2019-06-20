@@ -59,6 +59,8 @@ class NetworkManager:
         self.router_send.setsockopt(zmq.TCP_KEEPALIVE_IDLE, 1)
         self.router_send.setsockopt(zmq.TCP_KEEPALIVE_CNT, 60)
         self.router_send.setsockopt(zmq.TCP_KEEPALIVE_INTVL, 60)
+        self.router_send.setsockopt(zmq.ROUTER_MANDATORY, 1)
+        self.router_send.setsockopt(zmq.ROUTER_HANDOVER, 1)
         # connect to all the ports
         for ip, port in self.settings.get_ips_ports():
             self.router_send.connect("tcp://{}:{}".format(ip, port))
@@ -176,7 +178,11 @@ class NetworkManager:
                 self.logger.error("Problem with socket: {}".format(now, error))
 
         if ip_list:
-            self.logger.info('Machine(s) {} did not reply.'.format(ip_list))
+            self.logger.info('Machine(s) {} did not reply. Will try to reconnect'.format(ip_list))
+
+        for ip in ip_list:
+            port = self.settings.get_port_for(ip)
+            self.router_send.connect("tcp://{}:{}".format(ip, port))
 
     def send_job_info(self):
         # TODO retrive mac from server settings
