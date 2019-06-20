@@ -371,10 +371,10 @@ class AdjustmentPage(Screen):
     def on_pre_enter(self, *args):
         if self.machine is not App.get_running_app().get_current_machine():
             self.machine = App.get_running_app().get_current_machine()
-            self.generate_tabs()
 
         self.machine.set_state(State.ADJUSTMENT)
         self.colour = Colour[self.machine.config['bg_colour']].value
+        self.generate_tabs()
 
     def generate_tabs(self):
         self.ids['jo_no'].text = 'JO No.: {}'.format(self.machine.get_jono())
@@ -685,18 +685,17 @@ class RunPage(Screen):
     def on_pre_enter(self, *args):
         if self.machine is not App.get_running_app().get_current_machine():
             self.machine = App.get_running_app().get_current_machine()
-            if self.run_layout is not None:
-                self.remove_widget(self.run_layout)
-            self.run_layout = Factory.RunPageLayout()
-            self.add_widget(self.run_layout)
 
+        if self.run_layout is not None:
+            self.remove_widget(self.run_layout)
+        self.run_layout = Factory.RunPageLayout()
+        self.add_widget(self.run_layout)
         self.run_layout.counter = self.machine.get_current_job().output
         self.run_layout.waste1 = self.machine.get_current_job().wastage['waste1'][0]
         self.run_layout.waste2 = self.machine.get_current_job().wastage['waste2'][0]
         self.machine.get_current_job().bind(output=self.run_layout.setter('counter'))
         self.machine.set_state(State.RUN)
         self.colour = Colour[self.machine.config['bg_colour']].value
-        # TODO set wastage value. Need last QC?
 
     def wastage_popup(self, key, finish=False):
         self.wastagePopup = WastagePopUp(key, self.run_layout.update_waste)

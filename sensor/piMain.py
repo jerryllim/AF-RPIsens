@@ -217,7 +217,7 @@ class PiController:
         self.respondent.setsockopt(zmq.TCP_KEEPALIVE_CNT, 60)
         self.respondent.setsockopt(zmq.TCP_KEEPALIVE_INTVL, 60)
         self.respondent.bind("tcp://{}:{}".format(self.self_add, self.self_port))
-        self.logger.debug('Created respondent socket for request')
+        self.logger.debug('Created respondent socket for request with {}:{}'.format(self.self_add, self.self_port))
 
     def respond(self):
         while not self.respondent_kill.is_set():
@@ -232,14 +232,16 @@ class PiController:
                 for key in recv_dict.keys():
                     if key == "jam":
                         reply_dict["jam"] = self.get_counts()
-                    elif key == "job_list":
+                    elif key == "jobs_list":
                         job_list = recv_dict.pop(key)
-                        self.database_manager.renew_jobs_table(job_list)
+                        self.database_manager.replace_into_jobs_table(job_list)
+                        self.logger.debug("Received jobs")
                     elif key == "emp":
                         emp_list = recv_dict.pop(key)
                         self.update_emp_info(emp_list)
 
                 self.respondent.send_string(json.dumps(reply_dict))
+                self.logger.debug("Received {}, replying with {}".format(recv_dict, reply_dict))
 
     def dealer_routine(self):
         ip_port = "{}:{}".format(self.server_add, self.server_port)
@@ -395,8 +397,8 @@ class DatabaseManager:
     def __init__(self):
         self.logger = logging.getLogger('JAM')
 
-        self.database = 'test.sqlite'  # TODO to change
-        self.create_emp_table()
+        self.database = 'jam.sqlite'  # TODO to change
+        # self.create_emp_table()
         self.create_job_table()
         self.logger.info('Completed DatabaseManager __init__')
 
