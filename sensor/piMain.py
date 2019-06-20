@@ -422,7 +422,7 @@ class DatabaseManager:
                            "ustk_desc1 TEXT NOT NULL, "
                            "usch_qty INTEGER NOT NULL, "
                            "usfc_qty INTEGER NOT NULL, "
-                           "ludt "
+                           "ludt TEXT NOT NULL, "
                            "PRIMARY KEY(uno, uline));")
             db.commit()
         finally:
