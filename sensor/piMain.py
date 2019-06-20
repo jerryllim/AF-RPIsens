@@ -297,16 +297,18 @@ class PiController:
 
     def get_job_info(self, barcode):
         job_info = self.database_manager.get_job_info(barcode)
-        if job_info is None:
-            reply_msg = self.request({"job_info": barcode})
+        if not job_info:
+            reply_msg = self.pipe_talk({"job_info": barcode})
             # reply_msg = self.request({"job_info": barcode})
-            if reply_msg:
+            if isinstance(reply_msg, dict):
                 value = reply_msg.pop(barcode)
                 if value:
                     job_info = {'jo_no': value[0], 'jo_line': value[1], 'code': value[2], 'desc': value[3],
                                 'to_do': value[4], 'ran': value[5]}
                 else:
                     job_info = {}
+        else:
+            self.logger.debug("Found {} in database".format(barcode))
 
         return job_info
 
@@ -503,7 +505,7 @@ class DatabaseManager:
         try:
             cursor.execute("SELECT * FROM jobs_table WHERE jo_no = ? AND jo_line = ? LIMIT 1;", (jo_no, jo_line))
             job_info = cursor.fetchone()
-            cursor.execute("DELETE FROM jobs_table WHERE jo_no = ? AND jo_line = ?;", (jo_no, jo_line))
+            cursor.execute("DELETE FROM jobs_table WHERE jo_no = ? AND jo_line = ? LIMIT 1;", (jo_no, jo_line))
 
         finally:
             db.close()
