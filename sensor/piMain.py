@@ -1,4 +1,5 @@
 import os
+import csv
 import zmq
 import time
 import json
@@ -7,6 +8,7 @@ import logging
 import sqlite3
 import datetime
 import threading
+from io import StringIO
 from collections import Counter
 from apscheduler.schedulers.background import BackgroundScheduler
 
@@ -220,6 +222,7 @@ class PiController:
         self.logger.debug('Created respondent socket for request with {}:{}'.format(self.self_add, self.self_port))
 
     def respond(self):
+        self.logger.info("Starting respond loop")
         while not self.respondent_kill.is_set():
             if self.respondent.poll(10):
                 # wait for next request from client
@@ -231,12 +234,16 @@ class PiController:
                 for key in recv_dict.keys():
                     if key == "jam":
                         reply_dict["jam"] = self.get_counts()
-                    elif key == "jobs_list":
-                        job_list = recv_dict.pop(key)
-                        self.database_manager.replace_into_jobs_table(job_list)
-                        self.logger.debug("Received jobs")
+                    elif key == "jobs":
+                        jobs_str = recv_dict.get(key)
+                        with StringIO(jobs_str) as jobs:
+                            csv_reader = csv.reader(jobs)
+                            jobs_list = list(csv_reader)
+                        # TODO convert string to list before replace_into_jobs_table
+                        self.database_manager.replace_into_jobs_table(jobs_list)
+                        reply_dict["jobs"] = 1
                     elif key == "emp":
-                        emp_list = recv_dict.pop(key)
+                        emp_list = recv_dict.get(key)
                         self.update_emp_info(emp_list)
 
                 self.respondent.send_string(json.dumps(reply_dict))
@@ -416,12 +423,12 @@ class DatabaseManager:
         cursor = db.cursor()
         try:
             cursor.execute("CREATE TABLE IF NOT EXISTS jobs_table "
-                           "(uno TEXT NOT NULL, "
-                           "uline INTEGER NOT NULL, "
-                           "ustk TEXT NOT NULL, "
-                           "ustk_desc1 TEXT NOT NULL, "
-                           "usch_qty INTEGER NOT NULL, "
-                           "usfc_qty INTEGER NOT NULL, "
+                           "(jo_no TEXT NOT NULL, "
+                           "jo_line INTEGER NOT NULL, "
+                           "code TEXT NOT NULL, "
+                           "desc TEXT NOT NULL, "
+                           "to_do INTEGER NOT NULL, "
+                           "ran INTEGER NOT NULL, "
                            "ludt TEXT NOT NULL, "
                            "PRIMARY KEY(uno, uline));")
             db.commit()

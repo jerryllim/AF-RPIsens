@@ -200,7 +200,7 @@ class MachineClass:
 
         emps = list(self.emp_main.keys())
         for i in range((3-len(emps))):
-            emps.append(None)
+            emps.append("")
 
         for emp in emps:
             sfu_list.append(emp)
