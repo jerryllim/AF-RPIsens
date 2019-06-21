@@ -693,6 +693,8 @@ class DatabaseManager:
             with conn.cursor() as cursor:
                 query = "UPDATE jobs_table SET usfc_qty = usfc_qty + %s WHERE uno = %s AND uline = %s;"
                 cursor.execute(query, (usfc_qty, uno, uline))
+                conn.commit()
+                self.logger.debug("Updated jobs_table with {}, {} and {}".format(uno, uline, usfc_qty))
         except pymysql.DatabaseError as error:
             self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
             conn.rollback()

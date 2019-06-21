@@ -1,4 +1,5 @@
 import os
+import csv
 import zmq
 import json
 import time
@@ -7,6 +8,7 @@ import logging
 import datetime
 import threading
 import serverDatabase
+from io import StringIO
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.schedulers.background import BackgroundScheduler
 
@@ -144,7 +146,11 @@ class NetworkManager:
         self.logger.debug("Requesting jam")
         ip_list = self.settings.get_ips()
         for ip in ip_list:
-            to_send = [ip.encode(), (json.dumps({'jam': 0})).encode()]
+            send_dict = {'jam': 0}
+            jobs = self.get_jobs_info_for(ip)
+            if jobs:
+                send_dict['jobs'] = jobs
+            to_send = [ip.encode(), (json.dumps(send_dict)).encode()]
             try:
                 self.router_send.send_multipart(to_send)
             except zmq.ZMQError as error:
@@ -162,6 +168,9 @@ class NetworkManager:
                     ip_list.remove(machine_ip)
 
                 # machine = self.settings.get_machine(machine_ip)
+
+                if recv_dict.pop("jobs", 0):
+                    self.database_manager.update_ludt_jobs(machine_ip)
 
                 jam_msg = recv_dict.pop('jam', {})
                 sfu_list = jam_msg.pop('sfu', [])
@@ -196,9 +205,27 @@ class NetworkManager:
     def send_job_info(self):
         # TODO retrive mac from server settings
         for ip in self.settings.get_ips():
-            mac = self.settings.get_mac(ip)
-            job_list = self.database_manager.get_jobs_for_in(mac)
-            self.request(ip, {'job_info': job_list})
+            jobs = self.get_jobs_info_for(ip)
+            reply = self.request(ip, {'jobs_list': jobs})
+
+            if reply is not None:
+                self.database_manager.update_ludt_jobs(ip)
+
+    def get_jobs_info_for(self, ip):
+        mac = self.settings.get_macs(ip)
+        ludt_jobs = self.database_manager.get_last_updates(ip)[2]
+        if not ludt_jobs:
+            dt = None
+        else:
+            dt = ludt_jobs.strftime("%Y-%m-%d")
+
+        jobs_list = self.database_manager.get_jobs_for_in(mac, dt)
+        jobs_str = StringIO()
+        csv_writer = csv.writer(jobs_str)
+        csv_writer.writerows(jobs_list)
+        jobs_str.seek(0)
+
+        return jobs_str.getvalue()
 
     def schedule_jam(self, interval=5):
         cron_trigger = CronTrigger(minute='*/{}'.format(interval))
