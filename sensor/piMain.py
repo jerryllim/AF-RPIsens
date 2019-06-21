@@ -430,7 +430,7 @@ class DatabaseManager:
                            "to_do INTEGER NOT NULL, "
                            "ran INTEGER NOT NULL, "
                            "ludt TEXT NOT NULL, "
-                           "PRIMARY KEY(uno, uline));")
+                           "PRIMARY KEY(jo_no, jo_line));")
             db.commit()
         finally:
             db.close()
