@@ -377,6 +377,7 @@ class PiController:
     def graceful_shutdown(self):
         self.respondent_kill.set()
         self.respondent_thread.join(timeout=3)
+        # TODO close all sockets
 
         with self.counts_lock:
             to_save_dict = {'counter': self.counts.copy(), 'permanent': self.permanent}
