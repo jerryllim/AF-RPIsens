@@ -3,6 +3,7 @@ os.environ['KIVY_GL_BACKEND'] = 'gl'
 import re
 import cv2
 import sys
+import zmq
 import time
 import json
 import socket
@@ -87,6 +88,15 @@ class JobClass(Widget):
 
     def set_qc(self, emp_id, c_time, grade):
         self.qc = (emp_id, c_time, grade)
+
+    @staticmethod
+    def recall_job(json_dict):
+        job = JobClass(json_dict["job_info"], wastage=json_dict['wastage'])
+        job.output = json_dict["output"]
+        job.adjustments = json_dict['adjustments']
+        job.qc = json_dict['qc']
+
+        return job
 
 
 class MachineClass:
@@ -235,11 +245,16 @@ class MachineClass:
         self.permanent = json_dict.get('permanent', 0)
         self.state = State[json_dict.get('state', "SELECT")]
         for emp_id, start in json_dict.get("emp_main", {}).items():
-            self.emp_main['emp_id'] = start
+            self.emp_main[emp_id] = datetime.strptime(start, "%Y-%m-%d %H:%M:%S.%f")
         for emp_id, start in json_dict.get("emp_asst", {}).items():
-            self.emp_asst['emp_id'] = start
+            self.emp_asst[emp_id] = datetime.strptime(start, "%Y-%m-%d %H:%M:%S.%f")
         self.maintenance = tuple(json_dict.get('maintenance', (None, None)))
-        self.current_job = json_dict.get('current_job', None)
+        if all(self.maintenance):
+            emp_id, start = self.maintenance
+            self.maintenance = (emp_id, datetime.strptime(start, "%Y-%m-%d %H:%M:%S.%f"))
+        job = json_dict.get('current_job', {})
+        if job:
+            self.current_job = JobClass.recall_job(job)
 
     def get_current_job(self):
         return self.current_job
@@ -1038,13 +1053,10 @@ class PiGUIApp(App):
     action_bar = None
     logger = None
 
-    def _on_key_down(self, instance, keyboard, keycode, text, modifiers):
-        if len(modifiers) > 0 and modifiers[0] == 'ctrl' and text == 'a':
-            self.controller.save_machines()
-            print('Saved')
+    def on_stop(self):
+        App.get_running_app().controller.save_machines()
 
     def build(self):
-        Window.bind(on_key_down=self._on_key_down)
         self.logger = logging.getLogger('JAM')
         # self.check_camera()
         self.config.set('Network', 'self_add', self.get_ip_add())
@@ -1056,12 +1068,26 @@ class PiGUIApp(App):
 
         self.logger.debug("Using platform: {}".format(sys.platform))
 
+        save_path = "jam_machine.json"
+        if os.path.isfile(save_path):
+            with open(save_path, 'r') as read_file:
+                save_dict = json.load(read_file)
+            self.logger.debug("Getting save file from {}".format(save_dict["save_time"]))
+        else:
+            save_dict = {}
+
         for idx in range(1, 4):
-            self.machines[idx] = MachineClass(idx, self.controller, self.config)
+            machine = MachineClass(idx, self.controller, self.config)
+            if save_dict:
+                machine.recall_machine(save_dict.get(str(idx), {}))
+
+            self.machines[idx] = machine
 
         self.use_kivy_settings = False
 
         Factory.register('RunPageLayout', cls=RunPageLayout)
+        # Get current page before SelectPage is called and changes state for the first machine
+        current = self.get_current_machine().get_page()
 
         self.screen_manager.add_widget(SelectPage(name='select_page'))
         self.screen_manager.add_widget(AdjustmentPage(name='adjustment_page'))
@@ -1073,6 +1099,7 @@ class PiGUIApp(App):
         self.action_bar = SimpleActionBar(self.config)
         blayout.add_widget(self.action_bar)
         blayout.add_widget(self.screen_manager)
+        self.screen_manager.current = current
 
         self.logger.info('Returning blayout build')
         return blayout
@@ -1215,10 +1242,17 @@ class FakeClass:
     counts = {}
     database_manager = None
     permanent = 0
+    dealer = None
 
     def __init__(self, gui):
         self.database_manager = piMain.DatabaseManager()
         self.gui = gui
+        self.server_add = self.gui.config.get('Network', 'server_add')
+        self.server_port = self.gui.config.get('Network', 'server_port')
+        self.self_add = self.gui.config.get('Network', 'self_add')
+        self.self_port = self.gui.config.get('Network', 'self_port')
+        self.context = zmq.Context()
+        self.dealer_routine()
 
     def get_key(self, interval=5):
         return interval
@@ -1237,8 +1271,51 @@ class FakeClass:
     def get_emp_name(self, emp_id):
         return self.database_manager.get_emp_name(emp_id)
 
-    def request(self, req_msg):
-        print(req_msg)
+    def dealer_routine(self):
+        ip_port = "{}:{}".format(self.server_add, self.server_port)
+        self.dealer = self.context.socket(zmq.DEALER)
+        self.dealer.setsockopt_string(zmq.IDENTITY, self.self_add)
+        self.dealer.setsockopt(zmq.IMMEDIATE, 1)
+        self.dealer.setsockopt(zmq.TCP_KEEPALIVE, 1)
+        self.dealer.setsockopt(zmq.TCP_KEEPALIVE_IDLE, 1)
+        self.dealer.setsockopt(zmq.TCP_KEEPALIVE_CNT, 60)
+        self.dealer.setsockopt(zmq.TCP_KEEPALIVE_INTVL, 60)
+        self.dealer.connect("tcp://{}".format(ip_port))
+
+    def request(self, msg_dict):
+        # Clear buffer by restarting the dealer socket
+        self.dealer.setsockopt(zmq.LINGER, 0)
+        self.dealer.close()
+        self.dealer_routine()
+
+        timeout = 1000
+        # msg_dict['ip'] = self.self_add
+        recv_msg = None
+        # Try 3 times, each waiting for 2 seconds for reply from server
+        if "job_info" in msg_dict.keys():
+            validation = msg_dict.get("job_info")
+        else:
+            validation = None
+
+        for i in range(3):
+            self.dealer.send_json(msg_dict)
+
+            while self.dealer.poll(timeout):
+                reply = json.loads(str(self.dealer.recv(), "utf-8"))
+                if validation is None or validation in reply.keys():
+                    recv_msg = reply
+                    return recv_msg
+
+            if recv_msg is None:
+                # No response from server. Close dealer socket
+                self.dealer.setsockopt(zmq.LINGER, 0)
+                self.dealer.close()
+                # Recreate dealer socket
+                self.dealer_routine()
+            else:
+                break
+
+        return recv_msg
 
     def update_ip_ports(self):
         print(self.gui.config.get('Network', 'server_add'))
@@ -1259,14 +1336,17 @@ class FakeClass:
         print(key, string)
 
     def save_machines(self, filename='jam_machine.json'):
-        machines_save = {'save_time': datetime.now()}
-        for key, machine in self.gui.machines.items():
-            machines_save[key] = machine.all_info()
+        save_dict = {'save_time': datetime.now()}
+        with self.counts_lock:
+            save_dict['counts'] = self.counts.copy()
 
-        print(json.dumps(machines_save, default=str))
+        for key, machine in self.gui.machines.items():
+            save_dict[key] = machine.all_info()
+
+        print(json.dumps(save_dict, default=str))
 
         with open(filename, 'w') as write_file:
-            json.dump(machines_save, write_file, default=str)
+            json.dump(save_dict, write_file, default=str)
 
 
 if __name__ == '__main__':

@@ -392,13 +392,19 @@ class PiController:
         time.sleep(1)  # TODO remove sleep?
         os.system('sudo shutdown -h now')
 
-    def save_machines(self, filename='jam_machine.json'):
-        machines_save = {'save_time': datetime.datetime.now()}
+    def save_pi(self, filename='jam_machine.json'):
+        self.respondent_kill.set()
+        self.respondent_thread.join(timeout=3)
+
+        save_dict = {'save_time': datetime.datetime.now()}
+        with self.counts_lock:
+            save_dict['counts'] = self.counts.copy()
+
         for key, machine in self.gui.machines.items():
-            machines_save[key] = machine.all_info()
+            save_dict[key] = machine.all_info()
 
         with open(filename, 'w') as write_file:
-            json.dump(machines_save, write_file)
+            json.dump(save_dict, write_file, default=str)
 
 
 class DatabaseManager:
