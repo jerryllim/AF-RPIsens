@@ -6,6 +6,7 @@ import sys
 import zmq
 import time
 import json
+import signal
 import socket
 import piMain
 import logging
@@ -1054,9 +1055,14 @@ class PiGUIApp(App):
     logger = None
 
     def on_stop(self):
-        App.get_running_app().controller.save_machines()
+        App.get_running_app().controller.save_pi()
+
+    def stop_sigterm(self):
+        App.get_running_app().controller.save_pi()
+        App.get_running_app().stop()
 
     def build(self):
+        signal.signal(signal.SIGTERM, self.stop_sigterm)
         self.logger = logging.getLogger('JAM')
         # self.check_camera()
         self.config.set('Network', 'self_add', self.get_ip_add())

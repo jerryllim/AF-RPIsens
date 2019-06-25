@@ -393,9 +393,7 @@ class PiController:
         os.system('sudo shutdown -h now')
 
     def save_pi(self, filename='jam_machine.json'):
-        self.respondent_kill.set()
-        self.respondent_thread.join(timeout=3)
-
+        self.logger.info("Saving machines")
         save_dict = {'save_time': datetime.datetime.now()}
         with self.counts_lock:
             save_dict['counts'] = self.counts.copy()
