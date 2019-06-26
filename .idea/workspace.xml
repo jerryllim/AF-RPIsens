@@ -40,11 +40,11 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="false">
+          <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="390">
-                  <caret line="310" column="80" lean-forward="true" selection-start-line="310" selection-start-column="80" selection-end-line="311" selection-end-column="75" />
+                <state relative-caret-position="425">
+                  <caret line="840" column="55" lean-forward="true" selection-start-line="840" selection-start-column="55" selection-end-line="840" selection-end-column="55" />
                   <folding>
                     <element signature="e#0#9#0" expanded="true" />
                   </folding>
@@ -82,11 +82,11 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="true">
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/server/serverDatabase.py">
               <provider selected="true" editor-type-id="text-editor">
                 <state relative-caret-position="185">
-                  <caret line="1239" column="25" selection-start-line="1239" selection-start-column="8" selection-end-line="1239" selection-end-column="25" />
+                  <caret line="1285" column="25" selection-start-line="1285" selection-start-column="8" selection-end-line="1285" selection-end-column="25" />
                   <folding>
                     <element signature="e#0#9#0" expanded="true" />
                   </folding>
@@ -122,8 +122,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="248">
-                  <caret line="1086" selection-start-line="1086" selection-end-line="1086" />
+                <state relative-caret-position="100">
+                  <caret line="1313" column="24" selection-start-line="1313" selection-start-column="24" selection-end-line="1313" selection-end-column="24" />
                   <folding>
                     <element signature="e#0#9#0" expanded="true" />
                   </folding>
@@ -134,8 +134,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/server/serverDatabase.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="416">
-                  <caret line="464" column="47" lean-forward="true" selection-start-line="464" selection-start-column="47" selection-end-line="464" selection-end-column="47" />
+                <state relative-caret-position="233">
+                  <caret line="443" selection-start-line="443" selection-end-line="444" selection-end-column="41" />
                   <folding>
                     <element signature="e#0#9#0" expanded="true" />
                   </folding>
@@ -198,9 +198,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>desc</find>
-      <find>pr`</find>
-      <find>sfu</find>
       <find>conn.commit</find>
       <find>Updated jobs</find>
       <find>uno</find>
@@ -228,6 +225,9 @@
       <find>Pistab</find>
       <find>get_machine</find>
       <find>machine</find>
+      <find>get_machine_names</find>
+      <find>find_mu_in_hour</find>
+      <find>QTime(</find>
     </findStrings>
     <replaceStrings>
       <replace>TMessage</replace>
@@ -1086,8 +1086,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/server/serverDatabase.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="416">
-          <caret line="464" column="47" lean-forward="true" selection-start-line="464" selection-start-column="47" selection-end-line="464" selection-end-column="47" />
+        <state relative-caret-position="233">
+          <caret line="443" selection-start-line="443" selection-end-line="444" selection-end-column="41" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />
           </folding>
@@ -1096,8 +1096,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="248">
-          <caret line="1086" selection-start-line="1086" selection-end-line="1086" />
+        <state relative-caret-position="100">
+          <caret line="1313" column="24" selection-start-line="1313" selection-start-column="24" selection-end-line="1313" selection-end-column="24" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />
           </folding>

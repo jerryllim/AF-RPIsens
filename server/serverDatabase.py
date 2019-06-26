@@ -432,6 +432,29 @@ class DatabaseManager:
 
         return output_dict
 
+    def find_mu_in_hour(self, start, end, machines_list=None):
+        output_list = self.get_output(start, end, machines_list)
+        mu_list = []
+        if not machines_list:
+            machines_list = self.get_machine_names()
+        start = datetime.strptime(start, "%Y-%m-%dT%H:%M")
+        end = datetime.strptime(end, "%Y-%m-%dT%H:%M")
+        time_list = [start] + [start.replace(minute=0) + timedelta(hours=i+1)
+                               for i in range(int((end - start).total_seconds()/3600))]
+        if end not in time_list:
+            time_list = time_list + [end]
+
+        for machine in machines_list:
+            for i, time in enumerate(time_list):
+                if i == 0:
+                    continue
+                start1 = time_list[i-1]
+                end1 = time
+                current = [value[1] for value in output_list if start1 <= value[1] <= end1 and value[0] == machine]
+                mu_list.append([machine, 0, start1.strftime("%H"), len(current)])
+
+        return mu_list
+
     def find_missing_in_hour(self, start, end, machines_list=None):
         def get_missing_time(start_time, date_times):
             if start_time:
@@ -465,6 +488,29 @@ class DatabaseManager:
                 missing_list.append([machine, 0, start1.strftime("%H"), missed])
 
         return missing_list
+
+    def find_mu_in_hour(self, start, end, machines_list=None):
+        output_list = self.get_output(start, end, machines_list)
+        mu_list = []
+        if not machines_list:
+            machines_list = self.get_machine_names()
+        start = datetime.strptime(start, "%Y-%m-%dT%H:%M")
+        end = datetime.strptime(end, "%Y-%m-%dT%H:%M")
+        time_list = [start] + [start.replace(minute=0) + timedelta(hours=i+1)
+                               for i in range(end.hour - start.hour)]
+        if end not in time_list:
+            time_list = time_list + [end]
+
+        for machine in machines_list:
+            for i, time in enumerate(time_list):
+                if i == 0:
+                    continue
+                start1 = time_list[i-1]
+                end1 = time
+                current = [value[1] for value in output_list if start1 <= value[1] <= end1 and value[0] == machine]
+                mu_list.append([machine, 0, start1.strftime("%H"), len(current)])
+
+        return mu_list
 
     def transfer_tables(self):
         self.transfer_table_current_to_prev()

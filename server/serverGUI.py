@@ -2,6 +2,7 @@ import os
 import csv
 import logging
 import datetime
+import statistics
 import configparser
 from sys import exit
 import serverNetwork
@@ -1200,7 +1201,101 @@ class MUDisplayTable(QtWidgets.QWidget):
         path = os.path.expanduser('~/Documents/JAM/JAMserver/jam.ini')
         config.read(path)
         self.database_manager = database_manager
-        self.scheduler = BackgroundScheduler()
+
+        self.table_model = QtGui.QStandardItemModel(3, 10)
+
+        self.table_view = QtWidgets.QTableView()
+        self.table_view.setModel(self.table_model)
+        self.table_view.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.table_view.setAlternatingRowColors(True)
+        v_header = self.table_view.verticalHeader()
+        v_header.hide()
+
+        hbox = QtWidgets.QHBoxLayout()
+        start_label = QtWidgets.QLabel('Start: ')
+        start_datetime = QtCore.QDateTime.currentDateTime()
+        start_datetime.setTime(QtCore.QTime(7, 0))
+        self.start_spin = QtWidgets.QDateTimeEdit(start_datetime)
+        self.start_spin.setDisplayFormat('dd-MM-yy HH:mm')
+        self.start_spin.dateChanged.connect(self.change_end_date)
+        end_label = QtWidgets.QLabel('End: ')
+        end_datetime = QtCore.QDateTime.currentDateTime()
+        end_datetime.setTime(QtCore.QTime(19, 0))
+        self.end_spin = QtWidgets.QDateTimeEdit(end_datetime)
+        self.end_spin.setDisplayFormat('dd-MM-yy HH:mm')
+        populate_btn = QtWidgets.QPushButton('Refresh')
+        populate_btn.clicked.connect(self.populate_table)
+        hbox.addWidget(start_label)
+        hbox.addWidget(self.start_spin)
+        hbox.addWidget(end_label)
+        hbox.addWidget(self.end_spin)
+        hbox.addWidget(populate_btn)
+
+        box_layout = QtWidgets.QVBoxLayout()
+        box_layout.addLayout(hbox)
+        box_layout.addWidget(self.table_view)
+        self.setLayout(box_layout)
+        self.show()
+        self.populate_table()
+
+    def change_end_date(self, date):
+        self.end_spin.setDate(date)
+
+    def populate_table(self):
+        self.table_model.clear()
+
+        table_hheaders = ['Machine', 'Avg']
+        start = self.start_spin.dateTime().toPython()
+        end = self.end_spin.dateTime().toPython()
+        time_list = [start.hour] + [(start.replace(minute=0) + datetime.timedelta(hours=i+1)).hour
+                                         for i in range(int((end - start).total_seconds()/3600))]
+        if end.hour != time_list[-1]:
+            time_list = time_list + [end.hour]
+
+        for i in time_list:
+            table_hheaders.append("{:02d}".format(i))
+
+        self.table_model.setHorizontalHeaderLabels(table_hheaders)
+
+        output_list = []
+        table_vheaders = self.database_manager.get_machine_names()
+        for row, machine in enumerate(table_vheaders):
+            output_list.append([0] * len(table_hheaders))
+            self.table_model.setItem(row, 0, QtGui.QStandardItem(machine))
+
+        outputs = self.database_manager.find_mu_in_hour(start.isoformat(timespec='minutes'),
+                                                        end.isoformat(timespec='minutes'))
+        for row in outputs:
+            col = table_hheaders.index('{}'.format(row[2]))
+            idx = table_vheaders.index(row[0])
+            output_list[idx][col] = row[3]
+
+        # targets_dict = self.database_manager.get_machine_targets('output')
+
+        for idx, row in enumerate(output_list):
+            # target = targets_dict.get(table_vheaders[idx], None)
+            for col, value in enumerate(row):
+                if col < 2:
+                    continue
+                item = QtGui.QStandardItem(str(value))
+                # if target and value <= target:
+                #     font = QtGui.QFont()
+                #     font.setBold(True)
+                #     item.setForeground(QtGui.QBrush(QtGui.QColor(255, 0, 0)))
+                #     item.setFont(font)
+                self.table_model.setItem(idx, col, item)
+            self.table_model.setItem(idx, 1, QtGui.QStandardItem(str(round(statistics.mean(row), 1))))
+
+
+class MUDetailsDisplayTable(QtWidgets.QWidget):
+    scheduler_jobs = {}
+
+    def __init__(self, parent, database_manager):
+        QtWidgets.QWidget.__init__(self, parent)
+        config = configparser.ConfigParser()
+        path = os.path.expanduser('~/Documents/JAM/JAMserver/jam.ini')
+        config.read(path)
+        self.database_manager = database_manager
 
         self.table_model = QtGui.QStandardItemModel(3, 10)
 
@@ -1214,25 +1309,23 @@ class MUDisplayTable(QtWidgets.QWidget):
         h_header.setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
 
         hbox = QtWidgets.QHBoxLayout()
-        date_label = QtWidgets.QLabel('Date: ')
-        self.date_spin = QtWidgets.QDateEdit()
-        self.date_spin.setDate(QtCore.QDate.currentDate())
         start_label = QtWidgets.QLabel('Start: ')
-        self.start_spin = QtWidgets.QTimeEdit(QtCore.QTime(7, 0))
-        self.start_spin.setDisplayFormat('HH:mm')
-        hour_label = QtWidgets.QLabel('Hours: ')
-        self.hour_spin = QtWidgets.QSpinBox()
-        self.hour_spin.setMinimum(1)
-        self.hour_spin.setMaximum(24)
-        self.hour_spin.setValue(12)
+        start_datetime = QtCore.QDateTime.currentDateTime()
+        start_datetime.setTime(QtCore.QTime(7, 0))
+        self.start_spin = QtWidgets.QDateTimeEdit(start_datetime)
+        self.start_spin.setDisplayFormat('dd-MM-yy HH:mm')
+        self.start_spin.dateChanged.connect(self.change_end_date)
+        end_label = QtWidgets.QLabel('End: ')
+        end_datetime = QtCore.QDateTime.currentDateTime()
+        end_datetime.setTime(QtCore.QTime(19, 0))
+        self.end_spin = QtWidgets.QDateTimeEdit(end_datetime)
+        self.end_spin.setDisplayFormat('dd-MM-yy HH:mm')
         populate_btn = QtWidgets.QPushButton('Refresh')
         populate_btn.clicked.connect(self.populate_table)
-        hbox.addWidget(date_label)
-        hbox.addWidget(self.date_spin)
         hbox.addWidget(start_label)
         hbox.addWidget(self.start_spin)
-        hbox.addWidget(hour_label)
-        hbox.addWidget(self.hour_spin)
+        hbox.addWidget(end_label)
+        hbox.addWidget(self.end_spin)
         hbox.addWidget(populate_btn)
 
         box_layout = QtWidgets.QVBoxLayout()
@@ -1241,17 +1334,17 @@ class MUDisplayTable(QtWidgets.QWidget):
         self.setLayout(box_layout)
         self.show()
         self.populate_table()
-        self.scheduler.start()
+
+    def change_end_date(self, date):
+        self.end_spin.setDate(date)
 
     def populate_table(self):
         self.table_model.clear()
 
         table_hheaders = ['Machine', 'Start', 'End', 'Duration', 'Output']
         self.table_model.setHorizontalHeaderLabels(table_hheaders)
-        date = self.date_spin.date().toPython()
-        start_time = self.start_spin.time().toPython()
-        start = datetime.datetime.combine(date, start_time)
-        end = start + datetime.timedelta(hours=int(self.hour_spin.text()))
+        start = self.start_spin.dateTime().toPython()
+        end = self.end_spin.dateTime().toPython()
         run_dict = self.database_manager.get_mu(start.isoformat(timespec='minutes'),
                                                 end.isoformat(timespec='minutes'))
 
@@ -1309,9 +1402,11 @@ class JamMainWindow(QtWidgets.QMainWindow):
         self.display_table = DisplayTable(self, self.database_manager)
         self.sfu_table = SFUDisplayTable(self, self.database_manager)
         self.mu_table = MUDisplayTable(self, self.database_manager)
+        self.mu_det_table = MUDetailsDisplayTable(self, self.database_manager)
         self.tab_widget.addTab(self.display_table, 'Output Table')
         self.tab_widget.addTab(self.sfu_table, 'SFU Table')
         self.tab_widget.addTab(self.mu_table, 'MU Table')
+        self.tab_widget.addTab(self.mu_det_table, 'MU Details Table')
         self.setCentralWidget(self.tab_widget)
 
         config_action = QtWidgets.QAction('&Configuration', self)
