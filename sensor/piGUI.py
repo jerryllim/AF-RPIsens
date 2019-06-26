@@ -1057,12 +1057,12 @@ class PiGUIApp(App):
     def on_stop(self):
         App.get_running_app().controller.save_pi()
 
-    def stop_sigterm(self):
+    def stop_sigterm(self, _signum, frame):
+        self.logger.debug("Stopping app because of SIGTERM with frame {}".format(frame))
         App.get_running_app().controller.save_pi()
         App.get_running_app().stop()
 
     def build(self):
-        signal.signal(signal.SIGTERM, self.stop_sigterm)
         self.logger = logging.getLogger('JAM')
         # self.check_camera()
         self.config.set('Network', 'self_add', self.get_ip_add())
@@ -1357,4 +1357,5 @@ class FakeClass:
 
 if __name__ == '__main__':
     piApp = PiGUIApp()
+    signal.signal(signal.SIGTERM, piApp.stop_sigterm)
     piApp.run()
