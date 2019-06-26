@@ -1253,7 +1253,7 @@ class MUDisplayTable(QtWidgets.QWidget):
         start = datetime.datetime.combine(date, start_time)
         end = start + datetime.timedelta(hours=int(self.hour_spin.text()))
         run_dict = self.database_manager.get_mu(start.isoformat(timespec='minutes'),
-                                                     end.isoformat(timespec='minutes'))
+                                                end.isoformat(timespec='minutes'))
 
         row = 0
         for key, values in run_dict.items():

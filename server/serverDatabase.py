@@ -432,6 +432,40 @@ class DatabaseManager:
 
         return output_dict
 
+    def find_missing_in_hour(self, start, end, machines_list=None):
+        def get_missing_time(start_time, date_times):
+            if start_time:
+                duration = 60 - start_time.minute
+            else:
+                duration = 60
+
+            return int(duration - len(date_times))
+
+        output_list = self.get_output(start, end, machines_list)
+        missing_list = []
+        if not machines_list:
+            machines_list = self.get_machine_names()
+        start = datetime.strptime(start, "%Y-%m-%dT%H:%M")
+        end = datetime.strptime(end, "%Y-%m-%dT%H:%M")
+        time_list = [start] + [start.replace(minute=0) + timedelta(hours=i+1)
+                               for i in range(end.hour - start.hour)]
+        if end not in time_list:
+            time_list = time_list + [end]
+
+        for machine in machines_list:
+            for i, time in enumerate(time_list):
+                if i == 0:
+                    continue
+                start1 = time_list[i-1]
+                end1 = time
+                current = [value[1] for value in output_list if start1 <= value[1] <= end1 and value[0] == machine]
+                missed = get_missing_time(start1, current)
+
+                # TODO ammend this later
+                missing_list.append([machine, 0, start1.strftime("%H"), missed])
+
+        return missing_list
+
     def transfer_tables(self):
         self.transfer_table_current_to_prev()
         self.transfer_table_prev_to_past()
