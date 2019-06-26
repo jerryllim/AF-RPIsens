@@ -1,4 +1,5 @@
 import os
+import csv
 import sys
 import sqlite3
 import logging
@@ -47,6 +48,15 @@ class Settings:
         else:
             return None
 
+    def get_macs(self, ip):
+        l = []
+        if self.machines_info.get(ip):
+            for idx in range(1, 4):
+                l.append(self.machines_info[ip]['mac{}'.format(idx)])
+            return l
+        else:
+            return None
+
     def get_machine(self, ip, idx):
         if self.machines_info.get(ip):
             return self.machines_info[ip]['machine{}'.format(idx)]
@@ -64,10 +74,16 @@ class Settings:
 
         return ip_port_list
 
+    def get_port_for(self, ip):
+        if self.machines_info.get(ip, None):
+            return self.machines_info[ip].get('port', 7777)
+
+        return 7777
+
 
 class DatabaseManager:
     def __init__(self, settings, host='', user='', password='', db='', port='', lite_db='machine.sqlite',
-                 create_tables=True):
+                 create_tables=False):
         self.logger = logging.getLogger('jamVIEWER')
         self.settings = settings
         self.host = host
@@ -111,7 +127,7 @@ class DatabaseManager:
             conn = pymysql.connect(host=host, user=user, password=password, database=db, port=port)
             if conn.open:
                 success = True
-        except pymysql.MySQLError as error:
+        except pymysql.DatabaseError as error:
             logger = logging.getLogger('jamVIEWER')
             logger.error("{}, {}".format(sys._getframe().f_code.co_name, error))
 
@@ -129,8 +145,8 @@ class DatabaseManager:
                 else:
                     cursor.execute(query)
                 return_list = cursor.fetchall()
-        except pymysql.MySQLError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+        except pymysql.DatabaseError as error:
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
             conn.rollback()
         finally:
             conn.close()
@@ -170,8 +186,8 @@ class DatabaseManager:
                 cursor.execute('CREATE TABLE IF NOT EXISTS jam_past_table LIKE jam_current_table;')
 
                 conn.commit()
-        except pymysql.MySQLError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+        except pymysql.DatabaseError as error:
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
             conn.rollback()
         finally:
             conn.close()
@@ -180,7 +196,8 @@ class DatabaseManager:
     def month_delta(date_, delta):
         m, y = (date_.month + delta) % 12, date_.year + ((date_.month) + delta - 1) // 12
         if not m: m = 12
-        d = min(date_.day, [31, 29 if y % 4 == 0 and not y % 400 == 0 else 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][m - 1])
+        d = min(date_.day,
+                [31, 29 if y % 4 == 0 and not y % 400 == 0 else 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][m - 1])
 
         return date_.replace(day=d, month=m, year=y)
 
@@ -189,7 +206,8 @@ class DatabaseManager:
             if not self.settings.config.getboolean('Shift', 'shift{}_enable'.format(col)):
                 continue
 
-            start_time = datetime.strptime(self.settings.config.get('Shift', 'shift{}_start'.format(col)), "%H:%M").time()
+            start_time = datetime.strptime(self.settings.config.get('Shift', 'shift{}_start'.format(col)),
+                                           "%H:%M").time()
             end_time = datetime.strptime(self.settings.config.get('Shift', 'shift{}_end'.format(col)), "%H:%M").time()
             if start_time < end_time:
                 if start_time <= date_time.time() <= end_time:
@@ -200,7 +218,7 @@ class DatabaseManager:
 
             return None
 
-    def get_output(self, start, end, machines_list=None):
+    def get_hourly_output(self, start, end, machines_list=None):
         conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
         output_list = []
@@ -216,12 +234,200 @@ class DatabaseManager:
                 query = query + " GROUP BY machine, DATE(date_time), HOUR(date_time);"
                 cursor.execute(query, (start, end))
                 output_list = cursor.fetchall()
-        except pymysql.MySQLError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+        except pymysql.DatabaseError as error:
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
             conn.rollback()
         finally:
             conn.close()
             return output_list
+
+    def get_output(self, start, end, machines_list=None):
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
+                               database=self.db, port=self.port)
+        output_list = []
+
+        try:
+            with conn.cursor() as cursor:
+                query = "SELECT machine, date_time, output FROM jam_current_table WHERE date_time >= %s " \
+                        "AND date_time < %s"
+                if machines_list:
+                    machines_str = str(tuple(machines_list))
+                    query = query + " AND machine IN " + machines_str
+
+                query = query + " ORDER BY machine ASC, date_time ASC;"
+                cursor.execute(query, (start, end))
+                output_list = cursor.fetchall()
+        except pymysql.DatabaseError as error:
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
+            conn.rollback()
+        finally:
+            conn.close()
+            return output_list
+
+    def get_mu(self, start, end, machines_list=None):
+        output_list = self.get_output(start, end, machines_list)
+        output_dict = {}
+        machine = None
+        last_machine = None
+        current = []
+
+        for machine, date_time, output in output_list:
+            if machine not in output_dict:
+                if last_machine:
+                    current[2] = int((current[1] - current[0]).total_seconds() / 60) + 1
+                    output_dict[last_machine].append(current)
+                output_dict[machine] = []
+                last_machine = machine
+                current = [date_time, date_time, 0, output]
+            elif current[1] + timedelta(minutes=1) == date_time:
+                current[1] = date_time
+                current[3] = current[3] + output
+            else:
+                current[2] = int((current[1] - current[0]).total_seconds() / 60) + 1
+                output_dict[machine].append(current)
+                current = [date_time, date_time, 0, output]
+
+        if machine:
+            current[2] = int((current[1] - current[0]).total_seconds() / 60) + 1
+            output_dict[machine].append(current)
+
+        return output_dict
+
+    def find_mu_in_hour(self, start, end, machines_list=None):
+        output_list = self.get_output(start, end, machines_list)
+        mu_list = []
+        if not machines_list:
+            machines_list = self.get_machine_names()
+        start = datetime.strptime(start, "%Y-%m-%dT%H:%M")
+        end = datetime.strptime(end, "%Y-%m-%dT%H:%M")
+        time_list = [start] + [start.replace(minute=0) + timedelta(hours=i+1)
+                               for i in range(int((end - start).total_seconds()/3600))]
+        if end not in time_list:
+            time_list = time_list + [end]
+
+        for machine in machines_list:
+            for i, time in enumerate(time_list):
+                if i == 0:
+                    continue
+                start1 = time_list[i-1]
+                end1 = time
+                current = [value[1] for value in output_list if start1 <= value[1] <= end1 and value[0] == machine]
+                mu_list.append([machine, 0, start1.strftime("%H"), len(current)])
+
+        return mu_list
+
+    def find_missing_in_hour(self, start, end, machines_list=None):
+        def get_missing_time(start_time, date_times):
+            if start_time:
+                duration = 60 - start_time.minute
+            else:
+                duration = 60
+
+            return int(duration - len(date_times))
+
+        output_list = self.get_output(start, end, machines_list)
+        missing_list = []
+        if not machines_list:
+            machines_list = self.get_machine_names()
+        start = datetime.strptime(start, "%Y-%m-%dT%H:%M")
+        end = datetime.strptime(end, "%Y-%m-%dT%H:%M")
+        time_list = [start] + [start.replace(minute=0) + timedelta(hours=i+1)
+                               for i in range(end.hour - start.hour)]
+        if end not in time_list:
+            time_list = time_list + [end]
+
+        for machine in machines_list:
+            for i, time in enumerate(time_list):
+                if i == 0:
+                    continue
+                start1 = time_list[i-1]
+                end1 = time
+                current = [value[1] for value in output_list if start1 <= value[1] <= end1 and value[0] == machine]
+                missed = get_missing_time(start1, current)
+
+                # TODO ammend this later
+                missing_list.append([machine, 0, start1.strftime("%H"), missed])
+
+        return missing_list
+
+    def find_mu_in_hour(self, start, end, machines_list=None):
+        output_list = self.get_output(start, end, machines_list)
+        mu_list = []
+        if not machines_list:
+            machines_list = self.get_machine_names()
+        start = datetime.strptime(start, "%Y-%m-%dT%H:%M")
+        end = datetime.strptime(end, "%Y-%m-%dT%H:%M")
+        time_list = [start] + [start.replace(minute=0) + timedelta(hours=i+1)
+                               for i in range(end.hour - start.hour)]
+        if end not in time_list:
+            time_list = time_list + [end]
+
+        for machine in machines_list:
+            for i, time in enumerate(time_list):
+                if i == 0:
+                    continue
+                start1 = time_list[i-1]
+                end1 = time
+                current = [value[1] for value in output_list if start1 <= value[1] <= end1 and value[0] == machine]
+                mu_list.append([machine, 0, start1.strftime("%H"), len(current)])
+
+        return mu_list
+
+    def transfer_tables(self):
+        self.transfer_table_current_to_prev()
+        self.transfer_table_prev_to_past()
+
+    def transfer_table_current_to_prev(self):
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
+                               database=self.db, port=self.port)
+        try:
+            with conn.cursor() as cursor:
+                today = datetime.today()
+                dayofweek = self.settings.config.getint('Data', 'day')
+                offset = (today.isoweekday() - dayofweek) % 7
+                day_date = today - timedelta(offset)
+                query = "INSERT IGNORE INTO jam_past_table (machine, jo_no, emp, date_time, shift, output, col1, col2" \
+                        ", col3, col4, col5, col6, col7, col8, col9, col10) SELECT machine, jo_no, emp, " \
+                        "DATE_FORMAT(date_time, '%Y-%m-%d %H:00') as new_dt, shift, SUM(output), SUM(col1), SUM(col2)" \
+                        ", SUM(col3), SUM(col4), SUM(col5), SUM(col6), SUM(col7), SUM(col8), SUM(col9), SUM(col10) " \
+                        "FROM jam_prev_table WHERE date_time < %s - INTERVAL 1 WEEK GROUP BY machine," \
+                        " jo_no, emp, new_dt, shift;"
+                cursor.execute(query, (day_date,))
+                query2 = "DELETE FROM jam_current_table WHERE date_time < %s - INTERVAL 1 WEEK;"
+                cursor.execute(query2, (day_date,))
+                conn.commit()
+        except pymysql.DatabaseError as error:
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
+            conn.rollback()
+            self.logger.warning('Unable to transfer table from current to prev')
+        finally:
+            conn.close()
+
+    def transfer_table_prev_to_past(self):
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
+                               database=self.db, port=self.port)
+        try:
+            with conn.cursor() as cursor:
+                today = datetime.today()
+                dayofweek = self.settings.config.getint('Data', 'day')
+                offset = (today.isoweekday() - dayofweek) % 7 + 7
+                day_date = today - timedelta(offset)
+                query = "INSERT IGNORE INTO jam_past_table (machine, jo_no, emp, date_time, shift, output, col1, col2" \
+                        ", col3, col4, col5, col6, col7, col8, col9, col10) SELECT machine, jo_no, emp, " \
+                        "DATE_FORMAT(date_time, '%Y-%m-%d %H:00') as new_dt, shift, SUM(output), SUM(col1), SUM(col2)" \
+                        ", SUM(col3), SUM(col4), SUM(col5), SUM(col6), SUM(col7), SUM(col8), SUM(col9), SUM(col10) " \
+                        "FROM jam_prev_table WHERE date_time < %s - INTERVAL 2 WEEK GROUP BY machine," \
+                        " jo_no, emp, new_dt, shift;"
+                cursor.execute(query, (day_date,))
+                query2 = "DELETE FROM jam_prev_table WHERE date_time < %s - INTERVAL 2 WEEK;"
+                cursor.execute(query2, (day_date,))
+                conn.commit()
+        except pymysql.DatabaseError as error:
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
+            conn.rollback()
+            self.logger.warning('Unable to transfer table from prev to past')
+        finally:
+            conn.close()
 
     def create_emp_table(self):
         conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
@@ -234,13 +440,13 @@ class DatabaseManager:
                 sql = "CREATE TABLE IF NOT EXISTS emp_table ( " \
                       "emp_id varchar(6) NOT NULL, " \
                       "name varchar(30) DEFAULT NULL, " \
-                      "last_modified timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, " \
+                      "last_modified timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, " \
                       "to_del tinyint(1) unsigned DEFAULT '0', " \
                       "PRIMARY KEY (emp_id));"
                 cursor.execute(sql)
                 conn.commit()
-        except pymysql.MySQLError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+        except pymysql.DatabaseError as error:
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
         finally:
             conn.close()
 
@@ -254,8 +460,8 @@ class DatabaseManager:
                 sql = '''SELECT emp_id, name, last_modified FROM emp_table WHERE to_del = 0;'''
                 cursor.execute(sql)
                 emp_list = cursor.fetchall()
-        except pymysql.MySQLError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+        except pymysql.DatabaseError as error:
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
         finally:
             conn.close()
             return emp_list
@@ -272,8 +478,8 @@ class DatabaseManager:
                 sql = 'SELECT emp_id, name, to_del FROM emp_table WHERE last_modified = %s'
                 cursor.execute(sql, timestamp)
                 emp_list = cursor.fetchall()
-        except pymysql.MySQLError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+        except pymysql.DatabaseError as error:
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
         finally:
             conn.close()
             return emp_list
@@ -308,11 +514,13 @@ class DatabaseManager:
                       "trem1 char(40) DEFAULT NULL, " \
                       "tqty int(10) unsigned DEFAULT NULL, " \
                       "tdo_date date DEFAULT NULL, " \
-                      "PRIMARY KEY (uno,uline) );"
+                      "usfc_qty double DEFAULT NULL, " \
+                      "last_modified timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, " \
+                      "PRIMARY KEY (uno, uline) );"
                 cursor.execute(sql)
                 conn.commit()
-        except pymysql.MySQLError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+        except pymysql.DatabaseError as error:
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
         finally:
             conn.close()
 
@@ -330,8 +538,8 @@ class DatabaseManager:
                         "quality tinyint(3) unsigned NOT NULL );"
                 cursor.execute(query)
                 conn.commit()
-        except pymysql.MySQLError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+        except pymysql.DatabaseError as error:
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
         finally:
             conn.close()
 
@@ -350,14 +558,14 @@ class DatabaseManager:
                         "PRIMARY KEY (emp_id, machine, start) );"
                 cursor.execute(query)
                 conn.commit()
-        except pymysql.MySQLError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+        except pymysql.DatabaseError as error:
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
         finally:
             conn.close()
 
     def create_emp_shift_table(self):
         conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
-                             database=self.db, port=self.port)
+                               database=self.db, port=self.port)
 
         try:
             with conn.cursor() as cursor:
@@ -370,8 +578,8 @@ class DatabaseManager:
                         'PRIMARY KEY (emp_id,machine,start) );'
                 cursor.execute(query)
                 conn.commit()
-        except pymysql.MySQLError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+        except pymysql.DatabaseError as error:
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
         finally:
             conn.close()
 
@@ -421,33 +629,35 @@ class DatabaseManager:
                       'B33 varchar(6) DEFAULT NULL, ' \
                       'B43 varchar(6) DEFAULT NULL, ' \
                       'B53 varchar(6) DEFAULT NULL, ' \
-                      'last_update timestamp DEFAULT NULL, ' \
+                      'ludt_to timestamp DEFAULT NULL, ' \
+                      'ludt_fr timestamp DEFAULT NULL, ' \
+                      'ludt_jobs timestamp DEFAULT NULL, ' \
                       'PRIMARY KEY (ip) );'
                 cursor.execute(sql)
                 conn.commit()
-        except pymysql.MySQLError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+        except pymysql.DatabaseError as error:
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
         finally:
             conn.close()
 
     def get_last_updates(self, ip):
         conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
-        last_update = None
+        last_updates = None
 
         try:
             with conn.cursor() as cursor:
-                sql = 'SELECT last_update FROM pis_table WHERE ip = %s'
+                sql = 'SELECT ludt_to, ludt_fr, ludt_jobs FROM pis_table WHERE ip = %s'
                 cursor.execute(sql, [ip, ])
-                last_update = cursor.fetchone()[0]
+                last_updates = cursor.fetchone()
             conn.commit()
-        except pymysql.MySQLError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+        except pymysql.DatabaseError as error:
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
             conn.rollback()
         finally:
             conn.close()
 
-        return last_update
+        return last_updates
 
     def get_pis(self):
         conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
@@ -461,12 +671,40 @@ class DatabaseManager:
                     ip = row.pop('ip')
                     row['port'] = str(row['port'])
                     pis_dict[ip] = row
-        except pymysql.MySQLError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+        except pymysql.DatabaseError as error:
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
             conn.rollback()
         finally:
             conn.close()
             return pis_dict
+
+    def update_ludt_fr(self, ip):
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
+                               database=self.db, port=self.port)
+
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute("UPDATE pis_table SET ludt_fr = NOW() WHERE ip = '{}';".format(ip))
+                conn.commit()
+        except pymysql.DatabaseError as error:
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
+            conn.rollback()
+        finally:
+            conn.close()
+
+    def update_ludt_jobs(self, ip):
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
+                               database=self.db, port=self.port)
+
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute("UPDATE pis_table SET ludt_jobs = NOW() WHERE ip = '{}';".format(ip))
+                conn.commit()
+        except pymysql.DatabaseError as error:
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
+            conn.rollback()
+        finally:
+            conn.close()
 
     def create_machines_table(self):
         conn = sqlite3.connect(self.lite_db)
@@ -640,8 +878,8 @@ class DatabaseManager:
                       "usfc_time_to time DEFAULT NULL);"
                 cursor.execute(sql)
                 conn.commit()
-        except pymysql.MySQLError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+        except pymysql.DatabaseError as error:
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
         finally:
             conn.close()
 
@@ -657,7 +895,7 @@ class DatabaseManager:
                 for row in cursor:
                     headers_list.append(row[0])
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
             conn.rollback()
         finally:
             conn.close()
@@ -686,7 +924,7 @@ class DatabaseManager:
                 cursor.execute(query)
                 sfu_list = cursor.fetchall()
         except pymysql.DatabaseError as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
             conn.rollback()
         finally:
             conn.close()

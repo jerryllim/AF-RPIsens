@@ -1,6 +1,8 @@
 import os
+import csv
 import logging
 import datetime
+import statistics
 import configparser
 from sys import exit
 import viewerDatabase
@@ -229,7 +231,7 @@ class PisTab(QtWidgets.QWidget):
     def populate_pis(self):
         self.pis_model.clear()
         self.pis_model.setHorizontalHeaderLabels(['Nickname', 'IP Address', 'Port', 'Machine1', 'Machine2', 'Machine3',
-                                                  'last updated'])
+                                                  'lu to', 'lu from', 'lu jobs'])
 
         for ip in self.pis_dict.keys():
             nick_item = QtGui.QStandardItem(self.pis_dict[ip].get('nick'))
@@ -238,11 +240,7 @@ class PisTab(QtWidgets.QWidget):
             machine1_item = QtGui.QStandardItem(self.pis_dict[ip].get('machine1'))
             machine2_item = QtGui.QStandardItem(self.pis_dict[ip].get('machine2'))
             machine3_item = QtGui.QStandardItem(self.pis_dict[ip].get('machine3'))
-            last_update_time = self.database_manager.get_last_updates(ip)
-            if last_update_time:
-                last_update_item = QtGui.QStandardItem(last_update_time.strftime("%d/%m/%y %H:%M"))
-            else:
-                last_update_item = QtGui.QStandardItem('-')
+            last_updates = self.database_manager.get_last_updates(ip)
             index = self.pis_model.rowCount()
             self.pis_model.setItem(index, 0, nick_item)
             self.pis_model.setItem(index, 1, ip_item)
@@ -250,7 +248,102 @@ class PisTab(QtWidgets.QWidget):
             self.pis_model.setItem(index, 3, machine1_item)
             self.pis_model.setItem(index, 4, machine2_item)
             self.pis_model.setItem(index, 5, machine3_item)
-            self.pis_model.setItem(index, 6, last_update_item)
+
+            if last_updates:
+                for idx, ludt in enumerate(last_updates[:3]):
+                    if ludt:
+                        item = QtGui.QStandardItem(ludt.strftime("%d/%m/%y %H:%M"))
+                    else:
+                        item = QtGui.QStandardItem('-')
+
+                    self.pis_model.setItem(index, (6 + idx), item)
+
+    def machine_in_use(self, machine):
+        for ip in self.pis_dict.keys():
+            for i in range(1, 4):
+                if self.pis_dict[ip].get('machine{}'.format(i)) == machine:
+                    return ip
+
+        return False
+
+    def set_fields(self, index):
+        row = index.row()
+
+        self.set_all_enabled(False, False)
+
+        ip = self.pis_model.item(row, 1).text()
+        self.main_lineedits['ip'].setText(ip)
+        self.main_lineedits['nick'].setText(self.pis_dict[ip]['nick'])
+        self.main_lineedits['port'].setText(self.pis_dict[ip]['port'])
+
+        for key in self.machine_tabs:
+            self.machine_tabs[key].set_fields(key, self.pis_dict[ip])
+
+    def new_item(self):
+        self.clear_all(edits=True)
+        self.main_lineedits['nick'].setFocus()
+        self.set_all_enabled(True, True)
+
+    def edit_item(self):
+        if len(self.main_lineedits['ip'].text()) > 0 and not self.main_lineedits['nick'].isEnabled():
+            self.set_all_enabled(True, False)
+
+    def delete_item(self):
+        index = self.pis_treeview.selectedIndexes()[0]
+        row = index.row()
+        nick = self.pis_model.item(row, 0).text()
+        ip = self.pis_model.item(row, 1).text()
+
+        choice = QtWidgets.QMessageBox.question(self, 'Delete', 'Delete {0} ({1})?'.format(nick, ip))
+        if choice == QtWidgets.QMessageBox.Yes:
+            self.pis_dict.pop(ip, None)
+            self.populate_pis()
+
+    def set_item(self):
+        ip = self.main_lineedits['ip'].text()
+        self.pis_dict[ip] = {}
+        for key in ['nick', 'port']:
+            self.pis_dict[ip][key] = self.main_lineedits[key].text()
+
+        for idx in self.machine_tabs.keys():
+            self.pis_dict[ip].update(self.machine_tabs[idx].get_values(idx))
+
+        self.populate_pis()
+        self.clear_all(True)
+        self.set_all_enabled(False, False)
+
+    def save_items(self):
+        pis_row = []
+
+        for ip, values in self.pis_dict.items():
+            pi_row = [ip, int(values['port']), values['nick']]
+
+            for i in range(1, 4):
+                for key in self.sensor_list:
+                    pi_row.append(values['{0}{1}'.format(key, i)])
+
+            pis_row.append(pi_row)
+
+        self.database_manager.saved_all_pis(pis_row)
+
+    def set_all_enabled(self, enable, ip):
+        for key, edit in self.main_lineedits.items():
+            if key == 'ip':
+                edit.setEnabled(ip)
+            else:
+                edit.setEnabled(enable)
+
+        for tab in self.machine_tabs.values():
+            tab.enable_combos(enable)
+
+    def clear_all(self, edits=False):
+        if edits:
+            for edit in self.main_lineedits.values():
+                edit.clear()
+                edit.setText('')
+
+        for tab in self.machine_tabs.values():
+            tab.clear_fields()
 
 
 class EmployeesTab(QtWidgets.QWidget):
@@ -642,6 +735,173 @@ class SFUDisplayTable(QtWidgets.QWidget):
                 self.sfu_model.setItem(index, col, item)
 
 
+class MUDisplayTable(QtWidgets.QWidget):
+    scheduler_jobs = {}
+
+    def __init__(self, parent, database_manager):
+        QtWidgets.QWidget.__init__(self, parent)
+        config = configparser.ConfigParser()
+        path = os.path.expanduser('~/Documents/JAM/JAMserver/jam.ini')
+        config.read(path)
+        self.database_manager = database_manager
+
+        self.table_model = QtGui.QStandardItemModel(3, 10)
+
+        self.table_view = QtWidgets.QTableView()
+        self.table_view.setModel(self.table_model)
+        self.table_view.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.table_view.setAlternatingRowColors(True)
+        v_header = self.table_view.verticalHeader()
+        v_header.hide()
+
+        hbox = QtWidgets.QHBoxLayout()
+        start_label = QtWidgets.QLabel('Start: ')
+        start_datetime = QtCore.QDateTime.currentDateTime()
+        start_datetime.setTime(QtCore.QTime(7, 0))
+        self.start_spin = QtWidgets.QDateTimeEdit(start_datetime)
+        self.start_spin.setDisplayFormat('dd-MM-yy HH:mm')
+        self.start_spin.dateChanged.connect(self.change_end_date)
+        end_label = QtWidgets.QLabel('End: ')
+        end_datetime = QtCore.QDateTime.currentDateTime()
+        end_datetime.setTime(QtCore.QTime(19, 0))
+        self.end_spin = QtWidgets.QDateTimeEdit(end_datetime)
+        self.end_spin.setDisplayFormat('dd-MM-yy HH:mm')
+        populate_btn = QtWidgets.QPushButton('Refresh')
+        populate_btn.clicked.connect(self.populate_table)
+        hbox.addWidget(start_label)
+        hbox.addWidget(self.start_spin)
+        hbox.addWidget(end_label)
+        hbox.addWidget(self.end_spin)
+        hbox.addWidget(populate_btn)
+
+        box_layout = QtWidgets.QVBoxLayout()
+        box_layout.addLayout(hbox)
+        box_layout.addWidget(self.table_view)
+        self.setLayout(box_layout)
+        self.show()
+        self.populate_table()
+
+    def change_end_date(self, date):
+        self.end_spin.setDate(date)
+
+    def populate_table(self):
+        self.table_model.clear()
+
+        table_hheaders = ['Machine', 'Avg']
+        start = self.start_spin.dateTime().toPython()
+        end = self.end_spin.dateTime().toPython()
+        time_list = [start.hour] + [(start.replace(minute=0) + datetime.timedelta(hours=i+1)).hour
+                                         for i in range(int((end - start).total_seconds()/3600))]
+        if end.hour != time_list[-1]:
+            time_list = time_list + [end.hour]
+
+        for i in time_list:
+            table_hheaders.append("{:02d}".format(i))
+
+        self.table_model.setHorizontalHeaderLabels(table_hheaders)
+
+        output_list = []
+        table_vheaders = self.database_manager.get_machine_names()
+        for row, machine in enumerate(table_vheaders):
+            output_list.append([0] * len(table_hheaders))
+            self.table_model.setItem(row, 0, QtGui.QStandardItem(machine))
+
+        outputs = self.database_manager.find_mu_in_hour(start.isoformat(timespec='minutes'),
+                                                        end.isoformat(timespec='minutes'))
+        for row in outputs:
+            col = table_hheaders.index('{}'.format(row[2]))
+            idx = table_vheaders.index(row[0])
+            output_list[idx][col] = row[3]
+
+        # targets_dict = self.database_manager.get_machine_targets('output')
+
+        for idx, row in enumerate(output_list):
+            # target = targets_dict.get(table_vheaders[idx], None)
+            for col, value in enumerate(row):
+                if col < 2:
+                    continue
+                item = QtGui.QStandardItem(str(value))
+                # if target and value <= target:
+                #     font = QtGui.QFont()
+                #     font.setBold(True)
+                #     item.setForeground(QtGui.QBrush(QtGui.QColor(255, 0, 0)))
+                #     item.setFont(font)
+                self.table_model.setItem(idx, col, item)
+            self.table_model.setItem(idx, 1, QtGui.QStandardItem(str(round(statistics.mean(row), 1))))
+
+
+class MUDetailsDisplayTable(QtWidgets.QWidget):
+    scheduler_jobs = {}
+
+    def __init__(self, parent, database_manager):
+        QtWidgets.QWidget.__init__(self, parent)
+        config = configparser.ConfigParser()
+        path = os.path.expanduser('~/Documents/JAM/JAMserver/jam.ini')
+        config.read(path)
+        self.database_manager = database_manager
+
+        self.table_model = QtGui.QStandardItemModel(3, 10)
+
+        self.table_view = QtWidgets.QTableView()
+        self.table_view.setModel(self.table_model)
+        self.table_view.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.table_view.setAlternatingRowColors(True)
+        v_header = self.table_view.verticalHeader()
+        v_header.hide()
+        h_header = self.table_view.horizontalHeader()
+        h_header.setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+
+        hbox = QtWidgets.QHBoxLayout()
+        start_label = QtWidgets.QLabel('Start: ')
+        start_datetime = QtCore.QDateTime.currentDateTime()
+        start_datetime.setTime(QtCore.QTime(7, 0))
+        self.start_spin = QtWidgets.QDateTimeEdit(start_datetime)
+        self.start_spin.setDisplayFormat('dd-MM-yy HH:mm')
+        self.start_spin.dateChanged.connect(self.change_end_date)
+        end_label = QtWidgets.QLabel('End: ')
+        end_datetime = QtCore.QDateTime.currentDateTime()
+        end_datetime.setTime(QtCore.QTime(19, 0))
+        self.end_spin = QtWidgets.QDateTimeEdit(end_datetime)
+        self.end_spin.setDisplayFormat('dd-MM-yy HH:mm')
+        populate_btn = QtWidgets.QPushButton('Refresh')
+        populate_btn.clicked.connect(self.populate_table)
+        hbox.addWidget(start_label)
+        hbox.addWidget(self.start_spin)
+        hbox.addWidget(end_label)
+        hbox.addWidget(self.end_spin)
+        hbox.addWidget(populate_btn)
+
+        box_layout = QtWidgets.QVBoxLayout()
+        box_layout.addLayout(hbox)
+        box_layout.addWidget(self.table_view)
+        self.setLayout(box_layout)
+        self.show()
+        self.populate_table()
+
+    def change_end_date(self, date):
+        self.end_spin.setDate(date)
+
+    def populate_table(self):
+        self.table_model.clear()
+
+        table_hheaders = ['Machine', 'Start', 'End', 'Duration', 'Output']
+        self.table_model.setHorizontalHeaderLabels(table_hheaders)
+        start = self.start_spin.dateTime().toPython()
+        end = self.end_spin.dateTime().toPython()
+        run_dict = self.database_manager.get_mu(start.isoformat(timespec='minutes'),
+                                                end.isoformat(timespec='minutes'))
+
+        row = 0
+        for key, values in run_dict.items():
+            self.table_model.setItem(row, 0, QtGui.QStandardItem(key))
+            for starttime, endtime, duration, output in values:
+                self.table_model.setItem(row, 1, QtGui.QStandardItem(starttime.strftime("%Y-%m-%d %H:%M")))
+                self.table_model.setItem(row, 2, QtGui.QStandardItem(endtime.strftime("%Y-%m-%d %H:%M")))
+                self.table_model.setItem(row, 3, QtGui.QStandardItem(str(duration)))
+                self.table_model.setItem(row, 4, QtGui.QStandardItem(str(output)))
+                row += 1
+
+
 class JamMainWindow(QtWidgets.QMainWindow):
     def __init__(self, parent):
         QtWidgets.QMainWindow.__init__(self, parent)
@@ -674,18 +934,29 @@ class JamMainWindow(QtWidgets.QMainWindow):
             else:
                 exit()
 
+        db_dict = {}
+        for key in ['host', 'port', 'user', 'password', 'db']:
+            db_dict[key] = config.get('Database', key)
+
         self.settings = viewerDatabase.Settings()
-        self.database_manager = viewerDatabase.DatabaseManager(self.settings, host=config.get('Database', 'host'),
-                                                               port=config.get('Database', 'port'),
-                                                               user=config.get('Database', 'user'),
-                                                               password=config.get('Database', 'password'),
-                                                               db=config.get('Database', 'db'))
+        self.database_manager = viewerDatabase.DatabaseManager(self.settings, **db_dict)
+        # self.database_manager = viewerDatabase.DatabaseManager(self.settings, host=config.get('Database', 'host'),
+        #                                                        port=config.get('Database', 'port'),
+        #                                                        user=config.get('Database', 'user'),
+        #                                                        password=config.get('Database', 'password'),
+        #                                                        db=config.get('Database', 'db'))
+        self.network_manager = viewerDatabase.NetworkManager(self.settings, db_dict)
+        self.scheduler = viewerDatabase.AutomateSchedulers(self.settings, db_dict)
 
         self.tab_widget = QtWidgets.QTabWidget()
         self.display_table = DisplayTable(self, self.database_manager)
         self.sfu_table = SFUDisplayTable(self, self.database_manager)
+        self.mu_table = MUDisplayTable(self, self.database_manager)
+        self.mu_det_table = MUDetailsDisplayTable(self, self.database_manager)
         self.tab_widget.addTab(self.display_table, 'Output Table')
         self.tab_widget.addTab(self.sfu_table, 'SFU Table')
+        self.tab_widget.addTab(self.mu_table, 'MU Table')
+        self.tab_widget.addTab(self.mu_det_table, 'MU Details Table')
         self.setCentralWidget(self.tab_widget)
 
         config_action = QtWidgets.QAction('&Configuration', self)
