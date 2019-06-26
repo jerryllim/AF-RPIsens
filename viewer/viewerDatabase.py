@@ -311,8 +311,10 @@ class DatabaseManager:
                     continue
                 start1 = time_list[i-1]
                 end1 = time
-                current = [value[1] for value in output_list if start1 <= value[1] <= end1 and value[0] == machine]
-                mu_list.append([machine, 0, start1.strftime("%H"), len(current)])
+                current = [(value[1], value[2]) for value in output_list
+                           if start1 <= value[1] <= end1 and value[0] == machine]
+                output_sum = sum(n for _, n in current)
+                mu_list.append([machine, output_sum, start1.strftime("%H"), len(current)])
 
         return mu_list
 
@@ -349,29 +351,6 @@ class DatabaseManager:
                 missing_list.append([machine, 0, start1.strftime("%H"), missed])
 
         return missing_list
-
-    def find_mu_in_hour(self, start, end, machines_list=None):
-        output_list = self.get_output(start, end, machines_list)
-        mu_list = []
-        if not machines_list:
-            machines_list = self.get_machine_names()
-        start = datetime.strptime(start, "%Y-%m-%dT%H:%M")
-        end = datetime.strptime(end, "%Y-%m-%dT%H:%M")
-        time_list = [start] + [start.replace(minute=0) + timedelta(hours=i+1)
-                               for i in range(end.hour - start.hour)]
-        if end not in time_list:
-            time_list = time_list + [end]
-
-        for machine in machines_list:
-            for i, time in enumerate(time_list):
-                if i == 0:
-                    continue
-                start1 = time_list[i-1]
-                end1 = time
-                current = [value[1] for value in output_list if start1 <= value[1] <= end1 and value[0] == machine]
-                mu_list.append([machine, 0, start1.strftime("%H"), len(current)])
-
-        return mu_list
 
     def transfer_tables(self):
         self.transfer_table_current_to_prev()
@@ -707,14 +686,14 @@ class DatabaseManager:
             conn.close()
 
     def create_machines_table(self):
-        conn = sqlite3.connect(self.lite_db)
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
+                               database=self.db, port=self.port)
 
         try:
-            cursor = conn.cursor()
-            if cursor:
+            with conn.cursor() as cursor:
                 sql = "CREATE TABLE IF NOT EXISTS machines_table ( " \
                       "machine varchar(10) NOT NULL, " \
-                      "output int(10) DEFAULT NULL, " \
+                      "output int(10) unsigned DEFAULT NULL, " \
                       "col1 int(11) DEFAULT NULL, " \
                       "col2 int(11) DEFAULT NULL, " \
                       "col3 int(11) DEFAULT NULL, " \
@@ -728,119 +707,71 @@ class DatabaseManager:
                       "PRIMARY KEY (machine) );"
                 cursor.execute(sql)
                 conn.commit()
-        except sqlite3.Error as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
-        finally:
-            conn.close()
-
-    def insert_machine(self, machine_row):
-        conn = sqlite3.connect(self.lite_db)
-
-        try:
-            cursor = conn.cursor()
-            if cursor:
-                sql = 'INSERT INTO machines_table VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
-                cursor.execute(sql, machine_row)
-                conn.commit()
-        except sqlite3.Error as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
-            conn.rollback()
-        finally:
-            conn.close()
-
-    def delete_machines(self, machines):
-        conn = sqlite3.connect(self.lite_db)
-
-        try:
-            cursor = conn.cursor()
-            if cursor:
-                sql = 'DELETE FROM machines_table WHERE machine = %s'
-                cursor.executemany(sql, machines)
-                conn.commit()
-        except sqlite3.Error as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
-            conn.rollback()
-        finally:
-            conn.close()
-
-    def reinsert_machines(self, machine_rows):
-        conn = sqlite3.connect(self.lite_db)
-
-        try:
-            cursor = conn.cursor()
-            if cursor:
-                sql = 'DELETE FROM machines_table;'
-                cursor.execute(sql)
-
-                sql = 'INSERT INTO machines_table VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
-                cursor.executemany(sql, machine_rows)
-                conn.commit()
-        except sqlite3.Error as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
-            conn.rollback()
+        except pymysql.DatabaseError as error:
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
         finally:
             conn.close()
 
     def get_machines_headers(self):
-        conn = sqlite3.connect(self.lite_db)
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
+                               database=self.db, port=self.port)
         headers_list = []
 
         try:
-            cursor = conn.cursor()
-            if cursor:
-                sql = 'PRAGMA table_info(machines_table);'
+            with conn.cursor() as cursor:
+                sql = 'SHOW COLUMNS FROM machines_table;'
                 cursor.execute(sql)
                 for row in cursor:
-                    headers_list.append(row[1])
-        except sqlite3.Error as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+                    headers_list.append(row[0])
+        except pymysql.DatabaseError as error:
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
             conn.rollback()
         finally:
             conn.close()
             return headers_list
 
     def get_machines(self):
-        conn = sqlite3.connect(self.lite_db)
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
+                               database=self.db, port=self.port)
         machines_list = []
 
         try:
-            cursor = conn.cursor()
-            if cursor:
+            with conn.cursor() as cursor:
                 sql = 'SELECT * FROM machines_table;'
                 cursor.execute(sql)
                 machines_list = cursor.fetchall()
-        except sqlite3.Error as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+        except pymysql.DatabaseError as error:
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
             conn.rollback()
         finally:
             conn.close()
             return machines_list
 
     def get_machine_names(self):
-        conn = sqlite3.connect(self.lite_db)
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
+                               database=self.db, port=self.port)
         machines_list = []
 
         try:
-            cursor = conn.cursor()
-            if cursor:
+            with conn.cursor() as cursor:
                 sql = 'SELECT machine FROM machines_table;'
                 cursor.execute(sql)
                 for row in cursor:
                     machines_list.append(row[0])
-        except sqlite3.Error as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+        except pymysql.DatabaseError as error:
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
             conn.rollback()
         finally:
             conn.close()
             return machines_list
 
     def get_machine_targets(self, col, machines_list=None):
-        conn = sqlite3.connect(self.lite_db)
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
+                               database=self.db, port=self.port)
         targets_dict = {}
         try:
-            cursor = conn.cursor()
-            if cursor:
-                query = "SELECT machine, "+ col +" FROM machines_table"
+            with conn.cursor() as cursor:
+                query = "SELECT machine, " + col + " FROM machines_table"
                 if machines_list:
                     machines_str = str(tuple(machines_list))
                     query = query + " WHERE machine IN " + machines_str
@@ -849,8 +780,8 @@ class DatabaseManager:
                 cursor.execute(query)
                 for row in cursor:
                     targets_dict[row[0]] = row[1]
-        except sqlite3.Error as error:
-            self.logger.error(sys._getframe().f_code.co_name, error)
+        except pymysql.DatabaseError as error:
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
             conn.rollback()
         finally:
             conn.close()

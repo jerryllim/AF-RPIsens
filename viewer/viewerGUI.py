@@ -791,7 +791,7 @@ class MUDisplayTable(QtWidgets.QWidget):
         start = self.start_spin.dateTime().toPython()
         end = self.end_spin.dateTime().toPython()
         time_list = [start.hour] + [(start.replace(minute=0) + datetime.timedelta(hours=i+1)).hour
-                                         for i in range(int((end - start).total_seconds()/3600))]
+                                    for i in range(int((end - start).total_seconds()/3600))]
         if end.hour != time_list[-1]:
             time_list = time_list + [end.hour]
 
@@ -800,26 +800,31 @@ class MUDisplayTable(QtWidgets.QWidget):
 
         self.table_model.setHorizontalHeaderLabels(table_hheaders)
 
-        output_list = []
+        minutes_list = []
+        outputs_list = []
         table_vheaders = self.database_manager.get_machine_names()
         for row, machine in enumerate(table_vheaders):
-            output_list.append([0] * len(table_hheaders))
+            minutes_list.append([0] * len(table_hheaders))
+            outputs_list.append([0] * len(table_hheaders))
             self.table_model.setItem(row, 0, QtGui.QStandardItem(machine))
 
         outputs = self.database_manager.find_mu_in_hour(start.isoformat(timespec='minutes'),
                                                         end.isoformat(timespec='minutes'))
+
         for row in outputs:
             col = table_hheaders.index('{}'.format(row[2]))
             idx = table_vheaders.index(row[0])
-            output_list[idx][col] = row[3]
+            minutes_list[idx][col] = row[3]
+            outputs_list[idx][col] = row[1]
 
         # targets_dict = self.database_manager.get_machine_targets('output')
 
-        for idx, row in enumerate(output_list):
+        for idx, row in enumerate(minutes_list):
             # target = targets_dict.get(table_vheaders[idx], None)
             for col, value in enumerate(row):
                 if col < 2:
                     continue
+                # item = QtGui.QStandardItem("{} ({})".format(value, outputs_list[idx][col]))
                 item = QtGui.QStandardItem(str(value))
                 # if target and value <= target:
                 #     font = QtGui.QFont()
@@ -945,8 +950,6 @@ class JamMainWindow(QtWidgets.QMainWindow):
         #                                                        user=config.get('Database', 'user'),
         #                                                        password=config.get('Database', 'password'),
         #                                                        db=config.get('Database', 'db'))
-        self.network_manager = viewerDatabase.NetworkManager(self.settings, db_dict)
-        self.scheduler = viewerDatabase.AutomateSchedulers(self.settings, db_dict)
 
         self.tab_widget = QtWidgets.QTabWidget()
         self.display_table = DisplayTable(self, self.database_manager)
