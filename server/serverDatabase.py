@@ -357,7 +357,7 @@ class DatabaseManager:
 
             return None
 
-    def get_output(self, start, end, machines_list=None):
+    def get_hourly_output(self, start, end, machines_list=None):
         conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
         output_list = []
@@ -379,6 +379,58 @@ class DatabaseManager:
         finally:
             conn.close()
             return output_list
+
+    def get_output(self, start, end, machines_list=None):
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
+                               database=self.db, port=self.port)
+        output_list = []
+
+        try:
+            with conn.cursor() as cursor:
+                query = "SELECT machine, date_time, output FROM jam_current_table WHERE date_time >= %s " \
+                        "AND date_time < %s"
+                if machines_list:
+                    machines_str = str(tuple(machines_list))
+                    query = query + " AND machine IN " + machines_str
+
+                query = query + " ORDER BY machine ASC, date_time ASC;"
+                cursor.execute(query, (start, end))
+                output_list = cursor.fetchall()
+        except pymysql.DatabaseError as error:
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
+            conn.rollback()
+        finally:
+            conn.close()
+            return output_list
+
+    def get_mu(self, start, end, machines_list=None):
+        output_list = self.get_output(start, end, machines_list)
+        output_dict = {}
+        machine = None
+        last_machine = None
+        current = []
+
+        for machine, date_time, output in output_list:
+            if machine not in output_dict:
+                if last_machine:
+                    current[2] = int((current[1] - current[0]).total_seconds() / 60) + 1
+                    output_dict[last_machine].append(current)
+                output_dict[machine] = []
+                last_machine = machine
+                current = [date_time, date_time, 0, output]
+            elif current[1] + timedelta(minutes=1) == date_time:
+                current[1] = date_time
+                current[3] = current[3] + output
+            else:
+                current[2] = int((current[1] - current[0]).total_seconds() / 60) + 1
+                output_dict[machine].append(current)
+                current = [date_time, date_time, 0, output]
+
+        if machine:
+            current[2] = int((current[1] - current[0]).total_seconds() / 60) + 1
+            output_dict[machine].append(current)
+
+        return output_dict
 
     def transfer_tables(self):
         self.transfer_table_current_to_prev()

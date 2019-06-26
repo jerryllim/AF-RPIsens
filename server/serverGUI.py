@@ -1080,8 +1080,8 @@ class DisplayTable(QtWidgets.QWidget):
             output_list.append([0] * len(table_hheaders))
             self.table_model.setItem(row, 0, QtGui.QStandardItem(machine))
 
-        outputs = self.database_manager.get_output(start.isoformat(timespec='minutes'),
-                                                   end.isoformat(timespec='minutes'))
+        outputs = self.database_manager.get_hourly_output(start.isoformat(timespec='minutes'),
+                                                          end.isoformat(timespec='minutes'))
         for row in outputs:
             col = table_hheaders.index('{:02d}'.format(row[2]))
             idx = table_vheaders.index(row[0])
@@ -1191,6 +1191,81 @@ class SFUDisplayTable(QtWidgets.QWidget):
                 self.sfu_model.setItem(index, col, item)
 
 
+class MUDisplayTable(QtWidgets.QWidget):
+    scheduler_jobs = {}
+
+    def __init__(self, parent, database_manager):
+        QtWidgets.QWidget.__init__(self, parent)
+        config = configparser.ConfigParser()
+        path = os.path.expanduser('~/Documents/JAM/JAMserver/jam.ini')
+        config.read(path)
+        self.database_manager = database_manager
+        self.scheduler = BackgroundScheduler()
+
+        self.table_model = QtGui.QStandardItemModel(3, 10)
+
+        self.table_view = QtWidgets.QTableView()
+        self.table_view.setModel(self.table_model)
+        self.table_view.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.table_view.setAlternatingRowColors(True)
+        v_header = self.table_view.verticalHeader()
+        v_header.hide()
+        h_header = self.table_view.horizontalHeader()
+        h_header.setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+
+        hbox = QtWidgets.QHBoxLayout()
+        date_label = QtWidgets.QLabel('Date: ')
+        self.date_spin = QtWidgets.QDateEdit()
+        self.date_spin.setDate(QtCore.QDate.currentDate())
+        start_label = QtWidgets.QLabel('Start: ')
+        self.start_spin = QtWidgets.QTimeEdit(QtCore.QTime(7, 0))
+        self.start_spin.setDisplayFormat('HH:mm')
+        hour_label = QtWidgets.QLabel('Hours: ')
+        self.hour_spin = QtWidgets.QSpinBox()
+        self.hour_spin.setMinimum(1)
+        self.hour_spin.setMaximum(24)
+        self.hour_spin.setValue(12)
+        populate_btn = QtWidgets.QPushButton('Refresh')
+        populate_btn.clicked.connect(self.populate_table)
+        hbox.addWidget(date_label)
+        hbox.addWidget(self.date_spin)
+        hbox.addWidget(start_label)
+        hbox.addWidget(self.start_spin)
+        hbox.addWidget(hour_label)
+        hbox.addWidget(self.hour_spin)
+        hbox.addWidget(populate_btn)
+
+        box_layout = QtWidgets.QVBoxLayout()
+        box_layout.addLayout(hbox)
+        box_layout.addWidget(self.table_view)
+        self.setLayout(box_layout)
+        self.show()
+        self.populate_table()
+        self.scheduler.start()
+
+    def populate_table(self):
+        self.table_model.clear()
+
+        table_hheaders = ['Machine', 'Start', 'End', 'Duration', 'Output']
+        self.table_model.setHorizontalHeaderLabels(table_hheaders)
+        date = self.date_spin.date().toPython()
+        start_time = self.start_spin.time().toPython()
+        start = datetime.datetime.combine(date, start_time)
+        end = start + datetime.timedelta(hours=int(self.hour_spin.text()))
+        run_dict = self.database_manager.get_mu(start.isoformat(timespec='minutes'),
+                                                     end.isoformat(timespec='minutes'))
+
+        row = 0
+        for key, values in run_dict.items():
+            self.table_model.setItem(row, 0, QtGui.QStandardItem(key))
+            for starttime, endtime, duration, output in values:
+                self.table_model.setItem(row, 1, QtGui.QStandardItem(starttime.strftime("%Y-%m-%d %H:%M")))
+                self.table_model.setItem(row, 2, QtGui.QStandardItem(endtime.strftime("%Y-%m-%d %H:%M")))
+                self.table_model.setItem(row, 3, QtGui.QStandardItem(str(duration)))
+                self.table_model.setItem(row, 4, QtGui.QStandardItem(str(output)))
+                row += 1
+
+
 class JamMainWindow(QtWidgets.QMainWindow):
     def __init__(self, parent):
         QtWidgets.QMainWindow.__init__(self, parent)
@@ -1233,8 +1308,10 @@ class JamMainWindow(QtWidgets.QMainWindow):
         self.tab_widget = QtWidgets.QTabWidget()
         self.display_table = DisplayTable(self, self.database_manager)
         self.sfu_table = SFUDisplayTable(self, self.database_manager)
+        self.mu_table = MUDisplayTable(self, self.database_manager)
         self.tab_widget.addTab(self.display_table, 'Output Table')
         self.tab_widget.addTab(self.sfu_table, 'SFU Table')
+        self.tab_widget.addTab(self.mu_table, 'MU Table')
         self.setCentralWidget(self.tab_widget)
 
         config_action = QtWidgets.QAction('&Configuration', self)
