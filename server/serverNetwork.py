@@ -160,7 +160,7 @@ class NetworkManager:
 
         time.sleep(1)
 
-        while self.router_send.poll(1000):
+        while self.router_send.poll(2000):
             try:
                 id_from, recv_bytes = self.router_send.recv_multipart()
                 recv_dict = json.loads(recv_bytes.decode())
