@@ -284,6 +284,7 @@ class PiController:
             while self.dealer.poll(timeout):
                 reply = json.loads(str(self.dealer.recv(), "utf-8"))
                 if validation is None or validation in reply.keys():
+                    self.logger.debug("{}".format(str(reply.keys())))
                     recv_msg = reply
                     self.logger.debug('Received reply {} from server on try {}'.format(recv_msg, i))
                     return recv_msg

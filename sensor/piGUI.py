@@ -1116,7 +1116,12 @@ class PiGUIApp(App):
             'machine2_enable': 0,
             'machine3_enable': 0})
 
-        ip_add = self.get_ip_add()
+        try:
+            ip_add = self.get_ip_add()
+        except OSError as error:
+            self.logger.error("No ip_add {}".format(error))
+            self.stop()
+
         config.setdefaults('Network', {
             'self_add': ip_add,
             'self_port': 8888,
