@@ -183,10 +183,10 @@ class PiController:
     def set_output_callback(self, pin):
         self.pi.callback(pin, pigpio.RISING_EDGE, self.output_pin_triggered)
 
-    def pin_setup(self, pin, bounce=500):
+    def pin_setup(self, pin, steady=500):
         self.pi.set_mode(pin, pigpio.INPUT)
         self.pi.set_pull_up_down(pin, pigpio.PUD_DOWN)
-        self.pi.set_glitch_filter(pin, (bounce))
+        self.pi.set_glitch_filter(pin, steady)
         self.callbacks.append(self.pi.callback(pin, pigpio.RISING_EDGE, self.pin_triggered))
 
     def update_count(self, key, name):
