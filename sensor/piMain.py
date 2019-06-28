@@ -24,7 +24,6 @@ class PiController:
     pipe_b = None
 
     TIMEOUT = 1000
-    bounce = 30
     pulse_pins = {}
     pin_to_name = {}
     counts = {}
@@ -184,10 +183,10 @@ class PiController:
     def set_output_callback(self, pin):
         self.pi.callback(pin, pigpio.RISING_EDGE, self.output_pin_triggered)
 
-    def pin_setup(self, pin, bounce=30):
+    def pin_setup(self, pin, bounce=500):
         self.pi.set_mode(pin, pigpio.INPUT)
         self.pi.set_pull_up_down(pin, pigpio.PUD_DOWN)
-        self.pi.set_glitch_filter(pin, (bounce * 1000))
+        self.pi.set_glitch_filter(pin, (bounce))
         self.callbacks.append(self.pi.callback(pin, pigpio.RISING_EDGE, self.pin_triggered))
 
     def update_count(self, key, name):
