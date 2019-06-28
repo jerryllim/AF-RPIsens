@@ -263,9 +263,9 @@ class PiController:
 
     def request(self, msg_dict):
         # Clear buffer by restarting the dealer socket
-        self.dealer.setsockopt(zmq.LINGER, 0)
-        self.dealer.close()
-        self.dealer_routine()
+        # self.dealer.setsockopt(zmq.LINGER, 0)
+        # self.dealer.close()
+        # self.dealer_routine()
 
         timeout = self.TIMEOUT
         # msg_dict['ip'] = self.self_add
