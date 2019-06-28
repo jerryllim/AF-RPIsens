@@ -44,7 +44,7 @@ class MachinesTab(QtWidgets.QWidget):
 
         self.populate_machines()
 
-        # Add, Delete, Save button on right
+        # Add, Delete button on right
         btn_box = QtWidgets.QVBoxLayout()
         add_btn = QtWidgets.QPushButton('Add', self)
         add_btn.clicked.connect(self.add_row)
@@ -1085,7 +1085,13 @@ class DisplayTable(QtWidgets.QWidget):
                                                           end.isoformat(timespec='minutes'))
         for row in outputs:
             col = table_hheaders.index('{:02d}'.format(row[2]))
-            idx = table_vheaders.index(row[0])
+            try:
+                idx = table_vheaders.index(row[0])
+            except ValueError:
+                table_vheaders.append(row[0])
+                idx = table_vheaders.index(row[0])
+                self.table_model.setItem(idx, 0, QtGui.QStandardItem(row[0]))
+                output_list.append([0] * len(table_hheaders))
             output_list[idx][col] = row[3]
 
         targets_dict = self.database_manager.get_machine_targets('output')
@@ -1248,7 +1254,7 @@ class MUDisplayTable(QtWidgets.QWidget):
         start = self.start_spin.dateTime().toPython()
         end = self.end_spin.dateTime().toPython()
         time_list = [start.hour] + [(start.replace(minute=0) + datetime.timedelta(hours=i+1)).hour
-                                         for i in range(int((end - start).total_seconds()/3600))]
+                                    for i in range(int((end - start).total_seconds()/3600))]
         if end.hour != time_list[-1]:
             time_list = time_list + [end.hour]
 
@@ -1257,26 +1263,31 @@ class MUDisplayTable(QtWidgets.QWidget):
 
         self.table_model.setHorizontalHeaderLabels(table_hheaders)
 
-        output_list = []
+        minutes_list = []
+        outputs_list = []
         table_vheaders = self.database_manager.get_machine_names()
         for row, machine in enumerate(table_vheaders):
-            output_list.append([0] * len(table_hheaders))
+            minutes_list.append([0] * len(table_hheaders))
+            outputs_list.append([0] * len(table_hheaders))
             self.table_model.setItem(row, 0, QtGui.QStandardItem(machine))
 
         outputs = self.database_manager.find_mu_in_hour(start.isoformat(timespec='minutes'),
                                                         end.isoformat(timespec='minutes'))
+
         for row in outputs:
             col = table_hheaders.index('{}'.format(row[2]))
             idx = table_vheaders.index(row[0])
-            output_list[idx][col] = row[3]
+            minutes_list[idx][col] = row[3]
+            outputs_list[idx][col] = row[1]
 
         # targets_dict = self.database_manager.get_machine_targets('output')
 
-        for idx, row in enumerate(output_list):
+        for idx, row in enumerate(minutes_list):
             # target = targets_dict.get(table_vheaders[idx], None)
             for col, value in enumerate(row):
                 if col < 2:
                     continue
+                # item = QtGui.QStandardItem("{} ({})".format(value, outputs_list[idx][col]))
                 item = QtGui.QStandardItem(str(value))
                 # if target and value <= target:
                 #     font = QtGui.QFont()
@@ -1516,9 +1527,9 @@ class DatabaseSetup(QtWidgets.QDialog):
             for key in self.db_edits.keys():
                 self.config.set('Database', key, self.db_edits[key].text())
 
-        path = os.path.expanduser('~/Documents/JAM/JAMserver/jam.ini')
-        with open(path, 'w') as configfile:
-            self.config.write(configfile)
+            path = os.path.expanduser('~/Documents/JAM/JAMviewer/jam.ini')
+            with open(path, 'w') as configfile:
+                self.config.write(configfile)
 
             self.accept()
 

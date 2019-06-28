@@ -17,20 +17,6 @@ class MachinesTab(QtWidgets.QWidget):
         self.configuration_parent = parent
         self.database_manager = self.parent().database_manager
 
-        # Add Top box for insert
-        self.insert_fields = {}
-        self.hheaders = self.database_manager.get_machines_headers()
-        insert_box = QtWidgets.QGridLayout()
-        for col, head in enumerate(self.hheaders):
-            label = QtWidgets.QLabel(head, self)
-            edit = QtWidgets.QLineEdit(self)
-            edit.setValidator(QtGui.QIntValidator())
-            self.insert_fields[head] = edit
-            insert_box.addWidget(label, 0, col)
-            insert_box.setAlignment(label, QtCore.Qt.AlignCenter)
-            insert_box.addWidget(edit, 1, col)
-        self.insert_fields[self.hheaders[0]].setValidator(None)
-
         # Tree View & Models for Machines
         self.machine_model = QtGui.QStandardItemModel(0, 3, self)
         self.machine_table = QtWidgets.QTableView(self)
@@ -42,22 +28,8 @@ class MachinesTab(QtWidgets.QWidget):
 
         self.populate_machines()
 
-        # Add, Delete, Save button on right
-        btn_box = QtWidgets.QVBoxLayout()
-        add_btn = QtWidgets.QPushButton('Add', self)
-        add_btn.clicked.connect(self.add_row)
-        btn_box.addWidget(add_btn)
-        del_btn = QtWidgets.QPushButton('Delete', self)
-        del_btn.clicked.connect(self.delete_rows)
-        btn_box.addWidget(del_btn)
-        btn_box.addStretch()
-
         vbox_layout = QtWidgets.QVBoxLayout()
-        vbox_layout.addLayout(insert_box)
-        hbox_layout = QtWidgets.QHBoxLayout()
-        hbox_layout.addWidget(self.machine_table)
-        hbox_layout.addLayout(btn_box)
-        vbox_layout.addLayout(hbox_layout)
+        vbox_layout.addLayout(self.machine_table)
         self.setLayout(vbox_layout)
         self.show()
 
@@ -96,6 +68,16 @@ class MachinesTab(QtWidgets.QWidget):
             rows.add(idx.row())
         if not rows:
             return
+
+        for row in rows:
+            machine = self.machine_model.item(row, 0).data(QtCore.Qt.EditRole)
+            pi = self.configuration_parent.machine_in_use(machine)
+            if pi:
+                QtWidgets.QMessageBox.critical(self, 'Unable to delete',
+                                               '{} is currently in use by {}. '
+                                               'Please remove and try again.'.format(machine, pi),
+                                               QtWidgets.QMessageBox.Close)
+                return
 
         row = min(rows)
         count = len(rows)
@@ -217,6 +199,7 @@ class PisTab(QtWidgets.QWidget):
         self.pis_treeview.setSortingEnabled(True)
         self.populate_pis()
         header = self.pis_treeview.header()
+        header.setStretchLastSection(False)
         # header.setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeToContents)
         header.setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
         # header.setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeToContents)
@@ -530,6 +513,9 @@ class ConfigurationWidget(QtWidgets.QWidget):
         layout.addLayout(btn_box)
         self.setLayout(layout)
         # self.show()
+
+    def machine_in_use(self, machine):
+        return self.pis_tab.machine_in_use(machine)
 
     def save_all(self):
         self.machines_tab.save_table()
