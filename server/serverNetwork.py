@@ -62,7 +62,7 @@ class NetworkManager:
         self.router_send.setsockopt(zmq.TCP_KEEPALIVE_CNT, 60)
         self.router_send.setsockopt(zmq.TCP_KEEPALIVE_INTVL, 60)
         self.router_send.setsockopt(zmq.ROUTER_MANDATORY, 1)
-        self.router_send.setsockopt(zmq.ROUTER_HANDOVER, 1)
+        # self.router_send.setsockopt(zmq.ROUTER_HANDOVER, 1)
         # connect to all the ports
         for ip, port in self.settings.get_ips_ports():
             self.router_send.connect("tcp://{}:{}".format(ip, port))
@@ -145,6 +145,7 @@ class NetworkManager:
         now = datetime.datetime.now().isoformat()
         self.logger.debug("Requesting jam")
         ip_list = self.settings.get_ips()
+        error_list = []
         for ip in ip_list:
             send_dict = {'jam': 0}
             jobs = self.get_jobs_info_for(ip)
@@ -154,6 +155,7 @@ class NetworkManager:
             try:
                 self.router_send.send_multipart(to_send)
             except zmq.ZMQError as error:
+                error_list.append(ip)
                 self.logger.warning("Error {} for ip {}".format(error, ip))
 
         time.sleep(1)
@@ -197,7 +199,7 @@ class NetworkManager:
         if ip_list:
             self.logger.info('Machine(s) {} did not reply.'.format(ip_list))
 
-        for ip in ip_list:
+        for ip in error_list:
             port = self.settings.get_port_for(ip)
             self.router_send.connect("tcp://{}:{}".format(ip, port))
             self.logger.info("Reconnecting to {}:{}".format(ip, port))
