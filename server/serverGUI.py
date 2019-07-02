@@ -1199,6 +1199,7 @@ class SFUDisplayTable(QtWidgets.QWidget):
 
 class MUDisplayTable(QtWidgets.QWidget):
     scheduler_jobs = {}
+    date_time = None
 
     def __init__(self, parent, database_manager):
         QtWidgets.QWidget.__init__(self, parent)
