@@ -92,6 +92,12 @@ class AutomateSchedulers:
         self.scheduler = BackgroundScheduler()
         # self.scheduler.start()
 
+    def start_scheduler(self):
+        self.scheduler.start()
+
+    def pause_scheduler(self):
+        self.scheduler.pause()
+
     def get_cron_hour_minute(self, section):
         if section in ['Export', 'Import']:
             time = self.settings.config.get(section, 'time')
@@ -130,6 +136,10 @@ class AutomateSchedulers:
 
     def read_import_file(self):
         filepath = self.settings.config.get('Import', 'path')
+        if not os.path.isfile(filepath):
+            self.logger.debug('No import file found')
+            return
+
         with open(filepath, 'r') as import_file:
             csv_reader = csv.reader(import_file)
 
@@ -150,10 +160,13 @@ class AutomateSchedulers:
 
     def write_export_file(self):
         filepath = self.settings.config.get('Export', 'path') + 'export_jam.csv'
+        if not os.path.isfile(filepath):
+            with open(filepath, 'w') as export_file:
+                csv_writer = csv.writer(export_file)
+                csv_writer.writerow(self.database_manager.get_sfu_headers())
+
         with open(filepath, 'a') as export_file:
             csv_writer = csv.writer(export_file)
-
-            csv_writer.writerow(self.database_manager.get_sfu_headers())
             csv_writer.writerows(self.database_manager.get_sfus())
 
         self.logger.debug('Wrote export file')

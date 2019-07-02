@@ -1468,8 +1468,11 @@ class JamMainWindow(QtWidgets.QMainWindow):
         #                                                        db=config.get('Database', 'db'))
         self.network_manager = serverNetwork.NetworkManager(self.settings, db_dict)
         self.scheduler = serverDatabase.AutomateSchedulers(self.settings, db_dict)
-        # self.scheduler.schedule_export()
-        # self.scheduler.schedule_import()
+        self.scheduler.schedule_export()
+        self.scheduler.schedule_import()
+        self.scheduler.schedule_table_transfers()
+        self.scheduler.schedule_delete_old_jobs()
+        self.scheduler.start_scheduler()
 
         self.tab_widget = QtWidgets.QTabWidget()
         self.display_table = DisplayTable(self, self.database_manager)
