@@ -136,13 +136,13 @@ class NetworkManager:
 
     def worker_talk(self, msg="jam"):
         sender = self.context.socket(zmq.DEALER)
-        sender.connect("ipc://send.ipc")
+        sender.connect("inproc://send.ipc")
         sender.send_string(msg)
 
     def router_send_loop(self):
         worker = self.context.socket(zmq.DEALER)
         worker.setsockopt_string(zmq.IDENTITY, "SendWorker")
-        worker.bind("ipc://send.ipc")
+        worker.bind("inproc://send.ipc")
 
         poller = zmq.Poller()
         poller.register(self.router_send, zmq.POLLIN)
