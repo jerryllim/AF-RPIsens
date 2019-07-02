@@ -32,6 +32,7 @@ class MachinesTab(QtWidgets.QWidget):
             insert_box.setAlignment(label, QtCore.Qt.AlignCenter)
             insert_box.addWidget(edit, 1, col)
         self.insert_fields[self.hheaders[0]].setValidator(None)
+        self.insert_fields[self.hheaders[0]].setMaxLength(10)
 
         # Tree View & Models for Machines
         self.machine_model = QtGui.QStandardItemModel(0, 3, self)

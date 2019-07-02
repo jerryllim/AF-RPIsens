@@ -2,8 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="8c4eab11-9431-48ea-8992-fef6a6e722be" name="Default" comment="Reduced labels (populate in init) &amp; created NumericProperty for counter">
-      <change beforePath="$PROJECT_DIR$/viewer/viewerDatabase.py" beforeDir="false" afterPath="$PROJECT_DIR$/viewer/viewerDatabase.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/viewer/viewerGUI.py" beforeDir="false" afterPath="$PROJECT_DIR$/viewer/viewerGUI.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/serverGUI.py" beforeDir="false" afterPath="$PROJECT_DIR$/server/serverGUI.py" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -70,7 +69,7 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="false">
+          <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/server/serverNetwork.py">
               <provider selected="true" editor-type-id="text-editor">
                 <state relative-caret-position="213">
@@ -106,7 +105,7 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="true">
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/viewer/viewerDatabase.py">
               <provider selected="true" editor-type-id="text-editor">
                 <state relative-caret-position="358">
@@ -140,11 +139,11 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="false">
+          <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="1064">
-                  <caret line="1311" selection-start-line="1311" selection-end-line="1311" />
+                <state relative-caret-position="292">
+                  <caret line="34" column="60" selection-start-line="34" selection-start-column="60" selection-end-line="34" selection-end-column="60" />
                   <folding>
                     <element signature="e#0#9#0" expanded="true" />
                   </folding>
@@ -152,11 +151,11 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="true">
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/viewer/viewerGUI.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="209">
-                  <caret line="103" column="50" selection-start-line="103" selection-start-column="50" selection-end-line="103" selection-end-column="50" />
+                <state relative-caret-position="359">
+                  <caret line="113" column="34" selection-start-line="113" selection-start-column="34" selection-end-line="113" selection-end-column="34" />
                 </state>
               </provider>
             </entry>
@@ -198,12 +197,10 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>respondent</find>
       <find>steady</find>
       <find>MUDispla</find>
       <find>MUDis</find>
       <find>sfu</find>
-      <find>machine</find>
       <find>machinesT</find>
       <find>partial</find>
       <find>MUDi</find>
@@ -228,6 +225,8 @@
       <find>hheaders</find>
       <find>machines</find>
       <find>reinsert</find>
+      <find>machine</find>
+      <find>machinestab</find>
     </findStrings>
     <replaceStrings>
       <replace>TMessage</replace>
@@ -313,9 +312,9 @@
         <option value="/Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/pymysql/cursors.py" />
         <option value="$PROJECT_DIR$/server/serverDatabase.py" />
         <option value="$PROJECT_DIR$/server/serverNetwork.py" />
-        <option value="$PROJECT_DIR$/server/serverGUI.py" />
         <option value="$PROJECT_DIR$/viewer/viewerDatabase.py" />
         <option value="$PROJECT_DIR$/viewer/viewerGUI.py" />
+        <option value="$PROJECT_DIR$/server/serverGUI.py" />
       </list>
     </option>
   </component>
@@ -394,7 +393,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.viewerGUI">
+  <component name="RunManager" selected="Python.serverGUI">
     <configuration default="true" type="Applet">
       <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
       <method v="2">
@@ -688,8 +687,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.viewerGUI" />
         <item itemvalue="Python.serverGUI" />
+        <item itemvalue="Python.viewerGUI" />
         <item itemvalue="Python.viewerGUI2" />
         <item itemvalue="Python.test_multiprocessing" />
         <item itemvalue="Python.piGUI" />
@@ -1080,30 +1079,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1064">
-          <caret line="1311" selection-start-line="1311" selection-end-line="1311" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/server/jam.ini">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="225">
           <caret line="15" column="10" selection-start-line="15" selection-start-column="10" selection-end-line="15" selection-end-column="10" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/server/serverNetwork.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="227">
-          <caret line="139" column="21" selection-start-line="139" selection-start-column="21" selection-end-line="139" selection-end-column="21" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1126,8 +1105,28 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/viewer/viewerGUI.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="209">
-          <caret line="103" column="50" selection-start-line="103" selection-start-column="50" selection-end-line="103" selection-end-column="50" />
+        <state relative-caret-position="359">
+          <caret line="113" column="34" selection-start-line="113" selection-start-column="34" selection-end-line="113" selection-end-column="34" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/serverNetwork.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="227">
+          <caret line="139" column="21" selection-start-line="139" selection-start-column="21" selection-end-line="139" selection-end-column="21" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="292">
+          <caret line="34" column="60" selection-start-line="34" selection-start-column="60" selection-end-line="34" selection-end-column="60" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
