@@ -45,6 +45,9 @@ class NetworkManager:
         self.router_thread = threading.Thread(target=self.route)
         self.router_thread.daemon = True
         self.router_thread.start()
+        self.sender_thread = threading.Thread(target=self.router_send_loop)
+        self.sender_thread.daemon = True
+        self.sender_thread.start()
         self.scheduler = BackgroundScheduler()
         jam_dur = self.settings.config.getint('Network', 'interval')
         self.schedule_jam(interval=jam_dur)
@@ -62,7 +65,7 @@ class NetworkManager:
         self.router_send.setsockopt(zmq.TCP_KEEPALIVE_CNT, 60)
         self.router_send.setsockopt(zmq.TCP_KEEPALIVE_INTVL, 60)
         self.router_send.setsockopt(zmq.ROUTER_MANDATORY, 1)
-        # self.router_send.setsockopt(zmq.ROUTER_HANDOVER, 1)
+        self.router_send.setsockopt(zmq.ROUTER_HANDOVER, 1)
         # connect to all the ports
         for ip, port in self.settings.get_ips_ports():
             self.router_send.connect("tcp://{}:{}".format(ip, port))
@@ -130,6 +133,70 @@ class NetworkManager:
                 # self.router_recv.send(ident, zmq.SNDMORE)
                 # self.router_recv.send(delimiter, zmq.SNDMORE)
                 # self.router_recv.send_json(reply_dict)
+
+    def worker_talk(self, msg="jam"):
+        sender = self.context.socket(zmq.DEALER)
+        sender.connect("ipc://send.ipc")
+        sender.send_string(msg)
+
+    def router_send_loop(self):
+        worker = self.context.socket(zmq.DEALER)
+        worker.setsockopt_string(zmq.IDENTITY, "SendWorker")
+        worker.bind("ipc://send.ipc")
+
+        poller = zmq.Poller()
+        poller.register(self.router_send, zmq.POLLIN)
+        poller.register(worker, zmq.POLLIN)
+
+        while not self.router_kill.is_set():
+            socks = dict(poller.poll(1000))
+
+            if self.router_send in socks:
+                id_from, recv_bytes = self.router_send.recv_multipart()
+                recv_dict = json.loads(recv_bytes.decode())
+                machine_ip = id_from.decode()
+
+                if recv_dict.pop("jobs", 0):
+                    self.database_manager.update_ludt_jobs(machine_ip)
+
+                jam_msg = recv_dict.pop('jam', {})
+                sfu_list = jam_msg.pop('sfu', [])
+                for sfu_str in sfu_list:
+                    self.insert_sfu(machine_ip, sfu_str)
+
+                for idx in range(1, 4):
+                    machine = self.settings.get_machine(machine_ip, idx)
+                    qc_list = jam_msg.pop('Q{}'.format(idx), [])
+                    if qc_list:
+                        self.database_manager.insert_qc(machine, qc_list)
+                    maintenance_dict = jam_msg.pop('M{}'.format(idx), {})
+                    if maintenance_dict:
+                        self.database_manager.replace_maintenance(machine, maintenance_dict)
+                    emp_dict = jam_msg.pop('E{}'.format(idx), {})
+                    if emp_dict:
+                        self.database_manager.replace_emp_shift(machine, emp_dict)
+
+                self.database_manager.insert_jam(machine_ip, jam_msg)
+
+            if worker in socks:
+                recv_msg = str(worker.recv(), "utf-8")
+
+                if recv_msg == "jam":
+                    ip_list = self.settings.get_ips()
+                    error_list = []
+                    for ip in ip_list:
+                        send_dict = {'jam': 0}
+                        jobs = self.get_jobs_info_for(ip)
+                        if jobs:
+                            send_dict['jobs'] = jobs
+                        to_send = [ip.encode(), (json.dumps(send_dict)).encode()]
+                        try:
+                            self.router_send.send_multipart(to_send)
+                        except zmq.ZMQError as error:
+                            error_list.append(ip)
+                            self.logger.warning("Error {} for ip {}".format(error, ip))
+
+                    time.sleep(1)
 
     def insert_sfu(self, ip, sfu_str):
         sfu_list = json.loads(sfu_str)
@@ -234,7 +301,7 @@ class NetworkManager:
         job_id = 'JAM'
         if self.scheduler_jobs.get(job_id):
             self.scheduler_jobs[job_id].remove()
-        self.scheduler_jobs[job_id] = self.scheduler.add_job(self.request_jam, cron_trigger, id=job_id,
+        self.scheduler_jobs[job_id] = self.scheduler.add_job(self.worker_talk, cron_trigger, id=job_id,
                                                              misfire_grace_time=30, max_instances=3)
 
     @staticmethod

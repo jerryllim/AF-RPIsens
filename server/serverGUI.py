@@ -682,8 +682,7 @@ class MiscTab(QtWidgets.QWidget):
         network_layout.addWidget(poll_spinbox, 2, 1)
         network_layout.addWidget(dur_label2, 2, 2)
         req_btn = QtWidgets.QPushButton('Request now', network_box)
-        # req_btn.clicked.connect(partial(self.parent().parent().network_manager.request_for, "jam", "all", "jam"))
-        req_btn.clicked.connect(self.parent().parent().network_manager.request_jam)
+        req_btn.clicked.connect(partial(self.parent().parent().network_manager.worker_talk, "jam"))
         network_layout.setAlignment(QtCore.Qt.AlignLeft)
         network_layout.addWidget(req_btn, 2, 3)
 
