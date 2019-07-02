@@ -1213,6 +1213,7 @@ class MUDisplayTable(QtWidgets.QWidget):
         self.table_view.setModel(self.table_model)
         self.table_view.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.table_view.setAlternatingRowColors(True)
+        self.table_view.doubleClicked.connect(self.details_popup)
         v_header = self.table_view.verticalHeader()
         v_header.hide()
 
@@ -1251,6 +1252,7 @@ class MUDisplayTable(QtWidgets.QWidget):
 
         table_hheaders = ['Machine', 'Avg']
         start = self.start_spin.dateTime().toPython()
+        self.date_time = start
         end = self.end_spin.dateTime().toPython()
         time_list = [start.hour] + [(start.replace(minute=0) + datetime.timedelta(hours=i+1)).hour
                                     for i in range(int((end - start).total_seconds()/3600))]
@@ -1295,6 +1297,67 @@ class MUDisplayTable(QtWidgets.QWidget):
                 #     item.setFont(font)
                 self.table_model.setItem(idx, col, item)
             self.table_model.setItem(idx, 1, QtGui.QStandardItem(str(round(statistics.mean(row), 1))))
+
+        self.table_hheaders = table_hheaders
+        self.table_vheaders = table_vheaders
+
+    def details_popup(self):
+        idx = self.table_view.selectedIndexes()[0]
+        hour = self.table_hheaders[idx.column()]
+        machine = self.table_vheaders[idx.row()]
+
+        if not hour.isnumeric():
+            return
+
+        start = self.date_time.replace(hour=int(hour), minute=0)
+
+        dialog = MUDetailsPopUp(self, machine, start, self.database_manager)
+        dialog.exec_()
+
+
+class MUDetailsPopUp(QtWidgets.QDialog):
+    def __init__(self, parent, machine, start, database_manager):
+        QtWidgets.QDialog.__init__(self, parent)
+        self.setMinimumWidth(500)
+        self.machine = machine
+        self.start = start
+        self.database_manager = database_manager
+        self.setWindowTitle("Details for {} during {}".format(self.machine, self.start.strftime("%d:%m:%Y %H:%M")))
+
+        self.table_model = QtGui.QStandardItemModel(5, 10)
+
+        self.table_view = QtWidgets.QTableView()
+        self.table_view.setModel(self.table_model)
+        self.table_view.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.table_view.setAlternatingRowColors(True)
+        v_header = self.table_view.verticalHeader()
+        v_header.hide()
+        h_header = self.table_view.horizontalHeader()
+        h_header.setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+
+        box_layout = QtWidgets.QVBoxLayout()
+        box_layout.addWidget(self.table_view)
+        self.setLayout(box_layout)
+        self.populate_table()
+
+    def populate_table(self):
+        self.table_model.clear()
+
+        table_hheaders = ['Machine', 'Start', 'End', 'Duration', 'Output']
+        self.table_model.setHorizontalHeaderLabels(table_hheaders)
+        start = self.start
+        end = self.start + datetime.timedelta(hours=1)
+        run_dict = self.database_manager.get_mu(start.isoformat(timespec='minutes'),
+                                                end.isoformat(timespec='minutes'), machines_list=[self.machine])
+        row = 0
+        for key, values in run_dict.items():
+            self.table_model.setItem(row, 0, QtGui.QStandardItem(key))
+            for starttime, endtime, duration, output in values:
+                self.table_model.setItem(row, 1, QtGui.QStandardItem(starttime.strftime("%Y-%m-%d %H:%M")))
+                self.table_model.setItem(row, 2, QtGui.QStandardItem(endtime.strftime("%Y-%m-%d %H:%M")))
+                self.table_model.setItem(row, 3, QtGui.QStandardItem(str(duration)))
+                self.table_model.setItem(row, 4, QtGui.QStandardItem(str(output)))
+                row += 1
 
 
 class MUDetailsDisplayTable(QtWidgets.QWidget):

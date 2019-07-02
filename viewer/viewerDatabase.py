@@ -248,14 +248,20 @@ class DatabaseManager:
 
         try:
             with conn.cursor() as cursor:
-                query = "SELECT machine, date_time, output FROM jam_current_table WHERE date_time >= %s " \
+                query1 = "SELECT machine, date_time, output FROM jam_current_table WHERE date_time >= %s " \
                         "AND date_time < %s"
-                if machines_list:
-                    machines_str = str(tuple(machines_list))
-                    query = query + " AND machine IN " + machines_str
+                query2 = "SELECT machine, date_time, output FROM jam_prev_table WHERE date_time >= %s " \
+                         "AND date_time < %s"
 
+                if machines_list:
+                    machines_str = str(list(machines_list))[1:-1]
+                    query1 = query1 + " AND machine IN (" + machines_str + ")"
+                    query2 = query2 + " AND machine IN (" + machines_str + ")"
+
+                query = query1 + " UNION ALL " + query2
                 query = query + " ORDER BY machine ASC, date_time ASC;"
-                cursor.execute(query, (start, end))
+
+                cursor.execute(query, (start, end, start, end))
                 output_list = cursor.fetchall()
         except pymysql.DatabaseError as error:
             self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
