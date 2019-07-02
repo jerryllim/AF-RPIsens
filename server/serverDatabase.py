@@ -510,12 +510,8 @@ class DatabaseManager:
                 dayofweek = self.settings.config.getint('Data', 'day')
                 offset = (today.isoweekday() - dayofweek) % 7
                 day_date = today - timedelta(offset)
-                query = "INSERT IGNORE INTO jam_past_table (machine, jo_no, emp, date_time, shift, output, col1, col2" \
-                        ", col3, col4, col5, col6, col7, col8, col9, col10) SELECT machine, jo_no, emp, " \
-                        "DATE_FORMAT(date_time, '%Y-%m-%d %H:00') as new_dt, shift, SUM(output), SUM(col1), SUM(col2)" \
-                        ", SUM(col3), SUM(col4), SUM(col5), SUM(col6), SUM(col7), SUM(col8), SUM(col9), SUM(col10) " \
-                        "FROM jam_prev_table WHERE date_time < %s - INTERVAL 1 WEEK GROUP BY machine," \
-                        " jo_no, emp, new_dt, shift;"
+                query = "INSERT IGNORE INTO jam_prev_table SELECT * FROM jam_prev_table WHERE date_time < %s " \
+                        "- INTERVAL 1 WEEK;"
                 cursor.execute(query, (day_date,))
                 query2 = "DELETE FROM jam_current_table WHERE date_time < %s - INTERVAL 1 WEEK;"
                 cursor.execute(query2, (day_date,))
