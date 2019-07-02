@@ -718,6 +718,24 @@ class DatabaseManager:
         finally:
             conn.close()
 
+    def reinsert_machines(self, machine_rows):
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
+                               database=self.db, port=self.port)
+
+        try:
+            with conn.cursor() as cursor:
+                sql = 'TRUNCATE machines_table;'
+                cursor.execute(sql)
+
+                sql = 'INSERT INTO machines_table VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+                cursor.executemany(sql, machine_rows)
+                conn.commit()
+        except pymysql.DatabaseError as error:
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
+            conn.rollback()
+        finally:
+            conn.close()
+
     def get_machines_headers(self):
         conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)

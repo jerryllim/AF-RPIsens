@@ -18,6 +18,7 @@ class MachinesTab(QtWidgets.QWidget):
         self.configuration_parent = parent
         self.database_manager = self.parent().database_manager
 
+        self.hheaders = self.database_manager.get_machines_headers()
         # Tree View & Models for Machines
         self.machine_model = QtGui.QStandardItemModel(0, 3, self)
         self.machine_table = QtWidgets.QTableView(self)
@@ -30,7 +31,7 @@ class MachinesTab(QtWidgets.QWidget):
         self.populate_machines()
 
         vbox_layout = QtWidgets.QVBoxLayout()
-        vbox_layout.addLayout(self.machine_table)
+        vbox_layout.addWidget(self.machine_table)
         self.setLayout(vbox_layout)
         self.show()
 
@@ -101,6 +102,8 @@ class MachinesTab(QtWidgets.QWidget):
                     try:
                         text = int(item.data(QtCore.Qt.EditRole))
                     except ValueError:
+                        text = None
+                    except TypeError:
                         text = None
                 else:
                     text = None
