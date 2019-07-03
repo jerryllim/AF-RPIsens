@@ -310,7 +310,9 @@ class SelectPage(Screen):
         ret, frame = self.cam.read()
 
         if ret:
-            barcodes = pyzbar.decode(frame)
+            frame2 = cv2.cvtColor(frame, cv2.COLOR_BGRA2GRAY)
+            frame3 = cv2.adaptiveThreshold(frame2, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+            barcodes = pyzbar.decode(frame3)
 
             if barcodes:
                 barcode = barcodes[0]
@@ -598,7 +600,9 @@ class EmployeeScanPage(Popup):
         ret, frame = self.cam.read()
 
         if ret:
-            barcodes = pyzbar.decode(frame)
+            frame2 = cv2.cvtColor(frame, cv2.COLOR_BGRA2GRAY)
+            frame3 = cv2.adaptiveThreshold(frame2, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+            barcodes = pyzbar.decode(frame3)
 
             if barcodes:
                 barcode = barcodes[0]

@@ -8,6 +8,7 @@ import logging
 import datetime
 import threading
 import serverDatabase
+import multiprocessing
 from io import StringIO
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -15,7 +16,6 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 class NetworkManager:
     router_send = None
-    router_recv = None
     self_add = None
     scheduler = None
     scheduler_jobs = {}
@@ -35,16 +35,16 @@ class NetworkManager:
         ap_logger.setLevel(logging.DEBUG)
         ap_logger.addHandler(file_handler)
 
+        # multiprocessing.set_start_method("spawn")
         self.self_add = self.get_ip_add()
         self.context = zmq.Context()
         self.settings = settings
         self.database_manager = serverDatabase.DatabaseManager(settings, **db_dict)
-        self.router_routine()
         self.setup_router_send()
         self.router_kill = threading.Event()
-        self.router_thread = threading.Thread(target=self.route)
-        self.router_thread.daemon = True
-        self.router_thread.start()
+        self.respond_process = RespondentProcess(self.self_add, db_dict)
+        self.respond_process.daemon = True
+        self.respond_process.start()
         self.sender_thread = threading.Thread(target=self.router_send_loop)
         self.sender_thread.daemon = True
         self.sender_thread.start()
@@ -102,7 +102,7 @@ class NetworkManager:
         self.router_recv.setsockopt(zmq.TCP_KEEPALIVE_IDLE, 1)
         self.router_recv.setsockopt(zmq.TCP_KEEPALIVE_CNT, 60)
         self.router_recv.setsockopt(zmq.TCP_KEEPALIVE_INTVL, 60)
-        # self.router_recv.setsockopt(zmq.ROUTER_MANDATORY, 1)
+        self.router_recv.setsockopt(zmq.ROUTER_MANDATORY, 1)
         self.router_recv.setsockopt(zmq.ROUTER_HANDOVER, 1)
         self.router_recv.bind("tcp://%s" % port_number)
 
@@ -312,6 +312,81 @@ class NetworkManager:
         s.close()
 
         return ip_add
+
+
+class RespondentProcess(multiprocessing.Process):
+    router_recv = None
+
+    def __init__(self, self_add, db_dict):
+        multiprocessing.Process.__init__(self)
+        # Logger setup
+        self.logger = logging.getLogger('jamSERVER_respond')
+        self.logger.setLevel(logging.DEBUG)
+        path = os.path.expanduser('~/Documents/JAM/JAMserver/jamSERVER_respondent.log')
+        file_handler = logging.FileHandler(path)
+        file_handler.setLevel(logging.DEBUG)
+        log_format = logging.Formatter('%(asctime)s - %(threadName)s - %(levelname)s: %(module)s - %(message)s')
+        file_handler.setFormatter(log_format)
+        self.logger.addHandler(file_handler)
+        self.logger.info('\n\nStarted logging')
+
+        self.self_add = self_add
+        self.context = zmq.Context()
+        self.exit = multiprocessing.Event()
+        self.settings = serverDatabase.Settings(log_name='jamSERVER_respond')
+        self.database_manager = serverDatabase.DatabaseManager(self.settings, **db_dict, log_name='jamSERVER_respond')
+        self.router_routine()
+
+    def router_routine(self):
+        port_number = "{}:{}".format(self.self_add, self.settings.config.get('Network', 'port'))
+        self.router_recv = self.context.socket(zmq.ROUTER)
+        self.router_recv.setsockopt(zmq.IMMEDIATE, 1)
+        self.router_recv.setsockopt(zmq.TCP_KEEPALIVE, 1)
+        self.router_recv.setsockopt(zmq.TCP_KEEPALIVE_IDLE, 1)
+        self.router_recv.setsockopt(zmq.TCP_KEEPALIVE_CNT, 60)
+        self.router_recv.setsockopt(zmq.TCP_KEEPALIVE_INTVL, 60)
+        # self.router_recv.setsockopt(zmq.ROUTER_MANDATORY, 1)
+        self.router_recv.setsockopt(zmq.ROUTER_HANDOVER, 1)
+        self.router_recv.bind("tcp://%s" % port_number)
+
+    def run(self):
+        while not self.exit.is_set():
+            self.logger.debug("Looping through")
+            if self.router_recv.poll(100):
+                self.logger.debug("Polled {}".format(self.router_recv.poll(1)))
+                id_from, recv_msg = self.router_recv.recv_multipart()
+                ip = id_from.decode()
+                message = json.loads(recv_msg.decode())
+                # ip = message.get("ip", None)
+                if "quit" in message.keys():
+                    break
+                self.logger.debug("Received message {} from {}".format(message, ip))
+                reply_dict = {}
+
+                for key in message.keys():
+                    if key == "job_info":
+                        barcode = message.get("job_info", None)
+                        reply_dict[barcode] = self.database_manager.get_job_info(barcode)
+                    elif key == "sfu":
+                        sfu_str = message.get("sfu", None)
+                        if sfu_str:
+                            self.insert_sfu(ip, sfu_str)
+                    elif key == "ping":
+                        reply_dict["pong"] = 1
+
+                self.database_manager.update_ludt_fr(ip)
+                self.logger.debug("Replying with {}".format(reply_dict))
+                self.router_recv.send_multipart([id_from, (json.dumps(reply_dict)).encode()])
+
+    def insert_sfu(self, ip, sfu_str):
+        sfu_list = json.loads(sfu_str)
+        umc = self.database_manager.get_umc_for(sfu_list[0], sfu_list[1])
+        idx = sfu_list[2]
+        sfu_list[2] = self.settings.get_mac(ip, idx)
+        sfu_list = [umc] + sfu_list
+
+        self.database_manager.insert_sfu(sfu_list)
+        self.database_manager.update_job(sfu_list[1], sfu_list[2], sfu_list[4])
 
 
 if __name__ == '__main__':

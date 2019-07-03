@@ -11,8 +11,8 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 
 class Settings:
-    def __init__(self, filename='jam.ini'):
-        self.logger = logging.getLogger('jamSERVER')
+    def __init__(self, filename='jam.ini', log_name="jamSERVER"):
+        self.logger = logging.getLogger(log_name)
 
         self.filename = filename
         self.config = configparser.ConfigParser()
@@ -160,16 +160,19 @@ class AutomateSchedulers:
 
     def write_export_file(self):
         filepath = self.settings.config.get('Export', 'path') + 'export_jam.csv'
-        if not os.path.isfile(filepath):
-            with open(filepath, 'w') as export_file:
+        try:
+            if not os.path.isfile(filepath):
+                with open(filepath, 'w') as export_file:
+                    csv_writer = csv.writer(export_file)
+                    csv_writer.writerow(self.database_manager.get_sfu_headers())
+
+            with open(filepath, 'a') as export_file:
                 csv_writer = csv.writer(export_file)
-                csv_writer.writerow(self.database_manager.get_sfu_headers())
+                csv_writer.writerows(self.database_manager.get_sfus())
 
-        with open(filepath, 'a') as export_file:
-            csv_writer = csv.writer(export_file)
-            csv_writer.writerows(self.database_manager.get_sfus())
-
-        self.logger.debug('Wrote export file')
+            self.logger.debug('Wrote export file')
+        except FileNotFoundError as error:
+            self.logger.debug("Unable to export to {}export_jam.csv".format(filepath))
 
     def schedule_table_transfers(self):
         job_id = 'Data'
@@ -199,8 +202,9 @@ class AutomateSchedulers:
 
 
 class DatabaseManager:
-    def __init__(self, settings, host='', user='', password='', db='', port='', create_tables=True):
-        self.logger = logging.getLogger('jamSERVER')
+    def __init__(self, settings, host='', user='', password='', db='', port='', create_tables=True,
+                 log_name="jamSERVER"):
+        self.logger = logging.getLogger(log_name)
         self.settings = settings
         self.host = host
         self.user = user
@@ -803,8 +807,8 @@ class DatabaseManager:
         try:
             with conn.cursor() as cursor:
                 sql = "SELECT umc FROM jobs_table WHERE uno = %s AND uline = %s;"
-                cursor.execute(sql, [uno, uline])
-                umc = cursor.fetchone()[0]
+                if cursor.execute(sql, [uno, uline]):
+                    umc = cursor.fetchone()[0]
         except pymysql.DatabaseError as error:
             self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
         finally:
