@@ -190,8 +190,9 @@ class MachineClass:
 
     def add_qc(self, emp_id, c_time, _pass):
         grade = 'Pass' if _pass else 'Fail'
-        self.current_job.set_qc(emp_id, c_time, grade)
-        self.controller.add_qc(self.index, "{0}_{1}_{2}_{3}".format(emp_id, self.current_job.get_jo_no(), c_time, int(_pass)))
+        self.current_job.set_qc(emp_id, c_time.strftime("%Y-%m-%d %H:%M"), grade)
+        self.controller.add_qc(self.index, "{0}_{1}_{2}_{3}".format(emp_id, self.current_job.get_jo_no(),
+                                                                    c_time.strftime('%d%H%M'), int(_pass)))
 
     def get_qc(self):
         if self.current_job:
@@ -268,15 +269,15 @@ class MachineClass:
     def start_maintenance(self, emp_id):
         start = datetime.now()
         self.maintenance = (emp_id, start)
-        self.controller.add_maintenance(self.index, "{0}_{1}".format(emp_id, start.strftime('%Y-%m-%d %H:%M')))
+        self.controller.add_maintenance(self.index, "{0}_{1}".format(emp_id, start.strftime('%d%H%M')))
 
     def get_maintenance(self):
         return self.maintenance
 
     def finished_maintenance(self, emp_id, start):
         self.maintenance = (None, None)
-        now = datetime.now().strftime('%Y-%m-%d %H:%M')
-        self.controller.add_maintenance(self.index, "{0}_{1}".format(emp_id, start.strftime('%Y-%m-%d %H:%M')), now)
+        now = datetime.now().strftime('%d%H%M')
+        self.controller.add_maintenance(self.index, "{0}_{1}".format(emp_id, start.strftime('%d%H%M')), now)
 
 
 class SelectPage(Screen):
@@ -294,6 +295,7 @@ class SelectPage(Screen):
 
         self.machine.set_state(State.SELECT)
         self.colour = Colour[self.machine.config['bg_colour']].value
+        self.ids.job_entry.text = ""
 
     def scan_barcode(self, instance):
         if not self.scan_btn:
@@ -311,7 +313,7 @@ class SelectPage(Screen):
 
         if ret:
             frame2 = cv2.cvtColor(frame, cv2.COLOR_BGRA2GRAY)
-            frame3 = cv2.adaptiveThreshold(frame2, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+            ret, frame3 = cv2.threshold(frame2, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
             barcodes = pyzbar.decode(frame3)
 
             if barcodes:
@@ -320,7 +322,7 @@ class SelectPage(Screen):
                 self.ids.job_entry.text = barcode_data
 
                 self.stop_checking(0)
-            self.show_image(frame)
+            self.show_image(frame3)
 
     def stop_checking(self, dt):
         if dt != 0:
@@ -336,9 +338,8 @@ class SelectPage(Screen):
             self.cam.release()
 
     def show_image(self, frame):
-        frame2 = cv2.cvtColor(frame, cv2.COLOR_BGRA2RGB)
+        frame2 = cv2.cvtColor(frame, cv2.COLOR_GRAY2RGB)
         buf1 = cv2.flip(frame2, 0)
-        # buf1 = cv2.flip(frame, 0)
         buf = buf1.tostring()
         image_texture = Texture.create(size=(frame.shape[1], frame.shape[0]), colorfmt='rgb')
         image_texture.blit_buffer(buf, colorfmt='rgb', bufferfmt='ubyte')
@@ -601,7 +602,7 @@ class EmployeeScanPage(Popup):
 
         if ret:
             frame2 = cv2.cvtColor(frame, cv2.COLOR_BGRA2GRAY)
-            frame3 = cv2.adaptiveThreshold(frame2, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+            ret, frame3 = cv2.threshold(frame2, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
             barcodes = pyzbar.decode(frame3)
 
             if barcodes:
@@ -612,7 +613,7 @@ class EmployeeScanPage(Popup):
                 if self.login:
                     self.login_buttons(barcode_data)
 
-            self.show_image(frame)
+            self.show_image(frame3)
 
     def stop_checking(self, dt):
         if dt != 0:
@@ -624,9 +625,8 @@ class EmployeeScanPage(Popup):
         self.cam.release()
 
     def show_image(self, frame):
-        frame2 = cv2.cvtColor(frame, cv2.COLOR_BGRA2RGB)
+        frame2 = cv2.cvtColor(frame, cv2.COLOR_GRAY2RGB)
         buf1 = cv2.flip(frame2, 0)
-        # buf1 = cv2.flip(frame, 0)
         buf = buf1.tostring()
         image_texture = Texture.create(size=(frame.shape[1], frame.shape[0]), colorfmt='rgb')
         image_texture.blit_buffer(buf, colorfmt='rgb', bufferfmt='ubyte')
@@ -717,6 +717,8 @@ class RunPage(Screen):
         self.run_layout.counter = self.machine.get_current_job().output
         self.run_layout.waste1 = self.machine.get_current_job().wastage['waste1'][0]
         self.run_layout.waste2 = self.machine.get_current_job().wastage['waste2'][0]
+        emp_id, c_time, grade = self.machine.get_current_job().qc
+        self.run_layout.qc_label.text = 'QC Check: {} at {}, {}'.format(emp_id, c_time, grade)
         self.machine.get_current_job().bind(output=self.run_layout.setter('counter'))
         self.machine.set_state(State.RUN)
         self.colour = Colour[self.machine.config['bg_colour']].value
@@ -746,9 +748,8 @@ class RunPage(Screen):
     def update_qc(self, emp_id, _pass=False):
         now = datetime.now()
         grade = 'Pass' if _pass else 'Fail'
-        self.machine.add_qc(emp_id, now.strftime('%Y-%m-%d %H:%M'), _pass)
-        self.run_layout.qc_label.text = 'QC Check: {} at {}, {}'.format(emp_id,
-                                                                        now.strftime('%Y-%m-%d %H:%M'), grade)
+        self.machine.add_qc(emp_id, now, _pass)
+        self.run_layout.qc_label.text = 'QC Check: {} at {}, {}'.format(emp_id, now.strftime('%Y-%m-%d %H:%M'), grade)
         self.emp_popup.dismiss()
 
 
