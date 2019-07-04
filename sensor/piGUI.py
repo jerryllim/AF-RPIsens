@@ -290,8 +290,7 @@ class SelectPage(Screen):
     logger = logging.getLogger('JAM')
 
     def on_pre_enter(self, *args):
-        if self.machine is not App.get_running_app().get_current_machine():
-            self.machine = App.get_running_app().get_current_machine()
+        self.machine = App.get_running_app().get_current_machine()
 
         self.machine.set_state(State.SELECT)
         self.colour = Colour[self.machine.config['bg_colour']].value
@@ -389,8 +388,7 @@ class AdjustmentPage(Screen):
     colour = ListProperty([0, 0, 0, 1])
 
     def on_pre_enter(self, *args):
-        if self.machine is not App.get_running_app().get_current_machine():
-            self.machine = App.get_running_app().get_current_machine()
+        self.machine = App.get_running_app().get_current_machine()
 
         self.machine.set_state(State.ADJUSTMENT)
         self.colour = Colour[self.machine.config['bg_colour']].value
@@ -515,8 +513,7 @@ class EmployeePage(Screen):
     logger = logging.getLogger('JAM')
 
     def on_pre_enter(self, *args):
-        if self.machine is not App.get_running_app().get_current_machine():
-            self.machine = App.get_running_app().get_current_machine()
+        self.machine = App.get_running_app().get_current_machine()
 
         self.load_emp_list()
         self.colour = Colour[self.machine.config['bg_colour']].value
@@ -674,8 +671,7 @@ class MaintenancePage(Screen):
     colour = ListProperty([0, 0, 0, 1])
 
     def on_pre_enter(self, *args):
-        if self.machine is not App.get_running_app().get_current_machine():
-            self.machine = App.get_running_app().get_current_machine()
+        self.machine = App.get_running_app().get_current_machine()
 
         self.emp_id, self.start = self.machine.get_maintenance()
         self.clear_widgets()
@@ -707,9 +703,7 @@ class RunPage(Screen):
     colour = ListProperty([0, 0, 0, 1])
 
     def on_pre_enter(self, *args):
-        if self.machine is not App.get_running_app().get_current_machine():
-            self.machine = App.get_running_app().get_current_machine()
-
+        self.machine = App.get_running_app().get_current_machine()
         if self.run_layout is not None:
             self.remove_widget(self.run_layout)
         self.run_layout = Factory.RunPageLayout()
@@ -717,8 +711,6 @@ class RunPage(Screen):
         self.run_layout.counter = self.machine.get_current_job().output
         self.run_layout.waste1 = self.machine.get_current_job().wastage['waste1'][0]
         self.run_layout.waste2 = self.machine.get_current_job().wastage['waste2'][0]
-        emp_id, c_time, grade = self.machine.get_current_job().qc
-        self.run_layout.qc_label.text = 'QC Check: {} at {}, {}'.format(emp_id, c_time, grade)
         self.machine.get_current_job().bind(output=self.run_layout.setter('counter'))
         self.machine.set_state(State.RUN)
         self.colour = Colour[self.machine.config['bg_colour']].value

@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="8c4eab11-9431-48ea-8992-fef6a6e722be" name="Default" comment="Reduced labels (populate in init) &amp; created NumericProperty for counter">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/sensor/piGUI.py" beforeDir="false" afterPath="$PROJECT_DIR$/sensor/piGUI.py" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
@@ -122,8 +121,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/sensor/piGUI.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="282">
-                  <caret line="296" column="68" lean-forward="true" selection-start-line="296" selection-start-column="68" selection-end-line="296" selection-end-column="68" />
+                <state relative-caret-position="362">
+                  <caret line="718" column="84" lean-forward="true" selection-start-line="718" selection-start-column="84" selection-end-line="722" selection-end-column="98" />
                 </state>
               </provider>
             </entry>
@@ -219,8 +218,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>router_rou</find>
-      <find>insert_s</find>
       <find>barcode</find>
       <find>check_camera</find>
       <find>umc</find>
@@ -249,6 +246,8 @@
       <find>add_qc</find>
       <find>frame2</find>
       <find>selectPage</find>
+      <find>on_pre</find>
+      <find>on_pre_</find>
     </findStrings>
     <replaceStrings>
       <replace>TMessage</replace>
@@ -1143,8 +1142,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/sensor/piGUI.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="282">
-          <caret line="296" column="68" lean-forward="true" selection-start-line="296" selection-start-column="68" selection-end-line="296" selection-end-column="68" />
+        <state relative-caret-position="362">
+          <caret line="718" column="84" lean-forward="true" selection-start-line="718" selection-start-column="84" selection-end-line="722" selection-end-column="98" />
         </state>
       </provider>
     </entry>
