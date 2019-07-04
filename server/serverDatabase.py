@@ -158,7 +158,7 @@ class AutomateSchedulers:
         cron_trigger = CronTrigger(hour=hour, minute=minute)
         if self.scheduler_jobs.get(job_id):
             self.scheduler_jobs[job_id].remove()
-        self.scheduler_jobs[job_id] = self.scheduler.add_job(self.read_import_file, cron_trigger, id=job_id,
+        self.scheduler_jobs[job_id] = self.scheduler.add_job(self.write_export_file, cron_trigger, id=job_id,
                                                              max_instances=3)
 
     def write_export_file(self):
@@ -321,7 +321,7 @@ class DatabaseManager:
 
         try:
             with conn.cursor() as cursor:
-                # Update the 'last_update' in pis_table (to know if there's no reply from a pi)
+                # Update the 'ludt_to' in pis_table (to know if there's no reply from a pi)
                 cursor.execute("UPDATE pis_table SET ludt_to = NOW() WHERE ip = '{}';".format(ip))
                 for recv_id, recv_info in recv_dict.items():
                     emp, job, time_str = recv_id.split('_', 3)
@@ -906,11 +906,11 @@ class DatabaseManager:
             with conn.cursor() as cursor:
                 for value in values:
                     emp, jo_no, time_str, grade = value.split('_', 4)
-                    recv_time = datetime.strptime(time_str, '%H%M')
+                    recv_time = datetime.strptime(time_str, '%d%H%M')
                     now = datetime.now()
-                    date_time = now.replace(hour=recv_time.hour, minute=recv_time.minute)
-                    if recv_time.time() > now.time():
-                        date_time = date_time - timedelta(1)
+                    date_time = now.replace(day=recv_time.day, hour=recv_time.hour, minute=recv_time.minute)
+                    if recv_time.day > now.day:
+                        date_time = self.month_delta(date_time, -1)
 
                     query = 'INSERT INTO qc_table (emp_id, date_time, machine, jo_no, quality) VALUES ({emp}, ' \
                             '{date_time}, {machine}, {jo_no}, ' \
@@ -952,7 +952,12 @@ class DatabaseManager:
         try:
             with conn.cursor() as cursor:
                 for emp_start, end in values.items():
-                    emp, start = emp_start.split('_')
+                    emp, time_str = emp_start.split('_')
+                    recv_time = datetime.strptime(time_str, '%d%H%M')
+                    now = datetime.now()
+                    date_time = now.replace(day=recv_time.day, hour=recv_time.hour, minute=recv_time.minute)
+                    if recv_time.day > now.day:
+                        start = self.month_delta(date_time, -1)
 
                     query = 'REPLACE INTO maintenance_table VALUES (%s, %s, %s, %s);'
                     cursor.execute(query, (emp, machine, start, end))
