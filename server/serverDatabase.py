@@ -774,7 +774,7 @@ class DatabaseManager:
         try:
             with conn.cursor() as cursor:
                 query = "DELETE FROM jobs_table WHERE usfc_qty >= usch_qty AND " \
-                        "last_modified > (CURDATE() - INTERVAL 2 DAY);"
+                        "last_modified < (CURDATE() - INTERVAL 3 DAY);"
                 cursor.execute(query)
                 conn.commit()
         except pymysql.DatabaseError as error:
