@@ -916,12 +916,12 @@ class MiscTab(QtWidgets.QWidget):
     def import_from(self):
         path = QtWidgets.QFileDialog.getOpenFileName(self, 'Select file to import', '', 'CSV(*.csv)')
         if path[0] != '':
-            self.import_fields['import'].setText(path[0])
+            self.import_fields['path'].setText(path[0])
 
     def export_to(self):
         path = QtWidgets.QFileDialog.getExistingDirectory(self, 'Set export location', '')
         if path != '':
-            self.import_fields['export'].setText(path)
+            self.export_fields['path'].setText(path)
 
     def save_misc(self):
         for key in self.db_edits.keys():

@@ -44,10 +44,13 @@ class Settings:
             return None
 
     def get_mac(self, ip, idx):
-        if self.machines_info.get(ip):
-            return self.machines_info[ip]['mac{}'.format(idx)]
-        else:
-            return None
+        try:
+            if self.machines_info.get(ip):
+                return self.machines_info[ip]['mac{}'.format(idx)]
+            else:
+                return ''
+        except KeyError:
+            return ''
 
     def get_macs(self, ip):
         l = []
