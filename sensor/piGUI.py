@@ -129,9 +129,9 @@ class MachineClass:
         start = self.emp_main.pop(emp_id, None)
         if start is None:
             start = self.emp_asst.pop(emp_id, None)
-        end = datetime.now().strftime('%Y-%m-%d %H:%M')
+        end = datetime.now().strftime('%d%H%M')
 
-        self.controller.add_employee(self.index, "{0}_{1}".format(emp_id, start.strftime('%Y-%m-%d %H:%M')), end=end)
+        self.controller.add_employee(self.index, "{0}_{1}".format(emp_id, start.strftime('%d%H%M')), end=end)
 
     def log_out_all(self):
         for emp_id in list(self.emp_main.keys()):
@@ -144,13 +144,13 @@ class MachineClass:
         if not asst:
             if len(self.emp_main) < 3:
                 self.emp_main[emp_id] = start
-                self.controller.add_employee(self.index, "{0}_{1}".format(emp_id, start.strftime('%Y-%m-%d %H:%M')))
+                self.controller.add_employee(self.index, "{0}_{1}".format(emp_id, start.strftime('%d%H%M')))
                 return True
             else:
                 return False
 
         self.emp_asst[emp_id] = start
-        self.controller.add_employee(self.index, "{0}_{1}".format(emp_id, start.strftime('%Y-%m-%d %H:%M')))
+        self.controller.add_employee(self.index, "{0}_{1}".format(emp_id, start.strftime('%d%H%M')))
         return True
 
     def has_emp(self, emp_id):
@@ -1060,7 +1060,17 @@ class PiGUIApp(App):
         App.get_running_app().stop()
 
     def build(self):
+        # Setup logger
         self.logger = logging.getLogger('JAM')
+        self.logger.setLevel(logging.DEBUG)
+        now = datetime.datetime.now()
+        log_file = '/home/pi/jam_logs/jam{}.log'.format(now.strftime('%y%m%d_%H%M'))
+        file_handler = logging.FileHandler(log_file)
+        file_handler.setLevel(logging.DEBUG)
+        log_format = logging.Formatter('%(asctime)s - %(threadName)s - %(levelname)s: %(module)s - %(message)s')
+        file_handler.setFormatter(log_format)
+        self.logger.addHandler(file_handler)
+        self.logger.info('Started logging')
         # self.check_camera()
         self.config.set('Network', 'self_add', self.get_ip_add())
 
@@ -1078,6 +1088,8 @@ class PiGUIApp(App):
             self.logger.debug("Getting save file from {}".format(save_dict["save_time"]))
         else:
             save_dict = {}
+
+        self.controller.init_counts(save_dict.get('count', {}), save_dict.get('prev_count', {}))
 
         for idx in range(1, 4):
             machine = MachineClass(idx, self.controller, self.config)
@@ -1355,6 +1367,10 @@ class FakeClass:
 
         with open(filename, 'w') as write_file:
             json.dump(save_dict, write_file, default=str)
+
+    def init_counts(self, counts):
+        with self.counts_lock:
+            self.counts.update(counts)
 
 
 if __name__ == '__main__':

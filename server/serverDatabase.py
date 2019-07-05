@@ -996,8 +996,18 @@ class DatabaseManager:
 
         try:
             with conn.cursor() as cursor:
-                for emp_start, end in values.items():
-                    emp, start = emp_start.split('_')
+                for emp_start, end_str in values.items():
+                    emp, time_str = emp_start.split('_')
+                    recv_time = datetime.strptime(time_str, '%d%H%M')
+                    now = datetime.now()
+                    start = now.replace(day=recv_time.day, hour=recv_time.hour, minute=recv_time.minute)
+                    if recv_time.day > now.day:
+                        start = self.month_delta(start, -1)
+
+                    end_time = datetime.strptime(end_str, '%d%H%M')
+                    end = now.replace(day=end_time.day, hour=end_time.hour, minute=end_time.minute)
+                    if end_time.day > now.day:
+                        end = self.month_delta(end, -1)
 
                     query = 'REPLACE INTO emp_shift_table VALUES (%s, %s, %s, %s);'
                     cursor.execute(query, (emp, machine, start, end))

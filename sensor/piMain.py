@@ -1,12 +1,15 @@
 import os
 import csv
 import zmq
+import copy
 import time
 import json
 import pigpio
+import random
 import logging
 import sqlite3
 import datetime
+import itertools
 import threading
 from io import StringIO
 from collections import Counter
@@ -27,6 +30,7 @@ class PiController:
     pulse_pins = {}
     pin_to_name = {}
     counts = {}
+    prev_counts = {}
     permanent = 0
     publisher = None
     respondent = None
@@ -38,21 +42,12 @@ class PiController:
     self_port = None
 
     def __init__(self, gui, filename='pin_dict.json'):
-        # Logger setup
         self.logger = logging.getLogger('JAM')
-        self.logger.setLevel(logging.DEBUG)
-        now = datetime.datetime.now()
-        log_file = '/home/pi/jam_logs/jam{}.log'.format(now.strftime('%y%m%d_%H%M'))
-        file_handler = logging.FileHandler(log_file)
-        file_handler.setLevel(logging.DEBUG)
-        log_format = logging.Formatter('%(asctime)s - %(threadName)s - %(levelname)s: %(module)s - %(message)s')
-        file_handler.setFormatter(log_format)
-        self.logger.addHandler(file_handler)
-        self.logger.info('Started logging')
 
         self.filename = filename
         self.callbacks = []
         self.counts_lock = threading.Lock()
+        self.prev_counts_lock = threading.Lock()
         self.scheduler = BackgroundScheduler()
         self.gui = gui
         self.database_manager = DatabaseManager()
@@ -86,6 +81,13 @@ class PiController:
         self.pipe_thread.daemon = True
         self.pipe_thread.start()
         self.logger.info('Completed PiController __init__')
+
+    def init_counts(self, counts, prev_counts):
+        with self.counts_lock:
+            self.counts.update(counts)
+
+        with self.prev_counts_lock:
+            self.prev_counts.update(prev_counts)
 
     def update_ip_ports(self):
         self.server_add = self.gui.config.get('Network', 'server_add')
@@ -201,12 +203,63 @@ class PiController:
                 self.counts[key] = Counter()
             self.counts[key][name] = value
 
-    def get_counts(self):
-        with self.counts_lock:
-            temp = self.counts.copy()
-            self.counts.clear()
+    def get_counts(self, seq):
+        # Get previous seq
+        with self.prev_counts_lock:
+            prev_seq = self.prev_counts.get("seq", None)
+
+        # If seq given is equal to prev_seq, clear prev_counts since received
+        if seq >= prev_seq:
+            self.prev_counts.clear()
+
+        # Combine, if prev_counts is empty combine as well
+        self.combine_counts()
+
+        # Use unix time (seconds since epoch) 10 digits (Turns into 11 digits on 20/11/226 17:46:40 GMT)
+        new_seq = int(time.time())
+
+        # Get copy of the new combined prev_counts and send this with new seq number
+        with self.prev_counts_lock:
+            self.prev_counts['seq'] = new_seq
+            temp = self.prev_counts.copy()
 
         return temp
+
+    def combine_counts(self):
+        # Create copy and clear from self.counts
+        with self.counts_lock:
+            temp_counts = copy.deepcopy(self.counts)
+            self.counts.clear()
+
+        with self.prev_counts_lock:
+            # Combine sfu first
+            sfu_list = temp_counts.pop('sfu', [])
+            if self.prev_counts.get('sfu') is None:
+                self.prev_counts['sfu'] = []
+            self.prev_counts['sfu'] = self.prev_counts['sfu'] + sfu_list
+
+            # Next, loop through and combine Q*, M* & E*
+            for idx in range(1, 4):
+                qc_list = temp_counts.pop('Q{}'.format(idx), [])
+                if self.prev_counts.get('Q{}'.format(idx)) is None:
+                    self.prev_counts['Q{}'.format(idx)] = []
+                self.prev_counts['Q{}'.format(idx)] = self.prev_counts['Q{}'.format(idx)] + qc_list
+
+                maintenance_dict = temp_counts.pop('M{}'.format(idx), {})
+                if self.prev_counts.get('M{}'.format(idx)) is None:
+                    self.prev_counts['M{}'.format(idx)] = {}
+                self.prev_counts['M{}'.format(idx)].update(maintenance_dict)
+
+                emp_dict = temp_counts.pop('E{}'.format(idx), {})
+                if self.prev_counts.get('E{}'.format(idx)) is None:
+                    self.prev_counts['E{}'.format(idx)] = {}
+                self.prev_counts['E{}'.format(idx)].update(emp_dict)
+
+            # Lastly copy over the jam data
+            for key, counts_d in self.counts:
+                if self.prev_counts.get(key) is None:
+                    self.prev_counts[key] = Counter()
+                self.prev_counts[key].update(counts_d)
 
     def respondent_routine(self):
         self.respondent = self.context.socket(zmq.DEALER)
@@ -232,7 +285,9 @@ class PiController:
 
                 for key in recv_dict.keys():
                     if key == "jam":
-                        reply_dict["jam"] = self.get_counts()
+                        # Get sequence number
+                        seq = recv_dict.get(key)
+                        reply_dict["jam"] = self.get_counts(seq)
                     elif key == "jobs":
                         jobs_str = recv_dict.get(key)
                         with StringIO(jobs_str) as jobs:
