@@ -130,9 +130,6 @@ class NetworkManager:
                 self.database_manager.update_ludt_fr(ip)
                 self.logger.debug("Replying with {}".format(reply_dict))
                 self.router_recv.send_multipart([id_from, (json.dumps(reply_dict)).encode()])
-                # self.router_recv.send(ident, zmq.SNDMORE)
-                # self.router_recv.send(delimiter, zmq.SNDMORE)
-                # self.router_recv.send_json(reply_dict)
 
     def worker_talk(self, msg="jam"):
         sender = self.context.socket(zmq.DEALER)
@@ -151,13 +148,37 @@ class NetworkManager:
         while not self.router_kill.is_set():
             socks = dict(poller.poll(1000))
 
+            if worker in socks:
+                recv_msg = str(worker.recv(), "utf-8")
+
+                if recv_msg == "jam":
+                    ip_list = self.settings.get_ips()
+                    error_list = []
+                    for ip in ip_list:
+                        ludt_to = self.database_manager.get_last_updates_posix(ip)[0]
+                        send_dict = {'jam': ludt_to}
+                        new_dt, jobs = self.get_jobs_info_for(ip)
+                        if jobs:
+                            send_dict['jobs'] = jobs
+                            send_dict['jdt'] = new_dt
+                        to_send = [ip.encode(), (json.dumps(send_dict)).encode()]
+                        try:
+                            self.router_send.send_multipart(to_send)
+                            print(to_send)
+                        except zmq.ZMQError as error:
+                            error_list.append(ip)
+                            self.logger.warning("Error {} for ip {}".format(error, ip))
+
+                    time.sleep(1)
+
             if self.router_send in socks:
                 id_from, recv_bytes = self.router_send.recv_multipart()
                 recv_dict = json.loads(recv_bytes.decode())
                 machine_ip = id_from.decode()
 
-                if recv_dict.pop("jobs", 0):
-                    self.database_manager.update_ludt_jobs(machine_ip)
+                ludt_jobs = recv_dict.pop("jobs", 0)
+                if ludt_jobs:
+                    self.database_manager.update_ludt_jobs(machine_ip, ludt_jobs)
 
                 jam_msg = recv_dict.pop('jam', {})
                 sfu_list = jam_msg.pop('sfu', [])
@@ -178,26 +199,6 @@ class NetworkManager:
 
                 self.database_manager.insert_jam(machine_ip, jam_msg)
 
-            if worker in socks:
-                recv_msg = str(worker.recv(), "utf-8")
-
-                if recv_msg == "jam":
-                    ip_list = self.settings.get_ips()
-                    error_list = []
-                    for ip in ip_list:
-                        send_dict = {'jam': 0}
-                        jobs = self.get_jobs_info_for(ip)
-                        if jobs:
-                            send_dict['jobs'] = jobs
-                        to_send = [ip.encode(), (json.dumps(send_dict)).encode()]
-                        try:
-                            self.router_send.send_multipart(to_send)
-                        except zmq.ZMQError as error:
-                            error_list.append(ip)
-                            self.logger.warning("Error {} for ip {}".format(error, ip))
-
-                    time.sleep(1)
-
     def insert_sfu(self, ip, sfu_str):
         sfu_list = json.loads(sfu_str)
         umc = self.database_manager.get_umc_for(sfu_list[0], sfu_list[1])
@@ -215,7 +216,7 @@ class NetworkManager:
         error_list = []
         for ip in ip_list:
             send_dict = {'jam': 0}
-            jobs = self.get_jobs_info_for(ip)
+            dt, jobs = self.get_jobs_info_for(ip)
             if jobs:
                 send_dict['jobs'] = jobs
             to_send = [ip.encode(), (json.dumps(send_dict)).encode()]
@@ -271,30 +272,21 @@ class NetworkManager:
             self.router_send.connect("tcp://{}:{}".format(ip, port))
             self.logger.info("Reconnecting to {}:{}".format(ip, port))
 
-    def send_job_info(self):
-        # TODO retrive mac from server settings
-        for ip in self.settings.get_ips():
-            jobs = self.get_jobs_info_for(ip)
-            reply = self.request(ip, {'jobs_list': jobs})
-
-            if reply is not None:
-                self.database_manager.update_ludt_jobs(ip)
-
     def get_jobs_info_for(self, ip):
         mac = self.settings.get_macs(ip)
-        ludt_jobs = self.database_manager.get_last_updates(ip)[2]
+        ludt_jobs = self.database_manager.get_last_updates_posix(ip)[2]
         if not ludt_jobs:
-            dt = None
-        else:
-            dt = ludt_jobs.strftime("%Y-%m-%d")
+            ludt_jobs = 0
 
-        jobs_list = self.database_manager.get_jobs_for_in(mac, dt)
+        dt = datetime.datetime.fromtimestamp(ludt_jobs).strftime("%Y-%m-%d %H:%M:%S")
+
+        new_dt, jobs_list = self.database_manager.get_jobs_for_in(mac, dt)
         jobs_str = StringIO()
         csv_writer = csv.writer(jobs_str)
         csv_writer.writerows(jobs_list)
         jobs_str.seek(0)
 
-        return jobs_str.getvalue()
+        return new_dt, jobs_str.getvalue()
 
     def schedule_jam(self, interval=5):
         cron_trigger = CronTrigger(minute='*/{}'.format(interval))

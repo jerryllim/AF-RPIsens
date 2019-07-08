@@ -321,8 +321,14 @@ class DatabaseManager:
 
         try:
             with conn.cursor() as cursor:
-                # Update the 'ludt_to' in pis_table (to know if there's no reply from a pi)
-                cursor.execute("UPDATE pis_table SET ludt_to = NOW() WHERE ip = '{}';".format(ip))
+                seq = recv_dict.pop('seq', None)
+                print(seq)
+                if seq is None or not isinstance(seq, int):
+                    self.logger.debug("No sequence or invalid sequence ({}). Abort insert jam from {}".format(seq, ip))
+                    return
+
+                # Update the 'ludt_to' in pis_table (to know the last communication time)
+                cursor.execute("UPDATE pis_table SET ludt_to = {} WHERE ip = '{}';".format(seq, ip))
                 for recv_id, recv_info in recv_dict.items():
                     emp, job, time_str = recv_id.split('_', 3)
                     recv_time = datetime.strptime(time_str, '%d%H%M')
@@ -834,9 +840,10 @@ class DatabaseManager:
         finally:
             conn.close()
 
-    def get_jobs_for_in(self, macs, dt=None):
+    def get_jobs_for_in(self, macs, dt=0):
         conn = pymysql.connect(self.host, self.user, self.password, self.db)
         job_list = []
+        new_dt = dt
         if not isinstance(macs, list):
             macs = [macs]
 
@@ -846,15 +853,17 @@ class DatabaseManager:
                 if dt:
                     sql = sql + " AND last_modified > '{}';".format(dt)
                 cursor.execute(sql, (macs,))
+                new_dt = int(datetime.now().timestamp())
                 for row in cursor:
                     job_list.append(row)
+                new_dt = int(datetime.now().timestamp())
         except pymysql.DatabaseError as error:
             self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
         finally:
             conn.close()
-            return job_list
+            return new_dt, job_list
 
-    def get_jobs_for_like(self, mac, dt=None):
+    def get_jobs_for_like(self, mac, dt=0):
         conn = pymysql.connect(self.host, self.user, self.password, self.db)
         job_list = []
         mac = mac + '%'
@@ -868,11 +877,12 @@ class DatabaseManager:
                 cursor.execute(sql, (mac,))
                 for row in cursor:
                     job_list.append(row)
+                new_dt = int(datetime.now().timestamp())
         except pymysql.DatabaseError as error:
             self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
         finally:
             conn.close()
-            return job_list
+            return new_dt, job_list
 
     @staticmethod
     def check_complete(cursor, jo_id, jo_line):
@@ -1064,9 +1074,9 @@ class DatabaseManager:
                       'B33 varchar(6) DEFAULT NULL, ' \
                       'B43 varchar(6) DEFAULT NULL, ' \
                       'B53 varchar(6) DEFAULT NULL, ' \
-                      'ludt_to timestamp DEFAULT NULL, ' \
-                      'ludt_fr timestamp DEFAULT NULL, ' \
-                      'ludt_jobs timestamp DEFAULT NULL, ' \
+                      'ludt_to int(11) DEFAULT 0, ' \
+                      'ludt_fr int(11) DEFAULT 0, ' \
+                      'ludt_jobs int(11) DEFAULT 0, ' \
                       'PRIMARY KEY (ip) );'
                 cursor.execute(sql)
                 conn.commit()
@@ -1084,15 +1094,15 @@ class DatabaseManager:
 
                 for row in pis_row:
                     ips.append(row[0])
-                    last = self.get_last_updates(row[0])
+                    last = self.get_last_updates_posix(row[0])
                     if last:
                         row.append(last[0])
                         row.append(last[1])
                         row.append(last[2])
                     else:
-                        row.append(None)
-                        row.append(None)
-                        row.append(None)
+                        row.append(0)
+                        row.append(0)
+                        row.append(0)
 
                 sql = 'REPLACE INTO pis_table VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, ' \
                       '%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, ' \
@@ -1108,7 +1118,7 @@ class DatabaseManager:
         finally:
             conn.close()
 
-    def get_last_updates(self, ip):
+    def get_last_updates_posix(self, ip):
         conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
         last_updates = None
@@ -1118,6 +1128,30 @@ class DatabaseManager:
                 sql = 'SELECT ludt_to, ludt_fr, ludt_jobs FROM pis_table WHERE ip = %s'
                 cursor.execute(sql, [ip, ])
                 last_updates = cursor.fetchone()
+            conn.commit()
+        except pymysql.DatabaseError as error:
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
+            conn.rollback()
+        finally:
+            conn.close()
+
+        return last_updates
+
+    def get_last_updates(self, ip):
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
+                               database=self.db, port=self.port)
+        last_updates = None
+
+        try:
+            with conn.cursor() as cursor:
+                sql = 'SELECT ludt_to, ludt_fr, ludt_jobs FROM pis_table WHERE ip = %s'
+                cursor.execute(sql, [ip, ])
+                last_posix = cursor.fetchone()
+                if last_posix:
+                    last_updates = []
+                    for ts in last_posix:
+                        last_updates.append(datetime.fromtimestamp(ts))
+
             conn.commit()
         except pymysql.DatabaseError as error:
             self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
@@ -1161,29 +1195,40 @@ class DatabaseManager:
             conn.close()
             return pis_dict
 
-    def update_ludt_fr(self, ip):
+    def update_ludt_fr(self, ip, dt=None):
         conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
 
         try:
             with conn.cursor() as cursor:
-                cursor.execute("UPDATE pis_table SET ludt_fr = NOW() WHERE ip = '{}';".format(ip))
+                if dt is None:
+                    dt = datetime.now().timestamp()
+
+                dt = int(dt)
+                cursor.execute("UPDATE pis_table SET ludt_fr = {} WHERE ip = '{}';".format(dt, ip))
                 conn.commit()
         except pymysql.DatabaseError as error:
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
+            conn.rollback()
+        except ValueError as error:
             self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
             conn.rollback()
         finally:
             conn.close()
 
-    def update_ludt_jobs(self, ip):
+    def update_ludt_jobs(self, ip, dt):
         conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
 
         try:
             with conn.cursor() as cursor:
-                cursor.execute("UPDATE pis_table SET ludt_jobs = NOW() WHERE ip = '{}';".format(ip))
+                dt = int(dt)
+                cursor.execute("UPDATE pis_table SET ludt_jobs = {} WHERE ip = '{}';".format(dt, ip))
                 conn.commit()
         except pymysql.DatabaseError as error:
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
+            conn.rollback()
+        except ValueError as error:
             self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
             conn.rollback()
         finally:
