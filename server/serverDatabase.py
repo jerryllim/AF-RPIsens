@@ -93,10 +93,10 @@ class AutomateSchedulers:
         self.database_manager = DatabaseManager(settings, **db_dict)
         self.scheduler_jobs = {}
         self.scheduler = BackgroundScheduler()
-        # self.scheduler.start()
 
     def start_scheduler(self):
         self.scheduler.start()
+        self.logger.info("Started AutomateSechedulers scheduler")
 
     def pause_scheduler(self):
         self.scheduler.pause()
@@ -843,7 +843,7 @@ class DatabaseManager:
     def get_jobs_for_in(self, macs, dt=0):
         conn = pymysql.connect(self.host, self.user, self.password, self.db)
         job_list = []
-        new_dt = dt
+        now = datetime.now()
         if not isinstance(macs, list):
             macs = [macs]
 
@@ -851,12 +851,12 @@ class DatabaseManager:
             with conn.cursor() as cursor:
                 sql = "SELECT uno, uline, ustk, ustk_desc1, usch_qty, usfc_qty FROM jobs_table WHERE umachine_no IN %s"
                 if dt:
-                    sql = sql + " AND last_modified > '{}';".format(dt)
+                    sql = sql + " AND last_modified >= '{}' AND " \
+                                "last_modified <= {};".format(dt, now.strftime("%Y-%m-%d %H:%M:%S"))
                 cursor.execute(sql, (macs,))
-                new_dt = int(datetime.now().timestamp())
                 for row in cursor:
                     job_list.append(row)
-                new_dt = int(datetime.now().timestamp())
+                new_dt = int(now.timestamp())
         except pymysql.DatabaseError as error:
             self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
         finally:
@@ -866,6 +866,7 @@ class DatabaseManager:
     def get_jobs_for_like(self, mac, dt=0):
         conn = pymysql.connect(self.host, self.user, self.password, self.db)
         job_list = []
+        now = datetime.now()
         mac = mac + '%'
 
         try:
@@ -873,11 +874,12 @@ class DatabaseManager:
                 sql = "SELECT uno, uline, ustk, ustk_desc1, usch_qty, usfc_qty FROM jobs_table WHERE " \
                       "umachine_no LIKE %s"
                 if dt:
-                    sql = sql + " AND last_modified > '{}';".format(dt)
+                    sql = sql + " AND last_modified >= '{}' AND " \
+                                "last_modified <= {};".format(dt, now.strftime("%Y-%m-%d %H:%M:%S"))
                 cursor.execute(sql, (mac,))
                 for row in cursor:
                     job_list.append(row)
-                new_dt = int(datetime.now().timestamp())
+                new_dt = int(now.timestamp())
         except pymysql.DatabaseError as error:
             self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
         finally:
