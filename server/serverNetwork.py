@@ -23,17 +23,6 @@ class NetworkManager:
     def __init__(self, settings, db_dict):
         # Logger setup
         self.logger = logging.getLogger('jamSERVER')
-        self.logger.setLevel(logging.DEBUG)
-        path = os.path.expanduser('~/Documents/JAM/JAMserver/jamSERVER.log')
-        file_handler = logging.FileHandler(path)
-        file_handler.setLevel(logging.DEBUG)
-        log_format = logging.Formatter('%(asctime)s - %(threadName)s - %(levelname)s: %(module)s - %(message)s')
-        file_handler.setFormatter(log_format)
-        self.logger.addHandler(file_handler)
-        self.logger.info('\n\nStarted logging')
-        ap_logger = logging.getLogger('apscheduler')
-        ap_logger.setLevel(logging.DEBUG)
-        ap_logger.addHandler(file_handler)
 
         self.self_add = self.get_ip_add()
         self.context = zmq.Context()
