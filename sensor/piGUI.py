@@ -362,7 +362,7 @@ class SelectPage(Screen):
             elif job_dict == 0:
                 raise ValueError("Pipe did not reply")
             elif not job_dict:
-                raise ValueError("JO number ({}) was not found, please contact Supervisor.".format(barcode))
+                raise ValueError("JO number\n ({})\n was not found, \nplease contact Supervisor.".format(barcode))
 
             self.ids.job_entry.text = ''
             self.machine.current_job = JobClass(job_dict)
@@ -373,7 +373,7 @@ class SelectPage(Screen):
 
         except ValueError as err_msg:
             popup_boxlayout = BoxLayout(orientation='vertical')
-            popup_boxlayout.add_widget(Label(text=str(err_msg)))
+            popup_boxlayout.add_widget(Label(text=str(err_msg), halign="center"))
             popup = Popup(title='Error', content=popup_boxlayout, size_hint=(0.5, 0.5))
             popup.open()
 
@@ -1085,7 +1085,7 @@ class PiGUIApp(App):
         if is_linux:
             self.controller = piMain.PiController(self)
         else:
-            self.controller = FakeClass(self)  # TODO set if testing
+            self.controller = piMain.FakeController(self)  # TODO set if testing
 
         self.logger.debug("Using platform: {}".format(sys.platform))
 
@@ -1262,128 +1262,6 @@ def alphanum_key(s):
         "z23a" -> ["z", 23, "a"]
     """
     return [try_int(c) for c in re.split('([0-9]+)', s)]
-
-
-class FakeClass:
-    import threading
-    counts_lock = threading.Lock()
-    prev_counts_lock = threading.Lock()
-    counts = {}
-    prev_counts = {}
-    database_manager = None
-    permanent = 0
-    dealer = None
-
-    def __init__(self, gui):
-        self.database_manager = piMain.DatabaseManager()
-        self.gui = gui
-        self.server_add = self.gui.config.get('Network', 'server_add')
-        self.server_port = self.gui.config.get('Network', 'server_port')
-        self.self_add = self.gui.config.get('Network', 'self_add')
-        self.self_port = self.gui.config.get('Network', 'self_port')
-        self.context = zmq.Context()
-        self.dealer_routine()
-
-    def get_key(self, interval=5):
-        return interval
-
-    def get_job_info(self, barcode):
-        job_info = self.database_manager.get_job_info(barcode)
-        if job_info is None:
-            reply_msg = self.request({"job_info": barcode})
-            if reply_msg:
-                value = reply_msg.pop(barcode)
-                if value:
-                    job_info = {'jo_no': value[0], 'jo_line': value[1], 'code': value[2], 'desc': value[3],
-                                'to_do': value[4], 'ran': value[5]}
-        return job_info
-
-    def get_emp_name(self, emp_id):
-        return self.database_manager.get_emp_name(emp_id)
-
-    def dealer_routine(self):
-        ip_port = "{}:{}".format(self.server_add, self.server_port)
-        self.dealer = self.context.socket(zmq.DEALER)
-        self.dealer.setsockopt_string(zmq.IDENTITY, self.self_add)
-        self.dealer.setsockopt(zmq.IMMEDIATE, 1)
-        self.dealer.setsockopt(zmq.TCP_KEEPALIVE, 1)
-        self.dealer.setsockopt(zmq.TCP_KEEPALIVE_IDLE, 1)
-        self.dealer.setsockopt(zmq.TCP_KEEPALIVE_CNT, 60)
-        self.dealer.setsockopt(zmq.TCP_KEEPALIVE_INTVL, 60)
-        self.dealer.connect("tcp://{}".format(ip_port))
-
-    def request(self, msg_dict):
-        # Clear buffer by restarting the dealer socket
-        self.dealer.setsockopt(zmq.LINGER, 0)
-        self.dealer.close()
-        self.dealer_routine()
-
-        timeout = 1000
-        # msg_dict['ip'] = self.self_add
-        recv_msg = None
-        # Try 3 times, each waiting for 2 seconds for reply from server
-        if "job_info" in msg_dict.keys():
-            validation = msg_dict.get("job_info")
-        else:
-            validation = None
-
-        for i in range(3):
-            self.dealer.send_json(msg_dict)
-
-            while self.dealer.poll(timeout):
-                reply = json.loads(str(self.dealer.recv(), "utf-8"))
-                if validation is None or validation in reply.keys():
-                    recv_msg = reply
-                    return recv_msg
-
-            if recv_msg is None:
-                # No response from server. Close dealer socket
-                self.dealer.setsockopt(zmq.LINGER, 0)
-                self.dealer.close()
-                # Recreate dealer socket
-                self.dealer_routine()
-            else:
-                break
-
-        return recv_msg
-
-    def update_ip_ports(self):
-        print(self.gui.config.get('Network', 'server_add'))
-        print(self.gui.config.get('Network', 'server_port'))
-        print(self.gui.config.get('Network', 'self_add'))
-        print(self.gui.config.get('Network', 'self_port'))
-
-    def add_maintenance(self, idx, emp_start, end=None):
-        key = 'M{}'.format(idx)
-        print(key, emp_start, end)
-
-    def add_employee(self, idx, emp_start, end=None):
-        key = 'E{}'.format(idx)
-        print(key, emp_start, end)
-
-    def add_qc(self, idx, string):
-        key = 'Q{}'.format(idx)
-        print(key, string)
-
-    def save_machines(self, filename='jam_machine.json'):
-        save_dict = {'save_time': datetime.now()}
-        with self.counts_lock:
-            save_dict['counts'] = self.counts.copy()
-
-        for key, machine in self.gui.machines.items():
-            save_dict[key] = machine.all_info()
-
-        print(json.dumps(save_dict, default=str))
-
-        with open(filename, 'w') as write_file:
-            json.dump(save_dict, write_file, default=str)
-
-    def init_counts(self, counts, prev_counts):
-        with self.counts_lock:
-            self.counts.update(counts)
-
-        with self.prev_counts_lock:
-            self.prev_counts.update(prev_counts)
 
 
 if __name__ == '__main__':

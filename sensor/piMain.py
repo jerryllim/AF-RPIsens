@@ -593,3 +593,36 @@ class DatabaseManager:
         for idx, col in enumerate(cursor.description):
             d[col[0]] = row[idx]
         return d
+
+
+class FakeController(PiController):
+
+    def __init__(self, gui, filename='pin_dict.json'):
+        self.logger = logging.getLogger('JAM')
+
+        self.filename = filename
+        self.callbacks = []
+        self.counts_lock = threading.Lock()
+        self.prev_counts_lock = threading.Lock()
+        self.scheduler = BackgroundScheduler()
+        self.gui = gui
+        self.database_manager = DatabaseManager()
+        self.load_pin_dict()
+
+        self.update_ip_ports()
+
+        self.context = zmq.Context()
+        self.respondent_routine()
+        self.dealer_routine()
+        self.pipe_routine()
+        self.ping_at = time.time() + 60*self.PING_INTERVAL
+        self.scheduler.start()
+
+        self.respondent_kill = threading.Event()
+        self.respondent_thread = threading.Thread(target=self.respond)
+        self.respondent_thread.daemon = True
+        self.respondent_thread.start()
+        self.pipe_thread = threading.Thread(target=self.pipe_loop)
+        self.pipe_thread.daemon = True
+        self.pipe_thread.start()
+        self.logger.info('Completed PiController __init__')
