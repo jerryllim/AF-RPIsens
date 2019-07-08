@@ -1079,7 +1079,7 @@ class PiGUIApp(App):
         file_handler.setFormatter(log_format)
         self.logger.addHandler(file_handler)
         self.logger.info('Started logging')
-        # self.check_camera()
+        self.check_camera()
         self.config.set('Network', 'self_add', self.get_ip_add())
 
         if is_linux:

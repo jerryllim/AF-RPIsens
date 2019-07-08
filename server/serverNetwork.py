@@ -164,7 +164,6 @@ class NetworkManager:
                         to_send = [ip.encode(), (json.dumps(send_dict)).encode()]
                         try:
                             self.router_send.send_multipart(to_send)
-                            print(to_send)
                         except zmq.ZMQError as error:
                             error_list.append(ip)
                             self.logger.warning("Error {} for ip {}".format(error, ip))

@@ -322,7 +322,6 @@ class DatabaseManager:
         try:
             with conn.cursor() as cursor:
                 seq = recv_dict.pop('seq', None)
-                print(seq)
                 if seq is None or not isinstance(seq, int):
                     self.logger.debug("No sequence or invalid sequence ({}). Abort insert jam from {}".format(seq, ip))
                     return
