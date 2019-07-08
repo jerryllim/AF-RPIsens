@@ -580,7 +580,9 @@ class DatabaseManager:
             cursor.execute("SELECT * FROM jobs_table WHERE jo_no = ? AND jo_line = ? LIMIT 1;", (jo_no, jo_line))
             job_info = cursor.fetchone()
             cursor.execute("DELETE FROM jobs_table WHERE jo_no = ? AND jo_line = ? LIMIT 1;", (jo_no, jo_line))
-
+            db.commit()
+        except sqlite3.Error as error:
+            self.logger.error("DatabaseManager - get_job_info: {}".format(error))
         finally:
             db.close()
             return job_info

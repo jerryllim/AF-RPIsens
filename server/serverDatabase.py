@@ -1015,10 +1015,13 @@ class DatabaseManager:
                     if recv_time.day > now.day:
                         start = self.month_delta(start, -1)
 
-                    end_time = datetime.strptime(end_str, '%d%H%M')
-                    end = now.replace(day=end_time.day, hour=end_time.hour, minute=end_time.minute)
-                    if end_time.day > now.day:
-                        end = self.month_delta(end, -1)
+                    if end_str:
+                        end_time = datetime.strptime(end_str, '%d%H%M')
+                        end = now.replace(day=end_time.day, hour=end_time.hour, minute=end_time.minute)
+                        if end_time.day > now.day:
+                            end = self.month_delta(end, -1)
+                    else:
+                        end = None
 
                     query = 'REPLACE INTO emp_shift_table VALUES (%s, %s, %s, %s);'
                     cursor.execute(query, (emp, machine, start, end))
