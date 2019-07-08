@@ -851,7 +851,7 @@ class DatabaseManager:
                 sql = "SELECT uno, uline, ustk, ustk_desc1, usch_qty, usfc_qty FROM jobs_table WHERE umachine_no IN %s"
                 if dt:
                     sql = sql + " AND last_modified >= '{}' AND " \
-                                "last_modified <= {};".format(dt, now.strftime("%Y-%m-%d %H:%M:%S"))
+                                "last_modified <= '{}';".format(dt, now.strftime("%Y-%m-%d %H:%M:%S"))
                 cursor.execute(sql, (macs,))
                 for row in cursor:
                     job_list.append(row)
@@ -874,7 +874,7 @@ class DatabaseManager:
                       "umachine_no LIKE %s"
                 if dt:
                     sql = sql + " AND last_modified >= '{}' AND " \
-                                "last_modified <= {};".format(dt, now.strftime("%Y-%m-%d %H:%M:%S"))
+                                "last_modified <= '{}';".format(dt, now.strftime("%Y-%m-%d %H:%M:%S"))
                 cursor.execute(sql, (mac,))
                 for row in cursor:
                     job_list.append(row)

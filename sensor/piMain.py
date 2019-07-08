@@ -232,26 +232,30 @@ class PiController:
         with self.prev_counts_lock:
             # Combine sfu first
             sfu_list = temp_counts.pop('sfu', [])
-            if self.prev_counts.get('sfu') is None:
-                self.prev_counts['sfu'] = []
-            self.prev_counts['sfu'] = self.prev_counts['sfu'] + sfu_list
+            if sfu_list:
+                if self.prev_counts.get('sfu') is None:
+                    self.prev_counts['sfu'] = []
+                self.prev_counts['sfu'] = self.prev_counts['sfu'] + sfu_list
 
             # Next, loop through and combine Q*, M* & E*
             for idx in range(1, 4):
                 qc_list = temp_counts.pop('Q{}'.format(idx), [])
-                if self.prev_counts.get('Q{}'.format(idx)) is None:
-                    self.prev_counts['Q{}'.format(idx)] = []
-                self.prev_counts['Q{}'.format(idx)] = self.prev_counts['Q{}'.format(idx)] + qc_list
+                if qc_list:
+                    if self.prev_counts.get('Q{}'.format(idx)) is None:
+                        self.prev_counts['Q{}'.format(idx)] = []
+                    self.prev_counts['Q{}'.format(idx)] = self.prev_counts['Q{}'.format(idx)] + qc_list
 
                 maintenance_dict = temp_counts.pop('M{}'.format(idx), {})
-                if self.prev_counts.get('M{}'.format(idx)) is None:
-                    self.prev_counts['M{}'.format(idx)] = {}
-                self.prev_counts['M{}'.format(idx)].update(maintenance_dict)
+                if maintenance_dict:
+                    if self.prev_counts.get('M{}'.format(idx)) is None:
+                        self.prev_counts['M{}'.format(idx)] = {}
+                    self.prev_counts['M{}'.format(idx)].update(maintenance_dict)
 
                 emp_dict = temp_counts.pop('E{}'.format(idx), {})
-                if self.prev_counts.get('E{}'.format(idx)) is None:
-                    self.prev_counts['E{}'.format(idx)] = {}
-                self.prev_counts['E{}'.format(idx)].update(emp_dict)
+                if emp_dict:
+                    if self.prev_counts.get('E{}'.format(idx)) is None:
+                        self.prev_counts['E{}'.format(idx)] = {}
+                    self.prev_counts['E{}'.format(idx)].update(emp_dict)
 
             # Lastly copy over the jam data
             for key, counts_d in self.counts:
