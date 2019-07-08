@@ -5,11 +5,9 @@ import copy
 import time
 import json
 import pigpio
-import random
 import logging
 import sqlite3
 import datetime
-import itertools
 import threading
 from io import StringIO
 from collections import Counter
