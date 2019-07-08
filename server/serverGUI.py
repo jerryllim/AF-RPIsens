@@ -1121,7 +1121,7 @@ class DisplayTable(QtWidgets.QWidget):
     def update_table(self):
         now = datetime.datetime.now()
         self.date_spin.setDate(QtCore.QDate.currentDate())
-        if now.hour > 19:
+        if now.hour >= 19:
             self.start_spin.setTime(QtCore.QTime(19, 0))
         else:
             self.start_spin.setTime(QtCore.QTime(7, 0))
