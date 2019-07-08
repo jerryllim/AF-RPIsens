@@ -321,14 +321,14 @@
             on_release: root.parent.qc_check()
 
         Button:
-            text: 'Waste1 \n {}'.format(root.waste1)
+            text: 'Reject 1 \n {}'.format(root.waste1)
             text_size: self.size
             halign: 'center'
             valign: 'middle'
             on_release: root.parent.wastage_popup('waste1')
 
         Button:
-            text: 'Waste2 \n {}'.format(root.waste2)
+            text: 'Reject 2 \n {}'.format(root.waste2)
             text_size: self.size
             halign: 'center'
             valign: 'middle'
@@ -490,6 +490,15 @@
                 halign: 'center'
                 valign: 'middle'
                 on_release: root.log_out_all()
+
+            Button:
+                id: back_btn
+                text: 'Back'
+                size_hint_x: 0.5
+                text_size: self.size[0], self.size[1]
+                halign: 'center'
+                valign: 'middle'
+                on_release: root.back_to_prev()
 
         Label:
             size_hint_y: 0.1

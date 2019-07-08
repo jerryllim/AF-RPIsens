@@ -209,14 +209,14 @@ class PiController:
             prev_seq = self.prev_counts.get("seq", None)
 
         # If seq given is equal to prev_seq, clear prev_counts since received
-        if seq >= prev_seq:
+        if prev_seq and seq >= prev_seq:
             self.prev_counts.clear()
 
         # Combine, if prev_counts is empty combine as well
         self.combine_counts()
 
         # Use unix time (seconds since epoch) 10 digits (Turns into 11 digits on 20/11/226 17:46:40 GMT)
-        new_seq = int(time.time())
+        new_seq = int(datetime.datetime.now().timestamp())
 
         # Get copy of the new combined prev_counts and send this with new seq number
         with self.prev_counts_lock:
@@ -288,6 +288,8 @@ class PiController:
                         # Get sequence number
                         seq = recv_dict.get(key)
                         reply_dict["jam"] = self.get_counts(seq)
+                    elif key == "jdt":
+                        continue
                     elif key == "jobs":
                         jobs_str = recv_dict.get(key)
                         with StringIO(jobs_str) as jobs:
@@ -295,7 +297,9 @@ class PiController:
                             jobs_list = list(csv_reader)
                         # TODO convert string to list before replace_into_jobs_table
                         self.database_manager.replace_into_jobs_table(jobs_list)
-                        reply_dict["jobs"] = 1
+                        # Return the timestamp
+                        jdt = recv_dict.get('jdt', 0)
+                        reply_dict["jobs"] = jdt
                     elif key == "emp":
                         emp_list = recv_dict.get(key)
                         self.update_emp_info(emp_list)
@@ -452,6 +456,9 @@ class PiController:
         save_dict = {'save_time': datetime.datetime.now()}
         with self.counts_lock:
             save_dict['counts'] = self.counts.copy()
+
+        with self.prev_counts_lock:
+            save_dict['prev_counts'] = self.prev_counts.copy()
 
         for key, machine in self.gui.machines.items():
             save_dict[key] = machine.all_info()

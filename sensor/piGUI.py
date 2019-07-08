@@ -18,6 +18,7 @@ from kivy.metrics import dp
 from kivy.clock import Clock
 from datetime import datetime
 from kivy.config import Config
+Config.set('kivy', 'keyboard_mode', 'systemanddock')
 from kivy.factory import Factory
 from kivy.uix.popup import Popup
 from kivy.uix.label import Label
@@ -36,9 +37,6 @@ from kivy.uix.settings import SettingOptions, SettingString
 from kivy.properties import NumericProperty, StringProperty, ListProperty
 from kivy.uix.screenmanager import ScreenManager, Screen, SlideTransition, NoTransition
 from settings_json import settings_main, settings_machine1, settings_machine2, settings_machine3
-
-
-Config.set('kivy', 'keyboard_mode', 'systemandmulti')
 
 
 class State(Enum):
@@ -327,7 +325,8 @@ class SelectPage(Screen):
         if dt != 0:
             self.ids.job_entry.text = ''
 
-        self.scan_btn.disabled = False
+        if self.scan_btn:
+            self.scan_btn.disabled = False
         App.get_running_app().action_bar.disabled = False
         if self.timeout:
             self.timeout.cancel()
@@ -535,6 +534,11 @@ class EmployeePage(Screen):
     def log_out_all(self):
         self.machine.log_out_all()
         self.load_emp_list()
+
+    def back_to_prev(self):
+        sm = App.get_running_app().screen_manager
+        sm.transition.direction = 'down'
+        sm.current = App.get_running_app().get_current_machine().get_page()
 
     def emp_login(self, emp_id, alternate=False):
         if self.machine.add_emp(emp_id, asst=alternate):
@@ -1063,8 +1067,12 @@ class PiGUIApp(App):
         # Setup logger
         self.logger = logging.getLogger('JAM')
         self.logger.setLevel(logging.DEBUG)
-        now = datetime.datetime.now()
-        log_file = '/home/pi/jam_logs/jam{}.log'.format(now.strftime('%y%m%d_%H%M'))
+        now = datetime.now()
+        is_linux = sys.platform.startswith('linux')
+        if is_linux:
+            log_file = '/home/pi/jam_logs/jam{}.log'.format(now.strftime('%y%m%d_%H%M'))
+        else:
+            log_file = 'jam{}.log'.format(now.strftime('%y%m%d_%H%M'))
         file_handler = logging.FileHandler(log_file)
         file_handler.setLevel(logging.DEBUG)
         log_format = logging.Formatter('%(asctime)s - %(threadName)s - %(levelname)s: %(module)s - %(message)s')
@@ -1074,7 +1082,7 @@ class PiGUIApp(App):
         # self.check_camera()
         self.config.set('Network', 'self_add', self.get_ip_add())
 
-        if sys.platform.startswith('linux'):
+        if is_linux:
             self.controller = piMain.PiController(self)
         else:
             self.controller = FakeClass(self)  # TODO set if testing
@@ -1089,7 +1097,7 @@ class PiGUIApp(App):
         else:
             save_dict = {}
 
-        self.controller.init_counts(save_dict.get('count', {}), save_dict.get('prev_count', {}))
+        self.controller.init_counts(save_dict.get('counts', {}), save_dict.get('prev_counts', {}))
 
         for idx in range(1, 4):
             machine = MachineClass(idx, self.controller, self.config)
@@ -1259,7 +1267,9 @@ def alphanum_key(s):
 class FakeClass:
     import threading
     counts_lock = threading.Lock()
+    prev_counts_lock = threading.Lock()
     counts = {}
+    prev_counts = {}
     database_manager = None
     permanent = 0
     dealer = None
@@ -1368,9 +1378,12 @@ class FakeClass:
         with open(filename, 'w') as write_file:
             json.dump(save_dict, write_file, default=str)
 
-    def init_counts(self, counts):
+    def init_counts(self, counts, prev_counts):
         with self.counts_lock:
             self.counts.update(counts)
+
+        with self.prev_counts_lock:
+            self.prev_counts.update(prev_counts)
 
 
 if __name__ == '__main__':
