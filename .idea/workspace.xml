@@ -157,8 +157,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/server/serverDatabase.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="728">
-                  <caret line="884" column="16" lean-forward="true" selection-start-line="884" selection-start-column="16" selection-end-line="884" selection-end-column="16" />
+                <state relative-caret-position="384">
+                  <caret line="1412" column="38" lean-forward="true" selection-start-line="1412" selection-start-column="38" selection-end-line="1412" selection-end-column="38" />
                   <folding>
                     <element signature="e#0#9#0" expanded="true" />
                   </folding>
@@ -203,7 +203,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>employee</find>
       <find>EmployeePage</find>
       <find>back_to</find>
       <find>now =</find>
@@ -233,6 +232,7 @@
       <find>int(11)</find>
       <find>get_jobs_for</find>
       <find>last_mod</find>
+      <find>transfer</find>
     </findStrings>
     <replaceStrings>
       <replace>TMessage</replace>
@@ -752,7 +752,7 @@
       <window_info anchor="bottom" id="Inspection" order="8" weight="0.4" />
       <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.50549453" side_tool="true" weight="0.32513368" />
       <window_info anchor="bottom" id="Version Control" order="10" weight="0.32834226" />
-      <window_info anchor="bottom" id="Terminal" order="11" sideWeight="0.4969475" weight="0.3272727" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="11" sideWeight="0.4969475" visible="true" weight="0.3272727" />
       <window_info anchor="bottom" id="Dependency Viewer" order="12" weight="0.32896176" />
       <window_info anchor="bottom" id="Messages" order="13" weight="0.32941177" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
@@ -1133,8 +1133,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/server/serverDatabase.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="728">
-          <caret line="884" column="16" lean-forward="true" selection-start-line="884" selection-start-column="16" selection-end-line="884" selection-end-column="16" />
+        <state relative-caret-position="384">
+          <caret line="1412" column="38" lean-forward="true" selection-start-line="1412" selection-start-column="38" selection-end-line="1412" selection-end-column="38" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />
           </folding>

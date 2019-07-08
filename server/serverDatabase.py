@@ -1397,7 +1397,7 @@ class DatabaseManager:
                       "uno char(10) NOT NULL, " \
                       "uline int(10) unsigned NOT NULL, " \
                       "umachine_no char(15) DEFAULT NULL, " \
-                      "usfc_qty double DEFAULT NULL, " \
+                      "usfc_qty double DEFAULT 0, " \
                       "usfc_emp1 char(10) DEFAULT NULL, " \
                       "usfc_emp2 char(10) DEFAULT NULL, " \
                       "usfc_emp3 char(10) DEFAULT NULL, " \
@@ -1407,6 +1407,10 @@ class DatabaseManager:
                       "usfc_time_fr time DEFAULT NULL, " \
                       "usfc_time_to time DEFAULT NULL);"
                 cursor.execute(sql)
+                query2 = "CREATE UNIQUE INDEX distinct_idx ON SFU_table(umc, uno, uline, umachine_no, usfc_qty, " \
+                       "usfc_emp1, usfc_emp2, usfc_emp3, usfc_qty_waste1, usfc_qty_waste2, usfc_date, usfc_time_fr, " \
+                       "usfc_time_to);"
+                cursor.execute(query2)
                 conn.commit()
         except pymysql.DatabaseError as error:
             self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
