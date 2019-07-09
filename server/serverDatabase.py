@@ -173,7 +173,7 @@ class AutomateSchedulers:
 
             with open(filepath, 'a') as export_file:
                 csv_writer = csv.writer(export_file)
-                csv_writer.writerows(self.database_manager.get_sfus())
+                csv_writer.writerows(self.database_manager.export_sfus())
 
             self.logger.debug('Wrote export file')
         except FileNotFoundError as error:
@@ -1490,6 +1490,8 @@ class DatabaseManager:
 
         try:
             with conn.cursor() as cursor:
+                query = "LOCK TABLE sfu_table WRITE;"
+                cursor.execute(query)
                 query = "SELECT * FROM sfu_table"
                 conditions = []
                 if date:
@@ -1506,6 +1508,12 @@ class DatabaseManager:
                     query = query + ' WHERE ' + ' AND '.join(conditions)
                 cursor.execute(query)
                 sfu_list = cursor.fetchall()
+                query = "DELETE * FROM sfu_table;"
+                cursor.execute(query)
+                query = "UNLOCK TABLES"
+                cursor.execute(query)
+
+                conn.commit()
         except pymysql.DatabaseError as error:
             self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
             conn.rollback()
