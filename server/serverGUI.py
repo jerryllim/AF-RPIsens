@@ -740,6 +740,9 @@ class MiscTab(QtWidgets.QWidget):
         self.import_fields['time'] = import_time
         import_layout.addWidget(QtWidgets.QLabel('Start time: '), 0, 0, QtCore.Qt.AlignRight)
         import_layout.addWidget(import_time, 0, 1)
+        import_btn = QtWidgets.QPushButton('Import now', network_box)
+        import_btn.clicked.connect(self.parent().parent().scheduler.read_import_file)
+        import_layout.addWidget(import_btn, 0, 4, QtCore.Qt.AlignLeft)
         import_hour = QtWidgets.QSpinBox(import_box)
         import_hour.setMinimum(0)
         import_hour.setMaximum(23)
@@ -763,7 +766,7 @@ class MiscTab(QtWidgets.QWidget):
         import_layout.addWidget(import_edit, 2, 1, 1, 3)
         import_button = QtWidgets.QPushButton('...', self)
         import_button.clicked.connect(self.import_from)
-        import_layout.addWidget(import_button, 2, 4)
+        import_layout.addWidget(import_button, 2, 4, QtCore.Qt.AlignLeft)
 
         export_box = QtWidgets.QGroupBox('Export', self)
         export_layout = QtWidgets.QGridLayout()
@@ -776,6 +779,9 @@ class MiscTab(QtWidgets.QWidget):
         self.export_fields['time'] = export_time
         export_layout.addWidget(QtWidgets.QLabel('Start time: '), 0, 0, QtCore.Qt.AlignRight)
         export_layout.addWidget(export_time, 0, 1)
+        export_btn = QtWidgets.QPushButton('Export now', network_box)
+        export_btn.clicked.connect(self.parent().parent().scheduler.write_export_file)
+        export_layout.addWidget(export_btn, 0, 4, QtCore.Qt.AlignLeft)
         export_hour = QtWidgets.QSpinBox(export_box)
         export_hour.setMinimum(0)
         export_hour.setMaximum(23)
@@ -799,7 +805,7 @@ class MiscTab(QtWidgets.QWidget):
         export_layout.addWidget(export_edit, 2, 1, 1, 3)
         export_button = QtWidgets.QPushButton('...', self)
         export_button.clicked.connect(self.export_to)
-        export_layout.addWidget(export_button, 2, 4)
+        export_layout.addWidget(export_button, 2, 4, QtCore.Qt.AlignLeft)
 
         # Set data management configs
         self.data_fields = {}
