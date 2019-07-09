@@ -536,6 +536,7 @@ class EmployeePage(Screen):
         self.load_emp_list()
 
     def back_to_prev(self):
+        App.get_running_app().action_bar.toggle_button_states()
         sm = App.get_running_app().screen_manager
         sm.transition.direction = 'down'
         sm.current = App.get_running_app().get_current_machine().get_page()
@@ -860,9 +861,12 @@ class SimpleActionBar(BoxLayout):
             App.get_running_app().change_machine(button.idx)
             self.logger.debug("Selected index {}".format(button.idx))
 
-    def select_employee(self):
+    def toggle_button_states(self):
         self.machine_button.disabled = not self.machine_button.disabled
         self.main_button.disabled = not self.main_button.disabled
+
+    def select_employee(self):
+        self.toggle_button_states()
         sm = App.get_running_app().screen_manager
         sm.transition = SlideTransition()
         if sm.current is not 'employee_page':
