@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="8c4eab11-9431-48ea-8992-fef6a6e722be" name="Default" comment="Reduced labels (populate in init) &amp; created NumericProperty for counter">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/serverDatabase.py" beforeDir="false" afterPath="$PROJECT_DIR$/server/serverDatabase.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/serverGUI.py" beforeDir="false" afterPath="$PROJECT_DIR$/server/serverGUI.py" afterDir="false" />
     </list>
@@ -41,8 +40,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="304">
-                  <caret line="209" column="35" selection-start-line="209" selection-start-column="35" selection-end-line="209" selection-end-column="35" />
+                <state relative-caret-position="113">
+                  <caret line="229" column="39" selection-start-line="229" selection-start-column="39" selection-end-line="229" selection-end-column="39" />
                   <folding>
                     <element signature="e#0#9#0" expanded="true" />
                   </folding>
@@ -66,7 +65,7 @@
             <entry file="file://$PROJECT_DIR$/server/serverDatabase.py">
               <provider selected="true" editor-type-id="text-editor">
                 <state relative-caret-position="469">
-                  <caret line="1425" column="42" lean-forward="true" selection-start-line="1425" selection-start-column="42" selection-end-line="1425" selection-end-column="42" />
+                  <caret line="1450" column="42" lean-forward="true" selection-start-line="1450" selection-start-column="42" selection-end-line="1450" selection-end-column="42" />
                   <folding>
                     <element signature="e#0#9#0" expanded="true" />
                   </folding>
@@ -117,20 +116,11 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/viewer/viewerGUI.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="388">
-                  <caret line="113" column="34" selection-start-line="113" selection-start-column="34" selection-end-line="113" selection-end-column="34" />
-                </state>
-              </provider>
-            </entry>
-          </file>
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="-1198">
-                  <caret line="680" column="15" lean-forward="true" selection-start-line="680" selection-start-column="15" selection-end-line="680" selection-end-column="15" />
+                <state relative-caret-position="382">
+                  <caret line="1155" column="26" selection-start-line="1155" selection-start-column="26" selection-end-line="1155" selection-end-column="26" />
                   <folding>
                     <element signature="e#0#9#0" expanded="true" />
                   </folding>
@@ -141,8 +131,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/server/serverDatabase.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="-150">
-                  <caret line="179" column="62" lean-forward="true" selection-start-line="179" selection-start-column="62" selection-end-line="179" selection-end-column="62" />
+                <state relative-caret-position="118">
+                  <caret line="1375" column="23" selection-start-line="1375" selection-start-column="8" selection-end-line="1375" selection-end-column="23" />
                   <folding>
                     <element signature="e#0#9#0" expanded="true" />
                   </folding>
@@ -153,7 +143,7 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/server/serverNetwork.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="1440">
+                <state relative-caret-position="66">
                   <caret line="96" selection-start-line="96" selection-end-line="96" />
                   <folding>
                     <element signature="e#0#9#0" expanded="true" />
@@ -175,13 +165,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>transfer</find>
-      <find>respond</find>
-      <find>recv</find>
-      <find>_recv</find>
-      <find>get_job</find>
-      <find>apscheduler</find>
-      <find>refresh</find>
       <find>self.pi</find>
       <find>error</find>
       <find>prev_</find>
@@ -195,16 +178,23 @@
       <find>export</find>
       <find>miscell</find>
       <find>recall_machine</find>
-      <find>JAMMain</find>
       <find>export_sfu</find>
       <find>pushButton</find>
       <find>settings</find>
       <find>create_sfu</find>
       <find>wrote</find>
       <find>export_s</find>
-      <find>print</find>
-      <find>self.resu</find>
       <find>configuration</find>
+      <find>JAMMain</find>
+      <find>machines</find>
+      <find>displaytable</find>
+      <find>self.resu</find>
+      <find>print</find>
+      <find>get_machine</find>
+      <find>machines_table</find>
+      <find>get_mu</find>
+      <find>get_machine_tea</find>
+      <find>machines_</find>
     </findStrings>
     <replaceStrings>
       <replace>TMessage</replace>
@@ -306,8 +296,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="PackagesPane" />
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -334,6 +322,8 @@
           <select />
         </subPane>
       </pane>
+      <pane id="PackagesPane" />
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -704,6 +694,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1680" height="1027" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" weight="0.23443224" />
       <window_info id="Structure" order="1" weight="0.24908425" />
@@ -715,7 +706,7 @@
       <window_info anchor="bottom" id="Inspection Results" order="0" weight="0.32896176" />
       <window_info anchor="bottom" id="Message" order="1" />
       <window_info anchor="bottom" id="Find" order="2" weight="0.29839572" />
-      <window_info anchor="bottom" id="Run" order="3" sideWeight="0.4945055" weight="0.32513368" />
+      <window_info active="true" anchor="bottom" id="Run" order="3" sideWeight="0.4945055" visible="true" weight="0.32513368" />
       <window_info anchor="bottom" id="Debug" order="4" weight="0.3989305" />
       <window_info anchor="bottom" id="TODO" order="5" weight="0.32834226" />
       <window_info anchor="bottom" id="Cvs" order="6" weight="0.25" />
@@ -723,7 +714,7 @@
       <window_info anchor="bottom" id="Inspection" order="8" weight="0.4" />
       <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.50549453" side_tool="true" weight="0.32513368" />
       <window_info anchor="bottom" id="Version Control" order="10" weight="0.32834226" />
-      <window_info active="true" anchor="bottom" id="Terminal" order="11" sideWeight="0.4969475" visible="true" weight="0.3272727" />
+      <window_info anchor="bottom" id="Terminal" order="11" sideWeight="0.4969475" weight="0.3272727" />
       <window_info anchor="bottom" id="Dependency Viewer" order="12" weight="0.32896176" />
       <window_info anchor="bottom" id="Messages" order="13" weight="0.32941177" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
@@ -778,7 +769,6 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/sensor/sensor.iml" />
     <entry file="file://$PROJECT_DIR$/viewer/jam3.ini">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
@@ -1061,16 +1051,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/server/serverNetwork.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1440">
-          <caret line="96" selection-start-line="96" selection-end-line="96" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/viewer/viewerGUI.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="388">
@@ -1078,20 +1058,37 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/server/serverDatabase.py">
+    <entry file="file://$PROJECT_DIR$/server/serverNetwork.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-150">
-          <caret line="179" column="62" lean-forward="true" selection-start-line="179" selection-start-column="62" selection-end-line="179" selection-end-column="62" />
+        <state relative-caret-position="66">
+          <caret line="96" selection-start-line="96" selection-end-line="96" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/server/serverDatabase.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="118">
+          <caret line="1375" column="23" selection-start-line="1375" selection-start-column="8" selection-end-line="1375" selection-end-column="23" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/Library/Caches/IdeaIC2019.1/python_stubs/-1199943126/PySide2/QtWidgets/QTableView.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="202">
+          <caret line="212" column="8" selection-start-line="212" selection-start-column="8" selection-end-line="212" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1198">
-          <caret line="680" column="15" lean-forward="true" selection-start-line="680" selection-start-column="15" selection-end-line="680" selection-end-column="15" />
+        <state relative-caret-position="382">
+          <caret line="1155" column="26" selection-start-line="1155" selection-start-column="26" selection-end-line="1155" selection-end-column="26" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />
           </folding>

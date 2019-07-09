@@ -1030,17 +1030,21 @@ class DisplayTable(QtWidgets.QWidget):
         self.table_view.setModel(self.table_model)
         self.table_view.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.table_view.setAlternatingRowColors(True)
+        self.table_view.setSortingEnabled(True)
         v_header = self.table_view.verticalHeader()
         v_header.hide()
 
         hbox = QtWidgets.QHBoxLayout()
         date_label = QtWidgets.QLabel('Date: ')
+        date_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.date_spin = QtWidgets.QDateEdit()
         self.date_spin.setDate(QtCore.QDate.currentDate())
         start_label = QtWidgets.QLabel('Start: ')
+        start_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.start_spin = QtWidgets.QTimeEdit(QtCore.QTime(7, 0))
         self.start_spin.setDisplayFormat('HH:mm')
         hour_label = QtWidgets.QLabel('Hours: ')
+        hour_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.hour_spin = QtWidgets.QSpinBox()
         self.hour_spin.setMinimum(1)
         self.hour_spin.setMaximum(24)
@@ -1055,8 +1059,25 @@ class DisplayTable(QtWidgets.QWidget):
         hbox.addWidget(self.hour_spin)
         hbox.addWidget(populate_btn)
 
+        # Add filter options
+        filter_hbox = QtWidgets.QHBoxLayout()
+        self.group_filter = QtWidgets.QLineEdit(self)
+        filter_hbox.addWidget(QtWidgets.QLabel("Group: "))
+        filter_hbox.addWidget(self.group_filter)
+        self.filter_condition = QtWidgets.QComboBox(self)
+        self.filter_condition.addItems(['OR', 'AND'])
+        self.filter_condition.setMinimumContentsLength(4)
+        filter_hbox.addWidget(self.filter_condition)
+        self.machine_filter = QtWidgets.QLineEdit(self)
+        filter_hbox.addWidget(QtWidgets.QLabel("Machine: "))
+        filter_hbox.addWidget(self.machine_filter)
+        filter_btn = QtWidgets.QPushButton("Filter")
+        filter_btn.clicked.connect(self.filter_query)
+        filter_hbox.addWidget(filter_btn)
+
         box_layout = QtWidgets.QVBoxLayout()
         box_layout.addLayout(hbox)
+        box_layout.addLayout(filter_hbox)
         box_layout.addWidget(self.table_view)
         self.setLayout(box_layout)
         self.show()
@@ -1066,7 +1087,7 @@ class DisplayTable(QtWidgets.QWidget):
     def populate_table(self):
         self.table_model.clear()
 
-        table_hheaders = ['Machine', 'Sum']
+        table_hheaders = ['Group', 'Machine', 'Sum']
         date = self.date_spin.date().toPython()
         start_time = self.start_spin.time().toPython()
         start = datetime.datetime.combine(date, start_time)
@@ -1082,10 +1103,13 @@ class DisplayTable(QtWidgets.QWidget):
         self.table_model.setHorizontalHeaderLabels(table_hheaders)
 
         output_list = []
-        table_vheaders = self.database_manager.get_machine_names()
-        for row, machine in enumerate(table_vheaders):
+        table_vheaders = []
+        table_vheaders1 = self.database_manager.get_machine_teams_names()
+        for row, machine in enumerate(table_vheaders1):
             output_list.append([0] * len(table_hheaders))
-            self.table_model.setItem(row, 0, QtGui.QStandardItem(machine))
+            table_vheaders.append(machine[1])
+            self.table_model.setItem(row, 0, QtGui.QStandardItem(machine[0]))
+            self.table_model.setItem(row, 1, QtGui.QStandardItem(machine[1]))
 
         outputs = self.database_manager.get_hourly_output(start.isoformat(timespec='minutes'),
                                                           end.isoformat(timespec='minutes'))
@@ -1105,7 +1129,7 @@ class DisplayTable(QtWidgets.QWidget):
         for idx, row in enumerate(output_list):
             target = targets_dict.get(table_vheaders[idx], None)
             for col, value in enumerate(row):
-                if col < 2:
+                if col < 3:
                     continue
                 item = QtGui.QStandardItem(str(value))
                 if target and value <= target:
@@ -1114,7 +1138,20 @@ class DisplayTable(QtWidgets.QWidget):
                     item.setForeground(QtGui.QBrush(QtGui.QColor(255, 0, 0)))
                     item.setFont(font)
                 self.table_model.setItem(idx, col, item)
-            self.table_model.setItem(idx, 1, QtGui.QStandardItem(str(sum(row))))
+            self.table_model.setItem(idx, 2, QtGui.QStandardItem(str(sum(row))))
+
+    def filter_query(self):
+        is_and = self.filter_condition.currentIndex()
+        team = self.group_filter.text()
+        machine = self.machine_filter.text()
+        for row in range(self.table_model.rowCount()):
+            self.table_view.setRowHidden(row, True)
+            team_bool = team in self.table_model.item(row).text()
+            machine_bool = machine in self.table_model.item(row, 1).text()
+            if is_and and team_bool and machine_bool:
+                self.table_view.setRowHidden(row, False)
+            elif (not is_and) and (team_bool or machine_bool):
+                self.table_view.setRowHidden(row, False)
 
     def schedule_jam(self, interval=5):
         cron_trigger = CronTrigger(second='30', minute='1-59/{}'.format(interval))
@@ -1258,7 +1295,7 @@ class MUDisplayTable(QtWidgets.QWidget):
     def populate_table(self):
         self.table_model.clear()
 
-        table_hheaders = ['Machine', 'Avg']
+        table_hheaders = ['Group', 'Machine', 'Avg']
         start = self.start_spin.dateTime().toPython()
         self.date_time = start
         end = self.end_spin.dateTime().toPython()
@@ -1274,11 +1311,14 @@ class MUDisplayTable(QtWidgets.QWidget):
 
         minutes_list = []
         outputs_list = []
-        table_vheaders = self.database_manager.get_machine_names()
-        for row, machine in enumerate(table_vheaders):
+        table_vheaders = []
+        table_vheaders1 = self.database_manager.get_machine_teams_names()
+        for row, machine in enumerate(table_vheaders1):
             minutes_list.append([0] * len(table_hheaders))
             outputs_list.append([0] * len(table_hheaders))
-            self.table_model.setItem(row, 0, QtGui.QStandardItem(machine))
+            table_vheaders.append(machine[1])
+            self.table_model.setItem(row, 0, QtGui.QStandardItem(machine[0]))
+            self.table_model.setItem(row, 1, QtGui.QStandardItem(machine[1]))
 
         outputs = self.database_manager.find_mu_in_hour(start.isoformat(timespec='minutes'),
                                                         end.isoformat(timespec='minutes'))
@@ -1294,7 +1334,7 @@ class MUDisplayTable(QtWidgets.QWidget):
         for idx, row in enumerate(minutes_list):
             # target = targets_dict.get(table_vheaders[idx], None)
             for col, value in enumerate(row):
-                if col < 2:
+                if col < 3:
                     continue
                 # item = QtGui.QStandardItem("{} ({})".format(value, outputs_list[idx][col]))
                 item = QtGui.QStandardItem(str(value))
@@ -1304,7 +1344,7 @@ class MUDisplayTable(QtWidgets.QWidget):
                 #     item.setForeground(QtGui.QBrush(QtGui.QColor(255, 0, 0)))
                 #     item.setFont(font)
                 self.table_model.setItem(idx, col, item)
-            self.table_model.setItem(idx, 1, QtGui.QStandardItem(str(round(statistics.mean(row), 1))))
+            self.table_model.setItem(idx, 2, QtGui.QStandardItem(str(round(statistics.mean(row), 1))))
 
         self.table_hheaders = table_hheaders
         self.table_vheaders = table_vheaders
@@ -1351,20 +1391,22 @@ class MUDetailsPopUp(QtWidgets.QDialog):
     def populate_table(self):
         self.table_model.clear()
 
-        table_hheaders = ['Machine', 'Start', 'End', 'Duration', 'Output']
+        table_hheaders = ['Group', 'Machine', 'Start', 'End', 'Duration', 'Output']
         self.table_model.setHorizontalHeaderLabels(table_hheaders)
         start = self.start
         end = self.start + datetime.timedelta(hours=1)
         run_dict = self.database_manager.get_mu(start.isoformat(timespec='minutes'),
                                                 end.isoformat(timespec='minutes'), machines_list=[self.machine])
+        machines_teams = self.database_manager.get_machine_teams()
         row = 0
         for key, values in run_dict.items():
-            self.table_model.setItem(row, 0, QtGui.QStandardItem(key))
+            self.table_model.setItem(row, 0, QtGui.QStandardItem(machines_teams.get(key)))
+            self.table_model.setItem(row, 1, QtGui.QStandardItem(key))
             for starttime, endtime, duration, output in values:
-                self.table_model.setItem(row, 1, QtGui.QStandardItem(starttime.strftime("%Y-%m-%d %H:%M")))
-                self.table_model.setItem(row, 2, QtGui.QStandardItem(endtime.strftime("%Y-%m-%d %H:%M")))
-                self.table_model.setItem(row, 3, QtGui.QStandardItem(str(duration)))
-                self.table_model.setItem(row, 4, QtGui.QStandardItem(str(output)))
+                self.table_model.setItem(row, 2, QtGui.QStandardItem(starttime.strftime("%Y-%m-%d %H:%M")))
+                self.table_model.setItem(row, 3, QtGui.QStandardItem(endtime.strftime("%Y-%m-%d %H:%M")))
+                self.table_model.setItem(row, 4, QtGui.QStandardItem(str(duration)))
+                self.table_model.setItem(row, 5, QtGui.QStandardItem(str(output)))
                 row += 1
 
 
@@ -1422,21 +1464,22 @@ class MUDetailsDisplayTable(QtWidgets.QWidget):
     def populate_table(self):
         self.table_model.clear()
 
-        table_hheaders = ['Machine', 'Start', 'End', 'Duration', 'Output']
+        table_hheaders = ['Group', 'Machine', 'Start', 'End', 'Duration', 'Output']
         self.table_model.setHorizontalHeaderLabels(table_hheaders)
         start = self.start_spin.dateTime().toPython()
         end = self.end_spin.dateTime().toPython()
         run_dict = self.database_manager.get_mu(start.isoformat(timespec='minutes'),
                                                 end.isoformat(timespec='minutes'))
-
+        machines_teams = self.database_manager.get_machine_teams()
         row = 0
         for key, values in run_dict.items():
-            self.table_model.setItem(row, 0, QtGui.QStandardItem(key))
+            self.table_model.setItem(row, 0, QtGui.QStandardItem(machines_teams.get(key)))
+            self.table_model.setItem(row, 1, QtGui.QStandardItem(key))
             for starttime, endtime, duration, output in values:
-                self.table_model.setItem(row, 1, QtGui.QStandardItem(starttime.strftime("%Y-%m-%d %H:%M")))
-                self.table_model.setItem(row, 2, QtGui.QStandardItem(endtime.strftime("%Y-%m-%d %H:%M")))
-                self.table_model.setItem(row, 3, QtGui.QStandardItem(str(duration)))
-                self.table_model.setItem(row, 4, QtGui.QStandardItem(str(output)))
+                self.table_model.setItem(row, 2, QtGui.QStandardItem(starttime.strftime("%Y-%m-%d %H:%M")))
+                self.table_model.setItem(row, 3, QtGui.QStandardItem(endtime.strftime("%Y-%m-%d %H:%M")))
+                self.table_model.setItem(row, 4, QtGui.QStandardItem(str(duration)))
+                self.table_model.setItem(row, 5, QtGui.QStandardItem(str(output)))
                 row += 1
 
 

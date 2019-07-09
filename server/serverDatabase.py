@@ -1373,6 +1373,31 @@ class DatabaseManager:
             conn.close()
             return machines_list
 
+    def get_machine_teams_names(self):
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
+                               database=self.db, port=self.port)
+        machines_list = []
+
+        try:
+            with conn.cursor() as cursor:
+                sql = 'SELECT team, machine FROM machines_table;'
+                cursor.execute(sql)
+                machines_list = list(cursor.fetchall())
+        except pymysql.DatabaseError as error:
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
+            conn.rollback()
+        finally:
+            conn.close()
+            return machines_list
+
+    def get_machine_teams(self):
+        machines_list = self.get_machine_teams_names()
+        machines_dict = {}
+        for team, machine in machines_list:
+            machines_dict[machine] = team
+
+        return machines_dict
+
     def get_machine_targets(self, col, machines_list=None):
         conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
