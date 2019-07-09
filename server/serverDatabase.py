@@ -107,10 +107,15 @@ class AutomateSchedulers:
             time = self.settings.config.get(section, 'time')
             hour = self.settings.config.getint(section, 'hour')
             minute = self.settings.config.getint(section, 'minute')
+
+            is_odd = int('{}'.format(time[:2])) % 2
             if hour:
-                hour = '*/{}'.format(hour)
+                if is_odd:
+                    hour = '1-23/{}'.format(hour)
+                else:
+                    hour = '*/{}'.format(hour)
             else:
-                hour = '*'
+                hour = '{}'.format(time[:2])
 
             if minute:
                 minute = '{}-59/{}'.format(time[-2:], minute)
@@ -156,15 +161,14 @@ class AutomateSchedulers:
     def schedule_export(self):
         job_id = 'Export'
         hour, minute = self.get_cron_hour_minute(job_id)
-        # cron_trigger = CronTrigger(hour=hour, minute=minute)
-        cron_trigger = CronTrigger(hour="*", minute="*/20")
+        cron_trigger = CronTrigger(hour=hour, minute=minute)
         if self.scheduler_jobs.get(job_id):
             self.scheduler_jobs[job_id].remove()
         self.scheduler_jobs[job_id] = self.scheduler.add_job(self.write_export_file, cron_trigger, id=job_id,
                                                              max_instances=3)
 
     def write_export_file(self):
-        filepath = self.settings.config.get('Export', 'path') + 'export_jam.csv'
+        filepath = self.settings.config.get('Export', 'path') + '/export_jam.csv'
         try:
             if not os.path.isfile(filepath):
                 with open(filepath, 'w') as export_file:
@@ -173,11 +177,12 @@ class AutomateSchedulers:
 
             with open(filepath, 'a') as export_file:
                 csv_writer = csv.writer(export_file)
-                csv_writer.writerows(self.database_manager.export_sfus())
+                li = list(self.database_manager.export_sfus())
+                csv_writer.writerows(li)
 
-            self.logger.debug('Wrote export file')
+            self.logger.debug("Wrote export file to '{}'".format(filepath))
         except FileNotFoundError as error:
-            self.logger.debug("Unable to export to {}export_jam.csv".format(filepath))
+            self.logger.debug("Unable to export to '{}''".format(filepath))
 
     def schedule_table_transfers(self):
         job_id = 'Data'
@@ -751,8 +756,8 @@ class DatabaseManager:
                     query = "REPLACE INTO jobs_table (umc, uno, umachine_no, usch_qty, usou_no, ustk_mc, ustk, " \
                             "uraw_mc, uraw, uline, uuom, ureq_qty, ureq_uom, udraw, urem, ucomplete, umachine_desc, " \
                             "ustk_desc1, ustk_desc2, mname, trem1, tqty, tdo_date, usfc_qty)" \
-                            "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, " \
-                            "%s, %s, %s, %s, %s, %s, %s, %s, STR_TO_DATE(%s, '%d/%m/%y'), %s);"
+                            " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, " \
+                            "%s, %s, %s, %s, %s, %s, %s, %s, STR_TO_DATE(%s, '%%d/%%m/%%Y'), 0);"
                     cursor.execute(query, job_info)
                     conn.commit()
         except pymysql.DatabaseError as error:
@@ -1411,10 +1416,14 @@ class DatabaseManager:
                       "usfc_time_fr time DEFAULT NULL, " \
                       "usfc_time_to time DEFAULT NULL);"
                 cursor.execute(sql)
-                query2 = "CREATE UNIQUE INDEX distinct_idx ON SFU_table(umc, uno, uline, umachine_no, usfc_qty, " \
-                       "usfc_emp1, usfc_emp2, usfc_emp3, usfc_qty_waste1, usfc_qty_waste2, usfc_date, usfc_time_fr, " \
-                       "usfc_time_to);"
+                query2 = "SELECT 1 FROM `INFORMATION_SCHEMA`.`STATISTICS` WHERE `TABLE_SCHEMA` = '%s' AND " \
+                         "`TABLE_NAME` = 'sfu_table' AND `INDEX_NAME` = 'distinct_idx';"
                 cursor.execute(query2)
+                if cursor.fetchone():
+                    query3 = "CREATE UNIQUE INDEX distinct_idx ON SFU_table(umc, uno, uline, umachine_no, usfc_qty, " \
+                           "usfc_emp1, usfc_emp2, usfc_emp3, usfc_qty_waste1, usfc_qty_waste2, usfc_date, usfc_time_fr, " \
+                           "usfc_time_to);"
+                    cursor.execute(query3)
                 conn.commit()
         except pymysql.DatabaseError as error:
             self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
@@ -1508,7 +1517,7 @@ class DatabaseManager:
                     query = query + ' WHERE ' + ' AND '.join(conditions)
                 cursor.execute(query)
                 sfu_list = cursor.fetchall()
-                query = "DELETE * FROM sfu_table;"
+                query = "DELETE FROM sfu_table;"
                 cursor.execute(query)
                 query = "UNLOCK TABLES"
                 cursor.execute(query)
