@@ -100,6 +100,7 @@ class AutomateSchedulers:
 
     def pause_scheduler(self):
         self.scheduler.pause()
+        self.logger.info("Paused AutomateSechedulers scheduler")
 
     def get_cron_hour_minute(self, section):
         if section in ['Export', 'Import']:
@@ -155,7 +156,8 @@ class AutomateSchedulers:
     def schedule_export(self):
         job_id = 'Export'
         hour, minute = self.get_cron_hour_minute(job_id)
-        cron_trigger = CronTrigger(hour=hour, minute=minute)
+        # cron_trigger = CronTrigger(hour=hour, minute=minute)
+        cron_trigger = CronTrigger(hour="*", minute="*/20")
         if self.scheduler_jobs.get(job_id):
             self.scheduler_jobs[job_id].remove()
         self.scheduler_jobs[job_id] = self.scheduler.add_job(self.write_export_file, cron_trigger, id=job_id,
@@ -1470,7 +1472,38 @@ class DatabaseManager:
                     machines_str = str(tuple(machines_list))
                     conditions.append("machine IN ".format(machines_str))
 
-                query = query + ' WHERE ' + ' AND '.join(conditions)
+                if conditions:
+                    query = query + ' WHERE ' + ' AND '.join(conditions)
+                cursor.execute(query)
+                sfu_list = cursor.fetchall()
+        except pymysql.DatabaseError as error:
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
+            conn.rollback()
+        finally:
+            conn.close()
+            return sfu_list
+
+    def export_sfus(self, date=None, time_fr=None, time_to=None, machines_list=None):
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
+                               database=self.db, port=self.port)
+        sfu_list = []
+
+        try:
+            with conn.cursor() as cursor:
+                query = "SELECT * FROM sfu_table"
+                conditions = []
+                if date:
+                    conditions.append("usfc_date = '{}'".format(date))
+                if time_fr:
+                    conditions.append("usfc_time_fr > '{}'".format(time_fr))
+                if time_to:
+                    conditions.append("usfc_time_to < '{}'".format(time_to))
+                if machines_list:
+                    machines_str = str(tuple(machines_list))
+                    conditions.append("machine IN ".format(machines_str))
+
+                if conditions:
+                    query = query + ' WHERE ' + ' AND '.join(conditions)
                 cursor.execute(query)
                 sfu_list = cursor.fetchall()
         except pymysql.DatabaseError as error:

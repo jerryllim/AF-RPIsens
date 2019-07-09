@@ -3,9 +3,9 @@ os.environ['KIVY_GL_BACKEND'] = 'gl'
 import re
 import cv2
 import sys
-import zmq
 import time
 import json
+import pickle
 import signal
 import socket
 import piMain
@@ -242,16 +242,17 @@ class MachineClass:
         return save_info
 
     def recall_machine(self, json_dict):
+        print(json_dict)
         self.permanent = json_dict.get('permanent', 0)
         self.state = State[json_dict.get('state', "SELECT")]
         for emp_id, start in json_dict.get("emp_main", {}).items():
-            self.emp_main[emp_id] = datetime.strptime(start, "%Y-%m-%d %H:%M:%S.%f")
+            self.emp_main[emp_id] = start
         for emp_id, start in json_dict.get("emp_asst", {}).items():
-            self.emp_asst[emp_id] = datetime.strptime(start, "%Y-%m-%d %H:%M:%S.%f")
+            self.emp_asst[emp_id] = start
         self.maintenance = tuple(json_dict.get('maintenance', (None, None)))
         if all(self.maintenance):
             emp_id, start = self.maintenance
-            self.maintenance = (emp_id, datetime.strptime(start, "%Y-%m-%d %H:%M:%S.%f"))
+            self.maintenance = (emp_id, start)
         job = json_dict.get('current_job', {})
         if job:
             self.current_job = JobClass.recall_job(job)
@@ -1093,10 +1094,10 @@ class PiGUIApp(App):
 
         self.logger.debug("Using platform: {}".format(sys.platform))
 
-        save_path = "jam_machine.json"
-        if os.path.isfile(save_path):
-            with open(save_path, 'r') as read_file:
-                save_dict = json.load(read_file)
+        save_path = "jam_machine.txt"
+        if os.path.isfile(save_path) and os.path.getsize(save_path) > 0:
+            with open(save_path, 'br') as read_file:
+                save_dict = pickle.load(read_file)
             self.logger.debug("Getting save file from {}".format(save_dict["save_time"]))
         else:
             save_dict = {}
@@ -1106,7 +1107,7 @@ class PiGUIApp(App):
         for idx in range(1, 4):
             machine = MachineClass(idx, self.controller, self.config)
             if save_dict:
-                machine.recall_machine(save_dict.get(str(idx), {}))
+                machine.recall_machine(save_dict.get(idx, {}))
 
             self.machines[idx] = machine
 

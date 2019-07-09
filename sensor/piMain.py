@@ -4,6 +4,7 @@ import zmq
 import copy
 import time
 import json
+import pickle
 import pigpio
 import logging
 import sqlite3
@@ -258,7 +259,7 @@ class PiController:
                     self.prev_counts['E{}'.format(idx)].update(emp_dict)
 
             # Lastly copy over the jam data
-            for key, counts_d in self.counts:
+            for key, counts_d in temp_counts.items():
                 if self.prev_counts.get(key) is None:
                     self.prev_counts[key] = Counter()
                 self.prev_counts[key].update(counts_d)
@@ -453,7 +454,7 @@ class PiController:
         time.sleep(1)  # TODO remove sleep?
         os.system('sudo shutdown -h now')
 
-    def save_pi(self, filename='jam_machine.json'):
+    def save_pi(self, filename='jam_machine.txt'):
         self.logger.info("Saving machines")
         save_dict = {'save_time': datetime.datetime.now()}
         with self.counts_lock:
@@ -465,8 +466,8 @@ class PiController:
         for key, machine in self.gui.machines.items():
             save_dict[key] = machine.all_info()
 
-        with open(filename, 'w') as write_file:
-            json.dump(save_dict, write_file, default=str)
+        with open(filename, 'bw') as write_file:
+            pickle.dump(save_dict, write_file)
 
 
 class DatabaseManager:
