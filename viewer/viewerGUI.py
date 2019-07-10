@@ -608,8 +608,8 @@ class DisplayTable(QtWidgets.QWidget):
             output_list.append([0] * len(table_hheaders))
             self.table_model.setItem(row, 0, QtGui.QStandardItem(machine))
 
-        outputs = self.database_manager.get_hourly_output(start.isoformat(timespec='minutes'),
-                                                          end.isoformat(timespec='minutes'))
+        outputs = self.database_manager.get_hourly_output_for(start.isoformat(timespec='minutes'),
+                                                              end.isoformat(timespec='minutes'))
         for row in outputs:
             col = table_hheaders.index('{:02d}'.format(row[2]))
             try:

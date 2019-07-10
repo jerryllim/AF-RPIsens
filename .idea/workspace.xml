@@ -2,9 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="8c4eab11-9431-48ea-8992-fef6a6e722be" name="Default" comment="Reduced labels (populate in init) &amp; created NumericProperty for counter">
-      <change beforePath="$PROJECT_DIR$/sensor/piGUI.py" beforeDir="false" afterPath="$PROJECT_DIR$/sensor/piGUI.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sensor/piMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/sensor/piMain.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/serverDatabase.py" beforeDir="false" afterPath="$PROJECT_DIR$/server/serverDatabase.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/serverGUI.py" beforeDir="false" afterPath="$PROJECT_DIR$/server/serverGUI.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/viewer/viewerGUI.py" beforeDir="false" afterPath="$PROJECT_DIR$/viewer/viewerGUI.py" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -23,17 +23,17 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/sensor/piGUI.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="75">
-                  <caret line="5" selection-start-line="5" selection-end-line="5" />
+                <state relative-caret-position="244">
+                  <caret line="94" column="32" lean-forward="true" selection-start-line="94" selection-start-column="32" selection-end-line="94" selection-end-column="32" />
                 </state>
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="true">
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/sensor/piMain.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="184">
-                  <caret line="279" column="45" selection-start-line="279" selection-start-column="39" selection-end-line="279" selection-end-column="45" />
+                <state relative-caret-position="349">
+                  <caret line="289" column="44" lean-forward="true" selection-start-line="289" selection-start-column="44" selection-end-line="289" selection-end-column="44" />
                   <folding>
                     <element signature="e#0#9#0" expanded="true" />
                   </folding>
@@ -41,11 +41,11 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="false">
+          <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="113">
-                  <caret line="294" column="39" selection-start-line="294" selection-start-column="39" selection-end-line="294" selection-end-column="39" />
+                <state relative-caret-position="345">
+                  <caret line="23" column="59" lean-forward="true" selection-start-line="23" selection-start-column="59" selection-end-line="23" selection-end-column="59" />
                   <folding>
                     <element signature="e#0#9#0" expanded="true" />
                   </folding>
@@ -68,8 +68,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/server/serverDatabase.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="469">
-                  <caret line="1441" column="42" lean-forward="true" selection-start-line="1441" selection-start-column="42" selection-end-line="1441" selection-end-column="42" />
+                <state relative-caret-position="213">
+                  <caret line="1361" column="72" selection-start-line="1361" selection-start-column="67" selection-end-line="1361" selection-end-column="72" />
                   <folding>
                     <element signature="e#0#9#0" expanded="true" />
                   </folding>
@@ -93,17 +93,17 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/sensor/piGUI.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="193">
-                  <caret line="1090" column="57" selection-start-line="1090" selection-start-column="57" selection-end-line="1090" selection-end-column="57" />
+                <state relative-caret-position="131">
+                  <caret line="138" column="30" selection-start-line="138" selection-start-column="30" selection-end-line="138" selection-end-column="30" />
                 </state>
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="true">
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/sensor/piMain.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="193">
-                  <caret line="470" column="36" selection-start-line="470" selection-start-column="36" selection-end-line="470" selection-end-column="36" />
+                <state relative-caret-position="194">
+                  <caret line="147" column="8" selection-start-line="147" selection-start-column="8" selection-end-line="147" selection-end-column="8" />
                   <folding>
                     <element signature="e#0#9#0" expanded="true" />
                   </folding>
@@ -120,11 +120,11 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="false">
+          <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="-23342">
-                  <caret line="75" column="50" lean-forward="true" selection-start-line="75" selection-start-column="50" selection-end-line="75" selection-end-column="50" />
+                <state relative-caret-position="194">
+                  <caret line="111" column="52" selection-start-line="111" selection-start-column="52" selection-end-line="111" selection-end-column="52" />
                   <folding>
                     <element signature="e#0#9#0" expanded="true" />
                   </folding>
@@ -135,8 +135,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/server/serverDatabase.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="193">
-                  <caret line="986" selection-start-line="986" selection-end-line="986" />
+                <state relative-caret-position="524">
+                  <caret line="1367" column="37" selection-start-line="1367" selection-start-column="37" selection-end-line="1367" selection-end-column="37" />
                   <folding>
                     <element signature="e#0#9#0" expanded="true" />
                   </folding>
@@ -169,28 +169,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>recall_machine</find>
-      <find>export_sfu</find>
-      <find>pushButton</find>
-      <find>settings</find>
-      <find>create_sfu</find>
-      <find>wrote</find>
-      <find>export_s</find>
-      <find>configuration</find>
-      <find>JAMMain</find>
-      <find>machines</find>
-      <find>displaytable</find>
-      <find>self.resu</find>
-      <find>print</find>
-      <find>get_machine</find>
-      <find>machines_table</find>
-      <find>get_mu</find>
-      <find>get_machine_tea</find>
-      <find>machines_</find>
-      <find>import</find>
-      <find>replace_jo</find>
-      <find>import</find>
-      <find>insert_fi</find>
       <find>insert_fields</find>
       <find>add</find>
       <find>group</find>
@@ -199,6 +177,28 @@
       <find>&quot;{}&quot;,fo</find>
       <find>&quot;{}&quot;.format</find>
       <find>grace</find>
+      <find>is_set</find>
+      <find>start</find>
+      <find>filter</find>
+      <find>recall</find>
+      <find>_like(se</find>
+      <find>IN</find>
+      <find>IN</find>
+      <find>join</find>
+      <find>workcenters</find>
+      <find>workcenter is</find>
+      <find>print</find>
+      <find>grid</find>
+      <find>item</find>
+      <find>get_workce</find>
+      <find>machine</find>
+      <find>get_hourl</find>
+      <find>get_machine</find>
+      <find>get_machine_w</find>
+      <find>click</find>
+      <find>workcenter</find>
+      <find>wc IN</find>
+      <find>details</find>
     </findStrings>
     <replaceStrings>
       <replace>TMessage</replace>
@@ -283,10 +283,10 @@
         <option value="$PROJECT_DIR$/server/serverNetwork2.py" />
         <option value="$PROJECT_DIR$/sensor/pigui.kv" />
         <option value="$PROJECT_DIR$/server/serverNetwork.py" />
-        <option value="$PROJECT_DIR$/server/serverGUI.py" />
-        <option value="$PROJECT_DIR$/server/serverDatabase.py" />
-        <option value="$PROJECT_DIR$/sensor/piGUI.py" />
         <option value="$PROJECT_DIR$/sensor/piMain.py" />
+        <option value="$PROJECT_DIR$/sensor/piGUI.py" />
+        <option value="$PROJECT_DIR$/server/serverDatabase.py" />
+        <option value="$PROJECT_DIR$/server/serverGUI.py" />
       </list>
     </option>
   </component>
@@ -710,9 +710,9 @@
       <window_info anchor="bottom" id="Inspection Results" order="0" weight="0.32896176" />
       <window_info anchor="bottom" id="Message" order="1" />
       <window_info anchor="bottom" id="Find" order="2" weight="0.29839572" />
-      <window_info anchor="bottom" id="Run" order="3" sideWeight="0.4945055" weight="0.32513368" />
+      <window_info active="true" anchor="bottom" id="Run" order="3" sideWeight="0.4945055" visible="true" weight="0.32513368" />
       <window_info anchor="bottom" id="Debug" order="4" weight="0.3989305" />
-      <window_info active="true" anchor="bottom" id="TODO" order="5" visible="true" weight="0.32834226" />
+      <window_info anchor="bottom" id="TODO" order="5" weight="0.32834226" />
       <window_info anchor="bottom" id="Cvs" order="6" weight="0.25" />
       <window_info anchor="bottom" id="DB Execution Console" order="7" />
       <window_info anchor="bottom" id="Inspection" order="8" weight="0.4" />
@@ -1038,16 +1038,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/server/serverNetwork.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="66">
-          <caret line="96" selection-start-line="96" selection-end-line="96" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/Library/Caches/IdeaIC2019.1/python_stubs/-1199943126/PySide2/QtWidgets/QTableView.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="202">
@@ -1062,20 +1052,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
+    <entry file="file://$PROJECT_DIR$/sensor/piMain.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-23342">
-          <caret line="75" column="50" lean-forward="true" selection-start-line="75" selection-start-column="50" selection-end-line="75" selection-end-column="50" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/server/serverDatabase.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="193">
-          <caret line="986" selection-start-line="986" selection-end-line="986" />
+        <state relative-caret-position="194">
+          <caret line="147" column="8" selection-start-line="147" selection-start-column="8" selection-end-line="147" selection-end-column="8" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />
           </folding>
@@ -1084,15 +1064,35 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/sensor/piGUI.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="193">
-          <caret line="1090" column="57" selection-start-line="1090" selection-start-column="57" selection-end-line="1090" selection-end-column="57" />
+        <state relative-caret-position="131">
+          <caret line="138" column="30" selection-start-line="138" selection-start-column="30" selection-end-line="138" selection-end-column="30" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sensor/piMain.py">
+    <entry file="file://$PROJECT_DIR$/server/serverDatabase.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="193">
-          <caret line="470" column="36" selection-start-line="470" selection-start-column="36" selection-end-line="470" selection-end-column="36" />
+        <state relative-caret-position="524">
+          <caret line="1367" column="37" selection-start-line="1367" selection-start-column="37" selection-end-line="1367" selection-end-column="37" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/serverNetwork.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="66">
+          <caret line="96" selection-start-line="96" selection-end-line="96" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="194">
+          <caret line="111" column="52" selection-start-line="111" selection-start-column="52" selection-end-line="111" selection-end-column="52" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />
           </folding>

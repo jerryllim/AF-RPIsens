@@ -389,7 +389,7 @@ class DatabaseManager:
 
             return None
 
-    def get_hourly_output(self, start, end, machines_list=None):
+    def get_hourly_output_for(self, start, end, machines_list=None):
         conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
         output_list = []
@@ -399,8 +399,8 @@ class DatabaseManager:
                 query = "SELECT machine, DATE(date_time), HOUR(date_time), SUM(output) FROM jam_current_table " \
                         "WHERE date_time >= %s AND date_time < %s"
                 if machines_list:
-                    machines_str = str(tuple(machines_list))
-                    query = query + " AND machine IN " + machines_str
+                    machines_str = str(list(machines_list))[1:-1]
+                    query = query + " AND machine IN (" + machines_str + ")"
 
                 query = query + " GROUP BY machine, DATE(date_time), HOUR(date_time);"
                 cursor.execute(query, (start, end))
@@ -1329,6 +1329,52 @@ class DatabaseManager:
             conn.close()
             return headers_list
 
+    def get_distinct_workcenters(self):
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
+                               database=self.db, port=self.port)
+        workcenters_list = []
+
+        try:
+            with conn.cursor() as cursor:
+                query = "SELECT DISTINCT(wc) FROM machines_table;"
+                cursor.execute(query)
+                for row in cursor:
+                    workcenters_list.append(row[0])
+        except pymysql.DatabaseError as error:
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
+            conn.rollback()
+        finally:
+            conn.close()
+            return workcenters_list
+
+    def get_machines_in(self, workcenters):
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
+                               database=self.db, port=self.port)
+        machines_list = []
+        is_null = False
+
+        try:
+            with conn.cursor() as cursor:
+                if None in workcenters:
+                    workcenters.remove(None)
+                    is_null = True
+                workcenters_str = str(list(workcenters))[1:-1]
+                query = "SELECT machines FROM machines_table WHERE wc IN (" + workcenters_str + ")"
+                if is_null:
+                    query = query + " OR wc IS NULL;"
+                elif isinstance(workcenters, list):
+                    query = query + " WHERE wc IS NULL"
+
+                cursor.execute(query)
+                for row in cursor:
+                    machines_list.append(row[0])
+        except pymysql.DatabaseError as error:
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
+            conn.rollback()
+        finally:
+            conn.close()
+            return machines_list
+
     def get_machines(self):
         conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
@@ -1373,6 +1419,35 @@ class DatabaseManager:
             with conn.cursor() as cursor:
                 sql = 'SELECT wc, machine FROM machines_table;'
                 cursor.execute(sql)
+                machines_list = list(cursor.fetchall())
+        except pymysql.DatabaseError as error:
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
+            conn.rollback()
+        finally:
+            conn.close()
+            return machines_list
+
+    def get_machine_workcenters_names_for(self, workcenters=None):
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
+                               database=self.db, port=self.port)
+        machines_list = []
+        is_null = False
+
+        try:
+            with conn.cursor() as cursor:
+                query = 'SELECT wc, machine FROM machines_table'
+                if any(workcenters):
+                    if None in workcenters:
+                        workcenters.remove(None)
+                        is_null = True
+                    workcenters = str(list(workcenters))[1:-1]
+                    query = query + " WHERE wc IN (" + workcenters +")"
+                    if is_null:
+                        query = query + " OR wc IS NULL"
+                elif isinstance(workcenters, list):
+                    query = query + " WHERE wc IS NULL"
+
+                cursor.execute(query)
                 machines_list = list(cursor.fetchall())
         except pymysql.DatabaseError as error:
             self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
@@ -1495,7 +1570,7 @@ class DatabaseManager:
                     conditions.append("usfc_time_to < '{}'".format(time_to))
                 if machines_list:
                     machines_str = str(tuple(machines_list))
-                    conditions.append("machine IN ".format(machines_str))
+                    conditions.append("machine IN {}".format(machines_str))
 
                 if conditions:
                     query = query + ' WHERE ' + ' AND '.join(conditions)
@@ -1527,7 +1602,7 @@ class DatabaseManager:
                     conditions.append("usfc_time_to < '{}'".format(time_to))
                 if machines_list:
                     machines_str = str(tuple(machines_list))
-                    conditions.append("machine IN ".format(machines_str))
+                    conditions.append("machine IN {}".format(machines_str))
 
                 if conditions:
                     query = query + ' WHERE ' + ' AND '.join(conditions)

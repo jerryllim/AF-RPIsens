@@ -33,8 +33,10 @@ class MachinesTab(QtWidgets.QWidget):
             insert_box.addWidget(edit, 1, col)
         self.insert_fields[self.hheaders[0]].setValidator(None)
         self.insert_fields[self.hheaders[0]].setMaxLength(10)
+        self.insert_fields[self.hheaders[0]].setMinimumWidth(120)
         self.insert_fields[self.hheaders[1]].setValidator(None)
         self.insert_fields[self.hheaders[1]].setMaxLength(10)
+        self.insert_fields[self.hheaders[1]].setMinimumWidth(120)
 
         # Tree View & Models for Machines
         self.machine_model = QtGui.QStandardItemModel(0, 3, self)
@@ -109,7 +111,7 @@ class MachinesTab(QtWidgets.QWidget):
             return
 
         for row in rows:
-            machine = self.machine_model.item(row, 0).data(QtCore.Qt.EditRole)
+            machine = self.machine_model.item(row, 1).data(QtCore.Qt.EditRole)
             pi = self.configuration_parent.machine_in_use(machine)
             if pi:
                 QtWidgets.QMessageBox.critical(self, 'Unable to delete',
@@ -295,6 +297,7 @@ class PiMachineDetails(QtWidgets.QWidget):
         machine_field = QtWidgets.QComboBox(self)
         machine_field.setModel(self.machines_model)
         machine_field.setModelColumn(1)
+        machine_field.setMinimumWidth(120)
         self.details['machine'] = machine_field
         form_layout.addRow('Machine: ', machine_field)
         mac_field = QtWidgets.QLineEdit(self)
@@ -519,7 +522,10 @@ class PisTab(QtWidgets.QWidget):
             self.set_all_enabled(True, False)
 
     def delete_item(self):
-        index = self.pis_treeview.selectedIndexes()[0]
+        try:
+            index = self.pis_treeview.selectedIndexes()[0]
+        except IndexError as error:
+            return
         row = index.row()
         nick = self.pis_model.item(row, 0).text()
         ip = self.pis_model.item(row, 1).text()
@@ -1101,6 +1107,9 @@ class DisplayTable(QtWidgets.QWidget):
         v_header.hide()
 
         hbox = QtWidgets.QHBoxLayout()
+        details_btn = QtWidgets.QPushButton("Show/Hide Filters")
+        details_btn.clicked.connect(self.show_hide_details)
+        hbox.addWidget(details_btn)
         date_label = QtWidgets.QLabel('Date: ')
         date_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.date_spin = QtWidgets.QDateEdit()
@@ -1125,33 +1134,59 @@ class DisplayTable(QtWidgets.QWidget):
         hbox.addWidget(self.hour_spin)
         hbox.addWidget(populate_btn)
 
+        hbox2 = QtWidgets.QVBoxLayout()
+        hbox2.addWidget(QtWidgets.QLabel("Details"))
+        details_btn = QtWidgets.QPushButton("Show/Hide")
+        details_btn.clicked.connect(self.show_hide_details)
+        hbox2.addWidget(details_btn)
+
         # Add filter options
-        filter_hbox = QtWidgets.QHBoxLayout()
-        self.workcenter_filter = QtWidgets.QLineEdit(self)
-        filter_hbox.addWidget(QtWidgets.QLabel("Workcenter: "))
-        filter_hbox.addWidget(self.workcenter_filter)
-        self.filter_condition = QtWidgets.QComboBox(self)
-        self.filter_condition.addItems(['OR', 'AND'])
-        self.filter_condition.setMinimumContentsLength(4)
-        filter_hbox.addWidget(self.filter_condition)
+        self.filter_box = QtWidgets.QGroupBox("", self)
+        filter_hbox = QtWidgets.QGridLayout()
+        self.filter_box.setLayout(filter_hbox)
+        self.filter_box.setMaximumWidth(180)
+        workcenters = self.database_manager.get_distinct_workcenters()
+        self.workcenters = QtWidgets.QListWidget(self)
+        self.workcenters.setMinimumWidth(self.workcenters.sizeHintForColumn(0))
+        for wc in workcenters:
+            item = QtWidgets.QListWidgetItem("{}".format(wc), self.workcenters)
+            item.setFlags(QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
+            item.setCheckState(QtCore.Qt.Checked)
+        filter_hbox.addWidget(QtWidgets.QLabel("Workcenter: "), 0, 0)
+        filter_hbox.addWidget(self.workcenters, 1, 0)
         self.machine_filter = QtWidgets.QLineEdit(self)
-        filter_hbox.addWidget(QtWidgets.QLabel("Machine: "))
-        filter_hbox.addWidget(self.machine_filter)
-        filter_btn = QtWidgets.QPushButton("Filter")
-        filter_btn.clicked.connect(self.filter_query)
-        filter_hbox.addWidget(filter_btn)
+        filter_hbox.addWidget(QtWidgets.QLabel("Machine: "), 2, 0)
+        filter_hbox.addWidget(self.machine_filter, 3, 0)
+        self.filter_box.setVisible(False)
 
         box_layout = QtWidgets.QVBoxLayout()
         box_layout.addLayout(hbox)
-        box_layout.addLayout(filter_hbox)
-        box_layout.addWidget(self.table_view)
+        # box_layout.addLayout(hbox2)
+        hbox3 = QtWidgets.QHBoxLayout()
+        hbox3.addWidget(self.filter_box)
+        hbox3.addWidget(self.table_view)
+        box_layout.addLayout(hbox3)
         self.setLayout(box_layout)
         self.show()
         self.populate_table()
         self.scheduler.start()
 
+    def get_selected_workcenters(self):
+        checked_items = []
+        for index in range(self.workcenters.count()):
+            if self.workcenters.item(index).checkState() == QtCore.Qt.Checked:
+                val = self.workcenters.item(index).text()
+                if val == "None":
+                    val = None
+                checked_items.append(val)
+
+        return checked_items
+
     def populate_table(self):
         self.table_model.clear()
+        workcenter = self.get_selected_workcenters()
+        if not workcenter:
+            workcenter = None
 
         table_hheaders = ['Workcenter', 'Machine', 'Sum']
         date = self.date_spin.date().toPython()
@@ -1170,15 +1205,16 @@ class DisplayTable(QtWidgets.QWidget):
 
         output_list = []
         table_vheaders = []
-        table_vheaders1 = self.database_manager.get_machine_workcenters_names()
+        table_vheaders1 = self.database_manager.get_machine_workcenters_names_for(workcenters=workcenter)
         for row, machine in enumerate(table_vheaders1):
             output_list.append([0] * len(table_hheaders))
             table_vheaders.append(machine[1])
             self.table_model.setItem(row, 0, QtGui.QStandardItem(machine[0]))
             self.table_model.setItem(row, 1, QtGui.QStandardItem(machine[1]))
 
-        outputs = self.database_manager.get_hourly_output(start.isoformat(timespec='minutes'),
-                                                          end.isoformat(timespec='minutes'))
+        outputs = self.database_manager.get_hourly_output_for(start.isoformat(timespec='minutes'),
+                                                              end.isoformat(timespec='minutes'),
+                                                              machines_list=table_vheaders)
         for row in outputs:
             col = table_hheaders.index('{:02d}'.format(row[2]))
             try:
@@ -1205,19 +1241,16 @@ class DisplayTable(QtWidgets.QWidget):
                     item.setFont(font)
                 self.table_model.setItem(idx, col, item)
             self.table_model.setItem(idx, 2, QtGui.QStandardItem(str(sum(row))))
-
-    def filter_query(self):
-        is_and = self.filter_condition.currentIndex()
-        workcenter = self.workcenter_filter.text()
         machine = self.machine_filter.text()
+
         for row in range(self.table_model.rowCount()):
             self.table_view.setRowHidden(row, True)
-            wc_bool = workcenter in self.table_model.item(row).text()
-            machine_bool = machine in self.table_model.item(row, 1).text()
-            if is_and and wc_bool and machine_bool:
+            machine_bool = machine.lower() in self.table_model.item(row, 1).text().lower()
+            if machine_bool:
                 self.table_view.setRowHidden(row, False)
-            elif (not is_and) and (wc_bool or machine_bool):
-                self.table_view.setRowHidden(row, False)
+
+    def show_hide_details(self):
+        self.filter_box.setVisible(not self.filter_box.isVisible())
 
     def schedule_jam(self, interval=5):
         cron_trigger = CronTrigger(second='30', minute='1-59/{}'.format(interval))
