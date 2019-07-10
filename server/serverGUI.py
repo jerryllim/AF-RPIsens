@@ -1287,8 +1287,8 @@ class DisplayTable(QtWidgets.QWidget):
                     item.setFont(font)
                 self.table_model.setItem(idx, col, item)
             self.table_model.setItem(idx, 2, QtGui.QStandardItem(str(sum(row))))
-        machine = self.machine_filter.text()
 
+        machine = self.machine_filter.text()
         for row in range(self.table_model.rowCount()):
             self.table_view.setRowHidden(row, True)
             machine_bool = machine.lower() in self.table_model.item(row, 1).text().lower()
@@ -1408,6 +1408,9 @@ class MUDisplayTable(QtWidgets.QWidget):
         v_header.hide()
 
         hbox = QtWidgets.QHBoxLayout()
+        details_btn = QtWidgets.QPushButton("Show/Hide Filters")
+        details_btn.clicked.connect(self.show_hide_details)
+        hbox.addWidget(details_btn)
         start_label = QtWidgets.QLabel('Start: ')
         start_datetime = QtCore.QDateTime.currentDateTime()
         start_datetime.setTime(QtCore.QTime(7, 0))
@@ -1427,18 +1430,70 @@ class MUDisplayTable(QtWidgets.QWidget):
         hbox.addWidget(self.end_spin)
         hbox.addWidget(populate_btn)
 
+        # Add filter options
+        self.filter_box = QtWidgets.QGroupBox("", self)
+        filter_hbox = QtWidgets.QGridLayout()
+        self.filter_box.setLayout(filter_hbox)
+        self.filter_box.setMaximumWidth(180)
+        self.workcenters = QtWidgets.QListWidget(self)
+        self.workcenters.setMinimumWidth(self.workcenters.sizeHintForColumn(0))
+        self.set_workcenters()
+        filter_hbox.addWidget(QtWidgets.QLabel("Workcenter: "), 0, 0)
+        filter_hbox.addWidget(self.workcenters, 1, 0)
+        self.machine_filter = QtWidgets.QLineEdit(self)
+        filter_hbox.addWidget(QtWidgets.QLabel("Machine: "), 2, 0)
+        filter_hbox.addWidget(self.machine_filter, 3, 0)
+        self.filter_box.setVisible(False)
+
         box_layout = QtWidgets.QVBoxLayout()
         box_layout.addLayout(hbox)
-        box_layout.addWidget(self.table_view)
+        body_box = QtWidgets.QHBoxLayout()
+        body_box.addWidget(self.filter_box)
+        body_box.addWidget(self.table_view)
+        box_layout.addLayout(body_box)
         self.setLayout(box_layout)
         self.show()
         self.populate_table()
+
+    def set_workcenters(self):
+        config = configparser.ConfigParser()
+        path = os.path.expanduser('~/Documents/JAM/JAMserver/jam.ini')
+        config.read(path)
+        default_wc = json.loads(config.get('Workcenters', 'workcenters', fallback="[]"))
+        self.workcenters.clear()
+        workcenters = self.database_manager.get_distinct_workcenters()
+        for wc in workcenters:
+            item = QtWidgets.QListWidgetItem("{}".format(wc), self.workcenters)
+            item.setFlags(QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
+            if default_wc and wc in default_wc:
+                item.setCheckState(QtCore.Qt.Checked)
+            elif not default_wc:
+                item.setCheckState(QtCore.Qt.Checked)
+            else:
+                item.setCheckState(QtCore.Qt.Unchecked)
+
+    def get_selected_workcenters(self):
+        checked_items = []
+        for index in range(self.workcenters.count()):
+            if self.workcenters.item(index).checkState() == QtCore.Qt.Checked:
+                val = self.workcenters.item(index).text()
+                if val == "None":
+                    val = None
+                checked_items.append(val)
+
+        return checked_items
+
+    def show_hide_details(self):
+        self.filter_box.setVisible(not self.filter_box.isVisible())
 
     def change_end_date(self, date):
         self.end_spin.setDate(date)
 
     def populate_table(self):
         self.table_model.clear()
+        workcenter = self.get_selected_workcenters()
+        if not workcenter:
+            workcenter = None
 
         table_hheaders = ['Workcenter', 'Machine', 'Avg']
         start = self.start_spin.dateTime().toPython()
@@ -1457,7 +1512,7 @@ class MUDisplayTable(QtWidgets.QWidget):
         minutes_list = []
         outputs_list = []
         table_vheaders = []
-        table_vheaders1 = self.database_manager.get_machine_workcenters_names()
+        table_vheaders1 = self.database_manager.get_machine_workcenters_names_for(workcenters=workcenter)
         for row, machine in enumerate(table_vheaders1):
             minutes_list.append([0] * len(table_hheaders))
             outputs_list.append([0] * len(table_hheaders))
@@ -1466,7 +1521,8 @@ class MUDisplayTable(QtWidgets.QWidget):
             self.table_model.setItem(row, 1, QtGui.QStandardItem(machine[1]))
 
         outputs = self.database_manager.find_mu_in_hour(start.isoformat(timespec='minutes'),
-                                                        end.isoformat(timespec='minutes'))
+                                                        end.isoformat(timespec='minutes'),
+                                                        machines_list=table_vheaders)
 
         for row in outputs:
             col = table_hheaders.index('{}'.format(row[2]))
@@ -1490,6 +1546,13 @@ class MUDisplayTable(QtWidgets.QWidget):
                 #     item.setFont(font)
                 self.table_model.setItem(idx, col, item)
             self.table_model.setItem(idx, 2, QtGui.QStandardItem(str(round(statistics.mean(row), 1))))
+
+        machine = self.machine_filter.text()
+        for row in range(self.table_model.rowCount()):
+            self.table_view.setRowHidden(row, True)
+            machine_bool = machine.lower() in self.table_model.item(row, 1).text().lower()
+            if machine_bool:
+                self.table_view.setRowHidden(row, False)
 
         self.table_hheaders = table_hheaders
         self.table_vheaders = table_vheaders
@@ -1577,6 +1640,9 @@ class MUDetailsDisplayTable(QtWidgets.QWidget):
         h_header.setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
 
         hbox = QtWidgets.QHBoxLayout()
+        details_btn = QtWidgets.QPushButton("Show/Hide Filters")
+        details_btn.clicked.connect(self.show_hide_details)
+        hbox.addWidget(details_btn)
         start_label = QtWidgets.QLabel('Start: ')
         start_datetime = QtCore.QDateTime.currentDateTime()
         start_datetime.setTime(QtCore.QTime(7, 0))
@@ -1596,25 +1662,83 @@ class MUDetailsDisplayTable(QtWidgets.QWidget):
         hbox.addWidget(self.end_spin)
         hbox.addWidget(populate_btn)
 
+        # Add filter options
+        self.filter_box = QtWidgets.QGroupBox("", self)
+        filter_hbox = QtWidgets.QGridLayout()
+        self.filter_box.setLayout(filter_hbox)
+        self.filter_box.setMaximumWidth(180)
+        self.workcenters = QtWidgets.QListWidget(self)
+        self.workcenters.setMinimumWidth(self.workcenters.sizeHintForColumn(0))
+        self.set_workcenters()
+        filter_hbox.addWidget(QtWidgets.QLabel("Workcenter: "), 0, 0)
+        filter_hbox.addWidget(self.workcenters, 1, 0)
+        self.machine_filter = QtWidgets.QLineEdit(self)
+        filter_hbox.addWidget(QtWidgets.QLabel("Machine: "), 2, 0)
+        filter_hbox.addWidget(self.machine_filter, 3, 0)
+        self.filter_box.setVisible(False)
+
         box_layout = QtWidgets.QVBoxLayout()
         box_layout.addLayout(hbox)
-        box_layout.addWidget(self.table_view)
+        body_box = QtWidgets.QHBoxLayout()
+        body_box.addWidget(self.filter_box)
+        body_box.addWidget(self.table_view)
+        box_layout.addLayout(body_box)
+        self.setLayout(box_layout)
         self.setLayout(box_layout)
         self.show()
         self.populate_table()
+
+    def set_workcenters(self):
+        config = configparser.ConfigParser()
+        path = os.path.expanduser('~/Documents/JAM/JAMserver/jam.ini')
+        config.read(path)
+        default_wc = json.loads(config.get('Workcenters', 'workcenters', fallback="[]"))
+        self.workcenters.clear()
+        workcenters = self.database_manager.get_distinct_workcenters()
+        for wc in workcenters:
+            item = QtWidgets.QListWidgetItem("{}".format(wc), self.workcenters)
+            item.setFlags(QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
+            if default_wc and wc in default_wc:
+                item.setCheckState(QtCore.Qt.Checked)
+            elif not default_wc:
+                item.setCheckState(QtCore.Qt.Checked)
+            else:
+                item.setCheckState(QtCore.Qt.Unchecked)
+
+    def get_selected_workcenters(self):
+        checked_items = []
+        for index in range(self.workcenters.count()):
+            if self.workcenters.item(index).checkState() == QtCore.Qt.Checked:
+                val = self.workcenters.item(index).text()
+                if val == "None":
+                    val = None
+                checked_items.append(val)
+
+        return checked_items
+
+    def show_hide_details(self):
+        self.filter_box.setVisible(not self.filter_box.isVisible())
 
     def change_end_date(self, date):
         self.end_spin.setDate(date)
 
     def populate_table(self):
         self.table_model.clear()
+        workcenter = self.get_selected_workcenters()
+        if not workcenter:
+            workcenter = None
+
+        table_vheaders = []
+        for workcenter, machine in  self.database_manager.get_machine_workcenters_names_for(workcenters=workcenter):
+            table_vheaders.append(machine)
 
         table_hheaders = ['Workcenter', 'Machine', 'Start', 'End', 'Duration', 'Output']
         self.table_model.setHorizontalHeaderLabels(table_hheaders)
         start = self.start_spin.dateTime().toPython()
         end = self.end_spin.dateTime().toPython()
         run_dict = self.database_manager.get_mu(start.isoformat(timespec='minutes'),
-                                                end.isoformat(timespec='minutes'))
+                                                end.isoformat(timespec='minutes'),
+                                                machines_list=table_vheaders)
         machines_workcenters = self.database_manager.get_machine_workcenters()
         row = 0
         for key, values in run_dict.items():
