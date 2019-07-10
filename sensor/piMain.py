@@ -53,8 +53,6 @@ class PiController:
         self.load_pin_dict()
         self.pi = pigpio.pi()
 
-        # TODO request job_info?
-
         for name, pin in self.pulse_pins.items():
             self.pin_setup(pin)
 
@@ -76,6 +74,7 @@ class PiController:
         self.respondent_thread = threading.Thread(target=self.respond)
         self.respondent_thread.daemon = True
         self.respondent_thread.start()
+        self.pipe_kill = threading.Event()
         self.pipe_thread = threading.Thread(target=self.pipe_loop)
         self.pipe_thread.daemon = True
         self.pipe_thread.start()
@@ -298,7 +297,7 @@ class PiController:
                         with StringIO(jobs_str) as jobs:
                             csv_reader = csv.reader(jobs)
                             jobs_list = list(csv_reader)
-                        # TODO convert string to list before replace_into_jobs_table
+
                         self.database_manager.replace_into_jobs_table(jobs_list)
                         # Return the timestamp
                         jdt = recv_dict.get('jdt', 0)
@@ -323,11 +322,6 @@ class PiController:
         self.logger.debug('Created dealer socket for request {}'.format(ip_port))
 
     def request(self, msg_dict):
-        # Clear buffer by restarting the dealer socket
-        # self.dealer.setsockopt(zmq.LINGER, 0)
-        # self.dealer.close()
-        # self.dealer_routine()
-
         timeout = self.TIMEOUT
         # msg_dict['ip'] = self.self_add
         recv_msg = None
@@ -367,7 +361,6 @@ class PiController:
         job_info = self.database_manager.get_job_info(barcode)
         if not job_info:
             reply_msg = self.pipe_talk({"job_info": barcode})
-            # reply_msg = self.request({"job_info": barcode})
             if isinstance(reply_msg, dict):
                 value = reply_msg.pop(barcode)
                 if value:
@@ -403,7 +396,7 @@ class PiController:
         return reply
 
     def pipe_loop(self):
-        while True:
+        while not self.pipe_kill.is_set():
             timeout = self.ping_at - time.time()
             if self.pipe_a.poll(1000*timeout):
                 msg_dict = self.pipe_a.recv_json()
@@ -438,8 +431,9 @@ class PiController:
 
     def graceful_shutdown(self):
         self.respondent_kill.set()
+        self.pipe_kill.set()
         self.respondent_thread.join(timeout=3)
-        # TODO close all sockets
+        self.pipe_kill.join(timeout=3)
 
         with self.counts_lock:
             to_save_dict = {'counter': self.counts.copy(), 'permanent': self.permanent}
@@ -451,7 +445,7 @@ class PiController:
         with open('last_save.json', 'w') as write_file:
             json.dump(to_save_dict, write_file)
 
-        time.sleep(1)  # TODO remove sleep?
+        time.sleep(1)
         os.system('sudo shutdown -h now')
 
     def save_pi(self, filename='jam_machine.txt'):
@@ -474,8 +468,7 @@ class DatabaseManager:
     def __init__(self):
         self.logger = logging.getLogger('JAM')
 
-        self.database = 'jam.sqlite'  # TODO to change
-        # self.create_emp_table()
+        self.database = 'jam.sqlite'
         self.create_job_table()
         self.logger.info('Completed DatabaseManager __init__')
 

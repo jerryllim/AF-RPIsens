@@ -524,7 +524,6 @@ class DatabaseManager:
                 current = [value[1] for value in output_list if start1 <= value[1] <= end1 and value[0] == machine]
                 missed = get_missing_time(start1, current)
 
-                # TODO ammend this later
                 missing_list.append([machine, 0, start1.strftime("%H"), missed])
 
         return missing_list
@@ -587,7 +586,6 @@ class DatabaseManager:
 
         try:
             with conn.cursor() as cursor:
-                # TODO check length of the emp_id and name
                 # create EMP table
                 sql = "CREATE TABLE IF NOT EXISTS emp_table ( " \
                       "emp_id varchar(6) NOT NULL, " \
@@ -704,7 +702,6 @@ class DatabaseManager:
 
         try:
             with conn.cursor() as cursor:
-                # TODO check varchar length for each column
                 sql = "CREATE TABLE IF NOT EXISTS jobs_table ( " \
                       "umc char(4) DEFAULT NULL, " \
                       "uno char(10) NOT NULL, " \
@@ -899,7 +896,6 @@ class DatabaseManager:
 
         try:
             with conn.cursor() as cursor:
-                # TODO check varchar length for emp, machine & jo_no columns
                 query = "CREATE TABLE IF NOT EXISTS qc_table ( " \
                         "emp_id varchar(10) NOT NULL, " \
                         "date_time datetime NOT NULL, " \
@@ -946,7 +942,6 @@ class DatabaseManager:
 
         try:
             with conn.cursor() as cursor:
-                # TODO check varchar length for emp & machine.
                 query = "CREATE TABLE IF NOT EXISTS maintenance_table ( " \
                         "emp_id varchar(10) NOT NULL, " \
                         "machine varchar(10) NOT NULL, " \
@@ -989,7 +984,6 @@ class DatabaseManager:
 
         try:
             with conn.cursor() as cursor:
-                # TODO check varchar length for emp & machine.
                 query = 'CREATE TABLE IF NOT EXISTS emp_shift_table ( ' \
                         'emp_id varchar(10) NOT NULL, ' \
                         'machine varchar(10) NOT NULL, ' \

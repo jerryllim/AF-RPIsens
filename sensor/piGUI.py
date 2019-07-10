@@ -54,7 +54,6 @@ class Colour(Enum):
 
 
 class JobClass(Widget):
-    # TODO output in job class or machine class
     output = NumericProperty(0)
 
     def __init__(self, job_info, wastage=None):
@@ -111,7 +110,6 @@ class MachineClass:
         self.emp_main = {}
         self.emp_asst = {}
         self.maintenance = (None, None)
-        # TODO set permanent
 
     def update_config(self, config):
         self.config.update(dict(config.items('General{}'.format(self.index))))
@@ -1090,7 +1088,7 @@ class PiGUIApp(App):
         if is_linux:
             self.controller = piMain.PiController(self)
         else:
-            self.controller = piMain.FakeController(self)  # TODO set if testing
+            self.controller = piMain.FakeController(self)
 
         self.logger.debug("Using platform: {}".format(sys.platform))
 
