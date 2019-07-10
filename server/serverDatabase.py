@@ -747,9 +747,6 @@ class DatabaseManager:
         :return:
         """
         conn = pymysql.connect(self.host, self.user, self.password, self.db)
-        # column_names = ['jo_no', 'jo_line', 'mac', 'to_do', 'code', 'descp', 'so_no', 'edd', 'so_qty', 'so_rem']
-        # column_names_str = ', '.join(column_names)
-        # binds_str = ', '.join(['%s'] * len(column_names))
         try:
             with conn.cursor() as cursor:
                 for job_info in job_list:
@@ -757,7 +754,7 @@ class DatabaseManager:
                             "uraw_mc, uraw, uline, uuom, ureq_qty, ureq_uom, udraw, urem, ucomplete, umachine_desc, " \
                             "ustk_desc1, ustk_desc2, mname, trem1, tqty, tdo_date, usfc_qty)" \
                             " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, " \
-                            "%s, %s, %s, %s, %s, %s, %s, %s, STR_TO_DATE(%s, '%%d/%%m/%%Y'), 0);"
+                            "%s, %s, %s, %s, %s, %s, %s, %s, STR_TO_DATE(%s, '%%d/%%m/%%Y'), %s);"
                     cursor.execute(query, job_info)
                     conn.commit()
         except pymysql.DatabaseError as error:
@@ -1311,7 +1308,7 @@ class DatabaseManager:
                 sql = 'TRUNCATE machines_table;'
                 cursor.execute(sql)
 
-                sql = 'INSERT INTO machines_table VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+                sql = 'INSERT INTO machines_table VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
                 cursor.executemany(sql, machine_rows)
                 conn.commit()
         except pymysql.DatabaseError as error:
@@ -1373,14 +1370,14 @@ class DatabaseManager:
             conn.close()
             return machines_list
 
-    def get_machine_teams_names(self):
+    def get_machine_workcenters_names(self):
         conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
         machines_list = []
 
         try:
             with conn.cursor() as cursor:
-                sql = 'SELECT team, machine FROM machines_table;'
+                sql = 'SELECT wc, machine FROM machines_table;'
                 cursor.execute(sql)
                 machines_list = list(cursor.fetchall())
         except pymysql.DatabaseError as error:
@@ -1390,11 +1387,11 @@ class DatabaseManager:
             conn.close()
             return machines_list
 
-    def get_machine_teams(self):
-        machines_list = self.get_machine_teams_names()
+    def get_machine_workcenters(self):
+        machines_list = self.get_machine_workcenters_names()
         machines_dict = {}
-        for team, machine in machines_list:
-            machines_dict[machine] = team
+        for wc, machine in machines_list:
+            machines_dict[machine] = wc
 
         return machines_dict
 

@@ -33,6 +33,8 @@ class MachinesTab(QtWidgets.QWidget):
             insert_box.addWidget(edit, 1, col)
         self.insert_fields[self.hheaders[0]].setValidator(None)
         self.insert_fields[self.hheaders[0]].setMaxLength(10)
+        self.insert_fields[self.hheaders[1]].setValidator(None)
+        self.insert_fields[self.hheaders[1]].setMaxLength(10)
 
         # Tree View & Models for Machines
         self.machine_model = QtGui.QStandardItemModel(0, 3, self)
@@ -84,13 +86,13 @@ class MachinesTab(QtWidgets.QWidget):
                 if value:
                     item = QtGui.QStandardItem()
                     item.setData(value, QtCore.Qt.EditRole)
-                    if col == 0:
-                        pass
+                    # if col == 0:
+                    #     pass
                     self.machine_model.setItem(idx, col, item)
 
     def add_row(self):
         row = self.machine_model.rowCount()
-        if self.insert_fields[self.hheaders[0]].text():
+        if self.insert_fields[self.hheaders[1]].text():
             for col, key in enumerate(self.hheaders):
                 value = self.insert_fields[key].text()
                 if value:
@@ -127,11 +129,18 @@ class MachinesTab(QtWidgets.QWidget):
         machines_list = []
 
         for row in range(self.machine_model.rowCount()):
-            machine_name = self.machine_model.item(row, 0).data(QtCore.Qt.EditRole)
+            if row == 0:
+                continue
+            if not self.machine_model.item(row, 0):
+                wc_name = None
+            else:
+                wc_name = self.machine_model.item(row, 0).text()
+
+            machine_name = self.machine_model.item(row, 1).data(QtCore.Qt.EditRole)
             if not machine_name:
                 continue
-            items = [machine_name]
-            for col in range(1, self.machine_model.columnCount()):
+            items = [wc_name, machine_name]
+            for col in range(2, self.machine_model.columnCount()):
                 item = self.machine_model.item(row, col)
                 if item:
                     try:
@@ -155,14 +164,21 @@ class MachinesTab(QtWidgets.QWidget):
         col = self.hheaders[idx.column()]
         if col == 'machine':
             return
-        machine = self.machine_model.item(idx.row(), 0).data(QtCore.Qt.EditRole)
+
+        is_wc = (col == 'wc')
+        machine = self.machine_model.item(idx.row(), 1).data(QtCore.Qt.EditRole)
         item = self.machine_model.item(idx.row(), idx.column())
         if item:
             current = item.data(QtCore.Qt.EditRole)
+        elif is_wc:
+            current = ''
         else:
             current = 0
 
-        value, result = TargetInputDialog.get_value(self, machine, col, current)
+        if is_wc:
+            value, result = WCInputDialog.get_value(self, machine, col, current)
+        else:
+            value, result = TargetInputDialog.get_value(self, machine, col, current)
         if result:
             item = self.machine_model.itemFromIndex(idx)
             item.setData(value, QtCore.Qt.EditRole)
@@ -218,6 +234,55 @@ class TargetInputDialog(QtWidgets.QDialog):
         return dialog.results
 
 
+class WCInputDialog(QtWidgets.QDialog):
+    def __init__(self, parent, title, label, text):
+        QtWidgets.QDialog.__init__(self, parent)
+        self.setWindowTitle('Set target for {}'.format(title))
+        self.label = QtWidgets.QLabel('{}: '.format(label), self)
+        self.line_edit = QtWidgets.QLineEdit(self)
+        self.line_edit.setMaxLength(10)
+        self.line_edit.setText(text)
+        self.layout = QtWidgets.QVBoxLayout()
+        self.results = (text, False)
+
+        # Buttons
+        ok_btn = QtWidgets.QPushButton('OK', self)
+        ok_btn.clicked.connect(self.ok_clicked)
+        cancel_btn = QtWidgets.QPushButton('Cancel', self)
+        cancel_btn.clicked.connect(self.cancel_clicked)
+        remove_btn = QtWidgets.QPushButton('Remove', self)
+        remove_btn.clicked.connect(self.remove_clicked)
+        btn_layout = QtWidgets.QHBoxLayout()
+        btn_layout.addWidget(remove_btn)
+        btn_layout.addStretch()
+        btn_layout.addWidget(cancel_btn)
+        btn_layout.addWidget(ok_btn)
+
+        self.layout.addWidget(self.label)
+        self.layout.addWidget(self.line_edit)
+        self.layout.addLayout(btn_layout)
+        self.setLayout(self.layout)
+
+    def ok_clicked(self):
+        self.results = (self.line_edit.text(), True)
+        self.accept()
+
+    def cancel_clicked(self):
+        self.results = (self.line_edit.text(), False)
+        self.reject()
+
+    def remove_clicked(self):
+        self.results = (None, True)
+        self.accept()
+
+    @staticmethod
+    def get_value(parent, title, label, text):
+        dialog = WCInputDialog(parent, title, label, text)
+        dialog.exec_()
+
+        return dialog.results
+
+
 class PiMachineDetails(QtWidgets.QWidget):
     def __init__(self, parent):
         QtWidgets.QWidget.__init__(self, parent)
@@ -229,6 +294,7 @@ class PiMachineDetails(QtWidgets.QWidget):
         # Machine
         machine_field = QtWidgets.QComboBox(self)
         machine_field.setModel(self.machines_model)
+        machine_field.setModelColumn(1)
         self.details['machine'] = machine_field
         form_layout.addRow('Machine: ', machine_field)
         mac_field = QtWidgets.QLineEdit(self)
@@ -1061,9 +1127,9 @@ class DisplayTable(QtWidgets.QWidget):
 
         # Add filter options
         filter_hbox = QtWidgets.QHBoxLayout()
-        self.group_filter = QtWidgets.QLineEdit(self)
-        filter_hbox.addWidget(QtWidgets.QLabel("Group: "))
-        filter_hbox.addWidget(self.group_filter)
+        self.workcenter_filter = QtWidgets.QLineEdit(self)
+        filter_hbox.addWidget(QtWidgets.QLabel("Workcenter: "))
+        filter_hbox.addWidget(self.workcenter_filter)
         self.filter_condition = QtWidgets.QComboBox(self)
         self.filter_condition.addItems(['OR', 'AND'])
         self.filter_condition.setMinimumContentsLength(4)
@@ -1087,7 +1153,7 @@ class DisplayTable(QtWidgets.QWidget):
     def populate_table(self):
         self.table_model.clear()
 
-        table_hheaders = ['Group', 'Machine', 'Sum']
+        table_hheaders = ['Workcenter', 'Machine', 'Sum']
         date = self.date_spin.date().toPython()
         start_time = self.start_spin.time().toPython()
         start = datetime.datetime.combine(date, start_time)
@@ -1104,7 +1170,7 @@ class DisplayTable(QtWidgets.QWidget):
 
         output_list = []
         table_vheaders = []
-        table_vheaders1 = self.database_manager.get_machine_teams_names()
+        table_vheaders1 = self.database_manager.get_machine_workcenters_names()
         for row, machine in enumerate(table_vheaders1):
             output_list.append([0] * len(table_hheaders))
             table_vheaders.append(machine[1])
@@ -1142,15 +1208,15 @@ class DisplayTable(QtWidgets.QWidget):
 
     def filter_query(self):
         is_and = self.filter_condition.currentIndex()
-        team = self.group_filter.text()
+        workcenter = self.workcenter_filter.text()
         machine = self.machine_filter.text()
         for row in range(self.table_model.rowCount()):
             self.table_view.setRowHidden(row, True)
-            team_bool = team in self.table_model.item(row).text()
+            wc_bool = workcenter in self.table_model.item(row).text()
             machine_bool = machine in self.table_model.item(row, 1).text()
-            if is_and and team_bool and machine_bool:
+            if is_and and wc_bool and machine_bool:
                 self.table_view.setRowHidden(row, False)
-            elif (not is_and) and (team_bool or machine_bool):
+            elif (not is_and) and (wc_bool or machine_bool):
                 self.table_view.setRowHidden(row, False)
 
     def schedule_jam(self, interval=5):
@@ -1295,7 +1361,7 @@ class MUDisplayTable(QtWidgets.QWidget):
     def populate_table(self):
         self.table_model.clear()
 
-        table_hheaders = ['Group', 'Machine', 'Avg']
+        table_hheaders = ['Workcenter', 'Machine', 'Avg']
         start = self.start_spin.dateTime().toPython()
         self.date_time = start
         end = self.end_spin.dateTime().toPython()
@@ -1312,7 +1378,7 @@ class MUDisplayTable(QtWidgets.QWidget):
         minutes_list = []
         outputs_list = []
         table_vheaders = []
-        table_vheaders1 = self.database_manager.get_machine_teams_names()
+        table_vheaders1 = self.database_manager.get_machine_workcenters_names()
         for row, machine in enumerate(table_vheaders1):
             minutes_list.append([0] * len(table_hheaders))
             outputs_list.append([0] * len(table_hheaders))
@@ -1391,16 +1457,16 @@ class MUDetailsPopUp(QtWidgets.QDialog):
     def populate_table(self):
         self.table_model.clear()
 
-        table_hheaders = ['Group', 'Machine', 'Start', 'End', 'Duration', 'Output']
+        table_hheaders = ['Workcenter', 'Machine', 'Start', 'End', 'Duration', 'Output']
         self.table_model.setHorizontalHeaderLabels(table_hheaders)
         start = self.start
         end = self.start + datetime.timedelta(hours=1)
         run_dict = self.database_manager.get_mu(start.isoformat(timespec='minutes'),
                                                 end.isoformat(timespec='minutes'), machines_list=[self.machine])
-        machines_teams = self.database_manager.get_machine_teams()
+        machines_workcenters = self.database_manager.get_machine_workcenters()
         row = 0
         for key, values in run_dict.items():
-            self.table_model.setItem(row, 0, QtGui.QStandardItem(machines_teams.get(key)))
+            self.table_model.setItem(row, 0, QtGui.QStandardItem(machines_workcenters.get(key)))
             self.table_model.setItem(row, 1, QtGui.QStandardItem(key))
             for starttime, endtime, duration, output in values:
                 self.table_model.setItem(row, 2, QtGui.QStandardItem(starttime.strftime("%Y-%m-%d %H:%M")))
@@ -1464,16 +1530,16 @@ class MUDetailsDisplayTable(QtWidgets.QWidget):
     def populate_table(self):
         self.table_model.clear()
 
-        table_hheaders = ['Group', 'Machine', 'Start', 'End', 'Duration', 'Output']
+        table_hheaders = ['Workcenter', 'Machine', 'Start', 'End', 'Duration', 'Output']
         self.table_model.setHorizontalHeaderLabels(table_hheaders)
         start = self.start_spin.dateTime().toPython()
         end = self.end_spin.dateTime().toPython()
         run_dict = self.database_manager.get_mu(start.isoformat(timespec='minutes'),
                                                 end.isoformat(timespec='minutes'))
-        machines_teams = self.database_manager.get_machine_teams()
+        machines_workcenters = self.database_manager.get_machine_workcenters()
         row = 0
         for key, values in run_dict.items():
-            self.table_model.setItem(row, 0, QtGui.QStandardItem(machines_teams.get(key)))
+            self.table_model.setItem(row, 0, QtGui.QStandardItem(machines_workcenters.get(key)))
             self.table_model.setItem(row, 1, QtGui.QStandardItem(key))
             for starttime, endtime, duration, output in values:
                 self.table_model.setItem(row, 2, QtGui.QStandardItem(starttime.strftime("%Y-%m-%d %H:%M")))
