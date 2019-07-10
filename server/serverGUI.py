@@ -1,5 +1,6 @@
 import os
 import csv
+import json
 import logging
 import datetime
 import statistics
@@ -137,6 +138,8 @@ class MachinesTab(QtWidgets.QWidget):
                 wc_name = None
             else:
                 wc_name = self.machine_model.item(row, 0).text()
+                if wc_name == '':
+                    wc_name = None
 
             machine_name = self.machine_model.item(row, 1).data(QtCore.Qt.EditRole)
             if not machine_name:
@@ -148,6 +151,8 @@ class MachinesTab(QtWidgets.QWidget):
                     try:
                         text = int(item.data(QtCore.Qt.EditRole))
                     except ValueError:
+                        text = None
+                    except TypeError:
                         text = None
                 else:
                     text = None
@@ -948,6 +953,25 @@ class MiscTab(QtWidgets.QWidget):
             shift_layout.addWidget(end, col, 2)
             self.shift_check_state(check.checkState(), col)
 
+        # Default workcenters
+        default_wc = json.loads(self.config.get('Workcenters', 'workcenters', fallback="[]"))
+        wc_box = QtWidgets.QGroupBox('Workcenters filters', self)
+        wc_layout = QtWidgets.QHBoxLayout()
+        wc_box.setLayout(wc_layout)
+        self.workcenters = QtWidgets.QListWidget(self)
+        wcs = self.database_manager.get_distinct_workcenters()
+        for wc in wcs:
+            item = QtWidgets.QListWidgetItem("{}".format(wc), self.workcenters)
+            item.setFlags(QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
+            if default_wc and wc in default_wc:
+                item.setCheckState(QtCore.Qt.Checked)
+            elif not default_wc:
+                item.setCheckState(QtCore.Qt.Checked)
+            else:
+                item.setCheckState(QtCore.Qt.Unchecked)
+
+        wc_layout.addWidget(self.workcenters)
+
         # Log group
         # TODO add log group - log level & file name
 
@@ -958,6 +982,7 @@ class MiscTab(QtWidgets.QWidget):
         vbox_layout.addWidget(export_box)
         vbox_layout.addWidget(data_box)
         vbox_layout.addWidget(shift_box)
+        vbox_layout.addWidget(wc_box)
         vbox_layout.addStretch()
 
         widget = QtWidgets.QWidget(self)
@@ -1023,6 +1048,20 @@ class MiscTab(QtWidgets.QWidget):
         for key, line_edit in self.export_fields.items():
             self.config.set('Export', key, line_edit.text())
 
+        checked_items = []
+        for index in range(self.workcenters.count()):
+            if self.workcenters.item(index).checkState() == QtCore.Qt.Checked:
+                val = self.workcenters.item(index).text()
+                if val == "None":
+                    val = None
+                checked_items.append(val)
+        checked_str = json.dumps(checked_items)
+        try:
+            self.config.set('Workcenters', 'workcenters', checked_str)
+        except configparser.NoSectionError as error:
+            self.config.add_section('Workcenters')
+            self.config.set('Workcenters', 'workcenters', checked_str)
+
         path = os.path.expanduser('~/Documents/JAM/JAMserver/jam.ini')
         with open(path, 'w') as configfile:
             self.config.write(configfile)
@@ -1078,6 +1117,7 @@ class ConfigurationWidget(QtWidgets.QWidget):
         self.parent().accept()
         self.parent().parent().settings.update()
         self.parent().parent().database_manager.update()
+        self.parent().parent().display_table.set_workcenters()
 
     def cancel_changes(self):
         self.parent().done(0)
@@ -1145,13 +1185,9 @@ class DisplayTable(QtWidgets.QWidget):
         filter_hbox = QtWidgets.QGridLayout()
         self.filter_box.setLayout(filter_hbox)
         self.filter_box.setMaximumWidth(180)
-        workcenters = self.database_manager.get_distinct_workcenters()
         self.workcenters = QtWidgets.QListWidget(self)
         self.workcenters.setMinimumWidth(self.workcenters.sizeHintForColumn(0))
-        for wc in workcenters:
-            item = QtWidgets.QListWidgetItem("{}".format(wc), self.workcenters)
-            item.setFlags(QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
-            item.setCheckState(QtCore.Qt.Checked)
+        self.set_workcenters()
         filter_hbox.addWidget(QtWidgets.QLabel("Workcenter: "), 0, 0)
         filter_hbox.addWidget(self.workcenters, 1, 0)
         self.machine_filter = QtWidgets.QLineEdit(self)
@@ -1170,6 +1206,23 @@ class DisplayTable(QtWidgets.QWidget):
         self.show()
         self.populate_table()
         self.scheduler.start()
+
+    def set_workcenters(self):
+        config = configparser.ConfigParser()
+        path = os.path.expanduser('~/Documents/JAM/JAMserver/jam.ini')
+        config.read(path)
+        default_wc = json.loads(config.get('Workcenters', 'workcenters', fallback="[]"))
+        self.workcenters.clear()
+        workcenters = self.database_manager.get_distinct_workcenters()
+        for wc in workcenters:
+            item = QtWidgets.QListWidgetItem("{}".format(wc), self.workcenters)
+            item.setFlags(QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
+            if default_wc and wc in default_wc:
+                item.setCheckState(QtCore.Qt.Checked)
+            elif not default_wc:
+                item.setCheckState(QtCore.Qt.Checked)
+            else:
+                item.setCheckState(QtCore.Qt.Unchecked)
 
     def get_selected_workcenters(self):
         checked_items = []
