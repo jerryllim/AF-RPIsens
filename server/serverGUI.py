@@ -1174,12 +1174,6 @@ class DisplayTable(QtWidgets.QWidget):
         hbox.addWidget(self.hour_spin)
         hbox.addWidget(populate_btn)
 
-        hbox2 = QtWidgets.QVBoxLayout()
-        hbox2.addWidget(QtWidgets.QLabel("Details"))
-        details_btn = QtWidgets.QPushButton("Show/Hide")
-        details_btn.clicked.connect(self.show_hide_details)
-        hbox2.addWidget(details_btn)
-
         # Add filter options
         self.filter_box = QtWidgets.QGroupBox("", self)
         filter_hbox = QtWidgets.QGridLayout()
@@ -1197,11 +1191,10 @@ class DisplayTable(QtWidgets.QWidget):
 
         box_layout = QtWidgets.QVBoxLayout()
         box_layout.addLayout(hbox)
-        # box_layout.addLayout(hbox2)
-        hbox3 = QtWidgets.QHBoxLayout()
-        hbox3.addWidget(self.filter_box)
-        hbox3.addWidget(self.table_view)
-        box_layout.addLayout(hbox3)
+        body_box = QtWidgets.QHBoxLayout()
+        body_box.addWidget(self.filter_box)
+        body_box.addWidget(self.table_view)
+        box_layout.addLayout(body_box)
         self.setLayout(box_layout)
         self.show()
         self.populate_table()
