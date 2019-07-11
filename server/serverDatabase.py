@@ -11,12 +11,19 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 
 class Settings:
-    def __init__(self, filename='jam.ini', log_name="jamSERVER"):
-        self.logger = logging.getLogger(log_name)
+    def __init__(self, is_server):
+        if is_server:
+            self.logger_name = "jamSERVER"
+            self.log_path = '~/Documents/JAM/JAMserver/jamSERVER.log'
+            self.config_path = '~/Documents/JAM/JAMserver/jam.ini'
+        else:
+            self.logger_name = "jamVIEWER"
+            self.log_path = '~/Documents/JAM/JAMviewer/jamVIEWER.log'
+            self.config_path = '~/Documents/JAM/JAMviewer/jam.ini'
 
-        self.filename = filename
+        self.logger = logging.getLogger(self.logger_name)
         self.config = configparser.ConfigParser()
-        path = os.path.expanduser('~/Documents/JAM/JAMserver/' + self.filename)
+        path = os.path.expanduser(self.config_path)
         self.config.read(path)
         self.machines_info = {}
         self.update()
@@ -24,7 +31,7 @@ class Settings:
 
     def update(self):
         self.config.clear()
-        path = os.path.expanduser('~/Documents/JAM/JAMserver/' + self.filename)
+        path = os.path.expanduser(self.config_path)
         self.config.read(path)
         self.machines_info.clear()
         database_manager = DatabaseManager(None, host=self.config.get('Database', 'host'),
@@ -86,8 +93,8 @@ class Settings:
 
 
 class AutomateSchedulers:
-    def __init__(self, settings: Settings, db_dict):
-        self.logger = logging.getLogger('jamSERVER')
+    def __init__(self, settings, db_dict, logger_name):
+        self.logger = logging.getLogger(logger_name)
 
         self.settings = settings
         self.database_manager = DatabaseManager(settings, **db_dict)

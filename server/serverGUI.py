@@ -1832,16 +1832,12 @@ class JamMainWindow(QtWidgets.QMainWindow):
         for key in ['host', 'port', 'user', 'password', 'db']:
             db_dict[key] = config.get('Database', key)
 
-        self.settings = serverDatabase.Settings()
-        self.database_manager = serverDatabase.DatabaseManager(self.settings, **db_dict)
-        # self.database_manager = serverDatabase.DatabaseManager(self.settings, host=config.get('Database', 'host'),
-        #                                                        port=config.get('Database', 'port'),
-        #                                                        user=config.get('Database', 'user'),
-        #                                                        password=config.get('Database', 'password'),
-        #                                                        db=config.get('Database', 'db'))
+        self.settings = serverDatabase.Settings(self.is_server)
+        self.database_manager = serverDatabase.DatabaseManager(self.settings, **db_dict, log_name=self.logger_name)
+
         if self.is_server:
-            self.network_manager = serverNetwork.NetworkManager(self.settings, db_dict)
-            self.scheduler = serverDatabase.AutomateSchedulers(self.settings, db_dict)
+            self.network_manager = serverNetwork.NetworkManager(self.settings, db_dict, self.logger_name)
+            self.scheduler = serverDatabase.AutomateSchedulers(self.settings, db_dict, self.logger_name)
             self.scheduler.schedule_export()
             self.scheduler.schedule_import()
             self.scheduler.schedule_table_transfers()
@@ -1977,6 +1973,6 @@ class DatabaseSetup(QtWidgets.QDialog):
 if __name__ == '__main__':
     # TODO use sys argv to get is_server
     app = QtWidgets.QApplication([])
-    window = JamMainWindow(None, is_server=False)
+    window = JamMainWindow(None, is_server=True)
     window.setWindowTitle('JAM')
     app.exec_()

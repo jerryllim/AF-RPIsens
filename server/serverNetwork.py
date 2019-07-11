@@ -20,9 +20,9 @@ class NetworkManager:
     scheduler = None
     scheduler_jobs = {}
 
-    def __init__(self, settings, db_dict):
+    def __init__(self, settings, db_dict, log_name):
         # Logger setup
-        self.logger = logging.getLogger('jamSERVER')
+        self.logger = logging.getLogger(log_name)
 
         self.self_add = self.get_ip_add()
         self.context = zmq.Context()
