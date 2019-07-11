@@ -1,5 +1,6 @@
 import os
 import csv
+import sys
 import json
 import logging
 import datetime
@@ -1970,6 +1971,7 @@ class DatabaseSetup(QtWidgets.QDialog):
 
 
 if __name__ == '__main__':
+    # TODO use sys argv to get is_server
     app = QtWidgets.QApplication([])
     window = JamMainWindow(None, is_server=True)
     window.setWindowTitle('JAM')
