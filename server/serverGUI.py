@@ -1142,6 +1142,8 @@ class ConfigurationWidget(QtWidgets.QWidget):
         self.parent().parent().settings.update()
         self.parent().parent().database_manager.update()
         self.parent().parent().display_table.set_workcenters()
+        self.parent().parent().mu_table.set_workcenters()
+        self.parent().parent().mu_det_table.set_workcenters()
 
     def cancel_changes(self):
         self.parent().done(0)
@@ -1191,6 +1193,7 @@ class DisplayTable(QtWidgets.QWidget):
         self.hour_spin.setValue(12)
         populate_btn = QtWidgets.QPushButton('Refresh')
         populate_btn.clicked.connect(self.populate_table)
+        populate_btn.setShortcut(QtGui.QKeySequence('Return'))
         hbox.addWidget(date_label)
         hbox.addWidget(self.date_spin)
         hbox.addWidget(start_label)
@@ -1229,9 +1232,10 @@ class DisplayTable(QtWidgets.QWidget):
         config = configparser.ConfigParser()
         path = os.path.expanduser(self.config_path)
         config.read(path)
-        default_wc = json.loads(config.get('Workcenters', 'workcenters', fallback="[]"))
         self.workcenters.clear()
+        default_wc = json.loads(config.get('Workcenters', 'workcenters', fallback="[]"))
         workcenters = self.database_manager.get_distinct_workcenters()
+        default_wc = [wc for wc in default_wc if wc in workcenters]
         for wc in workcenters:
             item = QtWidgets.QListWidgetItem("{}".format(wc), self.workcenters)
             item.setFlags(QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
@@ -1379,6 +1383,7 @@ class SFUDisplayTable(QtWidgets.QWidget):
         self.end_spin.setDisplayFormat('HH:mm')
         refresh_btn = QtWidgets.QPushButton('Refresh')
         refresh_btn.clicked.connect(self.populate_table)
+        refresh_btn.setShortcut(QtGui.QKeySequence('Return'))
         hbox.addWidget(date_label)
         hbox.addWidget(self.date_spin)
         hbox.addWidget(start_label)
@@ -1453,6 +1458,7 @@ class MUDisplayTable(QtWidgets.QWidget):
         self.end_spin.setDisplayFormat('dd-MM-yy HH:mm')
         populate_btn = QtWidgets.QPushButton('Refresh')
         populate_btn.clicked.connect(self.populate_table)
+        populate_btn.setShortcut(QtGui.QKeySequence('Return'))
         hbox.addWidget(start_label)
         hbox.addWidget(self.start_spin)
         hbox.addWidget(end_label)
@@ -1488,9 +1494,10 @@ class MUDisplayTable(QtWidgets.QWidget):
         config = configparser.ConfigParser()
         path = os.path.expanduser(self.config_path)
         config.read(path)
-        default_wc = json.loads(config.get('Workcenters', 'workcenters', fallback="[]"))
         self.workcenters.clear()
+        default_wc = json.loads(config.get('Workcenters', 'workcenters', fallback="[]"))
         workcenters = self.database_manager.get_distinct_workcenters()
+        default_wc = [wc for wc in default_wc if wc in workcenters]
         for wc in workcenters:
             item = QtWidgets.QListWidgetItem("{}".format(wc), self.workcenters)
             item.setFlags(QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
@@ -1688,6 +1695,7 @@ class MUDetailsDisplayTable(QtWidgets.QWidget):
         self.end_spin.setDisplayFormat('dd-MM-yy HH:mm')
         populate_btn = QtWidgets.QPushButton('Refresh')
         populate_btn.clicked.connect(self.populate_table)
+        populate_btn.setShortcut(QtGui.QKeySequence('Return'))
         hbox.addWidget(start_label)
         hbox.addWidget(self.start_spin)
         hbox.addWidget(end_label)
@@ -1724,9 +1732,10 @@ class MUDetailsDisplayTable(QtWidgets.QWidget):
         config = configparser.ConfigParser()
         path = os.path.expanduser(self.config_path)
         config.read(path)
-        default_wc = json.loads(config.get('Workcenters', 'workcenters', fallback="[]"))
         self.workcenters.clear()
+        default_wc = json.loads(config.get('Workcenters', 'workcenters', fallback="[]"))
         workcenters = self.database_manager.get_distinct_workcenters()
+        default_wc = [wc for wc in default_wc if wc in workcenters]
         for wc in workcenters:
             item = QtWidgets.QListWidgetItem("{}".format(wc), self.workcenters)
             item.setFlags(QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
