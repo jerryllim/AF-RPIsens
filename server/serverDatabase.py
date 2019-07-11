@@ -1519,9 +1519,9 @@ class DatabaseManager:
                          "`TABLE_NAME` = 'sfu_table' AND `INDEX_NAME` = 'distinct_idx';"
                 cursor.execute(query2)
                 if cursor.fetchone():
-                    query3 = "CREATE UNIQUE INDEX distinct_idx ON SFU_table(umc, uno, uline, umachine_no, usfc_qty, " \
-                           "usfc_emp1, usfc_emp2, usfc_emp3, usfc_qty_waste1, usfc_qty_waste2, usfc_date, usfc_time_fr, " \
-                           "usfc_time_to);"
+                    query3 = "CREATE UNIQUE INDEX distinct_idx ON sfu_table(umc, uno, uline, umachine_no, usfc_qty, " \
+                             "usfc_emp1, usfc_emp2, usfc_emp3, usfc_qty_waste1, usfc_qty_waste2, usfc_date, " \
+                             "usfc_time_fr, usfc_time_to);"
                     cursor.execute(query3)
                 conn.commit()
         except pymysql.DatabaseError as error:

@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="8c4eab11-9431-48ea-8992-fef6a6e722be" name="Default" comment="Reduced labels (populate in init) &amp; created NumericProperty for counter">
+      <change beforePath="$PROJECT_DIR$/server/serverDatabase.py" beforeDir="false" afterPath="$PROJECT_DIR$/server/serverDatabase.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/serverGUI.py" beforeDir="false" afterPath="$PROJECT_DIR$/server/serverGUI.py" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
@@ -39,14 +40,23 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="true">
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
               <provider selected="true" editor-type-id="text-editor">
                 <state relative-caret-position="316">
-                  <caret line="1647" column="23" lean-forward="true" selection-start-line="1647" selection-start-column="23" selection-end-line="1647" selection-end-column="23" />
+                  <caret line="1650" column="23" lean-forward="true" selection-start-line="1650" selection-start-column="23" selection-end-line="1650" selection-end-column="23" />
                   <folding>
                     <element signature="e#0#9#0" expanded="true" />
                   </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/viewer/viewerGUI.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="-1014">
+                  <caret line="988" column="22" lean-forward="true" selection-start-line="988" selection-start-column="22" selection-end-line="988" selection-end-column="22" />
                 </state>
               </provider>
             </entry>
@@ -109,20 +119,11 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/sensor/pin_dict.json">
-              <provider selected="true" editor-type-id="text-editor">
-                <state>
-                  <caret column="69" selection-start-column="69" selection-end-column="69" />
-                </state>
-              </provider>
-            </entry>
-          </file>
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="290">
-                  <caret line="1312" column="44" selection-start-line="1312" selection-start-column="44" selection-end-line="1312" selection-end-column="44" />
+                <state relative-caret-position="390">
+                  <caret line="1970" column="23" selection-start-line="1970" selection-start-column="23" selection-end-line="1970" selection-end-column="23" />
                   <folding>
                     <element signature="e#0#9#0" expanded="true" />
                   </folding>
@@ -133,8 +134,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/server/serverDatabase.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="291">
-                  <caret line="975" column="40" lean-forward="true" selection-start-line="975" selection-start-column="40" selection-end-line="975" selection-end-column="40" />
+                <state relative-caret-position="515">
+                  <caret line="1524" column="42" lean-forward="true" selection-start-line="1524" selection-start-column="42" selection-end-line="1524" selection-end-column="42" />
                   <folding>
                     <element signature="e#0#9#0" expanded="true" />
                   </folding>
@@ -167,8 +168,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>_like(se</find>
-      <find>IN</find>
       <find>IN</find>
       <find>join</find>
       <find>workcenter is</find>
@@ -182,7 +181,6 @@
       <find>get_machine_w</find>
       <find>wc IN</find>
       <find>details</find>
-      <find>save</find>
       <find>save_all</find>
       <find>click</find>
       <find>Misc</find>
@@ -195,8 +193,11 @@
       <find>jammain</find>
       <find>parent</find>
       <find>replace_ma</find>
-      <find>self.is_ser</find>
       <find>emp_shi</find>
+      <find>unique</find>
+      <find>self.is_ser</find>
+      <find>JAMMain</find>
+      <find>save</find>
     </findStrings>
     <replaceStrings>
       <replace>TMessage</replace>
@@ -1022,13 +1023,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/viewer/viewerGUI.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="388">
-          <caret line="113" column="34" selection-start-line="113" selection-start-column="34" selection-end-line="113" selection-end-column="34" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/Library/Caches/IdeaIC2019.1/python_stubs/-1199943126/PySide2/QtWidgets/QTableView.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="202">
@@ -1060,6 +1054,16 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/server/serverDatabase.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="515">
+          <caret line="1524" column="42" lean-forward="true" selection-start-line="1524" selection-start-column="42" selection-end-line="1524" selection-end-column="42" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/sensor/pin_dict.json">
       <provider selected="true" editor-type-id="text-editor">
         <state>
@@ -1077,20 +1081,17 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/server/serverDatabase.py">
+    <entry file="file://$PROJECT_DIR$/viewer/viewerGUI.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="291">
-          <caret line="975" column="40" lean-forward="true" selection-start-line="975" selection-start-column="40" selection-end-line="975" selection-end-column="40" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="-1014">
+          <caret line="988" column="22" lean-forward="true" selection-start-line="988" selection-start-column="22" selection-end-line="988" selection-end-column="22" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/server/serverGUI.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="290">
-          <caret line="1312" column="44" selection-start-line="1312" selection-start-column="44" selection-end-line="1312" selection-end-column="44" />
+        <state relative-caret-position="390">
+          <caret line="1970" column="23" selection-start-line="1970" selection-start-column="23" selection-end-line="1970" selection-end-column="23" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />
           </folding>

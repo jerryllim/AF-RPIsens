@@ -19,7 +19,6 @@ class MachinesTab(QtWidgets.QWidget):
     def __init__(self, parent):
         QtWidgets.QWidget.__init__(self, parent)
         self.is_server = self.parent().parent().is_server
-        self.is_server = False
         self.configuration_parent = parent
         self.database_manager = self.parent().database_manager
 
@@ -1050,23 +1049,25 @@ class MiscTab(QtWidgets.QWidget):
         for key in self.db_edits.keys():
             self.config.set('Database', key, self.db_edits[key].text())
 
-        self.config.set('Data', 'day', str(self.data_fields['day'].currentIndex()))
-        for key in ['time', 'archive', 'delete']:
-            self.config.set('Data', key, str(self.data_fields[key].text()))
+        # Only have these settings in server
+        if self.is_server:
+            self.config.set('Data', 'day', str(self.data_fields['day'].currentIndex()))
+            for key in ['time', 'archive', 'delete']:
+                self.config.set('Data', key, str(self.data_fields[key].text()))
 
-        for col in range(1, 5):
-            self.config.set('Shift', 'shift{}_enable'.format(col), str(self.shift_checks[col].isChecked()))
-            self.config.set('Shift', 'shift{}_start'.format(col), str(self.shift_starts[col].text()))
-            self.config.set('Shift', 'shift{}_end'.format(col), str(self.shift_ends[col].text()))
+            for col in range(1, 5):
+                self.config.set('Shift', 'shift{}_enable'.format(col), str(self.shift_checks[col].isChecked()))
+                self.config.set('Shift', 'shift{}_start'.format(col), str(self.shift_starts[col].text()))
+                self.config.set('Shift', 'shift{}_end'.format(col), str(self.shift_ends[col].text()))
 
-        self.config.set('Network', 'port', self.network_fields['port'].text())
-        self.config.set('Network', 'interval', str(self.network_fields['interval'].text()))
+            self.config.set('Network', 'port', self.network_fields['port'].text())
+            self.config.set('Network', 'interval', str(self.network_fields['interval'].text()))
 
-        for key, line_edit in self.import_fields.items():
-            self.config.set('Import', key, line_edit.text())
+            for key, line_edit in self.import_fields.items():
+                self.config.set('Import', key, line_edit.text())
 
-        for key, line_edit in self.export_fields.items():
-            self.config.set('Export', key, line_edit.text())
+            for key, line_edit in self.export_fields.items():
+                self.config.set('Export', key, line_edit.text())
 
         checked_items = []
         for index in range(self.workcenters.count()):
@@ -1090,6 +1091,7 @@ class MiscTab(QtWidgets.QWidget):
 class ConfigurationWidget(QtWidgets.QWidget):
     def __init__(self, parent, database_manager):
         QtWidgets.QWidget.__init__(self, parent)
+        self.is_server = self.parent().is_server
         self.config_path = self.parent().config_path
         config = configparser.ConfigParser()
         path = os.path.expanduser(self.config_path)
@@ -1131,8 +1133,9 @@ class ConfigurationWidget(QtWidgets.QWidget):
         return self.pis_tab.machine_in_use(machine)
 
     def save_all(self):
-        self.pis_tab.save_items()
-        self.emp_tab.save_emp()
+        if self.is_server:
+            self.pis_tab.save_items()
+            self.emp_tab.save_emp()
         self.machines_tab.save_table()
         self.misc_tab.save_misc()
         self.parent().accept()
@@ -1836,13 +1839,14 @@ class JamMainWindow(QtWidgets.QMainWindow):
         #                                                        user=config.get('Database', 'user'),
         #                                                        password=config.get('Database', 'password'),
         #                                                        db=config.get('Database', 'db'))
-        self.network_manager = serverNetwork.NetworkManager(self.settings, db_dict)
-        self.scheduler = serverDatabase.AutomateSchedulers(self.settings, db_dict)
-        self.scheduler.schedule_export()
-        self.scheduler.schedule_import()
-        self.scheduler.schedule_table_transfers()
-        self.scheduler.schedule_delete_old_jobs()
-        self.scheduler.start_scheduler()
+        if self.is_server:
+            self.network_manager = serverNetwork.NetworkManager(self.settings, db_dict)
+            self.scheduler = serverDatabase.AutomateSchedulers(self.settings, db_dict)
+            self.scheduler.schedule_export()
+            self.scheduler.schedule_import()
+            self.scheduler.schedule_table_transfers()
+            self.scheduler.schedule_delete_old_jobs()
+            self.scheduler.start_scheduler()
 
         self.tab_widget = QtWidgets.QTabWidget()
         self.display_table = DisplayTable(self, self.database_manager)
@@ -1897,9 +1901,9 @@ class JamMainWindow(QtWidgets.QMainWindow):
 class DatabaseSetup(QtWidgets.QDialog):
     def __init__(self, parent):
         QtWidgets.QDialog.__init__(self, parent)
-        config_path = self.parent().config_path
+        self.config_path = self.parent().config_path
         self.config = configparser.ConfigParser()
-        path = os.path.expanduser(config_path)
+        path = os.path.expanduser(self.config_path)
         self.config.read(path)
 
         # Database group
@@ -1963,7 +1967,7 @@ class DatabaseSetup(QtWidgets.QDialog):
             for key in self.db_edits.keys():
                 self.config.set('Database', key, self.db_edits[key].text())
 
-            path = os.path.expanduser('~/Documents/JAM/JAMserver/jam.ini')
+            path = os.path.expanduser(self.config_path)
             with open(path, 'w') as configfile:
                 self.config.write(configfile)
 
@@ -1973,7 +1977,6 @@ class DatabaseSetup(QtWidgets.QDialog):
 if __name__ == '__main__':
     # TODO use sys argv to get is_server
     app = QtWidgets.QApplication([])
-    window = JamMainWindow(None, is_server=True)
+    window = JamMainWindow(None, is_server=False)
     window.setWindowTitle('JAM')
-    # window = ConfigurationWidget(None)
     app.exec_()
