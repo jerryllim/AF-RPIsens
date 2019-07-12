@@ -1142,8 +1142,11 @@ class ConfigurationWidget(QtWidgets.QWidget):
         self.parent().parent().settings.update()
         self.parent().parent().database_manager.update()
         self.parent().parent().display_table.set_workcenters()
+        self.parent().parent().sfu_table.set_workcenters()
         self.parent().parent().mu_table.set_workcenters()
         self.parent().parent().mu_det_table.set_workcenters()
+        self.parent().parent().compare_table1.set_workcenters()
+        self.parent().parent().compare_table2.set_workcenters()
 
     def cancel_changes(self):
         self.parent().done(0)
@@ -1151,8 +1154,9 @@ class ConfigurationWidget(QtWidgets.QWidget):
 
 class DisplayTable(QtWidgets.QWidget):
     scheduler_jobs = {}
+    scheduler = None
 
-    def __init__(self, parent, database_manager):
+    def __init__(self, parent, database_manager, auto_update=True, populate_shortcut='Return'):
         QtWidgets.QWidget.__init__(self, parent)
         self.config_path = self.parent().config_path
         config = configparser.ConfigParser()
@@ -1193,7 +1197,7 @@ class DisplayTable(QtWidgets.QWidget):
         self.hour_spin.setValue(12)
         populate_btn = QtWidgets.QPushButton('Refresh')
         populate_btn.clicked.connect(self.populate_table)
-        populate_btn.setShortcut(QtGui.QKeySequence('Return'))
+        populate_btn.setShortcut(QtGui.QKeySequence(populate_shortcut))
         hbox.addWidget(date_label)
         hbox.addWidget(self.date_spin)
         hbox.addWidget(start_label)
@@ -1226,7 +1230,9 @@ class DisplayTable(QtWidgets.QWidget):
         self.setLayout(box_layout)
         self.show()
         self.populate_table()
-        self.scheduler.start()
+
+        if auto_update:
+            self.scheduler.start()
 
     def set_workcenters(self):
         config = configparser.ConfigParser()
@@ -1858,10 +1864,18 @@ class JamMainWindow(QtWidgets.QMainWindow):
         self.sfu_table = SFUDisplayTable(self, self.database_manager)
         self.mu_table = MUDisplayTable(self, self.database_manager)
         self.mu_det_table = MUDetailsDisplayTable(self, self.database_manager)
+        compare_table = QtWidgets.QWidget(self)
+        compare_layout = QtWidgets.QVBoxLayout(compare_table)
+        self.compare_table1 = DisplayTable(self, self.database_manager, auto_update=False)
+        self.compare_table2 = DisplayTable(self, self.database_manager, auto_update=False,
+                                           populate_shortcut="Shift+Return")
+        compare_layout.addWidget(self.compare_table1)
+        compare_layout.addWidget(self.compare_table2)
         self.tab_widget.addTab(self.display_table, 'Output Table')
         self.tab_widget.addTab(self.sfu_table, 'SFU Table')
         self.tab_widget.addTab(self.mu_table, 'MU Table')
         self.tab_widget.addTab(self.mu_det_table, 'MU Details Table')
+        self.tab_widget.addTab(compare_table, "Comparison Table")
         self.setCentralWidget(self.tab_widget)
 
         config_action = QtWidgets.QAction('&Configuration', self)
