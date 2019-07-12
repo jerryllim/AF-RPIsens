@@ -189,9 +189,14 @@ class NetworkManager:
 
     def insert_sfu(self, ip, sfu_str):
         sfu_list = json.loads(sfu_str)
-        umc = self.database_manager.get_umc_for(sfu_list[0], sfu_list[1])
+        # Change the usfc_qty for items with multiplier
+        multiplier = self.database_manager.get_multiplier(sfu_list[0], sfu_list[1])
+        sfu_list[3] = sfu_list[3]/multiplier
+        # Get umachine_no
         idx = sfu_list[2]
         sfu_list[2] = self.settings.get_mac(ip, idx)
+        # Set the umc
+        umc = self.database_manager.get_umc_for(sfu_list[0], sfu_list[1])
         sfu_list = [umc] + sfu_list
 
         self.database_manager.insert_sfu(sfu_list)

@@ -841,12 +841,6 @@ class DatabaseManager:
 
         try:
             with conn.cursor() as cursor:
-                query = "SELECT uom_table.multiplier FROM uom_table LEFT JOIN jobs_table ON " \
-                        "uom_table.ustk = jobs_table.ustk WHERE uno=%s AND uline=%s LIMIT 1;"
-                cursor.execute(query, (uno, uline))
-                multiplier = cursor.fetchone()
-                if multiplier:
-                    usfc_qty = usfc_qty/multiplier
                 query = "UPDATE jobs_table SET usfc_qty = usfc_qty + %s WHERE uno = %s AND uline = %s;"
                 cursor.execute(query, (usfc_qty, uno, uline))
                 conn.commit()
@@ -1547,19 +1541,16 @@ class DatabaseManager:
             conn.close()
 
     def insert_sfu(self, sfu):
+        """
+        Inserts sfu to the table
+        """
         conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
 
         try:
             with conn.cursor() as cursor:
-                query = "SELECT uom_table.multiplier FROM uom_table LEFT JOIN jobs_table ON " \
-                        "uom_table.ustk = jobs_table.ustk WHERE uno=%s AND uline=%s LIMIT 1;"
-                cursor.execute(query, (sfu[1], sfu[2]))
-                multiplier = cursor.fetchone()
-                if multiplier:
-                    sfu[4] = sfu[4]/multiplier
-                sql = "INSERT INTO sfu_table VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);"
-                cursor.execute(sql, sfu)
+                query = "INSERT INTO sfu_table VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);"
+                cursor.execute(query, sfu)
                 conn.commit()
         except pymysql.DatabaseError as error:
             self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
@@ -1567,6 +1558,10 @@ class DatabaseManager:
             conn.close()
 
     def get_sfu_headers(self):
+        """
+        Get sfu table headers (Used for SFUDisplayTable)
+        :return:
+        """
         conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
         headers_list = []
@@ -1585,6 +1580,10 @@ class DatabaseManager:
             return headers_list
 
     def get_sfus(self, date=None, time_fr=None, time_to=None, machines_list=None):
+        """
+        Get the sfus without deleting them
+        :return: sfu as list
+        """
         conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
         sfu_list = []
@@ -1615,6 +1614,10 @@ class DatabaseManager:
             return sfu_list
 
     def export_sfus(self, date=None, time_fr=None, time_to=None, machines_list=None):
+        """
+        Get & deletes sfus in the table while locking the table to prevent deleting un-exported data
+        :return: The deleted sfus
+        """
         conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
         sfu_list = []
@@ -1668,6 +1671,10 @@ class DatabaseManager:
             conn.close()
 
     def replace_uom(self, uom_list):
+        """
+        Replaces row in uom_table
+        :param uom_list: Row to insert
+        """
         conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
         try:
@@ -1682,6 +1689,9 @@ class DatabaseManager:
             conn.close()
 
     def delete_all(self):
+        """
+        Deletes everything from uom_table using TRUNCATE
+        """
         conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
                                database=self.db, port=self.port)
         try:
@@ -1694,6 +1704,31 @@ class DatabaseManager:
             conn.rollback()
         finally:
             conn.close()
+
+    def get_multiplier(self, uno, uline):
+        """
+        Return the multiplier, default is 1
+        :param uno: job number
+        :param uline: line number
+        :return: multiplier from uom_table, returns 1 for not line 1 & 1 for not found
+        """
+        if uline != 1:
+            return 1
+
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
+                               database=self.db, port=self.port)
+
+        try:
+            with conn.cursor() as cursor:
+                query = "SELECT IFNULL( (SELECT uom_table.multiplier FROM uom_table LEFT JOIN jobs_table " \
+                        "ON uom_table.ustk = jobs_table.ustk WHERE uno=%s AND uline=%s LIMIT 1), 1)"
+                cursor.execute(query, (uno, uline))
+                multiplier = cursor.fetchone()
+        except pymysql.DatabaseError as error:
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
+        finally:
+            conn.close()
+            return multiplier
 
 
 if __name__ == '__main__':
