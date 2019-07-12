@@ -841,6 +841,12 @@ class DatabaseManager:
 
         try:
             with conn.cursor() as cursor:
+                query = "SELECT uom_table.multiplier FROM uom_table LEFT JOIN jobs_table ON " \
+                        "uom_table.ustk = jobs_table.ustk WHERE uno=%s AND uline=%s LIMIT 1;"
+                cursor.execute(query, (uno, uline))
+                multiplier = cursor.fetchone()
+                if multiplier:
+                    usfc_qty = usfc_qty/multiplier
                 query = "UPDATE jobs_table SET usfc_qty = usfc_qty + %s WHERE uno = %s AND uline = %s;"
                 cursor.execute(query, (usfc_qty, uno, uline))
                 conn.commit()
@@ -1551,7 +1557,7 @@ class DatabaseManager:
                 cursor.execute(query, (sfu[1], sfu[2]))
                 multiplier = cursor.fetchone()
                 if multiplier:
-                    sfu[4] = sfu[4]*multiplier
+                    sfu[4] = sfu[4]/multiplier
                 sql = "INSERT INTO sfu_table VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);"
                 cursor.execute(sql, sfu)
                 conn.commit()
