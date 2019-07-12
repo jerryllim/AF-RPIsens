@@ -490,7 +490,8 @@ class DatabaseManager:
                            "jo_line INTEGER NOT NULL, "
                            "code TEXT NOT NULL, "
                            "desc TEXT NOT NULL, "
-                           "to_do INTEGER NOT NULL, "
+                           "to_do INTEGER NOT NULL,"
+                           "uom TEXT NOT NULL, "
                            "ran INTEGER NOT NULL, "
                            "ludt TEXT NOT NULL, "
                            "PRIMARY KEY(jo_no, jo_line));")
@@ -511,7 +512,7 @@ class DatabaseManager:
         db = sqlite3.connect(self.database)
         cursor = db.cursor()
         try:
-            cursor.executemany("REPLACE INTO jobs_table VALUES (?, ?, ?, ?, ?, ?, datetime('now', 'localtime'));",
+            cursor.executemany("REPLACE INTO jobs_table VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now', 'localtime'));",
                                jobs_list)
             db.commit()
         finally:
