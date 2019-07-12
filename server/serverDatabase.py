@@ -807,7 +807,7 @@ class DatabaseManager:
         try:
             jo_no = barcode[:-3]
             jo_line = int(barcode[-3:])
-            sql = "SELECT uno, uline, ustk, ustk_desc1, usch_qty, usfc_qty FROM jobs_table " \
+            sql = "SELECT uno, uline, ustk, ustk_desc1, usch_qty, uuom, usfc_qty FROM jobs_table " \
                   "WHERE uno = %s AND uline = %s LIMIT 1;"
             if cursor.execute(sql, (jo_no, jo_line)):
                 temp = cursor.fetchone()
@@ -866,7 +866,7 @@ class DatabaseManager:
 
         try:
             with conn.cursor() as cursor:
-                sql = "SELECT uno, uline, ustk, ustk_desc1, usch_qty, usfc_qty FROM jobs_table WHERE umachine_no IN %s"
+                sql = "SELECT uno, uline, ustk, ustk_desc1, usch_qty, uuom, usfc_qty FROM jobs_table WHERE umachine_no IN %s"
                 if dt:
                     sql = sql + " AND last_modified >= '{}' AND " \
                                 "last_modified <= '{}';".format(dt, now.strftime("%Y-%m-%d %H:%M:%S"))
@@ -888,7 +888,7 @@ class DatabaseManager:
 
         try:
             with conn.cursor() as cursor:
-                sql = "SELECT uno, uline, ustk, ustk_desc1, usch_qty, usfc_qty FROM jobs_table WHERE " \
+                sql = "SELECT uno, uline, ustk, ustk_desc1, usch_qty, uuom, usfc_qty FROM jobs_table WHERE " \
                       "umachine_no LIKE %s"
                 if dt:
                     sql = sql + " AND last_modified >= '{}' AND " \
