@@ -178,11 +178,11 @@ class AutomateSchedulers:
         filepath = self.settings.config.get('Export', 'path') + '/export_jam.csv'
         try:
             if not os.path.isfile(filepath):
-                with open(filepath, 'w') as export_file:
+                with open(filepath, 'w', newline='') as export_file:
                     csv_writer = csv.writer(export_file)
                     csv_writer.writerow(self.database_manager.get_sfu_headers())
 
-            with open(filepath, 'a') as export_file:
+            with open(filepath, 'a', newline='') as export_file:
                 csv_writer = csv.writer(export_file)
                 li = list(self.database_manager.export_sfus())
                 csv_writer.writerows(li)
@@ -1546,6 +1546,12 @@ class DatabaseManager:
 
         try:
             with conn.cursor() as cursor:
+                query = "SELECT uom_table.multiplier FROM uom_table LEFT JOIN jobs_table ON " \
+                        "uom_table.ustk = jobs_table.ustk WHERE uno=%s AND uline=%s LIMIT 1;"
+                cursor.execute(query, (sfu[1], sfu[2]))
+                multiplier = cursor.fetchone()
+                if multiplier:
+                    sfu[4] = sfu[4]*multiplier
                 sql = "INSERT INTO sfu_table VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);"
                 cursor.execute(sql, sfu)
                 conn.commit()
