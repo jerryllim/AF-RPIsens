@@ -1646,6 +1646,49 @@ class DatabaseManager:
             conn.close()
             return sfu_list
 
+    def create_uom_table(self):
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
+                               database=self.db, port=self.port)
+
+        try:
+            with conn.cursor() as cursor:
+                query = "CREATE TABLE uom_table (ustk char(16) NOT NULL, ustk_desc1 char(40) DEFAULT NULL, " \
+                        "muom_p char(3) NOT NULL, multiplier double NOT NULL DEFAULT 1)"
+                cursor.execute(query)
+                conn.commit()
+        except pymysql.DatabaseError as error:
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
+        finally:
+            conn.close()
+
+    def replace_uom(self, uom_list):
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
+                               database=self.db, port=self.port)
+        try:
+            with conn.cursor() as cursor:
+                query = "REPLACE INTO uom_table (ustk, ustk_desc1, muom_p, multiplier) VALUES (%s, %s, %s, %s);"
+                cursor.executemany(query, uom_list)
+                conn.commit()
+        except pymysql.DatabaseError as error:
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
+            conn.rollback()
+        finally:
+            conn.close()
+
+    def delete_all(self):
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
+                               database=self.db, port=self.port)
+        try:
+            with conn.cursor() as cursor:
+                query = "TRUNCATE TABLE uom_table;"
+                cursor.execute(query)
+                conn.commit()
+        except pymysql.DatabaseError as error:
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
+            conn.rollback()
+        finally:
+            conn.close()
+
 
 if __name__ == '__main__':
     settings_ = Settings()

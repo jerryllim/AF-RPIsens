@@ -511,7 +511,8 @@ class DatabaseManager:
         db = sqlite3.connect(self.database)
         cursor = db.cursor()
         try:
-            cursor.executemany("REPLACE INTO jobs_table VALUES (?, ?, ?, ?, ?, ?, datetime('now', 'localtime'));", jobs_list)
+            cursor.executemany("REPLACE INTO jobs_table VALUES (?, ?, ?, ?, ?, ?, datetime('now', 'localtime'));",
+                               jobs_list)
             db.commit()
         finally:
             db.close()
@@ -616,6 +617,7 @@ class FakeController(PiController):
         self.respondent_thread = threading.Thread(target=self.respond)
         self.respondent_thread.daemon = True
         self.respondent_thread.start()
+        self.pipe_kill = threading.Event()
         self.pipe_thread = threading.Thread(target=self.pipe_loop)
         self.pipe_thread.daemon = True
         self.pipe_thread.start()

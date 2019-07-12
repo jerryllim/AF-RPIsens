@@ -240,7 +240,6 @@ class MachineClass:
         return save_info
 
     def recall_machine(self, json_dict):
-        print(json_dict)
         self.permanent = json_dict.get('permanent', 0)
         self.state = State[json_dict.get('state', "SELECT")]
         for emp_id, start in json_dict.get("emp_main", {}).items():
