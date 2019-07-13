@@ -1153,6 +1153,7 @@ class PiGUIApp(App):
             'machine_name': 'Machine 1',
             'bg_colour': 'BLUE',
             'output_pin': 'A1',
+            'multiplier': 1,
             'waste1_units': 'kg',
             'waste2_units': 'kg'})
         config.setdefaults('Adjustments1', {
@@ -1170,6 +1171,7 @@ class PiGUIApp(App):
             'machine_name': 'Machine 2',
             'bg_colour': 'GREEN',
             'output_pin': 'A1',
+            'multiplier': 1,
             'waste1_units': 'kg',
             'waste2_units': 'kg'})
         config.setdefaults('Adjustments2', {
@@ -1187,6 +1189,7 @@ class PiGUIApp(App):
             'machine_name': 'Machine 3',
             'bg_colour': 'RED',
             'output_pin': 'A1',
+            'multiplier': 1,
             'waste1_units': 'kg',
             'waste2_units': 'kg'})
         config.setdefaults('Adjustments3', {
