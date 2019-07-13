@@ -202,69 +202,6 @@ class NetworkManager:
         self.database_manager.insert_sfu(sfu_list)
         self.database_manager.update_job(sfu_list[1], sfu_list[2], sfu_list[4])
 
-    def request_jam(self):
-        now = datetime.datetime.now().isoformat()
-        self.logger.debug("Requesting jam")
-        ip_list = self.settings.get_ips()
-        error_list = []
-        for ip in ip_list:
-            send_dict = {'jam': 0}
-            dt, jobs = self.get_jobs_info_for(ip)
-            if jobs:
-                send_dict['jobs'] = jobs
-            to_send = [ip.encode(), (json.dumps(send_dict)).encode()]
-            try:
-                self.router_send.send_multipart(to_send)
-            except zmq.ZMQError as error:
-                error_list.append(ip)
-                self.logger.warning("Error {} for ip {}".format(error, ip))
-
-        time.sleep(1)
-
-        while self.router_send.poll(2000):
-            try:
-                id_from, recv_bytes = self.router_send.recv_multipart()
-                recv_dict = json.loads(recv_bytes.decode())
-                machine_ip = id_from.decode()
-
-                if machine_ip in ip_list:  # Otherwise raises ValueError
-                    ip_list.remove(machine_ip)
-
-                # machine = self.settings.get_machine(machine_ip)
-
-                if recv_dict.pop("jobs", 0):
-                    self.database_manager.update_ludt_jobs(machine_ip)
-
-                jam_msg = recv_dict.pop('jam', {})
-                sfu_list = jam_msg.pop('sfu', [])
-                for sfu_str in sfu_list:
-                    self.insert_sfu(machine_ip, sfu_str)
-
-                for idx in range(1, 4):
-                    machine = self.settings.get_machine(machine_ip, idx)
-                    qc_list = jam_msg.pop('Q{}'.format(idx), [])
-                    if qc_list:
-                        self.database_manager.insert_qc(machine, qc_list)
-                    maintenance_dict = jam_msg.pop('M{}'.format(idx), {})
-                    if maintenance_dict:
-                        self.database_manager.replace_maintenance(machine, maintenance_dict)
-                    emp_dict = jam_msg.pop('E{}'.format(idx), {})
-                    if emp_dict:
-                        self.database_manager.replace_emp_shift(machine, emp_dict)
-
-                self.database_manager.insert_jam(machine_ip, jam_msg)
-
-            except IOError as error:
-                self.logger.error("Problem with socket: {}".format(now, error))
-
-        if ip_list:
-            self.logger.info('Machine(s) {} did not reply.'.format(ip_list))
-
-        for ip in error_list:
-            port = self.settings.get_port_for(ip)
-            self.router_send.connect("tcp://{}:{}".format(ip, port))
-            self.logger.info("Reconnecting to {}:{}".format(ip, port))
-
     def get_jobs_info_for(self, ip):
         mac = self.settings.get_macs(ip)
         ludt_jobs = self.database_manager.get_last_updates_posix(ip)[2]
@@ -297,8 +234,3 @@ class NetworkManager:
         s.close()
 
         return ip_add
-
-
-if __name__ == '__main__':
-    pass
-    # NetworkManager()

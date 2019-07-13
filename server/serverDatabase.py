@@ -860,7 +860,8 @@ class DatabaseManager:
 
         try:
             with conn.cursor() as cursor:
-                sql = "SELECT uno, uline, ustk, ustk_desc1, usch_qty, uuom, usfc_qty FROM jobs_table WHERE umachine_no IN %s"
+                sql = "SELECT uno, uline, ustk, ustk_desc1, usch_qty, uuom, usfc_qty FROM jobs_table WHERE " \
+                      "umachine_no IN %s"
                 if dt:
                     sql = sql + " AND last_modified >= '{}' AND " \
                                 "last_modified <= '{}';".format(dt, now.strftime("%Y-%m-%d %H:%M:%S"))
@@ -1729,9 +1730,3 @@ class DatabaseManager:
         finally:
             conn.close()
             return multiplier
-
-
-if __name__ == '__main__':
-    settings_ = Settings()
-    # print(settings_.get_ips_ports())
-    db_manager = DatabaseManager(settings_, password='Lim8699', db='test')
