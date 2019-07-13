@@ -61,7 +61,6 @@ class PiController:
             output_string = self.gui.config.get('General{}'.format(idx), 'output_pin')
             output_pin = self.pulse_pins['{}{}'.format(output_string, idx)]
             self.set_output_callback(output_pin)
-            multiplier = self.gui.config.get('General{}'.format(idx), '')
 
         self.update_ip_ports()
 

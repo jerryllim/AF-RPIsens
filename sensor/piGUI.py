@@ -258,9 +258,11 @@ class MachineClass:
         return self.current_job
 
     def update_output(self):
+        # TODO which value to multiply?
+        value = self.config.get('multiplier', 1)
         self.permanent += 1
         if self.current_job:
-            self.current_job.output += 1
+            self.current_job.output += value
 
     def start_maintenance(self, emp_id):
         start = datetime.now()
