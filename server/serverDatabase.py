@@ -1552,7 +1552,7 @@ class DatabaseManager:
 
         try:
             with conn.cursor() as cursor:
-                query = "INSERT INTO sfu_table (umc, uno, uline, umachine_no, usfc_qty, usfc_emp1, usfc_emp2, " \
+                query = "INSERT IGNORE INTO sfu_table (umc, uno, uline, umachine_no, usfc_qty, usfc_emp1, usfc_emp2, " \
                         "usfc_emp3, usfc_qty_waste1, usfc_qty_waste2, usfc_date, usfc_time_fr, usfc_time_to) " \
                         "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);"
                 cursor.execute(query, sfu)
