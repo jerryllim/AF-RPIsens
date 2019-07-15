@@ -61,7 +61,7 @@ class PiController:
             pin_name = '{}{}'.format(output_string, idx)
             output_pin = self.pulse_pins[pin_name]
             self.set_output_callback(output_pin)
-            multiplier = self.gui.config.get('General{}'.format(idx), 'multiplier')
+            multiplier = self.gui.config.getint('General{}'.format(idx), 'multiplier')
             self.multipliers[pin_name] = multiplier
 
         self.update_ip_ports()
@@ -199,10 +199,11 @@ class PiController:
         else:
             multiplier = 1
 
+        update_value = [name] * multiplier
         with self.counts_lock:
             if self.counts.get(key) is None:
                 self.counts[key] = Counter()
-            self.counts[key].update([name] * multiplier)
+            self.counts[key].update(update_value)
 
     def update_adjustments(self, key, name, value):
         with self.counts_lock:

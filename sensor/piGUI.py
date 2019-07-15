@@ -259,7 +259,7 @@ class MachineClass:
 
     def update_output(self):
         # Use multiplier to set number
-        value = self.config.get('multiplier', 1)
+        value = int(self.config.get('multiplier', 1))
         self.permanent += value
         if self.current_job:
             self.current_job.output += value
