@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="8c4eab11-9431-48ea-8992-fef6a6e722be" name="Default" comment="Reduced labels (populate in init) &amp; created NumericProperty for counter">
-      <change beforePath="$PROJECT_DIR$/server/serverDatabase.py" beforeDir="false" afterPath="$PROJECT_DIR$/server/serverDatabase.py" afterDir="false" />
-    </list>
+    <list default="true" id="8c4eab11-9431-48ea-8992-fef6a6e722be" name="Default" comment="Reduced labels (populate in init) &amp; created NumericProperty for counter" />
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -154,8 +152,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/server/serverDatabase.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="453">
-                  <caret line="1554" column="39" selection-start-line="1554" selection-start-column="39" selection-end-line="1554" selection-end-column="39" />
+                <state relative-caret-position="393">
+                  <caret line="1550" column="50" selection-start-line="1550" selection-start-column="50" selection-end-line="1550" selection-end-column="50" />
                   <folding>
                     <element signature="e#0#9#0" expanded="true" />
                   </folding>
@@ -1123,8 +1121,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/server/serverDatabase.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="453">
-          <caret line="1554" column="39" selection-start-line="1554" selection-start-column="39" selection-end-line="1554" selection-end-column="39" />
+        <state relative-caret-position="393">
+          <caret line="1550" column="50" selection-start-line="1550" selection-start-column="50" selection-end-line="1550" selection-end-column="50" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />
           </folding>

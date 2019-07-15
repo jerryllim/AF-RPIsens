@@ -193,6 +193,7 @@ class PiController:
         self.callbacks.append(self.pi.callback(pin, pigpio.RISING_EDGE, self.pin_triggered))
 
     def update_count(self, key, name):
+        # Use multipliers to update count
         if name in self.multipliers.keys():
             multiplier = self.multipliers.get(name)
         else:
