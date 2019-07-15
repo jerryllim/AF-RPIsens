@@ -1516,6 +1516,7 @@ class DatabaseManager:
                       "umc char(4) DEFAULT NULL, " \
                       "uno char(10) NOT NULL, " \
                       "uline int(10) unsigned NOT NULL, " \
+                      "ucomplete char(1) NOT NULL DEFAULT 'N', " \
                       "umachine_no char(15) DEFAULT NULL, " \
                       "usfc_qty double DEFAULT 0, " \
                       "usfc_emp1 char(10) DEFAULT NULL, " \
@@ -1525,7 +1526,8 @@ class DatabaseManager:
                       "usfc_qty_waste2 double DEFAULT NULL, " \
                       "usfc_date date DEFAULT NULL, " \
                       "usfc_time_fr time DEFAULT NULL, " \
-                      "usfc_time_to time DEFAULT NULL);"
+                      "usfc_time_to time DEFAULT NULL, " \
+                      "upallet_no CHAR(10) DEFAULT '';"
                 cursor.execute(sql)
                 query2 = "SELECT 1 FROM `INFORMATION_SCHEMA`.`STATISTICS` WHERE `TABLE_SCHEMA` = '%s' AND " \
                          "`TABLE_NAME` = 'sfu_table' AND `INDEX_NAME` = 'distinct_idx';"
@@ -1550,7 +1552,9 @@ class DatabaseManager:
 
         try:
             with conn.cursor() as cursor:
-                query = "INSERT INTO sfu_table VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);"
+                query = "INSERT INTO sfu_table (umc, uno, uline, umachine_no, usfc_qty, usfc_emp1, usfc_emp2, " \
+                        "usfc_emp3, usfc_qty_waste1, usfc_qty_waste2, usfc_date, usfc_time_fr, usfc_time_to) " \
+                        "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);"
                 cursor.execute(query, sfu)
                 conn.commit()
         except pymysql.DatabaseError as error:
