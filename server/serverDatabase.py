@@ -1532,7 +1532,7 @@ class DatabaseManager:
                       "usfc_date date DEFAULT NULL, " \
                       "usfc_time_fr time DEFAULT NULL, " \
                       "usfc_time_to time DEFAULT NULL, " \
-                      "upallet_no CHAR(10) DEFAULT '';"
+                      "upallet_no CHAR(10) DEFAULT '');"
                 cursor.execute(sql)
                 query2 = "SELECT 1 FROM `INFORMATION_SCHEMA`.`STATISTICS` WHERE `TABLE_SCHEMA` = '%s' AND " \
                          "`TABLE_NAME` = 'sfu_table' AND `INDEX_NAME` = 'distinct_idx';"

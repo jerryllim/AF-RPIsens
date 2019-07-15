@@ -1142,7 +1142,6 @@ class ConfigurationWidget(QtWidgets.QWidget):
         self.parent().parent().settings.update()
         self.parent().parent().database_manager.update()
         self.parent().parent().display_table.set_workcenters()
-        self.parent().parent().sfu_table.set_workcenters()
         self.parent().parent().mu_table.set_workcenters()
         self.parent().parent().mu_det_table.set_workcenters()
         self.parent().parent().compare_table1.set_workcenters()
