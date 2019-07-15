@@ -403,14 +403,19 @@ class DatabaseManager:
 
         try:
             with conn.cursor() as cursor:
-                query = "SELECT machine, DATE(date_time), HOUR(date_time), SUM(output) FROM jam_current_table " \
-                        "WHERE date_time >= %s AND date_time < %s"
+                query1 = "SELECT machine, DATE(date_time), HOUR(date_time), SUM(output) FROM jam_current_table " \
+                         "WHERE date_time >= %s AND date_time < %s"
+                query2 = "SELECT machine, DATE(date_time), HOUR(date_time), SUM(output) FROM jam_prev_table " \
+                         "WHERE date_time >= %s AND date_time < %s"
                 if machines_list:
                     machines_str = str(list(machines_list))[1:-1]
-                    query = query + " AND machine IN (" + machines_str + ")"
+                    query1 = query1 + " AND machine IN (" + machines_str + ")"
+                    query2 = query2 + " AND machine IN (" + machines_str + ")"
 
-                query = query + " GROUP BY machine, DATE(date_time), HOUR(date_time);"
-                cursor.execute(query, (start, end))
+                query1 = query1 + " GROUP BY machine, DATE(date_time), HOUR(date_time)"
+                query2 = query2 + " GROUP BY machine, DATE(date_time), HOUR(date_time)"
+                query = query1 + " UNION ALL " + query2
+                cursor.execute(query, (start, end, start, end))
                 output_list = cursor.fetchall()
         except pymysql.DatabaseError as error:
             self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
@@ -570,7 +575,7 @@ class DatabaseManager:
             with conn.cursor() as cursor:
                 today = datetime.today()
                 dayofweek = self.settings.config.getint('Data', 'day')
-                offset = (today.isoweekday() - dayofweek) % 7 + 7
+                offset = (today.isoweekday() - dayofweek) % 7
                 day_date = today - timedelta(offset)
                 date_str = day_date.strftime('%Y-%m-%d')
                 query = "INSERT IGNORE INTO jam_past_table (machine, jo_no, emp, date_time, shift, output, col1, col2" \

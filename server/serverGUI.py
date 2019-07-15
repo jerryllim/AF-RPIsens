@@ -1156,16 +1156,13 @@ class DisplayTable(QtWidgets.QWidget):
     scheduler_jobs = {}
     scheduler = None
 
-    def __init__(self, parent, database_manager, auto_update=True, populate_shortcut='Return'):
+    def __init__(self, parent, database_manager, populate_shortcut='Return'):
         QtWidgets.QWidget.__init__(self, parent)
         self.config_path = self.parent().config_path
         config = configparser.ConfigParser()
         path = os.path.expanduser(self.config_path)
         config.read(path)
         self.database_manager = database_manager
-        self.scheduler = BackgroundScheduler()
-        jam_dur = config.getint('Network', 'interval')
-        self.schedule_jam(interval=jam_dur)
 
         self.table_model = QtGui.QStandardItemModel(3, 10)
 
@@ -1230,9 +1227,6 @@ class DisplayTable(QtWidgets.QWidget):
         self.setLayout(box_layout)
         self.show()
         self.populate_table()
-
-        if auto_update:
-            self.scheduler.start()
 
     def set_workcenters(self):
         config = configparser.ConfigParser()
@@ -1333,13 +1327,13 @@ class DisplayTable(QtWidgets.QWidget):
     def show_hide_details(self):
         self.filter_box.setVisible(not self.filter_box.isVisible())
 
-    def schedule_jam(self, interval=5):
+    def schedule_jam(self, scheduler, scheduler_jobs, interval=5):
         cron_trigger = CronTrigger(second='30', minute='1-59/{}'.format(interval))
         job_id = 'REFRESH'
-        if self.scheduler_jobs.get(job_id):
-            self.scheduler_jobs[job_id].remove()
-        self.scheduler_jobs[job_id] = self.scheduler.add_job(self.update_table, cron_trigger, id=job_id,
-                                                             misfire_grace_time=30, max_instances=3)
+        if scheduler_jobs.get(job_id):
+            scheduler_jobs[job_id].remove()
+        scheduler_jobs[job_id] = scheduler.add_job(self.update_table, cron_trigger, id=job_id,
+                                                   misfire_grace_time=30, max_instances=3)
 
     def update_table(self):
         now = datetime.datetime.now()
@@ -1866,9 +1860,8 @@ class JamMainWindow(QtWidgets.QMainWindow):
         self.mu_det_table = MUDetailsDisplayTable(self, self.database_manager)
         compare_table = QtWidgets.QWidget(self)
         compare_layout = QtWidgets.QVBoxLayout(compare_table)
-        self.compare_table1 = DisplayTable(self, self.database_manager, auto_update=False)
-        self.compare_table2 = DisplayTable(self, self.database_manager, auto_update=False,
-                                           populate_shortcut="Shift+Return")
+        self.compare_table1 = DisplayTable(self, self.database_manager)
+        self.compare_table2 = DisplayTable(self, self.database_manager, populate_shortcut="Shift+Return")
         compare_layout.addWidget(self.compare_table1)
         compare_layout.addWidget(self.compare_table2)
         self.tab_widget.addTab(self.display_table, 'Output Table')
@@ -1877,6 +1870,12 @@ class JamMainWindow(QtWidgets.QMainWindow):
         self.tab_widget.addTab(self.mu_det_table, 'MU Details Table')
         self.tab_widget.addTab(compare_table, "Comparison Table")
         self.setCentralWidget(self.tab_widget)
+
+        self.display_scheduler = BackgroundScheduler()
+        self.display_scheduler_jobs = {}
+        jam_dur = config.getint('Network', 'interval')
+        self.display_table.schedule_jam(self.display_scheduler, self.display_scheduler_jobs, interval=jam_dur)
+        self.display_scheduler.start()
 
         config_action = QtWidgets.QAction('&Configuration', self)
         config_action.setShortcut(QtGui.QKeySequence('Ctrl+,'))
