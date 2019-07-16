@@ -56,7 +56,7 @@ class PiController:
         for name, pin in self.pulse_pins.items():
             self.pin_setup(pin)
 
-        for idx in range(1, 4):
+        for idx in range(1, 5):
             output_string = self.gui.config.get('General{}'.format(idx), 'output_pin')
             pin_name = '{}{}'.format(output_string, idx)
             output_pin = self.pulse_pins[pin_name]
@@ -248,7 +248,7 @@ class PiController:
                 self.prev_counts['sfu'] = self.prev_counts['sfu'] + sfu_list
 
             # Next, loop through and combine Q*, M* & E*
-            for idx in range(1, 4):
+            for idx in range(1, 5):
                 qc_list = temp_counts.pop('Q{}'.format(idx), [])
                 if qc_list:
                     if self.prev_counts.get('Q{}'.format(idx)) is None:
