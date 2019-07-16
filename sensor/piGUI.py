@@ -36,7 +36,7 @@ from kivy.uix.togglebutton import ToggleButton
 from kivy.uix.settings import SettingOptions, SettingString
 from kivy.properties import NumericProperty, StringProperty, ListProperty
 from kivy.uix.screenmanager import ScreenManager, Screen, SlideTransition, NoTransition
-from settings_json import settings_main, settings_machine1, settings_machine2, settings_machine3
+from settings_json import settings_main, settings_machine1, settings_machine2, settings_machine3, settings_machine4
 
 
 class State(Enum):
@@ -1141,7 +1141,8 @@ class PiGUIApp(App):
         config.setdefaults('Machine', {
             'machine1_enable': 1,
             'machine2_enable': 0,
-            'machine3_enable': 0})
+            'machine3_enable': 0,
+            'machine4_enable': 0})
 
         try:
             ip_add = self.get_ip_add()
@@ -1211,6 +1212,24 @@ class PiGUIApp(App):
             'b4_name': 'B4',
             'b5_enable': 0,
             'b5_name': 'B5'})
+        config.setdefaults('General4', {
+            'machine_name': 'Machine 4',
+            'bg_colour': 'ORANGE',
+            'output_pin': 'A1',
+            'multiplier': 1,
+            'waste1_units': 'kg',
+            'waste2_units': 'kg'})
+        config.setdefaults('Adjustments4', {
+            'b1_enable': 0,
+            'b1_name': 'B1',
+            'b2_enable': 0,
+            'b2_name': 'B2',
+            'b3_enable': 0,
+            'b3_name': 'B3',
+            'b4_enable': 0,
+            'b4_name': 'B4',
+            'b5_enable': 0,
+            'b5_name': 'B5'})
 
     def build_settings(self, settings):
         settings.register_type('scroll_options', SettingScrollableOptions)
@@ -1222,6 +1241,7 @@ class PiGUIApp(App):
         settings.add_json_panel('Machine 1', self.config, data=settings_machine1)
         settings.add_json_panel('Machine 2', self.config, data=settings_machine2)
         settings.add_json_panel('Machine 3', self.config, data=settings_machine3)
+        settings.add_json_panel('Machine 4', self.config, data=settings_machine4)
 
     def get_current_machine(self):
         return self.machines[self.current_index]
