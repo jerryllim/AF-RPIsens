@@ -842,7 +842,7 @@ class SimpleActionBar(BoxLayout):
         self.machine_button.text = App.get_running_app().get_current_machine().config['machine_name']
         self.machine_dropdown.clear_widgets()
         blayout = BoxLayout(orientation='vertical', padding=10, spacing=10, size_hint=(None, None), width='150sp')
-        for idx in range(1, 4):
+        for idx in range(1, 5):
             if int(config.get('Machine', 'machine{}_enable'.format(idx))):
                 name = config.get('General{}'.format(idx), 'machine_name')
                 colour = config.get('General{}'.format(idx), 'bg_colour')
@@ -1109,7 +1109,7 @@ class PiGUIApp(App):
 
         self.controller.init_counts(save_dict.get('counts', {}), save_dict.get('prev_counts', {}))
 
-        for idx in range(1, 4):
+        for idx in range(1, 5):
             machine = MachineClass(idx, self.controller, self.config)
             if save_dict:
                 machine.recall_machine(save_dict.get(idx, {}))
