@@ -355,8 +355,13 @@ class SelectPage(Screen):
             if not self.machine.emp_available():
                 raise ValueError("Please log in.")
 
-            controller = App.get_running_app().controller
-            job_dict = controller.get_job_info(barcode)
+            if "sample" in barcode.lower():
+                job_dict = {'jo_no': barcode, 'jo_line': 0, 'code': "SAMPLE", 'desc': "Sample",
+                            'to_do': 0, 'uom': "pcs", 'ran': 0}
+            else:
+                controller = App.get_running_app().controller
+                job_dict = controller.get_job_info(barcode)
+
             if job_dict is None:
                 raise ValueError("Server did not respond, please try again.".format(barcode))
             elif job_dict == 0:

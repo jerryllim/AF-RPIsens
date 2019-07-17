@@ -165,8 +165,8 @@ class PiController:
             self.counts[key].append(sfu_str)
 
     def publish_sfu(self, sfu_str):
-        reply = self.request({'sfu': sfu_str})
-        if reply is None:
+        reply = self.pipe_talk({'sfu': sfu_str})
+        if reply == 0:
             self.logger.warning('Server did not respond to sfu')
             self.add_sfu(sfu_str)
 
