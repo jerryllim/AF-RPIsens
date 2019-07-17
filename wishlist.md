@@ -6,7 +6,6 @@
 * EDI with ebprod & auto import export
 * (Optional) Select waste1 or waste2 as final option?
 * (Optional) Use colour picker to pick bg colour?
-* Add sample1 and sample2 barcode
 * Change from 3 machines with 5 A pins to 4 machines with 4 A pins
 
 ### Completed
@@ -21,3 +20,4 @@
 9. Remove machines.sqlite from Viewer
 10. Add multiplier on the server to handle different UOMs (e.g. Pocket File)
 11. Add multiplier on Pis (e.g. slitter with double output for single count)
+12. Add sample1 and sample2 barcode
