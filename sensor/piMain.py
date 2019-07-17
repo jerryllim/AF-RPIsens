@@ -375,7 +375,7 @@ class PiController:
                 value = reply_msg.pop(barcode)
                 if value:
                     job_info = {'jo_no': value[0], 'jo_line': value[1], 'code': value[2], 'desc': value[3],
-                                'to_do': value[4], 'ran': value[5]}
+                                'to_do': value[4], 'uom': value[5], 'ran': value[6]}
                 else:
                     job_info = {}
         else:
