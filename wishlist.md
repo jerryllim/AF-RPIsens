@@ -6,6 +6,7 @@
 * EDI with ebprod & auto import export
 * (Optional) Select waste1 or waste2 as final option?
 * (Optional) Use colour picker to pick bg colour?
+* Add sample1 and sample2 barcode
 * Change from 3 machines with 5 A pins to 4 machines with 4 A pins
 
 ### Completed
