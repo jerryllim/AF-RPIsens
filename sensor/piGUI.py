@@ -231,6 +231,7 @@ class MachineClass:
                                                    self.current_job.adjustments[name])
 
         self.controller.publish_sfu(sfu_str)
+        self.current_job = None
 
     def all_info(self):
         save_info = {'permanent': self.permanent, 'state': self.state.name, 'emp_main': self.emp_main.copy(),
