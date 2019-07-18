@@ -9,6 +9,7 @@
 * Change from 3 machines with 5 A pins to 4 machines with 4 A pins
 * Multiprocessing for RPi
 * Multiprocessing for Server
+* Change BackgroundScheduler in serverGUI (for DisplayTable updates) to QtScheduler (using QClock internally? or create new Scheduler class?)
 
 ### Completed
 1. Clone image for faster copying
