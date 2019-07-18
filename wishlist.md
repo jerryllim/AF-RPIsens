@@ -10,6 +10,7 @@
 * Multiprocessing for RPi
 * Multiprocessing for Server
 * Change BackgroundScheduler in serverGUI (for DisplayTable updates) to QtScheduler (using QClock internally? or create new Scheduler class?)
+* Server to send jobs_table to pis based on like mac [where umachine LIKE "%ZP%"]
 
 ### Completed
 1. Clone image for faster copying
@@ -19,7 +20,7 @@
 5. Add a way to know which textinput is selected (AdjustmentScreen)
 6. Add automatic way of determine whether to use FakeClass *sys.platform.startswith('linux')*
 7. Added Quit button
-8. Server to send jobs_table to pis
+8. Server to send jobs_table to pis based on mac [where umachine_no in (1,2,3)]
 9. Remove machines.sqlite from Viewer
 10. Add multiplier on the server to handle different UOMs (e.g. Pocket File)
 11. Add multiplier on Pis (e.g. slitter with double output for single count)
