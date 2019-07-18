@@ -2,7 +2,7 @@
 * UPS using capacitor? Graceful shutdown
 * x11vnc - Unable without desktop - use minimal desktop? https://www.raspberrypi.org/forums/viewtopic.php?t=133691
 * Mender for OTA updates
-* Easy updates for each individual RPi
+* Easy updates for each individual RPi (Set jam.sqlite, jam_machines.txt & pigui.ini in different folder?)
 * EDI with ebprod & auto import export
 * (Optional) Select waste1 or waste2 as final option?
 * (Optional) Use colour picker to pick bg colour?
