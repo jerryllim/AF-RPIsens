@@ -4,13 +4,14 @@
 * Mender for OTA updates
 * Easy updates for each individual RPi (Set jam.sqlite, jam_machines.txt & pigui.ini in different folder?)
 * EDI with ebprod & auto import export
-* (Optional) Select waste1 or waste2 as final option?
-* (Optional) Use colour picker to pick bg colour?
 * Change from 3 machines with 5 A pins to 4 machines with 4 A pins
 * Multiprocessing for RPi
 * Multiprocessing for Server
 * Change BackgroundScheduler in serverGUI (for DisplayTable updates) to QtScheduler (using QClock internally? or create new Scheduler class?)
 * Server to send jobs_table to pis based on like mac [where umachine LIKE "%ZP%"]
+* Add barcode scanner support
+* (Optional) Select waste1 or waste2 as final option?
+* (Optional) Use colour picker to pick bg colour?
 
 ### Completed
 1. Clone image for faster copying
