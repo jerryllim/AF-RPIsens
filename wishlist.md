@@ -26,3 +26,8 @@
 10. Add multiplier on the server to handle different UOMs (e.g. Pocket File)
 11. Add multiplier on Pis (e.g. slitter with double output for single count)
 12. Add 'sample' barcode
+
+
+### Waste App
+1. Separate waste input device
+2. Android or RPi
