@@ -9,6 +9,7 @@
 * Multiprocessing for Server
 * Change BackgroundScheduler in serverGUI (for DisplayTable updates) to QtScheduler (using QClock internally? or create new Scheduler class?)
 * Server to send jobs_table to pis based on like mac [where umachine LIKE "%ZP%"]
+* Add current jo_no, date_time table
 * Add barcode scanner support
 * (Optional) Select waste1 or waste2 as final option?
 * (Optional) Use colour picker to pick bg colour?
