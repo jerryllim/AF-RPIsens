@@ -4,6 +4,7 @@
 * Mender for OTA updates
 * Easy updates for each individual RPi (Set jam.sqlite, jam_machines.txt & pigui.ini in different folder?)
 * EDI with ebprod & auto import export
+* Edit auto import to handle multiple naming for ebprod
 * Change from 3 machines with 5 A pins to 4 machines with 4 A pins
 * Multiprocessing for RPi
 * Multiprocessing for Server
