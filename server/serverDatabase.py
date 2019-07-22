@@ -580,7 +580,7 @@ class DatabaseManager:
                 date_str = day_date.strftime('%Y-%m-%d')
                 query = "INSERT IGNORE INTO jam_past_table (machine, jo_no, emp, date_time, shift, output, col1, col2" \
                         ", col3, col4, col5, col6, col7, col8, col9, col10) SELECT machine, jo_no, emp, " \
-                        "DATE_FORMAT(date_time, '%Y-%m-%d %H:00') as new_dt, shift, SUM(output), SUM(col1), SUM(col2)" \
+                        "DATE_FORMAT(date_time, '%%Y-%%m-%%d %%H:00') as new_dt, shift, SUM(output), SUM(col1), SUM(col2)" \
                         ", SUM(col3), SUM(col4), SUM(col5), SUM(col6), SUM(col7), SUM(col8), SUM(col9), SUM(col10) " \
                         "FROM jam_prev_table WHERE date_time < %s - INTERVAL 2 WEEK GROUP BY machine," \
                         " jo_no, emp, new_dt, shift;"

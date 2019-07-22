@@ -6,3 +6,4 @@
 test_*
 .idea/*
 *.log
+sensor/jam_machine.txt
