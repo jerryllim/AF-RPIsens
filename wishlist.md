@@ -9,11 +9,12 @@
 * Multiprocessing for RPi
 * Multiprocessing for Server
 * Change BackgroundScheduler in serverGUI (for DisplayTable updates) to QtScheduler (using QClock internally? or create new Scheduler class?)
+* Change jam_past_table to csv/excel/sqlite file
+* Add new tables for qc, maintenance, emp_shift
 * Server to send jobs_table to pis based on like mac [where umachine LIKE "%ZP%"]
 * Add current jo_no, date_time table
 * Add barcode scanner support
-* (Optional) Select waste1 or waste2 as final option?
-* (Optional) Use colour picker to pick bg colour?
+* (Optional) Use colour picker to pick bg colour? Or just more colour options
 
 ### Completed
 1. Clone image for faster copying

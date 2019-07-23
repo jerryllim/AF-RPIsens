@@ -243,6 +243,7 @@ class DatabaseManager:
                 self.create_pis_table()
                 self.create_machines_table()
                 self.create_sfu_table()
+                self.create_uom_table()
 
         self.logger.info('Complated DatabaseManager __init__')
 
