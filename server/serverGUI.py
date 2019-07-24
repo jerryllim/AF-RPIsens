@@ -820,6 +820,11 @@ class MiscTab(QtWidgets.QWidget):
             import_button = QtWidgets.QPushButton('...', self)
             import_button.clicked.connect(self.import_from)
             import_layout.addWidget(import_button, 2, 4, QtCore.Qt.AlignLeft)
+            import_filename = QtWidgets.QLineEdit(self)
+            self.import_fields['filemname'] = import_filename
+            import_filename.setText(self.config.get('Import', 'filename', fallback="Export_jo"))
+            import_layout.addWidget(QtWidgets.QLabel('Filename has: '), 3, 0, QtCore.Qt.AlignRight)
+            import_layout.addWidget(import_filename, 3, 1, 1, 4)
 
             export_box = QtWidgets.QGroupBox('Export', self)
             export_layout = QtWidgets.QGridLayout()
@@ -1036,9 +1041,9 @@ class MiscTab(QtWidgets.QWidget):
         msgbox.exec_()
 
     def import_from(self):
-        path = QtWidgets.QFileDialog.getOpenFileName(self, 'Select file to import', '', 'CSV(*.csv)')
-        if path[0] != '':
-            self.import_fields['path'].setText(path[0])
+        path = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select folder to import from', '')
+        if path != '':
+            self.import_fields['path'].setText(path)
 
     def export_to(self):
         path = QtWidgets.QFileDialog.getExistingDirectory(self, 'Set export location', '')

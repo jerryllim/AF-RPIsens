@@ -152,18 +152,27 @@ class AutomateSchedulers:
 
     def read_import_file(self):
         filepath = self.settings.config.get('Import', 'path')
-        if not os.path.isfile(filepath):
-            self.logger.debug('No import file found')
-            return
+        filename = self.settings.config.get('Import', 'filename', fallback="Export_jo")
+        deleted_files = []
+        files = [os.path.join(filepath, file) for file in os.listdir(filepath)
+                 if filename in file and os.path.isfile(os.path.join(filepath, file))]
 
-        with open(filepath, 'r') as import_file:
-            csv_reader = csv.reader(import_file)
-
-            next(csv_reader)
-            self.database_manager.replace_jobs(csv_reader)
+        for file in files:
+            try:
+                with open(file, 'r') as import_file:
+                    csv_reader = csv.reader(import_file)
+                    next(csv_reader)  # Remove header row
+                    self.database_manager.replace_jobs(csv_reader)
+            except OSError as error:
+                self.logger.error("{}, {} for file {}".format(sys._getframe().f_code.co_name, error, file))
+                new_file = file.replace('.csv', '_error.csv')
+                os.rename(file, new_file)
+            else:
+                deleted_files.append(file)
+                os.remove(file)
 
         self.database_manager.delete_completed_jobs()
-        self.logger.debug('Read import file')
+        self.logger.debug('Read import files')
 
     def schedule_export(self):
         job_id = 'Export'
