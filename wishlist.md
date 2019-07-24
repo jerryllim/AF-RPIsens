@@ -3,9 +3,8 @@
 * x11vnc - Unable without desktop - use minimal desktop? https://www.raspberrypi.org/forums/viewtopic.php?t=133691
 * Mender for OTA updates
 * Easy updates for each individual RPi (Set jam.sqlite, jam_machines.txt & pigui.ini in different folder?)
-* EDI with ebprod & auto import export
-* Edit auto import to handle multiple naming for ebprod
 * Change from 3 machines with 5 A pins to 4 machines with 4 A pins
+* Add import csv file/query into Sybase database to get for uom_table
 * Multiprocessing for RPi
 * Multiprocessing for Server
 * Change BackgroundScheduler in serverGUI (for DisplayTable updates) to QtScheduler (using QClock internally? or create new Scheduler class?)
@@ -29,6 +28,8 @@
 10. Add multiplier on the server to handle different UOMs (e.g. Pocket File)
 11. Add multiplier on Pis (e.g. slitter with double output for single count)
 12. Add 'sample' barcode
+13. EDI with ebprod & auto import export
+14. Edit auto import to handle multiple naming for ebprod
 
 
 ### Waste App
