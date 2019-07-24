@@ -184,7 +184,7 @@ class AutomateSchedulers:
                                                              max_instances=3)
 
     def write_export_file(self):
-        filepath = self.settings.config.get('Export', 'path') + '/export_jam.csv'
+        filepath = self.settings.config.get('Export', 'path') + '/export_sfu.csv'
         try:
             if not os.path.isfile(filepath):
                 with open(filepath, 'w', newline='') as export_file:
