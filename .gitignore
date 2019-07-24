@@ -5,5 +5,7 @@
 .DS_Store
 test_*
 .idea/*
+.idea
+.idea/
 *.log
 sensor/jam_machine.txt
