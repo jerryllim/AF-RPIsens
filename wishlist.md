@@ -8,8 +8,11 @@
 * Multiprocessing for RPi
 * Multiprocessing for Server
 * Change BackgroundScheduler in serverGUI (for DisplayTable updates) to QtScheduler (using QClock internally? or create new Scheduler class?)
-* Change jam_past_table to csv/excel/sqlite file
-* Add new tables for qc, maintenance, emp_shift
+* Past jam table => Keep detailed data for 4 weeks
+* Past jam table => Convert older data to csv/excel, to store for N months
+* Past QC table => First & last for each job & emp for given day, store for N months? Transfer to excel/csv files? Store and delete after X months?
+* Past maintenance table => Keep maintenance log for N months? Transfer to excel/csv files? Store and delete after X months?
+* Past emp_shift table => Keep employee shift log for N months? Transfer to excel/csv files? Store and delete after X months?
 * Server to send jobs_table to pis based on like mac [where umachine LIKE "%ZP%"]
 * Add current jo_no, date_time table
 * Add barcode scanner support
