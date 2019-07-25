@@ -1690,6 +1690,19 @@ class DatabaseManager:
         finally:
             conn.close()
 
+    def truncate_uoms(self):
+        conn = pymysql.connect(host=self.host, user=self.user, password=self.password,
+                               database=self.db, port=self.port)
+        try:
+            with conn.cursor() as cursor:
+                query = "TRUNCATE uom_table;"
+                cursor.execute(query)
+        except pymysql.DatabaseError as error:
+            self.logger.error("{}: {}".format(sys._getframe().f_code.co_name, error))
+            conn.rollback()
+        finally:
+            conn.close()
+
     def replace_uom(self, uom_list):
         """
         Replaces row in uom_table
