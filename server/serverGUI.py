@@ -994,6 +994,17 @@ class MiscTab(QtWidgets.QWidget):
 
         wc_layout.addWidget(self.workcenters)
 
+        # UoM table
+        uom_box = QtWidgets.QGroupBox('Different Unit of Measure')
+        uom_layout = QtWidgets.QHBoxLayout()
+        uom_box.setLayout(uom_layout)
+        show_btn = QtWidgets.QPushButton('Show UoM table', uom_box)
+        # TODO show_btn.clicked.connect
+        uom_layout.addWidget(show_btn)
+        replace_btn = QtWidgets.QPushButton('Replace UoM table', uom_box)
+        replace_btn.clicked.connect(self.replace_uom)
+        uom_layout.addWidget(replace_btn)
+
         # Log group
         # TODO add log group - log level & file name
 
@@ -1007,6 +1018,7 @@ class MiscTab(QtWidgets.QWidget):
             vbox_layout.addWidget(data_box)
             vbox_layout.addWidget(shift_box)
         vbox_layout.addWidget(wc_box)
+        vbox_layout.addWidget(uom_box)
         vbox_layout.addStretch()
 
         widget = QtWidgets.QWidget(self)
@@ -1049,6 +1061,16 @@ class MiscTab(QtWidgets.QWidget):
         path = QtWidgets.QFileDialog.getExistingDirectory(self, 'Set export location', '')
         if path != '':
             self.export_fields['path'].setText(path)
+
+    def replace_uom(self):
+        path = QtWidgets.QFileDialog.getOpenFileName(self, 'Open CSV', '', 'CSV(*.csv)')
+        print(path)
+        if path[0] != '':
+            with open(path[0], 'r') as csv_file:
+                csv_reader = csv.reader(csv_file)
+                self.database_manager.truncate_uoms()
+                self.database_manager.replace_uoms(csv_reader)
+
 
     def save_misc(self):
         for key in self.db_edits.keys():

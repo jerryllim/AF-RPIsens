@@ -1703,7 +1703,7 @@ class DatabaseManager:
         finally:
             conn.close()
 
-    def replace_uom(self, uom_list):
+    def replace_uoms(self, uom_list):
         """
         Replaces row in uom_table
         :param uom_list: Row to insert
